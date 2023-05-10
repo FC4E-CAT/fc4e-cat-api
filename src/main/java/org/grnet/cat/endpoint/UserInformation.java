@@ -31,8 +31,6 @@ public class UserInformation {
 
     /**
      * Returns the user information.
-     *
-     *
      * @return an JSON response containing the user information
      */
     @GET
