@@ -9,4 +9,5 @@ This is the repository of the CAT API that allows for the encoding, recording, a
 
 More Information : FAIRCORE4EOSC Website: https://faircore4eosc.eu/
 
+Participants: GRNET, DANS
 
