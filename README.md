@@ -5,3 +5,7 @@ The Compliance Assessment Toolkit will support the EOSC PID policy with services
 ## FAIRCORE4EOSC - CAT: Compliance Assessment Toolkit - API
 
 This is the repository of the CAT API that allows for the encoding, recording, and querying of compliance assessments. Operational examples will support EOSC PID Policy compliance, while FAIR and TRUST will be available as beta versions.
+
+
+More Information : FAIRCORE4EOSC Website: https://faircore4eosc.eu/
+
