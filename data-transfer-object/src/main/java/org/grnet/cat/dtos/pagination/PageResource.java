@@ -9,7 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 
-@Schema(name="PageResource", description="An object represents the paginated entities.")
+@Schema(name = "PageResource", description = "An object represents the paginated entities.")
 public class PageResource<R> {
 
     @Schema(
@@ -62,41 +62,63 @@ public class PageResource<R> {
             description = "Link to paginated entities."
     )
     @JsonProperty("links")
-    private  List<PageLink> links;
+    private List<PageLink> links;
 
     public PageResource() {
     }
 
-    public PageResource(PanacheQuery panacheQuery, List<R> content, UriInfo uriInfo){
+    public PageResource(PanacheQuery panacheQuery, List<R> content, UriInfo uriInfo) {
         links = new ArrayList<>();
         this.content = content;
         this.sizeOfPage = panacheQuery.list().size();
-        this.numberOfPage = panacheQuery.page().index+1;
+        this.numberOfPage = panacheQuery.page().index + 1;
         this.totalElements = panacheQuery.count();
         this.totalPages = panacheQuery.pageCount();
-        if(totalPages !=1 && numberOfPage <= totalPages){
+        if (totalPages != 1 && numberOfPage <= totalPages) {
             links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
             links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));
             links.add(buildPageLink(uriInfo, numberOfPage, sizeOfPage, "self"));
 
-
-            if(panacheQuery.hasPreviousPage() && panacheQuery.list().size()!=0) {
-                links.add(buildPageLink(uriInfo, numberOfPage -1, sizeOfPage, "prev"));
+            if (panacheQuery.hasPreviousPage() && panacheQuery.list().size() != 0) {
+                links.add(buildPageLink(uriInfo, numberOfPage - 1, sizeOfPage, "prev"));
             }
 
-            if(panacheQuery.hasNextPage()) {
-                links.add(buildPageLink(uriInfo, numberOfPage +1, sizeOfPage, "next"));
+            if (panacheQuery.hasNextPage()) {
+                links.add(buildPageLink(uriInfo, numberOfPage + 1, sizeOfPage, "next"));
+            }
+        }
+    }
+
+    public PageResource(int total, int page, List<R> content, UriInfo uriInfo) {
+        links = new ArrayList<>();
+        this.content = content;
+        this.sizeOfPage = content.size();
+        this.numberOfPage = page;
+        this.totalElements = total;
+        this.totalPages = total/20;
+        this.totalPages=(total% 20)!=0 ? this.totalPages+1:this.totalPages;
+        if (totalPages != 1 && numberOfPage <= totalPages) {
+            links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
+            links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));
+            links.add(buildPageLink(uriInfo, numberOfPage, sizeOfPage, "self"));
+
+            if (page != 1 && content.size() != 0) {
+                links.add(buildPageLink(uriInfo, numberOfPage - 1, sizeOfPage, "prev"));
+            }
+
+            if (page != totalPages) {
+                links.add(buildPageLink(uriInfo, numberOfPage + 1, sizeOfPage, "next"));
             }
         }
     }
 
     private PageLink buildPageLink(UriInfo uriInfo, int page, int size, String rel) {
 
-         return PageLink
+        return PageLink
                 .builder()
-                 .href(uriInfo.getRequestUriBuilder().replaceQueryParam("page", page).replaceQueryParam("size", size).build().toString())
-                 .rel(rel)
-                 .build();
+                .href(uriInfo.getRequestUriBuilder().replaceQueryParam("page", page).replaceQueryParam("size", size).build().toString())
+                .rel(rel)
+                .build();
     }
 
     public int getSizeOfPage() {
