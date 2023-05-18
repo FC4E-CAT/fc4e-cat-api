@@ -1,6 +1,6 @@
-# Contributing to ARGOEU Open Source Software
+# Contributing to FAIRCORE4EOSC-CAT Open Source Software
 
-Thank you for considering contributing to ARGOEU Open Source Software.
+Thank you for considering contributing to FAIRCORE4EOSC-CAT Open Source Software.
 
 Please note that we welcome all forms of user feedback and are generally open
 to many forms of collaboration,
@@ -25,15 +25,15 @@ and choose "New Feature" or "Improvement" as the value of the Components field.
 
 ## Contributing to the development
 
-Development of all ARGOEU tools and services is aligned with our roadmap and
+Development of all FAIRCORE4EOSC-CAT tools and services is aligned with our roadmap and
 any functional requirements we have.
 
-External contributions can be accepted, if they provide functionality ARGOEU
+External contributions can be accepted, if they provide functionality FAIRCORE4EOSC-CAT
 deems appropriate and are of acceptable quality.
 Specific requirements and criteria may apply to specific tools.
 
-If you want to contribute to ARGOEU tools and services,
-please contact argo [AT] grnet.gr before proceeding.
+If you want to contribute to FAIRCORE4EOSC-CAT tools and services,
+please create a ticket to the repository / organization before proceeding.
 
 ### Practical matters
 
