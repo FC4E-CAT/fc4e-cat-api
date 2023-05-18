@@ -2,7 +2,7 @@
 package org.grnet.cat.mappers;
 
 import com.mysql.cj.util.StringUtils;
-import io.smallrye.common.constraint.NotNull;
+import java.util.List;
 import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.entities.Organisation;
 import org.mapstruct.Mapper;
@@ -20,5 +20,7 @@ public interface OrganisationMapper {
 
         
     OrganisationResponseDto organisationToResponse(Organisation organisation);
+    
+    List<OrganisationResponseDto> organisationsToResponse(List<Organisation> organisation);
 }
 
