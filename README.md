@@ -54,6 +54,10 @@ It provides error handling and other event-related functionalities to ensure rob
 The `exception` module contains the project-specific exceptions. These exceptions are used to handle exceptional situations and provide meaningful error messages or behavior. 
 The module defines custom exception classes that extend the standard exception classes or implement specific interfaces.
 
+8) mapper
+
+The `mapper` module is responsible for mapping entities with DTOs using MapStruct.
+
 ## Instructions for Developers
 
 ### Prerequisites

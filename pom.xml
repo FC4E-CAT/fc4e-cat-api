@@ -16,6 +16,7 @@
     <module>handler</module>
     <module>data-transfer-object</module>
     <module>exception</module>
+    <module>mapper</module>
   </modules>
 
   <properties>
@@ -31,6 +32,7 @@
     <lombok.version>1.18.26</lombok.version>
     <jandex.version>1.2.3</jandex.version>
     <cat.version>1.0.0-SNAPSHOT</cat.version>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -76,6 +78,21 @@
         <groupId>org.grnet</groupId>
         <artifactId>cat-exceptions</artifactId>
         <version>${cat.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.grnet</groupId>
+        <artifactId>cat-mappers</artifactId>
+        <version>${cat.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>${mapstruct.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
