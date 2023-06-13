@@ -14,17 +14,18 @@ pipeline {
             agent {
                 docker {
                     image 'argo.registry:5000/epel-7-java11-mvn384'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock -u root:root'
+                    args '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock -u root:root'
                 }
             }
             steps {
                 echo 'CAT API Packaging & Testing'
                 sh """
                 cd ${WORKSPACE}/${PROJECT_DIR}
+                mvn clean install -DskipTests=true -U
                 mvn clean package -Dquarkus.package.type=uber-jar
                 """
-                junit '**/target/surefire-reports/*.xml'
-                archiveArtifacts artifacts: '**/target/*.jar'
+                junit '**/**/target/surefire-reports/*.xml'
+                archiveArtifacts artifacts: '**/api/target/*.jar'
                 step( [ $class: 'JacocoPublisher' ] )
             }
             post {
