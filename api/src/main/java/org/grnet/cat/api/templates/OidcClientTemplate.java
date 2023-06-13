@@ -7,6 +7,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.cat.dtos.InformativeResponse;
 
 /**
  * This endpoint is responsible for rendering the client.html.
@@ -31,6 +38,18 @@ public class OidcClientTemplate {
 
     @ConfigProperty(name = "keycloak.server.javascript.adapter")
     String keycloakServerJavascriptAdapter;
+
+    @Tag(name = "Authentication")
+    @Operation(
+            hidden = true,
+            summary = "Redirects a client to the AAI login page.",
+            description = "The user is presented with the AAI login page, which is hosted by the authentication server. " +
+                    "This page contains options for selecting the user's identity provider (IdP) or organization. After selecting the identity provider, the user is redirected to the selected IdP's login page to enter their credentials." +
+                    " The user enters their username and password  on the IdP's login page. The identity provider verifies the user's credentials and determines whether they are valid. If the authentication is successful, the IdP generates an access token.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Returns an html page containing the obtained access token."
+    )
 
     @GET
     @Produces(MediaType.TEXT_HTML)
