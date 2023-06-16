@@ -25,6 +25,10 @@
       <artifactId>lombok</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-qute</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.grnet</groupId>
       <artifactId>cat-services</artifactId>
     </dependency>

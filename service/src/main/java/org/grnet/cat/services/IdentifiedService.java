@@ -27,7 +27,7 @@ public class IdentifiedService {
     /**
      * This operations registers a user on the CAT service.
      * Typically, it constructs an {@link User Identified} object and stores it in the database.
-     * @param id The user's voperson_id
+     * @param id User's voperson_id
      */
     @Transactional
     public void register(String id){
