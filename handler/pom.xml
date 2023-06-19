@@ -18,6 +18,10 @@
             <artifactId>cat-exceptions</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.grnet</groupId>
             <artifactId>cat-data-transfer-objects</artifactId>
         </dependency>

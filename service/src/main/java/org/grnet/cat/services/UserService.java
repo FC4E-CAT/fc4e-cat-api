@@ -2,17 +2,11 @@ package org.grnet.cat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.UserProfileDto;
-import org.grnet.cat.entities.Identified;
-import org.grnet.cat.entities.User;
-import org.grnet.cat.exceptions.ConflictException;
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.mappers.UserMapper;
-import org.grnet.cat.repositories.IdentifiedRepository;
 import org.grnet.cat.repositories.UserRepository;
-
-import java.sql.Timestamp;
-import java.time.Instant;
 
 /**
  * The UserService provides operations for managing User entities.
@@ -38,5 +32,20 @@ public class UserService {
         var userProfile = userRepository.fetchUserProfile(id);
 
         return UserMapper.INSTANCE.userProfileToDto(userProfile);
+    }
+
+    /**
+     * Retrieves a page of users from the database.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of users to include in a page.
+     * @param uriInfo The Uri Info.
+     * @return A list of UserProfileDto objects representing the users in the requested page.
+     */
+    public PageResource<UserProfileDto> getUsersByPage(int page, int size, UriInfo uriInfo){
+
+        var users = userRepository.fetchUsersByPage(page, size);
+
+        return new PageResource<>(users, UserMapper.INSTANCE.usersProfileToDto(users.list()), uriInfo);
     }
 }
