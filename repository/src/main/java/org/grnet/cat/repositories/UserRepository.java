@@ -4,8 +4,12 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.UserProfile;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * The IdentifiedRepository interface provides data access methods for the User entity.
@@ -22,7 +26,7 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      */
     public UserProfile fetchUserProfile(String id){
 
-        return find("select user.id, user.type, user.registeredOn from User user where user.id = ?1", id).project(UserProfile.class).firstResult();
+        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn from User user where user.id = ?1", id).project(UserProfile.class).firstResult();
     }
 
     /**
@@ -34,6 +38,25 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      */
     public PanacheQuery<UserProfile> fetchUsersByPage(int page, int size){
 
-        return find("select user.id, user.type, user.registeredOn from User user").project(UserProfile.class).page(page, size);
+        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn from User user").project(UserProfile.class).page(page, size);
+    }
+
+    /**
+     * Updates the metadata for a user's profile.
+     *
+     * @param id The ID of the user whose metadata is being updated.
+     * @param name The user's name.
+     * @param surname The user's surname.
+     * @param email The user's email address.
+     */
+    @Transactional
+    public void updateUserProfileMetadata(String id, String name, String surname, String email){
+
+        var user = findById(id);
+
+        user.setName(name);
+        user.setSurname(surname);
+        user.setEmail(email);
+        user.setUpdatedOn(Timestamp.from(Instant.now()));
     }
 }
