@@ -48,4 +48,17 @@ public class UserService {
 
         return new PageResource<>(users, UserMapper.INSTANCE.usersProfileToDto(users.list()), uriInfo);
     }
+
+    /**
+     * Updates the metadata for a user's profile.
+     *
+     * @param id The ID of the user whose metadata is being updated.
+     * @param name The user's name.
+     * @param surname The user's surname.
+     * @param email The user's email address.
+     */
+    public void updateUserProfileMetadata(String id, String name, String surname, String email){
+
+        userRepository.updateUserProfileMetadata(id, name, surname, email);
+    }
 }

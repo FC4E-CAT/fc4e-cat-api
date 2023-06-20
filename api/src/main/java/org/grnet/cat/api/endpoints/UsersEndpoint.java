@@ -2,11 +2,14 @@ package org.grnet.cat.api.endpoints;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -28,6 +31,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.IdentifiedService;
@@ -59,6 +63,9 @@ public class UsersEndpoint {
     @Inject
     UserService userService;
 
+    /**
+     * Injection point for the Utility class
+     */
     @Inject
     Utility utility;
 
@@ -190,6 +197,57 @@ public class UsersEndpoint {
         var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
+    }
+
+    @Tag(name = "User")
+    @Operation(
+            summary = "Update User Profile Metadata.",
+            description = "Updates the metadata for a user's profile. The user can provide their name, surname, and email.")
+    @SecurityScheme
+    @APIResponse(
+            responseCode = "200",
+            description = "User's metadata updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "User has not been registered on CAT service.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Path("/profile")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response updateProfile(@Valid @NotNull(message = "The request body is empty.") UpdateUserProfileDto updateUserProfileDto) {
+
+        userService.updateUserProfileMetadata(utility.getUserUniqueIdentifier(), updateUserProfileDto.name, updateUserProfileDto.surname, updateUserProfileDto.email);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "User's metadata updated successfully.";
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableUserProfile extends PageResource<UserProfileDto> {

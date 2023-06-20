@@ -4,9 +4,9 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.api.endpoints.UsersEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.junit.jupiter.api.Test;
@@ -125,6 +125,146 @@ public class UsersEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("Page number must be >= 1.", informativeResponse.message);
+    }
+
+    @Test
+    public void updateMetadataRequestBodyIsEmpty() {
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The request body is empty.", response.message);
+    }
+
+    @Test
+    public void updateMetadataNameIsEmpty() {
+
+        var update = new UpdateUserProfileDto();
+        update.surname = "foo";
+        update.email = "foo@admin.grnet.gr";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("name may not be empty.", response.message);
+    }
+
+    @Test
+    public void updateMetadataEmailIsEmpty() {
+
+        var update = new UpdateUserProfileDto();
+        update.name = "foo";
+        update.surname = "foo";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("email may not be empty.", response.message);
+    }
+
+    @Test
+    public void updateMetadataEmailIsNotValid() {
+
+        var update = new UpdateUserProfileDto();
+        update.name = "foo";
+        update.surname = "foo";
+        update.email = "foo.foo";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Please provide a valid email address.", response.message);
+    }
+
+    @Test
+    public void updateMetadataSurnameIsEmpty() {
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("foo"))
+                .post("/register")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+
+        var update = new UpdateUserProfileDto();
+        update.name = "foo";
+        update.email = "foo@admin.grnet.gr";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("foo"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("surname may not be empty.", response.message);
+    }
+
+    @Test
+    public void updateMetadata() {
+
+        var update = new UpdateUserProfileDto();
+        update.name = "foo";
+        update.surname = "foo";
+        update.email = "foo@admin.grnet.gr";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("User's metadata updated successfully.", response.message);
     }
 
     protected String getAccessToken(String userName) {
