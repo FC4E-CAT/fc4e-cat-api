@@ -9,13 +9,10 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.services.IntegrationService;
@@ -25,13 +22,6 @@ import org.grnet.cat.api.filters.Registration;
 
 @Path("/v1/integrations")
 @Authenticated
-@SecurityScheme(securitySchemeName = "Authentication",
-        description = "JWT token",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT",
-        in = SecuritySchemeIn.HEADER)
-
 public class IntegrationsEndpoint {
 
     @Inject
@@ -70,7 +60,7 @@ public class IntegrationsEndpoint {
     @GET
     @Path("/organisations")
     @Produces(MediaType.APPLICATION_JSON)
-   @Registration
+    @Registration
     public Response organisationSources() {
 
         var integrations = integrationService.getOrganisationSources();

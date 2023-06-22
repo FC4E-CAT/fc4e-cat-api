@@ -20,28 +20,9 @@ public class SourceResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Display Value of Source",
+            description = "Organisation Source",
             example = "ROR"
     )
-    @JsonProperty("display_value")
-    public String displayValue;
-
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public String getDisplayValue() {
-        return displayValue;
-    }
-
-    public void setDisplayValue(String displayValue) {
-        this.displayValue = displayValue;
-    }
-
-    
+    @JsonProperty("organisation_source")
+    public String organisationSource;
 }

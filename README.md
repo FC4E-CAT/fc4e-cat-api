@@ -58,6 +58,54 @@ The module defines custom exception classes that extend the standard exception c
 
 The `mapper` module is responsible for mapping entities with DTOs using MapStruct.
 
+9) enum
+
+The `enum` module contains the available API enumerations.
+
+10) validator
+
+The `validator` module contains the API Validators. They allow us to express and validate the API constraints.
+
+## Access the protected resources
+
+Since the API's endpoints must only be obtainable to verified clients, every client who wants access to the API resources should be authenticated.
+The communication with protected API endpoints is performed using the Bearer Authentication. Bearer Authentication is a type of token-based authentication commonly used in HTTP-based APIs.
+
+Once the client receives the access token, they should construct their HTTP request to access the protected API endpoint. They should include the access token in the HTTP request by adding an "Authorization" header to the HTTP request.
+The header's value starts with the word "Bearer" followed by a space and the actual access token.
+
+`Authorization: Bearer {{token}}`
+
+### Access Token Retrieval
+
+This [web page](https://api.cat.argo.grnet.gr/) allows users to obtain an access token for authentication purposes. By following these instructions, users can retrieve an access token to authenticate API requests.
+
+### Instructions
+
+1. Open the Web Page
+
+   Open your preferred web browser and navigate to the URL of the [web page](https://api.cat.argo.grnet.gr/) where the access token can be obtained.
+
+2. Locate the Access Token Button
+
+   Once the web page loads, locate the button that triggers the access token retrieval process. The button should be visible on the web page.
+
+3. Click the Obtain an Access Token button
+
+   Click the access token button to initiate the process of retrieving an access token. This will trigger the necessary steps to obtain the token from the authentication server.
+
+4. Provide Required Information
+   
+   Choose your preferred identity provider from the available options. After selecting the identity provider, enter your credentials.
+
+5. Retrieve the Access Token
+
+   After providing the necessary information, the web page will communicate with the authentication server to retrieve the access token. This process may take a few moments. Once the retrieval is successful, the access token will be displayed on the web page.
+
+6. Use the Access Token
+
+   Once you have obtained the access token, you can use it for authenticating API requests. Follow the documentation or guidelines provided by the API to understand how to include the access token in the appropriate HTTP requests using the Bearer Authentication scheme.
+
 ## Instructions for Developers
 
 ### Prerequisites
@@ -98,17 +146,6 @@ Use the following credentials to log into Dev Service Keycloak:
 
 - username : `alice`
 - password : `alice`
-
-### Access the protected resources
-
-Since the API's endpoints must only be obtainable to verified clients, every client who wants access to the API resources should be authenticated. 
-The communication with protected API endpoints is performed using the Bearer Authentication. Bearer Authentication is a type of token-based authentication commonly used in HTTP-based APIs.
-
-Once the client receives the access token, they should construct their HTTP request to access the protected API endpoint. They should include the access token in the HTTP request by adding an "Authorization" header to the HTTP request. 
-The header's value starts with the word "Bearer" followed by a space and the actual access token.
-
-`Authorization: Bearer {{token}}`
-
 
 
 

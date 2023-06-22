@@ -2,7 +2,6 @@ package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.UsersEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
@@ -18,11 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestHTTPEndpoint(UsersEndpoint.class)
-public class UsersEndpointTest {
+public class UsersEndpointTest extends KeycloakTest {
 
-    KeycloakTestClient keycloakClient = new KeycloakTestClient();
-  @Inject
-  UserService userService;
+    @Inject
+    UserService userService;
 
     @Test
     public void unauthorizedUser(){
@@ -38,9 +36,9 @@ public class UsersEndpointTest {
 
     @Test
     public void registerUser(){
+
         userService.deleteUsers();
-      
-  
+
         var success = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -56,6 +54,7 @@ public class UsersEndpointTest {
 
     @Test
     public void userAlreadyExistsInTheDatabase(){
+
         var success = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -270,9 +269,5 @@ public class UsersEndpointTest {
                 .as(InformativeResponse.class);
 
         assertEquals("User's metadata updated successfully.", response.message);
-    }
-
-    protected String getAccessToken(String userName) {
-        return keycloakClient.getAccessToken(userName);
     }
 }

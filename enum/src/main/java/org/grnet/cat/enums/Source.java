@@ -13,12 +13,12 @@ public enum Source {
     RE3DATA("re3data","RE3DATA","");
 
     public final String label;
-    public final String displayValue;
+    public final String organisationSource;
     public final String url;
 
-    private Source(String label, String displayValue, String url) {
+    private Source(String label, String organisationSource, String url) {
         this.label = label;
-        this.displayValue = displayValue;
+        this.organisationSource = organisationSource;
         this.url = url;
     }
 
@@ -28,8 +28,8 @@ public enum Source {
 
     }
 
-    public String getDisplayValue() {
-        return displayValue;
+    public String getOrganisationSource() {
+        return organisationSource;
     }
 
     public String getUrl() {
