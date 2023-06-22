@@ -1,11 +1,10 @@
 package org.grnet.cat.exceptions;
 
-import jakarta.ws.rs.ClientErrorException;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ServerErrorException;
 
-public class InternalServerErrorException extends ClientErrorException {
+public class InternalServerErrorException extends ServerErrorException {
 
-    public InternalServerErrorException(String message) {
-        super(message, Response.Status.INTERNAL_SERVER_ERROR);
+    public InternalServerErrorException(String message, int status) {
+        super(message, status);
     }
 }

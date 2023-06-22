@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Validation;
@@ -21,12 +22,26 @@ public class ValidationRepository implements PanacheRepositoryBase<Validation, L
      * @param id The ID of the user.
      * @param organisationId The ID of the organisation.
      * @param organisationSource The source of the organisation.
+     * @param actorId The actor id.
      * @return {@code true} if a promotion request exists for the user and organization, {@code false} otherwise
      */
-    public boolean hasPromotionRequest(String id, String organisationId, String organisationSource){
+    public boolean hasPromotionRequest(String id, String organisationId, String organisationSource, Long actorId){
 
         List<ValidationStatus> statuses = Arrays.asList(ValidationStatus.REVIEW, ValidationStatus.APPROVED, ValidationStatus.PENDING);
 
-        return find("from Validation v where v.user.id = ?1 and v.organisationId = ?2 and v.organisationSource = ?3 and v.status IN (?4)", id, organisationId, Source.valueOf(organisationSource), statuses).stream().findAny().isPresent();
+        return find("from Validation v where v.user.id = ?1 and v.organisationId = ?2 and v.organisationSource = ?3 and v.status IN (?4) and v.actor.id = ?5", id, organisationId, Source.valueOf(organisationSource), statuses, actorId).stream().findAny().isPresent();
+    }
+
+    /**
+     * Retrieves a page of validation requests submitted by the specified user.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of validation requests to include in a page.
+     * @param userID The ID of the user.
+     * @return A list of Validation objects representing the validation requests in the requested page.
+     */
+    public PanacheQuery<Validation> fetchValidationsByPage(int page, int size, String userID){
+
+        return find("from Validation v where v.user.id = ?1", userID).page(page, size);
     }
 }

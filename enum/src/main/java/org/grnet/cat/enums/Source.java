@@ -1,24 +1,42 @@
 package org.grnet.cat.enums;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.grnet.cat.exceptions.EntityNotFoundException;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- *
  * Enumeration of Integration Sources
  */
 public enum Source {
 
-    ROR("ror", "ROR", "https://api.ror.org/organizations"),
-    EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider"),
-    RE3DATA("re3data", "RE3DATA", "");
+    ROR("ror", "ROR", "https://api.ror.org/organizations") {
+        public Map<String, String> execute(String id) {
+            return connectHttpClient(id);
+        }
+    },
+    EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider") {
+        public Map<String, String> execute(String id) {
+            return connectHttpClient(id);
+        }
+    },
+    RE3DATA("re3data", "RE3DATA", "") {
+        public Map<String, String> execute(String id) {
+            throw new InternalServerErrorException("Source re3data is not supported.", 501);
+        }
+    };
+
+    public abstract Map<String, String> execute(String id);
 
     public final String label;
     public final String organisationSource;
@@ -54,7 +72,8 @@ public enum Source {
         return null;
     }
 
-    public String connectHttpClient(String id) throws IOException {
+    @SneakyThrows
+    Map<String, String> connectHttpClient(String id) {
 
         var client = new OkHttpClient().newBuilder()
                 .build();
@@ -70,9 +89,38 @@ public enum Source {
         if (resp.code() == 404) {
             throw new EntityNotFoundException("Organisation " + id + ", not found in " + organisationSource);
         } else if (resp.code() != 200) {
-            throw new InternalServerErrorException("Internal Server Error");
+            throw new InternalServerErrorException("Cannot communicate with " + organisationSource, 500);
         }
 
-        return resp.body().string();
+        return buildFromString(resp.body().string());
+    }
+
+    Map<String, String> buildFromString(String content) {
+
+        JsonParser jsonParser = new JsonParser();
+        // Grab the first - and only line of json from ops data
+        JsonElement jElement = jsonParser.parse(content);
+
+        JsonObject jRoot = jElement.getAsJsonObject();
+        String id = jRoot.get("id").getAsString();
+        id = id.replaceAll("https://ror.org/", "");
+
+        String name = jRoot.get("name").getAsString();
+        String website = null;
+        if (jRoot.has("links")) {
+            website = jRoot.get("links").getAsJsonArray().get(0).getAsString();
+
+        } else if (jRoot.has("website")) {
+            website = jRoot.get("website").getAsString();
+
+        }
+
+        var map = new HashMap<String, String>();
+
+        map.put("id", id);
+        map.put("name", name);
+        map.put("website", website);
+
+        return map;
     }
 }

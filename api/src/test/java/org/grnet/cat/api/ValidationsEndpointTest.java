@@ -39,6 +39,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationSource = "ROR";
         request.organisationName = "Keimyung University";
         request.organisationId = "https://ror.org/00tjv0s33";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()
@@ -62,6 +63,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationRole = "Manager";
         request.organisationSource = "ROR";
         request.organisationId = "https://ror.org/00tjv0s33";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()
@@ -85,6 +87,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationRole = "Manager";
         request.organisationSource = "ROR";
         request.organisationName = "Keimyung University";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()
@@ -108,6 +111,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationRole = "Manager";
         request.organisationId = "https://ror.org/00tjv0s33";
         request.organisationName = "Keimyung University";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()
@@ -132,6 +136,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationId = "https://ror.org/00tjv0s33";
         request.organisationName = "Keimyung University";
         request.organisationSource = "NOT_VALID";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()
@@ -149,6 +154,109 @@ public class ValidationsEndpointTest extends KeycloakTest {
     }
 
     @Test
+    public void validationActorIsEmpty() {
+
+        var request = new PromotionRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "https://ror.org/00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("actor_id may not be empty.", response.message);
+    }
+
+    @Test
+    public void validationActorIsNotFound() {
+
+        var request = new PromotionRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "https://ror.org/00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 18L;
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Actor with the following id: "+18, response.message);
+    }
+
+    @Test
+    public void validationSourceNotFound() {
+
+        var request = new PromotionRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "https://ror.org/00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "EOSC";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 5L;
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Organisation https://ror.org/00tjv0s33, not found in EOSC", response.message);
+    }
+
+    @Test
+    public void validationSourceNotSupported() {
+
+        var request = new PromotionRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "https://ror.org/00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "RE3DATA";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 5L;
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(501)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Source re3data is not supported.", response.message);
+    }
+
+    @Test
     public void validation() {
 
         var request = new PromotionRequest();
@@ -157,6 +265,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()
@@ -182,6 +291,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 5L;
 
         var response = given()
                 .auth()

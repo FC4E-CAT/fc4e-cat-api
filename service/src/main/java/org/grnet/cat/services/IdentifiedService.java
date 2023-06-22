@@ -10,6 +10,7 @@ import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
+import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.IdentifiedRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 
@@ -28,6 +29,12 @@ public class IdentifiedService {
      */
     @Inject
     IdentifiedRepository identifiedRepository;
+
+    /**
+     * Injection point for the Actor Repository
+     */
+    @Inject
+    ActorRepository actorRepository;
 
     /**
      * Injection point for the Validation Service
@@ -67,9 +74,12 @@ public class IdentifiedService {
 
         var user = identifiedRepository.findById(id);
 
+        var actor = actorRepository.findById(promotionRequest.actorId);
+
         var validation = new Validation();
 
         validation.setUser(user);
+        validation.setActor(actor);
         validation.setCreatedOn(Timestamp.from(Instant.now()));
         validation.setStatus(ValidationStatus.REVIEW);
         validation.setOrganisationId(promotionRequest.organisationId);
