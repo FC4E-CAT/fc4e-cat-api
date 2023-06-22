@@ -40,8 +40,21 @@ public class ValidationRepository implements PanacheRepositoryBase<Validation, L
      * @param userID The ID of the user.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PanacheQuery<Validation> fetchValidationsByPage(int page, int size, String userID){
+    public PanacheQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID){
 
         return find("from Validation v where v.user.id = ?1", userID).page(page, size);
+    }
+
+
+    /**
+     * Retrieves a page of validation requests submitted by users.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of validation requests to include in a page.
+     * @return A list of Validation objects representing the validation requests in the requested page.
+     */
+    public PanacheQuery<Validation> fetchValidationsByPage(int page, int size){
+
+        return findAll().page(page, size);
     }
 }

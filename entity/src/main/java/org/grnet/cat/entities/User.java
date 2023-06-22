@@ -2,12 +2,11 @@ package org.grnet.cat.entities;
 
 
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
+import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
 
@@ -16,10 +15,7 @@ import java.sql.Timestamp;
  *
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="user_type",
-        discriminatorType = DiscriminatorType.STRING)
-public abstract class User {
+public class User {
 
     /**
      * As id, we use the voperson_id provided by AAI Proxy.
@@ -30,8 +26,9 @@ public abstract class User {
     /**
      * Type of user (e.g., Identified, Validated, Admin).
      */
-    @Column(name="user_type", insertable = false, updatable = false)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type")
+    private UserType type;
 
     /**
      * The date and time the user is registered into the database.
@@ -63,6 +60,9 @@ public abstract class User {
     @Column(name = "updated_on")
     private Timestamp updatedOn;
 
+    @Column(name = "validated_on")
+    private Timestamp validatedOn;
+
     public Timestamp getRegisteredOn() {
         return registeredOn;
     }
@@ -77,10 +77,6 @@ public abstract class User {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getType() {
-        return type;
     }
 
     public String getName() {
@@ -113,5 +109,21 @@ public abstract class User {
 
     public void setUpdatedOn(Timestamp updatedOn) {
         this.updatedOn = updatedOn;
+    }
+
+    public UserType getType() {
+        return type;
+    }
+
+    public void setType(UserType type) {
+        this.type = type;
+    }
+
+    public Timestamp getValidatedOn() {
+        return validatedOn;
+    }
+
+    public void setValidatedOn(Timestamp validatedOn) {
+        this.validatedOn = validatedOn;
     }
 }

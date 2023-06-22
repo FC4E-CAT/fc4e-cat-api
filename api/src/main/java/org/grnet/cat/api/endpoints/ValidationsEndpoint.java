@@ -27,11 +27,11 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.PromotionRequest;
+import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.enums.Source;
-import org.grnet.cat.services.IdentifiedService;
+import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class ValidationsEndpoint {
      * Injection point for the Identified service
      */
     @Inject
-    IdentifiedService identifiedService;
+    UserService userService;
 
     /**
      * Injection point for the Utility class
@@ -71,7 +71,7 @@ public class ValidationsEndpoint {
             description = "User promotion request submitted.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
+                    implementation = ValidationResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -118,15 +118,11 @@ public class ValidationsEndpoint {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response validate(@Valid @NotNull(message = "The request body is empty.") PromotionRequest request) {
+    public Response validate(@Valid @NotNull(message = "The request body is empty.") ValidationRequest request) {
 
         Source.valueOf(request.organisationSource).execute(request.organisationId);
 
-        identifiedService.validate(utility.getUserUniqueIdentifier(), request);
-
-        var response = new InformativeResponse();
-        response.code = 200;
-        response.message = "User promotion request submitted.";
+        var response = userService.validate(utility.getUserUniqueIdentifier(), request);
 
         return Response.ok().entity(response).build();
     }
@@ -171,7 +167,7 @@ public class ValidationsEndpoint {
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
+        var validations = validationService.getValidationsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier(), utility.getValidationComparator());
 
         return Response.ok().entity(validations).build();
     }

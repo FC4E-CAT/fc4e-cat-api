@@ -5,9 +5,22 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.UserProfileDto;
+import org.grnet.cat.dtos.ValidationRequest;
+import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.User;
+import org.grnet.cat.entities.Validation;
+import org.grnet.cat.enums.Source;
+import org.grnet.cat.enums.UserType;
+import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
+import org.grnet.cat.mappers.ValidationMapper;
+import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.UserRepository;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * The UserService provides operations for managing User entities.
@@ -21,6 +34,18 @@ public class UserService {
      */
     @Inject
     UserRepository userRepository;
+
+    /**
+     * Injection point for the Validation Service
+     */
+    @Inject
+    ValidationService validationService;
+
+    /**
+     * Injection point for the Actor repository
+     */
+    @Inject
+    ActorRepository actorRepository;
 
     /**
      * Get User's profile.
@@ -61,15 +86,79 @@ public class UserService {
     public void updateUserProfileMetadata(String id, String name, String surname, String email){
 
         userRepository.updateUserProfileMetadata(id, name, surname, email);
-    
     }
-     /**
+
+    /**
+     * This operations registers a user on the CAT service.
+     * Typically, it constructs an {@link User Identified} object and stores it in the database.
+     * @param id User's voperson_id
+     */
+    @Transactional
+    public void register(String id){
+
+        var optionalUser = userRepository.findByIdOptional(id);
+
+        optionalUser.ifPresent(s -> {throw new ConflictException("User already exists in the database.");});
+
+        var identified = new User();
+        identified.setId(id);
+        identified.setRegisteredOn(Timestamp.from(Instant.now()));
+        identified.setType(UserType.Identified);
+
+        userRepository.persist(identified);
+    }
+
+    /**
+     * Requests user promotion to become a validated user.
+     *
+     * @param id The ID of the identified user requesting promotion.
+     * @param validationRequest The promotion request information.
+     * @return The submitted validation requesgt.
+     */
+    @Transactional
+    public ValidationResponse validate(String id, ValidationRequest validationRequest){
+
+        validationService.hasPromotionRequest(id, validationRequest);
+
+        var user = userRepository.findById(id);
+
+        var actor = actorRepository.findById(validationRequest.actorId);
+
+        var validation = new Validation();
+
+        validation.setUser(user);
+        validation.setActor(actor);
+        validation.setCreatedOn(Timestamp.from(Instant.now()));
+        validation.setStatus(ValidationStatus.REVIEW);
+        validation.setOrganisationId(validationRequest.organisationId);
+        validation.setOrganisationName(validationRequest.organisationName);
+        validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
+        validation.setOrganisationWebsite(validationRequest.organisationWebsite);
+        validation.setOrganisationRole(validationRequest.organisationRole);
+
+        validationService.store(validation);
+
+        return ValidationMapper.INSTANCE.validationToDto(validation);
+    }
+
+    /**
+     * This operation turns an Identified user into Validated user;
+     *
+     * @param id The Identified user to be turned into Validated user.
+     */
+    @Transactional
+    public void turnIdentifiedUserIntoValidatedUser(String id){
+
+        userRepository.turnIdentifiedUserIntoValidatedUser(id);
+    }
+
+    /**
      * Delete identified users from the database.
      *
      */
-    public void deleteIdentifiedUsers(){
+    @Transactional
+    public void deleteAll(){
 
-        userRepository.deleteIdentifiedUsers();
- 
+        userRepository.deleteAll();
     }
 }
