@@ -68,14 +68,12 @@ public class PageResource<R> {
     }
 
     public PageResource(PanacheQuery panacheQuery, List<R> content, UriInfo uriInfo){
-
         links = new ArrayList<>();
         this.content = content;
         this.sizeOfPage = panacheQuery.list().size();
         this.numberOfPage = panacheQuery.page().index+1;
         this.totalElements = panacheQuery.count();
         this.totalPages = panacheQuery.pageCount();
-
         if(totalPages !=1 && numberOfPage <= totalPages){
             links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
             links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));

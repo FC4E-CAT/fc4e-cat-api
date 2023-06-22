@@ -2,6 +2,7 @@ package org.grnet.cat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -60,5 +61,15 @@ public class UserService {
     public void updateUserProfileMetadata(String id, String name, String surname, String email){
 
         userRepository.updateUserProfileMetadata(id, name, surname, email);
+    
+    }
+     /**
+     * Delete all users from the database.
+     *
+     */
+    public void deleteUsers(){
+
+        userRepository.deleteUsers();
+ 
     }
 }

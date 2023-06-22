@@ -116,7 +116,6 @@ public class UsersEndpoint {
     @Operation(
             summary = "Get User Profile.",
             description = "This endpoint retrieves the user profile information. User registration is a prerequisite for retrieving user information.")
-    @SecurityScheme
     @APIResponse(
             responseCode = "200",
             description = "User's Profile.",
@@ -158,7 +157,6 @@ public class UsersEndpoint {
             summary = "Retrieve a list of available users.",
             description = "This endpoint returns a list of users registered in the service. Each user object includes basic information such as their type and unique id. " +
                     " By default, the first page of 10 Users will be returned. You can tune the default values by using the query parameters page and size.")
-    @SecurityScheme
     @APIResponse(
             responseCode = "200",
             description = "List of Users.",
@@ -203,7 +201,6 @@ public class UsersEndpoint {
     @Operation(
             summary = "Update User Profile Metadata.",
             description = "Updates the metadata for a user's profile. The user can provide their name, surname, and email.")
-    @SecurityScheme
     @APIResponse(
             responseCode = "200",
             description = "User's metadata updated successfully.",

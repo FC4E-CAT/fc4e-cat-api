@@ -12,6 +12,8 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import jakarta.inject.Inject;
+import org.grnet.cat.services.UserService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
@@ -19,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UsersEndpointTest {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
+  @Inject
+  UserService userService;
 
     @Test
     public void unauthorizedUser(){
@@ -34,7 +38,9 @@ public class UsersEndpointTest {
 
     @Test
     public void registerUser(){
-
+        userService.deleteUsers();
+      
+  
         var success = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -50,7 +56,6 @@ public class UsersEndpointTest {
 
     @Test
     public void userAlreadyExistsInTheDatabase(){
-
         var success = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))

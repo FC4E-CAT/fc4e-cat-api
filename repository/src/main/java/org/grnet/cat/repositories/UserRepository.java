@@ -59,4 +59,10 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
         user.setEmail(email);
         user.setUpdatedOn(Timestamp.from(Instant.now()));
     }
+    
+    @Transactional
+    public void deleteUsers() {
+
+        deleteAll();
+    }
 }
