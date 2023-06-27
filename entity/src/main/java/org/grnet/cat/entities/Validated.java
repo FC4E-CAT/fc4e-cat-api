@@ -6,11 +6,11 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import java.sql.Timestamp;
 
-@Entity
-@DiscriminatorValue("Validated")
 /**
  * As an Validated entity, we consider the Users who have successfully been validated in the CAT service.
  */
+@Entity
+@DiscriminatorValue("Validated")
 public class Validated extends User {
 
     @Column(name = "validated_on")

@@ -11,14 +11,14 @@ import jakarta.persistence.InheritanceType;
 
 import java.sql.Timestamp;
 
-@Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="user_type",
-        discriminatorType = DiscriminatorType.STRING)
 /**
  * This entity represents the User table in database.
  *
  */
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="user_type",
+        discriminatorType = DiscriminatorType.STRING)
 public abstract class User {
 
     /**

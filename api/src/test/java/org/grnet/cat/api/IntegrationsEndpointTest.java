@@ -40,9 +40,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .as(SourceResponseDto[].class);
 
         assertEquals(3, response.length);
-
     }
-//
 
     @Test
     public void fetchOrganisationBySourceAndId() {
@@ -55,7 +53,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .basePath("/v1/users")
                 .post("/register");
 
-//
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -66,14 +63,12 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(OrganisationResponseDto.class);
 
-        assertEquals("h00tjv0s33", response.id);
+        assertEquals("00tjv0s33", response.id);
 
         assertEquals("Keimyung University", response.name);
 
         assertEquals("http://www.kmu.ac.kr/main.jsp", response.website);
-
     }
-//
 
     @Test
     public void nonRegisterUserRequestsOrganisation() {
@@ -89,7 +84,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertEquals("User has not been registered on CAT service. User registration is a prerequisite for accessing this API resource.", informativeResponse.message);
-
     }
 
     @Test
@@ -113,7 +107,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
 
     }
 
-
     @Test
     public void fetchOrganisationBySourceAndIdNotFound() {
 
@@ -133,6 +126,5 @@ public class IntegrationsEndpointTest extends KeycloakTest {
 
         assertEquals(404, response.statusCode());
         userService.deleteIdentifiedUsers();
-
     }
 }

@@ -2,61 +2,57 @@ package org.grnet.cat.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.enums.Source;
-import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.enums.ValidationStatus;
 
-@Schema(name="PromotionRequest", description="Request promotion to validated user.")
-public class PromotionRequest {
-
+@Schema(name="ValidationResponse", description="This object represents a submitted promotion request.")
+public class ValidationResponse {
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            required = true,
+            description = "The unique validation request id.",
+            example = "5"
+    )
+    @JsonProperty("id")
+    public String id;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The user's role on the organisation.",
             example = "Manager"
     )
     @JsonProperty("organisation_role")
-    @NotEmpty(message = "organisation_role may not be empty.")
     public String organisationRole;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            required = true,
             description = "The organisation id the user belongs to.",
             example = "https://ror.org/00tjv0s33"
     )
     @JsonProperty("organisation_id")
-    @NotEmpty(message = "organisation_id may not be empty.")
     public String organisationId;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = Source.class,
-            required = true,
             description = "The organisation source (e.g., ROR, EOSC, RE3DATA).",
             example = "ROR"
     )
     @JsonProperty("organisation_source")
-    @StringEnumeration(enumClass = Source.class, message = "organisation_source")
-    @NotEmpty(message = "organisation_source may not be empty.")
     public String organisationSource;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            required = true,
             description = "The organisation name.",
             example = "Keimyung University"
     )
     @JsonProperty("organisation_name")
-    @NotEmpty(message = "organisation_name may not be empty.")
     public String organisationName;
 
     @Schema(
@@ -72,11 +68,27 @@ public class PromotionRequest {
             type = SchemaType.NUMBER,
             implementation = Long.class,
             required = true,
-            description = "The ID of Actor. It should refer to one of the available Actors.",
+            description = "The ID of Actor.",
             example = "5"
     )
     @JsonProperty("actor_id")
-    @NotNull(message = "actor_id may not be empty.")
-    @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:")
     public Long actorId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = ValidationStatus.class,
+            description = "The status of the validation request.",
+            example = "APPROVED"
+    )
+    @JsonProperty("status")
+    public String status;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The date and time the validation request has been created.",
+            example = "2023-06-22T15:21:53.277+03:00"
+    )
+    @JsonProperty("createdOn")
+    public String createdOn;
 }

@@ -6,7 +6,7 @@ import jakarta.ws.rs.ext.Provider;
 import org.grnet.cat.dtos.InformativeResponse;
 
 @Provider
-public class InternalServerExceptionHandler implements ExceptionMapper<Exception> {
+public class ExceptionHandler implements ExceptionMapper<Exception> {
 
 
     @Override

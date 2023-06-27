@@ -1,10 +1,6 @@
 package org.grnet.cat.services;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import jakarta.enterprise.context.ApplicationScoped;
-import java.io.IOException;
 import java.util.Arrays;
 
 import java.util.List;
@@ -44,10 +40,9 @@ public class IntegrationService {
      * @return An Organisation sources.
      */
 
-    public OrganisationResponseDto getOrganisation(Source source, String id) throws IOException  {
+    public OrganisationResponseDto getOrganisation(Source source, String id){
         
-        String resp= source.connectHttpClient(id);
-        Organisation org=Organisation.buildFromString(resp);
-        return OrganisationMapper.INSTANCE.organisationToResponse(org);
+        var map= source.execute(id);
+        return OrganisationMapper.INSTANCE.organisationToResponse(new Organisation(map.get("id"), map.get("name"), map.get("website")));
   }
 }

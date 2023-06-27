@@ -10,16 +10,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
 import java.sql.Timestamp;
 
-@Entity
 /**
  * This entity represents an application that an identified user can request to be promoted to a validated user.
  */
+@Entity
 public class Validation {
 
     @Id
@@ -49,6 +50,11 @@ public class Validation {
 
     @Column(name = "organisation_website")
     private String organisationWebsite;
+
+    @OneToOne
+    @JoinColumn(name = "actor_id", referencedColumnName = "id")
+    @NotNull
+    private Actor actor;
 
     @Column(name = "created_on")
     @NotNull
@@ -129,5 +135,13 @@ public class Validation {
 
     public void setOrganisationSource(Source organisationSource) {
         this.organisationSource = organisationSource;
+    }
+
+    public Actor getActor() {
+        return actor;
+    }
+
+    public void setActor(Actor actor) {
+        this.actor = actor;
     }
 }
