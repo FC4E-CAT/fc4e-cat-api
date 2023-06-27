@@ -50,7 +50,4 @@ public class IntegrationService {
         Organisation org=Organisation.buildFromString(resp);
         return OrganisationMapper.INSTANCE.organisationToResponse(org);
   }
-
-
-    
 }

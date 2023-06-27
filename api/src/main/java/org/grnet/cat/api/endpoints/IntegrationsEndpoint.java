@@ -117,8 +117,6 @@ public class IntegrationsEndpoint {
     @Path("/organisations/{source}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-  
-
     public Response organisationBySourceAndId(
             @Parameter(
                     description = "The Source from where the organisation will be retrieved.",
@@ -139,5 +137,4 @@ public class IntegrationsEndpoint {
 
         return Response.ok().entity(integrations).build();
     }
-
 }
