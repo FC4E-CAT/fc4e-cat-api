@@ -1,6 +1,5 @@
 package org.grnet.cat.enums;
 
-import com.sun.jdi.InternalException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -25,7 +24,7 @@ public enum Source {
     public final String organisationSource;
     public final String url;
 
-    private Source(String label, String organisationSource, String url) {
+    Source(String label, String organisationSource, String url) {
         this.label = label;
         this.organisationSource = organisationSource;
         this.url = url;
@@ -59,13 +58,15 @@ public enum Source {
 
         var client = new OkHttpClient().newBuilder()
                 .build();
-        //   var mediaType = MediaType.parse("application/x-www-form-urlencoded");
+
         var request = new Request.Builder()
                 .url(url + "/" + id)
                 .method("GET", null)
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .build();
+
         Response resp = client.newCall(request).execute();
+
         if (resp.code() == 404) {
             throw new EntityNotFoundException("Organisation " + id + ", not found in " + organisationSource);
         } else if (resp.code() != 200) {
