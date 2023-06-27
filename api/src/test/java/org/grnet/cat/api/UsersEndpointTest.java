@@ -37,7 +37,7 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void registerUser(){
 
-        userService.deleteUsers();
+        userService.deleteIdentifiedUsers();
 
         var success = given()
                 .auth()

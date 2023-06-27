@@ -64,12 +64,12 @@ public class UserService {
     
     }
      /**
-     * Delete all users from the database.
+     * Delete identified users from the database.
      *
      */
-    public void deleteUsers(){
+    public void deleteIdentifiedUsers(){
 
-        userRepository.deleteUsers();
+        userRepository.deleteIdentifiedUsers();
  
     }
 }
