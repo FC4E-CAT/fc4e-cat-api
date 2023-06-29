@@ -33,7 +33,6 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.services.IdentifiedService;
 import org.grnet.cat.services.UserService;
 
 import java.util.List;
@@ -48,12 +47,6 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT")
 public class UsersEndpoint {
-
-    /**
-     * Injection point for the Identified Service
-     */
-    @Inject
-    IdentifiedService identifiedService;
 
     /**
      * Injection point for the User Service
@@ -101,7 +94,7 @@ public class UsersEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response register() {
 
-        identifiedService.register(utility.getUserUniqueIdentifier());
+        userService.register(utility.getUserUniqueIdentifier());
 
         var response = new InformativeResponse();
         response.code = 200;

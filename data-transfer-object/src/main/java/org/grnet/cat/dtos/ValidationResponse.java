@@ -1,7 +1,7 @@
 package org.grnet.cat.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.enums.Source;
@@ -11,13 +11,22 @@ import org.grnet.cat.enums.ValidationStatus;
 public class ValidationResponse {
 
     @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
+            type = SchemaType.NUMBER,
+            implementation = Long.class,
             description = "The unique validation request id.",
             example = "5"
     )
     @JsonProperty("id")
-    public String id;
+    public Long id;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The ID of the user to who the validation request belongs.",
+            example = "7827fbb605a23b0cbd5cb4db292fe6dd6c7734a27057eb163d616a6ecd02d2ec@einfra.grnet.gr"
+    )
+    @JsonProperty("user_id")
+    public String userId;
 
     @Schema(
             type = SchemaType.STRING,
@@ -32,7 +41,7 @@ public class ValidationResponse {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The organisation id the user belongs to.",
-            example = "https://ror.org/00tjv0s33"
+            example = "00tjv0s33"
     )
     @JsonProperty("organisation_id")
     public String organisationId;
@@ -91,4 +100,24 @@ public class ValidationResponse {
     )
     @JsonProperty("createdOn")
     public String createdOn;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Date and Time when the validation request has been validated.",
+            example = " 2023-06-09 12:19:31.333059"
+    )
+    @JsonProperty("validated_on")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String validatedOn;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The user who has validated the validation request.",
+            example = " 2023-06-09 12:19:31.333059"
+    )
+    @JsonProperty("validatedBy")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String validatedBy;
 }

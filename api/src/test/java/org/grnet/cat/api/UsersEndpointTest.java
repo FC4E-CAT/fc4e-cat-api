@@ -8,11 +8,12 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.services.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import jakarta.inject.Inject;
-import org.grnet.cat.services.UserService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
@@ -21,6 +22,12 @@ public class UsersEndpointTest extends KeycloakTest {
 
     @Inject
     UserService userService;
+
+    @BeforeEach
+    public void setup(){
+
+        userService.deleteAll();
+    }
 
     @Test
     public void unauthorizedUser(){
@@ -37,17 +44,7 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void registerUser(){
 
-        userService.deleteIdentifiedUsers();
-
-        var success = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .post("/register")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
+        var success = register("alice");
 
         assertEquals("User has been successfully registered on Cat Service.", success.message);
     }
@@ -55,7 +52,9 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void userAlreadyExistsInTheDatabase(){
 
-        var success = given()
+        register("alice");
+
+        var error = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
                 .post("/register")
@@ -65,11 +64,13 @@ public class UsersEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("User already exists in the database.", success.message);
+        assertEquals("User already exists in the database.", error.message);
     }
 
     @Test
     public void getUserProfile() {
+
+        register("alice");
 
         var userProfile = given()
                 .auth()
@@ -103,6 +104,8 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void fetchAllUsers() {
 
+        register("alice");
+
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -116,6 +119,8 @@ public class UsersEndpointTest extends KeycloakTest {
 
     @Test
     public void fetchAllUsersBadRequest() {
+
+        register("alice");
 
         var informativeResponse = given()
                 .auth()
@@ -134,6 +139,8 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void updateMetadataRequestBodyIsEmpty() {
 
+        register("alice");
+
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -150,6 +157,8 @@ public class UsersEndpointTest extends KeycloakTest {
 
     @Test
     public void updateMetadataNameIsEmpty() {
+
+        register("alice");
 
         var update = new UpdateUserProfileDto();
         update.surname = "foo";
@@ -173,6 +182,8 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void updateMetadataEmailIsEmpty() {
 
+        register("alice");
+
         var update = new UpdateUserProfileDto();
         update.name = "foo";
         update.surname = "foo";
@@ -194,6 +205,8 @@ public class UsersEndpointTest extends KeycloakTest {
 
     @Test
     public void updateMetadataEmailIsNotValid() {
+
+        register("alice");
 
         var update = new UpdateUserProfileDto();
         update.name = "foo";
@@ -217,6 +230,8 @@ public class UsersEndpointTest extends KeycloakTest {
 
     @Test
     public void updateMetadataSurnameIsEmpty() {
+
+        register("alice");
 
         given()
                 .auth()
@@ -250,6 +265,8 @@ public class UsersEndpointTest extends KeycloakTest {
 
     @Test
     public void updateMetadata() {
+
+        register("alice");
 
         var update = new UpdateUserProfileDto();
         update.name = "foo";

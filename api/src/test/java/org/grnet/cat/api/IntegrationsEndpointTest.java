@@ -8,8 +8,10 @@ import org.grnet.cat.api.endpoints.IntegrationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.dtos.SourceResponseDto;
-import org.grnet.cat.services.UserService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.grnet.cat.services.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -19,16 +21,17 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     @Inject
     UserService userService;
 
+    @BeforeEach
+    public void setup(){
+
+        userService.deleteAll();
+    }
+
     @Test
     public void fetchAllIntegrationSources() {
 
-        userService.deleteIdentifiedUsers();
+        register("alice");
 
-        var success = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .basePath("/v1/users")
-                .post("/register");
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
@@ -45,13 +48,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     @Test
     public void fetchOrganisationBySourceAndId() {
 
-        userService.deleteIdentifiedUsers();
-
-        var success = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .basePath("/v1/users")
-                .post("/register");
+        register("alice");
 
         var response = given()
                 .auth()
@@ -89,13 +86,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     @Test
     public void fetchOrganisationBySourceAndIdWrongSource() {
 
-        userService.deleteIdentifiedUsers();
-
-        var success = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .basePath("/v1/users")
-                .post("/register");
+        register("alice");
 
         var response = given()
                 .auth()
@@ -110,13 +101,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     @Test
     public void fetchOrganisationBySourceAndIdNotFound() {
 
-        userService.deleteIdentifiedUsers();
-
-        var success = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .basePath("/v1/users")
-                .post("/register");
+        register("alice");
 
         var response = given()
                 .auth()
@@ -125,6 +110,5 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .thenReturn();
 
         assertEquals(404, response.statusCode());
-        userService.deleteIdentifiedUsers();
     }
 }

@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.UserProfile;
+import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -26,7 +27,7 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      */
     public UserProfile fetchUserProfile(String id) {
 
-        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn from User user where user.id = ?1", id).project(UserProfile.class).firstResult();
+        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn, user.validatedOn from User user where user.id = ?1", id).project(UserProfile.class).firstResult();
     }
 
     /**
@@ -39,7 +40,7 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      */
     public PanacheQuery<UserProfile> fetchUsersByPage(int page, int size) {
 
-        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn from User user").project(UserProfile.class).page(page, size);
+        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn, user.validatedOn from User user").project(UserProfile.class).page(page, size);
     }
 
     /**
@@ -61,11 +62,13 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
         user.setUpdatedOn(Timestamp.from(Instant.now()));
     }
 
-    @Transactional
-    public long deleteIdentifiedUsers() {
+    /**
+     * This operation turns an Identified user into Validated user;
+     *
+     * @param id The Identified user to be turned into Validated user.
+     */
+    public void turnIdentifiedUserIntoValidatedUser(String id){
 
-        String type = "Identified";
-        return delete("from  User  where type = ?1", type);
-
+        update("update User set type = ?1, validatedOn = ?2 where id = ?3", UserType.Validated, Timestamp.from(Instant.now()), id);
     }
 }

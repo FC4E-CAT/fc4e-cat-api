@@ -27,7 +27,7 @@ public class Validation {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -64,6 +64,12 @@ public class Validation {
     @Column(length = 8)
     @NotNull
     private ValidationStatus status;
+
+    @Column(name = "validated_on")
+    private Timestamp validatedOn;
+
+    @Column(name = "validated_by")
+    private String validatedBy;
 
     public Long getId() {
         return id;
@@ -144,4 +150,21 @@ public class Validation {
     public void setActor(Actor actor) {
         this.actor = actor;
     }
+
+    public Timestamp getValidatedOn() {
+        return validatedOn;
+    }
+
+    public void setValidatedOn(Timestamp validatedOn) {
+        this.validatedOn = validatedOn;
+    }
+
+    public String getValidatedBy() {
+        return validatedBy;
+    }
+
+    public void setValidatedBy(String validatedBy) {
+        this.validatedBy = validatedBy;
+    }
+
 }

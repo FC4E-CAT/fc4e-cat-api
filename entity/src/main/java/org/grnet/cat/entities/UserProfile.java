@@ -1,6 +1,7 @@
 package org.grnet.cat.entities;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
 
@@ -9,7 +10,7 @@ public class UserProfile {
 
     public final String id;
 
-    public final String type;
+    public final UserType type;
 
     public final Timestamp registeredOn;
 
@@ -21,7 +22,9 @@ public class UserProfile {
 
     public final Timestamp updatedOn;
 
-    public UserProfile(String id, String type, Timestamp registeredOn, String name, String surname, String email, Timestamp updatedOn) {
+    public final Timestamp validatedOn;
+
+    public UserProfile(String id, UserType type, Timestamp registeredOn, String name, String surname, String email, Timestamp updatedOn, Timestamp validatedOn) {
         this.id = id;
         this.type = type;
         this.registeredOn = registeredOn;
@@ -29,5 +32,6 @@ public class UserProfile {
         this.surname = surname;
         this.email = email;
         this.updatedOn = updatedOn;
+        this.validatedOn = validatedOn;
     }
 }

@@ -22,8 +22,12 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
+import org.grnet.cat.dtos.ActorDto;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.ActorService;
+
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -44,7 +48,7 @@ public class CodelistEndpoint {
             description = "List of Actors.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = UsersEndpoint.PageableUserProfile.class)))
+                    implementation = PageableActor.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -78,5 +82,20 @@ public class CodelistEndpoint {
         var actors = actorService.getActorsByPage(page-1, size, uriInfo);
 
         return Response.ok().entity(actors).build();
+    }
+
+    public static class PageableActor extends PageResource<ActorDto> {
+
+        private List<ActorDto> content;
+
+        @Override
+        public List<ActorDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ActorDto> content) {
+            this.content = content;
+        }
     }
 }

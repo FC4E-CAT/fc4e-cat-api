@@ -10,8 +10,8 @@ import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.repositories.ActorRepository;
 
-@Schema(name="PromotionRequest", description="Request promotion to validated user.")
-public class PromotionRequest {
+@Schema(name="ValidationRequest", description="Request promotion to validated user.")
+public class ValidationRequest {
 
 
     @Schema(
@@ -30,7 +30,7 @@ public class PromotionRequest {
             implementation = String.class,
             required = true,
             description = "The organisation id the user belongs to.",
-            example = "https://ror.org/00tjv0s33"
+            example = "00tjv0s33"
     )
     @JsonProperty("organisation_id")
     @NotEmpty(message = "organisation_id may not be empty.")
