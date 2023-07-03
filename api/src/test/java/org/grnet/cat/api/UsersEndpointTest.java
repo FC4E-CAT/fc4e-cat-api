@@ -235,7 +235,7 @@ public class UsersEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("foo"))
+                .oauth2(getAccessToken("bob"))
                 .post("/register")
                 .then()
                 .assertThat()
@@ -250,7 +250,7 @@ public class UsersEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("foo"))
+                .oauth2(getAccessToken("bob"))
                 .body(update)
                 .contentType(ContentType.JSON)
                 .put("/profile")

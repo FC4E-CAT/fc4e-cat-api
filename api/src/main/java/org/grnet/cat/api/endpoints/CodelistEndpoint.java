@@ -57,7 +57,7 @@ public class CodelistEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "403",
-            description = "User has not been registered on CAT service.",
+            description = "Not permitted.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
