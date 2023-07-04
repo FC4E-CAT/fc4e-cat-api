@@ -10,9 +10,12 @@ import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.dtos.SourceResponseDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 @QuarkusTest
 @TestHTTPEndpoint(IntegrationsEndpoint.class)
@@ -110,5 +113,58 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .thenReturn();
 
         assertEquals(404, response.statusCode());
+    }
+
+    @Test
+    public void fetchRorOrganisationByName() {
+
+        register("alice");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .queryParam("name","Keimyung University")
+                .get("/organisations/ROR/search")
+                .thenReturn();
+
+        assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
+        assertEquals(3, response.body().as(PageResource.class).getTotalElements());
+
+    }
+    public void fetchRorOrganisationByNameEmpty() {
+
+        register("alice");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .queryParam("name","")
+                .get("/organisations/ROR/search")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("The parameter is empty.", response.message);
+
+    }
+      public void fetchRorOrganisationByNameLessThan2Chars() {
+
+        register("alice");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .queryParam("name","K")
+                .get("/organisations/ROR/search")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Value must be at least 2 characters", response.message);
+
     }
 }
