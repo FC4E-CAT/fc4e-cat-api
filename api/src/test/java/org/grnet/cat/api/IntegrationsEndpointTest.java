@@ -3,7 +3,6 @@ package org.grnet.cat.api;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import static io.restassured.RestAssured.given;
-import jakarta.inject.Inject;
 import org.grnet.cat.api.endpoints.IntegrationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.OrganisationResponseDto;
@@ -11,24 +10,11 @@ import org.grnet.cat.dtos.SourceResponseDto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.services.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 @QuarkusTest
 @TestHTTPEndpoint(IntegrationsEndpoint.class)
 public class IntegrationsEndpointTest extends KeycloakTest {
-
-    @Inject
-    UserService userService;
-
-    @BeforeEach
-    public void setup(){
-
-        userService.deleteAll();
-    }
 
     @Test
     public void fetchAllIntegrationSources() {

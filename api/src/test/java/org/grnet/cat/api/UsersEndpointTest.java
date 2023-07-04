@@ -8,26 +8,14 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.services.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestHTTPEndpoint(UsersEndpoint.class)
 public class UsersEndpointTest extends KeycloakTest {
-
-    @Inject
-    UserService userService;
-
-    @BeforeEach
-    public void setup(){
-
-        userService.deleteAll();
-    }
 
     @Test
     public void unauthorizedUser(){

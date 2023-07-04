@@ -2,6 +2,7 @@ package org.grnet.cat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
@@ -19,6 +20,7 @@ import org.grnet.cat.repositories.ValidationRepository;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +38,23 @@ public class ValidationService {
 
     @Inject
     UserService userService;
+
+    @Inject
+    @Named("keycloak-service")
+    RoleService roleService;
+
+    BiConsumer<String, ValidationStatus> handleValidationStatus = (userId, status)->{
+
+        switch (status){
+            case APPROVED:{
+                userService.turnIdentifiedUserIntoValidatedUser(userId);
+                roleService.addRoleToUser("validated", userId);
+                break;
+            } default:{
+
+            }
+        }
+    };
 
     /**
      * Checks if there is a promotion request for a specific user and organization.
@@ -131,9 +150,7 @@ public class ValidationService {
 
         var validation = validationRepository.findById(id);
 
-        if(status.equals(ValidationStatus.APPROVED)){
-            userService.turnIdentifiedUserIntoValidatedUser(userId);
-        }
+        handleValidationStatus.accept(validation.getUser().getId(), status);
 
         validation.setStatus(status);
         validation.setValidatedBy(userId);

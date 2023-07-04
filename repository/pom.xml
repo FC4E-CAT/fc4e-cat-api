@@ -20,6 +20,10 @@
             <groupId>org.grnet</groupId>
             <artifactId>cat-entities</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-keycloak-admin-client-reactive</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

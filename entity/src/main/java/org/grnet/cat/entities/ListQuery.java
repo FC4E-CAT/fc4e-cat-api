@@ -72,7 +72,7 @@ public class ListQuery<Entity> implements PanacheQuery<Entity> {
     public int pageCount() {
 
         long count = this.count;
-        return count == 0L ? 1 : (int)Math.ceil((double)count / (double)this.size);
+        return count == 0L ? 1 : (int) Math.ceil((double) count / (double) this.size);
     }
 
     @Override

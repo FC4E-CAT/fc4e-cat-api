@@ -2,38 +2,28 @@ package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import org.grnet.cat.api.endpoints.ValidationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
-import org.grnet.cat.services.UserService;
-import org.grnet.cat.services.ValidationService;
-import org.junit.jupiter.api.BeforeEach;
+import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 @QuarkusTest
 @TestHTTPEndpoint(ValidationsEndpoint.class)
 public class ValidationsEndpointTest extends KeycloakTest {
 
-    @Inject
-    ValidationService validationService;
-
-    @Inject
-    UserService userService;
-
-
-    @BeforeEach
-    public void setUp(){
-
-        validationService.deleteAll();
-        userService.deleteAll();
-    }
+    @InjectMock
+    KeycloakAdminRoleService keycloakAdminRoleService;
 
     @Test
     public void validationRequestBodyIsEmpty() {
@@ -415,6 +405,8 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
     @Test
     public void updateValidationRequestStatusByAdmin() {
+
+        doNothing().when(keycloakAdminRoleService).addRoleToUser(any(), any());
 
         register("alice");
         register("admin");
