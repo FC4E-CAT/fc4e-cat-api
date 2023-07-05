@@ -214,4 +214,49 @@ public class AdminValidationsEndpoint {
 
         return Response.ok().entity(response).build();
     }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get Validation Request.",
+            description = "Returns a specific validation request.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding validation request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ValidationResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getValidationRequest(@Parameter(
+            description = "The ID of the validation request to retrieve.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                                         @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id) {
+
+        var validations = validationService.getValidationRequest(id);
+
+        return Response.ok().entity(validations).build();
+    }
 }

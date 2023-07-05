@@ -10,6 +10,7 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
@@ -26,11 +27,13 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.Utility;
+import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.enums.Source;
+import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 
@@ -168,6 +171,51 @@ public class ValidationsEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var validations = validationService.getValidationsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier(), utility.getValidationComparator());
+
+        return Response.ok().entity(validations).build();
+    }
+
+    @Tag(name = "Validation")
+    @Operation(
+            summary = "Get Validation Request.",
+            description = "Returns a specific validation request if it belongs to the user.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding validation request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ValidationResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getValidationRequest(@Parameter(
+            description = "The ID of the validation request to retrieve.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                                             @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id) {
+
+        var validations = validationService.getValidationRequest(utility.getUserUniqueIdentifier(), id);
 
         return Response.ok().entity(validations).build();
     }

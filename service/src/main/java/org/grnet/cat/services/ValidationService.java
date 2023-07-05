@@ -3,6 +3,7 @@ package org.grnet.cat.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
@@ -137,6 +138,38 @@ public class ValidationService {
         validation.setStatus(status);
         validation.setValidatedBy(userId);
         validation.setValidatedOn(Timestamp.from(Instant.now()));
+
+        return ValidationMapper.INSTANCE.validationToDto(validation);
+    }
+
+    /**
+     * Retrieves a specific validation request if it belongs to the user.
+     *
+     * @param userId The ID of the user.
+     * @param validationId The ID of the validation request to retrieve.
+     * @return The validation request if it belongs to the user.
+     * @throws ForbiddenException If the user is not authorized to access the validation request.
+     */
+    public ValidationResponse getValidationRequest(String userId, Long validationId) {
+
+        var validation = validationRepository.findById(validationId);
+
+        if(!validation.getUser().getId().equals(userId)){
+            throw new ForbiddenException("Not Permitted.");
+        }
+
+        return ValidationMapper.INSTANCE.validationToDto(validation);
+    }
+
+    /**
+     * Retrieves a specific validation request.
+     *
+     * @param validationId The ID of the validation request to retrieve.
+     * @return The validation request if it belongs to the user.
+     */
+    public ValidationResponse getValidationRequest(Long validationId) {
+
+        var validation = validationRepository.findById(validationId);
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
