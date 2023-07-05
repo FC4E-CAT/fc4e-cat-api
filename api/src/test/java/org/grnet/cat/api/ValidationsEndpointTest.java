@@ -457,4 +457,125 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         assertEquals("APPROVED", response.status);
     }
+
+    @Test
+    public void getValidation() {
+
+        register("alice");
+
+        var request = new ValidationRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "https://ror.org/00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 4L;
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var validation = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .contentType(ContentType.JSON)
+                .get("/{id}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        assertEquals("Manager", validation.organisationRole);
+        assertEquals(response.id, validation.id);
+    }
+
+    @Test
+    public void getValidationNotPermitted() {
+
+        register("alice");
+        register("bob");
+
+        var request = new ValidationRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "https://ror.org/00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 4L;
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("bob"))
+                .contentType(ContentType.JSON)
+                .get("/{id}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Not Permitted.", error.message);
+    }
+
+    @Test
+    public void getValidationRequestByAdmin() {
+
+        register("alice");
+        register("admin");
+
+        var request = new ValidationRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 2L;
+
+        var validation = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/admin/validations")
+                .contentType(ContentType.JSON)
+                .get("/{id}", validation.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        assertEquals(validation.id, response.id);
+    }
 }
