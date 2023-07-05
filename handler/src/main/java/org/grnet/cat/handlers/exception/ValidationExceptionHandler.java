@@ -7,13 +7,17 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.exceptions.CustomValidationException;
+import org.jboss.logging.Logger;
 
 @Provider
 public class ValidationExceptionHandler implements ExceptionMapper<ValidationException> {
 
+    private static final Logger LOG = Logger.getLogger(ValidationExceptionHandler.class);
+
     @Override
     public Response toResponse(ValidationException e) {
 
+        LOG.error("Validation Error", e);
 
         InformativeResponse response = new InformativeResponse();
 
