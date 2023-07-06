@@ -23,7 +23,11 @@ public interface ValidationMapper {
 
     @Named("mapWithExpression")
     @Mapping(target = "actorId", expression = "java(validation.getActor().getId())")
+    @Mapping(target = "actorName", expression = "java(validation.getActor().getName())")
     @Mapping(target = "userId", expression = "java(validation.getUser().getId())")
+    @Mapping(target = "userName", expression = "java(validation.getUser().getName())")
+    @Mapping(target = "userSurname", expression = "java(validation.getUser().getSurname())")
+    @Mapping(target = "userEmail", expression = "java(validation.getUser().getEmail())")
     ValidationResponse validationToDto(Validation validation);
 
 }
