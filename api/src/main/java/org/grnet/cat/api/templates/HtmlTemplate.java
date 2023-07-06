@@ -8,38 +8,55 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.grnet.cat.dtos.InformativeResponse;
 
-/**
- * This endpoint is responsible for rendering the client.html.
- * The web page is created by processing template file. Templates are located under src/main/resources/templates.
- * Obtain the keycloak application properties and feed them to the keycloak template.
- * The client.html is responsible for redirecting a user to Keycloak login page in order to be authenticated and displaying the obtained token.
- */
-@Path("/oidc-client")
-public class OidcClientTemplate {
+@Path("/")
+public class HtmlTemplate {
 
     @Inject
     Template client;
 
-    @ConfigProperty(name = "keycloak.server.url")
+    @Inject
+    Template index;
+
+    @ConfigProperty(name = "html.cat.oidc.client.url")
+    String catOidcClientUrl;
+
+    @ConfigProperty(name = "html.cat.api.documentation")
+    String catApiDocumentation;
+
+    @ConfigProperty(name = "html.keycloak.server.url")
     String keycloakServerUrl;
 
-    @ConfigProperty(name = "keycloak.server.realm")
+    @ConfigProperty(name = "html.keycloak.server.realm")
     String keycloakServerRealm;
 
-    @ConfigProperty(name = "keycloak.server.client.id")
+    @ConfigProperty(name = "html.keycloak.server.client.id")
     String keycloakServerClientId;
 
-    @ConfigProperty(name = "keycloak.server.javascript.adapter")
+    @ConfigProperty(name = "html.keycloak.server.javascript.adapter")
     String keycloakServerJavascriptAdapter;
 
     @Tag(name = "Authentication")
+    @Operation(
+            hidden = true
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Returns the index html page."
+    )
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public String landingPage() {
+        return index
+                .data("cat_oidc_client_url", catOidcClientUrl,
+                "cat_api_documentation",catApiDocumentation)
+                .render();
+    }
+
+    @Tag(name = "Html Template")
     @Operation(
             hidden = true,
             summary = "Redirects a client to the AAI login page.",
@@ -52,13 +69,14 @@ public class OidcClientTemplate {
     )
 
     @GET
+    @Path("oidc-client")
     @Produces(MediaType.TEXT_HTML)
-    public String keycloakClient() {
+    public String oidcClient() {
         return client
                 .data("keycloak_server_url", keycloakServerUrl,
-                "keycloak_server_realm", keycloakServerRealm,
-                "keycloak_server_client_id", keycloakServerClientId,
-                "keycloak_server_javascript_adapter", keycloakServerJavascriptAdapter)
+                        "keycloak_server_realm", keycloakServerRealm,
+                        "keycloak_server_client_id", keycloakServerClientId,
+                        "keycloak_server_javascript_adapter", keycloakServerJavascriptAdapter)
                 .render();
     }
 }
