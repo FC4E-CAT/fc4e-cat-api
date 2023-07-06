@@ -31,6 +31,33 @@ public class ValidationResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "The Name of the user to who the validation request belongs.",
+            example = "John"
+    )
+    @JsonProperty("user_name")
+    public String userName;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Surname of the user to who the validation request belongs.",
+            example = "Doe"
+    )
+    @JsonProperty("user_surname")
+    public String userSurname;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Email of the user to who the validation request belongs.",
+            example = "john.doe@example.com"
+    )
+    @JsonProperty("user_email")
+    public String userEmail;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The user's role on the organisation.",
             example = "Manager"
     )
@@ -82,6 +109,16 @@ public class ValidationResponse {
     )
     @JsonProperty("actor_id")
     public Long actorId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            required = true,
+            description = "The Name of Actor.",
+            example = "End User"
+    )
+    @JsonProperty("actor_name")
+    public String actorName;
 
     @Schema(
             type = SchemaType.STRING,
