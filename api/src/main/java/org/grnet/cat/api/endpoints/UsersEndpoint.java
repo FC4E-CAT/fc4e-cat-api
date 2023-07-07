@@ -69,7 +69,7 @@ public class UsersEndpoint {
             description = "When a user is successfully registered in the database.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
+                    implementation = UserProfileDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -94,11 +94,7 @@ public class UsersEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response register() {
 
-        userService.register(utility.getUserUniqueIdentifier());
-
-        var response = new InformativeResponse();
-        response.code = 200;
-        response.message = "User has been successfully registered on Cat Service.";
+        var response = userService.register(utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(response).build();
     }
@@ -179,8 +175,8 @@ public class UsersEndpoint {
     public Response usersByPage(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                             @Parameter(name = "size", in = QUERY,
-                                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
+                                                @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size,
                                             @Context UriInfo uriInfo) {
 
         var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
@@ -197,7 +193,7 @@ public class UsersEndpoint {
             description = "User's metadata updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
+                    implementation = UserProfileDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -229,13 +225,9 @@ public class UsersEndpoint {
     @Registration
     public Response updateProfile(@Valid @NotNull(message = "The request body is empty.") UpdateUserProfileDto updateUserProfileDto) {
 
-        userService.updateUserProfileMetadata(utility.getUserUniqueIdentifier(), updateUserProfileDto.name, updateUserProfileDto.surname, updateUserProfileDto.email);
+        var userProfile = userService.updateUserProfileMetadata(utility.getUserUniqueIdentifier(), updateUserProfileDto.name, updateUserProfileDto.surname, updateUserProfileDto.email);
 
-        var response = new InformativeResponse();
-        response.code = 200;
-        response.message = "User's metadata updated successfully.";
-
-        return Response.ok().entity(response).build();
+        return Response.ok().entity(userProfile).build();
     }
 
     public static class PageableUserProfile extends PageResource<UserProfileDto> {

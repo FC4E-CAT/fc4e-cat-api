@@ -1,8 +1,8 @@
 package org.grnet.cat.constraints;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+import org.grnet.cat.repositories.Repository;
 import org.grnet.cat.validators.NotFoundEntityValidator;
 
 import java.lang.annotation.Documented;
@@ -20,5 +20,5 @@ public @interface NotFoundEntity {
     String message() default "Not founded:";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
-    Class<? extends PanacheRepositoryBase<?,?>> repository();
+    Class<? extends Repository<?,?>> repository();
 }

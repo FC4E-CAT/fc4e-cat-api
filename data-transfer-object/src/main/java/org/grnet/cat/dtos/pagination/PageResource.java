@@ -1,10 +1,10 @@
 package org.grnet.cat.dtos.pagination;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.entities.PageQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,23 +67,24 @@ public class PageResource<R> {
     public PageResource() {
     }
 
-    public PageResource(PanacheQuery panacheQuery, List<R> content, UriInfo uriInfo) {
+    public PageResource(PageQuery pageQuery, List<R> content, UriInfo uriInfo) {
+
         links = new ArrayList<>();
         this.content = content;
-        this.sizeOfPage = panacheQuery.list().size();
-        this.numberOfPage = panacheQuery.page().index + 1;
-        this.totalElements = panacheQuery.count();
-        this.totalPages = panacheQuery.pageCount();
+        this.sizeOfPage = pageQuery.list().size();
+        this.numberOfPage = pageQuery.page().index + 1;
+        this.totalElements = pageQuery.count();
+        this.totalPages = pageQuery.pageCount();
         if (totalPages != 1 && numberOfPage <= totalPages) {
             links.add(buildPageLink(uriInfo, 1, sizeOfPage, "first"));
             links.add(buildPageLink(uriInfo, totalPages, sizeOfPage, "last"));
             links.add(buildPageLink(uriInfo, numberOfPage, sizeOfPage, "self"));
 
-            if (panacheQuery.hasPreviousPage() && panacheQuery.list().size() != 0) {
+            if (pageQuery.hasPreviousPage() && pageQuery.list().size() != 0) {
                 links.add(buildPageLink(uriInfo, numberOfPage - 1, sizeOfPage, "prev"));
             }
 
-            if (panacheQuery.hasNextPage()) {
+            if (pageQuery.hasNextPage()) {
                 links.add(buildPageLink(uriInfo, numberOfPage + 1, sizeOfPage, "next"));
             }
         }

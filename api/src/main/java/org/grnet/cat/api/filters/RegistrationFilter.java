@@ -26,7 +26,7 @@ public class RegistrationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext containerRequestContext) {
 
-        var optionalUser = userRepository.findByIdOptional(utility.getUserUniqueIdentifier());
+        var optionalUser = userRepository.searchByIdOptional(utility.getUserUniqueIdentifier());
 
         optionalUser.orElseThrow(()-> new ForbiddenException("User has not been registered on CAT service. User registration is a prerequisite for accessing this API resource."));
     }
