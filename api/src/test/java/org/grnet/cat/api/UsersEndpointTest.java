@@ -1,6 +1,7 @@
 package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.UsersEndpoint;
@@ -8,10 +9,15 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
 @TestHTTPEndpoint(UsersEndpoint.class)
@@ -30,14 +36,6 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void registerUser(){
-
-        var success = register("alice");
-
-        assertEquals("User has been successfully registered on Cat Service.", success.message);
-    }
-
-    @Test
     public void userAlreadyExistsInTheDatabase(){
 
         register("alice");
@@ -53,24 +51,6 @@ public class UsersEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertEquals("User already exists in the database.", error.message);
-    }
-
-    @Test
-    public void getUserProfile() {
-
-        register("alice");
-
-        var userProfile = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .get("/profile")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserProfileDto.class);
-
-        assertEquals("Identified", userProfile.type);
     }
 
     @Test
@@ -229,8 +209,7 @@ public class UsersEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
-
+                .as(UserProfileDto.class);
 
         var update = new UpdateUserProfileDto();
         update.name = "foo";
@@ -271,8 +250,8 @@ public class UsersEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(UserProfileDto.class);
 
-        assertEquals("User's metadata updated successfully.", response.message);
+        assertEquals("foo@admin.grnet.gr", response.email);
     }
 }

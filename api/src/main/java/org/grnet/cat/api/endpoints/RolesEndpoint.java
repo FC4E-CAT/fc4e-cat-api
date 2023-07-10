@@ -3,10 +3,13 @@ package org.grnet.cat.api.endpoints;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -24,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.RoleAssignmentRequest;
 import org.grnet.cat.dtos.RoleDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.RoleService;
@@ -37,7 +41,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 public class RolesEndpoint {
 
     /**
-     * Injection point for the keycloakAdminConnection
+     * Injection point for the keycloakAdminRoleService
      */
     @Inject
     @Named("keycloak-service")
@@ -76,7 +80,7 @@ public class RolesEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response actorsByPage(@Parameter(name = "page", in = QUERY,
+    public Response rolesByPage(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                  @Parameter(name = "size", in = QUERY,
                                          description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
@@ -86,6 +90,62 @@ public class RolesEndpoint {
         var roles = roleService.getRolesByPage(page-1, size, uriInfo);
 
         return Response.ok().entity(roles).build();
+    }
+
+    @Tag(name = "Roles")
+    @Operation(
+            summary = "Assign new roles to a user.",
+            description = "Assigns new roles to a specific user in the cat service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/assign-roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response assignRolesToUser(@Valid @NotNull(message = "The request body is empty.") RoleAssignmentRequest request) {
+
+        roleService.assignRolesToUser(request.userId, request.roles);
+
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Roles have been successfully assigned to user.";
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageableRole extends PageResource<RoleDto> {

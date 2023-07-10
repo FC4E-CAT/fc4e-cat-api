@@ -1,21 +1,24 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.grnet.cat.entities.Page;
+import org.grnet.cat.entities.PageQuery;
+import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
  * The ValidationRepository interface provides data access methods for the Validation entity.
  */
 @ApplicationScoped
-public class ValidationRepository implements PanacheRepositoryBase<Validation, Long> {
+public class ValidationRepository implements PanacheRepositoryBase<Validation, Long>, Repository<Validation, Long> {
 
     /**
      * It executes a query in database to check if there is a promotion request for a specific user and organisation.
@@ -40,9 +43,18 @@ public class ValidationRepository implements PanacheRepositoryBase<Validation, L
      * @param userID The ID of the user.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PanacheQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID){
+    public PageQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID){
 
-        return find("from Validation v where v.user.id = ?1", userID).page(page, size);
+        var panache = find("from Validation v where v.user.id = ?1", userID).page(page, size);
+
+        var pageable = new PageQueryImpl<Validation>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
     }
 
 
@@ -53,8 +65,22 @@ public class ValidationRepository implements PanacheRepositoryBase<Validation, L
      * @param size The maximum number of validation requests to include in a page.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PanacheQuery<Validation> fetchValidationsByPage(int page, int size){
+    public PageQuery<Validation> fetchValidationsByPage(int page, int size){
 
-        return findAll().page(page, size);
+        var panache = findAll().page(page, size);
+
+        var pageable = new PageQueryImpl<Validation>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    @Override
+    public Optional<Validation> searchByIdOptional(Long id) {
+        return findByIdOptional(id);
     }
 }

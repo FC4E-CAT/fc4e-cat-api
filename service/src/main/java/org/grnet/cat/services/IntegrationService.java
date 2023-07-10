@@ -1,23 +1,19 @@
 package org.grnet.cat.services;
 
-import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.UriInfo;
-import java.util.ArrayList;
 import java.util.Arrays;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.dtos.SourceResponseDto;
-import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.entities.ListQuery;
+import org.grnet.cat.entities.Page;
+import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Organisation;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.mappers.OrganisationMapper;
 import org.grnet.cat.mappers.SourceMapper;
-import org.grnet.cat.mappers.UserMapper;
 
 /**
  * The IntegrationService provides operations for managing integrations.
@@ -35,8 +31,8 @@ public class IntegrationService {
     public List<SourceResponseDto> getOrganisationSources() {
 
         var sources = Arrays.asList(Source.values());
-        return SourceMapper.INSTANCE.sourcesToResponse(sources);
 
+        return SourceMapper.INSTANCE.sourcesToResponse(sources);
     }
 
     /**
@@ -65,17 +61,16 @@ public class IntegrationService {
         var orgs = Source.ROR.execute(name, page);
         var organisations = orgs.getOrgElements().stream().map(org -> new Organisation(org[0], org[1], org[2])).collect(Collectors.toList());
     
-        var pageable = new ListQuery<Organisation>();
+        var pageable = new PageQueryImpl<Organisation>();
 
         pageable.list = organisations;
         pageable.index = page-1;
         pageable.size = 20;
         pageable.count = orgs.getTotal();
         pageable.page = Page.of(page-1, 20);
-        List<OrganisationResponseDto> resp=OrganisationMapper.INSTANCE.organisationsToResponse(organisations);
-        return new PageResource(pageable,resp, uriInfo);
-        
-       
 
+        List<OrganisationResponseDto> resp=OrganisationMapper.INSTANCE.organisationsToResponse(organisations);
+
+        return new PageResource(pageable,resp, uriInfo);
     }
 }

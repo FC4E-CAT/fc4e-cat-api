@@ -20,6 +20,7 @@ import org.grnet.cat.repositories.ValidationRepository;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -37,9 +38,6 @@ public class ValidationService {
     ActorRepository actorRepository;
 
     @Inject
-    UserService userService;
-
-    @Inject
     @Named("keycloak-service")
     RoleService roleService;
 
@@ -47,8 +45,7 @@ public class ValidationService {
 
         switch (status){
             case APPROVED:{
-                userService.turnIdentifiedUserIntoValidatedUser(userId);
-                roleService.addRoleToUser("validated", userId);
+                roleService.assignRolesToUser(userId, List.of("validated"));
                 break;
             } default:{
 
@@ -97,7 +94,7 @@ public class ValidationService {
 
         var validations = validationRepository.fetchValidationsByUserAndPage(page, size, userID);
 
-        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
+        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list().stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
     }
 
     /**
@@ -112,7 +109,7 @@ public class ValidationService {
 
         var validations = validationRepository.fetchValidationsByPage(page, size);
 
-        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
+        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list().stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
     }
 
     /**

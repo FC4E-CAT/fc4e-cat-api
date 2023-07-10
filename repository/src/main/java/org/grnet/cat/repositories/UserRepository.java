@@ -1,23 +1,34 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
+import org.grnet.cat.entities.Page;
+import org.grnet.cat.entities.PageQuery;
+import org.grnet.cat.entities.PageQueryImpl;
+
+import org.grnet.cat.entities.Role;
 import org.grnet.cat.entities.User;
-import org.grnet.cat.entities.UserProfile;
 import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * The IdentifiedRepository interface provides data access methods for the User
- * entity.
+ * The IdentifiedRepository interface provides data access methods for the User entity.
  */
 @ApplicationScoped
-public class UserRepository implements PanacheRepositoryBase<User, String> {
+public class UserRepository implements UserRepositoryI<User, String>, PanacheRepositoryBase<User, String> {
+
+    @Inject
+    @Named("keycloak-repository")
+    RoleRepository roleRepository;
 
     /**
      * It executes a query in database to retrieve user's profile.
@@ -25,9 +36,15 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      * @param id User's Unique identifier (voperson_id)
      * @return User's Profile.
      */
-    public UserProfile fetchUserProfile(String id) {
+    @Override
+    public User fetchUser(String id) {
 
-        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn, user.validatedOn from User user where user.id = ?1", id).project(UserProfile.class).firstResult();
+        var roles = roleRepository.fetchUserRoles(id);
+        var user = find("from User user where user.id = ?1", id).firstResult();
+        user.setRoles(roles);
+        user.setType(findUserType(roles));
+
+        return user;
     }
 
     /**
@@ -38,9 +55,32 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      * @return A list of UserProfile objects representing the users in the
      * requested page.
      */
-    public PanacheQuery<UserProfile> fetchUsersByPage(int page, int size) {
+    public PageQuery<User> fetchUsersByPage(int page, int size) {
 
-        return find("select user.id, user.type, user.registeredOn, user.name, user.surname, user.email, user.updatedOn, user.validatedOn from User user").project(UserProfile.class).page(page, size);
+        var panache = find("from User user").page(page, size);
+
+        var users =  panache.list();
+
+        var addedRolesAndUserType = users
+                .stream()
+                .map(user->{
+
+                    var roles = roleRepository.fetchUserRoles(user.getId());
+                    user.setRoles(roles);
+                    user.setType(findUserType(roles));
+
+                    return user;
+                }).collect(Collectors.toList());
+
+        var pageable = new PageQueryImpl<User>();
+
+        pageable.list = addedRolesAndUserType;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
     }
 
     /**
@@ -50,9 +90,11 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
      * @param name The user's name.
      * @param surname The user's surname.
      * @param email The user's email address.
+     * @return The updated user's profile
      */
+    @Override
     @Transactional
-    public void updateUserProfileMetadata(String id, String name, String surname, String email) {
+    public User updateUserMetadata(String id, String name, String surname, String email) {
 
         var user = findById(id);
 
@@ -60,15 +102,23 @@ public class UserRepository implements PanacheRepositoryBase<User, String> {
         user.setSurname(surname);
         user.setEmail(email);
         user.setUpdatedOn(Timestamp.from(Instant.now()));
+
+        return user;
     }
 
-    /**
-     * This operation turns an Identified user into Validated user;
-     *
-     * @param id The Identified user to be turned into Validated user.
-     */
-    public void turnIdentifiedUserIntoValidatedUser(String id){
+    @Override
+    public Optional<User> searchByIdOptional(String id) {
+        return findByIdOptional(id);
+    }
 
-        update("update User set type = ?1, validatedOn = ?2 where id = ?3", UserType.Validated, Timestamp.from(Instant.now()), id);
+    private UserType findUserType(List<Role> roles){
+
+        var set = roles
+                .stream()
+                .map(Role::getName)
+                .map(UserType::retrieveByRole)
+                .collect(Collectors.toSet());
+
+        return UserType.mostSeverity(set);
     }
 }

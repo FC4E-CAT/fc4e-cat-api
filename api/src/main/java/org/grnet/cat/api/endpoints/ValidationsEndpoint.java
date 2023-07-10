@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -17,6 +18,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -122,6 +124,12 @@ public class ValidationsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response validate(@Valid @NotNull(message = "The request body is empty.") ValidationRequest request) {
+
+        var userProfile = userService.getUserProfile(utility.getUserUniqueIdentifier());
+
+        if(StringUtils.isEmpty(userProfile.name) || StringUtils.isEmpty(userProfile.surname) || StringUtils.isEmpty(userProfile.email) ){
+            throw new ForbiddenException("You have to update your profile before requesting a validation.");
+        }
 
         Source.valueOf(request.organisationSource).execute(request.organisationId);
 

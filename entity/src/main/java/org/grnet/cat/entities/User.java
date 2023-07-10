@@ -1,14 +1,13 @@
 package org.grnet.cat.entities;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * This entity represents the User table in database.
@@ -26,8 +25,7 @@ public class User {
     /**
      * Type of user (e.g., Identified, Validated, Admin).
      */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_type")
+    @Transient
     private UserType type;
 
     /**
@@ -62,6 +60,9 @@ public class User {
 
     @Column(name = "validated_on")
     private Timestamp validatedOn;
+
+    @Transient
+    private List<Role> roles;
 
     public Timestamp getRegisteredOn() {
         return registeredOn;
@@ -125,5 +126,13 @@ public class User {
 
     public void setValidatedOn(Timestamp validatedOn) {
         this.validatedOn = validatedOn;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }

@@ -11,7 +11,6 @@ import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -406,7 +405,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
     @Test
     public void updateValidationRequestStatusByAdmin() {
 
-        doNothing().when(keycloakAdminRoleService).addRoleToUser(any(), any());
+        doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any());
 
         register("alice");
         register("admin");

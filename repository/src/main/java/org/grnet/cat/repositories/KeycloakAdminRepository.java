@@ -1,19 +1,18 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.cat.entities.ListQuery;
+import org.grnet.cat.entities.Page;
+import org.grnet.cat.entities.PageQuery;
+import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.exceptions.EntityNotFoundException;
 import org.keycloak.admin.client.Keycloak;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +67,7 @@ public class KeycloakAdminRepository implements RoleRepository{
      * @return A list of Role objects representing the roles in the requested page.
      */
     @Override
-    public PanacheQuery<Role> fetchRolesByPage(int page, int size) {
+    public PageQuery<Role> fetchRolesByPage(int page, int size) {
 
         var allRoles = fetchRoles();
 
@@ -76,7 +75,7 @@ public class KeycloakAdminRepository implements RoleRepository{
 
         var roles = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 
-        var pageable = new ListQuery<Role>();
+        var pageable = new PageQueryImpl<Role>();
 
         pageable.list = roles;
         pageable.index = page;
@@ -87,8 +86,14 @@ public class KeycloakAdminRepository implements RoleRepository{
         return pageable;
     }
 
+    /**
+     * Assigns roles to a user.
+     *
+     * @param userId  The unique identifier of the user. to assign roles to.
+     * @param roles The roles to be assigned to the user.
+     */
     @Override
-    public void addRoleToUser(String role, String userId){
+    public void assignRoles(String userId, List<String> roles) {
 
         try{
 
@@ -104,11 +109,14 @@ public class KeycloakAdminRepository implements RoleRepository{
 
             var userResource = usersResource.get(userRepresentation.getId());
 
-            // Get client level role
-            var userClientRole = clientResource.roles().get(role).toRepresentation();
+            // Get client level roles
+            var rolesRepresentations = roles
+                    .stream()
+                    .map(role->clientResource.roles().get(role).toRepresentation())
+                    .collect(Collectors.toList());
 
             // Assign client level role to user
-            userResource.roles().clientLevel(clientRepresentation.getId()).add(Collections.singletonList(userClientRole));
+            userResource.roles().clientLevel(clientRepresentation.getId()).add(rolesRepresentations);
 
         } catch (Exception e){
 
@@ -116,25 +124,49 @@ public class KeycloakAdminRepository implements RoleRepository{
         }
     }
 
-    @Override
-    public Optional<Role> findRoleByName(String name) {
-
-        return fetchRoles()
-                .stream()
-                .filter(role->role.getName().equals(name))
-                .findFirst();
-               // .orElseThrow(()-> new EntityNotFoundException("Role "+name+" doesn't exist."));
-    }
-
     /**
      * Checks if a role exists by searching for the role with the given name.
      *
-     * @param name the name of the role to search for
+     * @param names List of role names to search for
      * @throws EntityNotFoundException if the role with the specified name is not found.
      */
     @Override
-    public void doesRoleExist(String name) {
+    public void doRolesExist(List<String> names) {
 
-        findRoleByName(name).orElseThrow(()->new EntityNotFoundException(String.format("The role {%s} is not found.", name)));
+        var roles = fetchRoles().stream().map(Role::getName).collect(Collectors.toList());
+
+        var notExist = names
+                .stream()
+                .filter(name->!roles.contains(name))
+                .collect(Collectors.toList());
+
+        if(!notExist.isEmpty()){
+            throw new EntityNotFoundException(String.format("The following roles %s do not exist.", notExist.toString()));
+        }
+    }
+
+    /**
+     * This operation returns the user's roles for specified client in Keycloak.
+     *
+     * @param vopersonId The unique identifier of user.
+     * @return The user's roles.
+     */
+    @Override
+    public List<Role> fetchUserRoles(String vopersonId){
+
+        var realmResource = keycloak.realm(realm);
+
+        var usersResource = realmResource.users();
+
+        var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, vopersonId)).stream().findFirst().get();
+
+        var userResource = usersResource.get(userRepresentation.getId());
+
+        var roleRepresentations = userResource.roles().getAll().getClientMappings().get(clientId).getMappings();
+
+        return roleRepresentations
+                .stream()
+                .map(roleRepresentation -> new Role(roleRepresentation.getId(), roleRepresentation.getName(), roleRepresentation.getDescription()))
+                .collect(Collectors.toList());
     }
 }

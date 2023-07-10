@@ -6,6 +6,8 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.enums.UserType;
 
+import java.util.List;
+
 @Schema(name = "UserProfile", description = "This object represents the User Profile.")
 public class UserProfileDto {
 
@@ -84,4 +86,14 @@ public class UserProfileDto {
     @JsonProperty("validated_on")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String validatedOn;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = String.class,
+            description = "The user's roles.",
+            example = "[identified, admin]"
+    )
+    @JsonProperty("roles")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<String> roles;
 }

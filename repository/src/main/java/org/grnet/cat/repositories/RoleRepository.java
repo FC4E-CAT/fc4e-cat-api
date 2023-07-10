@@ -1,11 +1,10 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Role;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
@@ -29,29 +28,30 @@ public interface RoleRepository {
      * @param size The maximum number of roles to include in a page.
      * @return A list of Role objects representing the roles in the requested page.
      */
-    PanacheQuery<Role> fetchRolesByPage(int page, int size);
+    PageQuery<Role> fetchRolesByPage(int page, int size);
 
     /**
-     * Adds a given role to a specified user ID.
-     * @param role The role to be added.
-     * @param userId The identifier of the user.
-     */
-    void addRoleToUser(String role, String userId);
-
-    /**
-     * Searches for a role by its name.
+     * Assigns roles to a user.
      *
-     * @param name the name of the role to search for
-     * @return the Role object if found, or empty object if not found
+     * @param userId  The unique identifier of the user. to assign roles to.
+     * @param roles The roles to be assigned to the user.
      */
-    Optional<Role> findRoleByName(String name);
+    void assignRoles(String userId, List<String> roles);
 
     /**
      * Checks if a role exists by searching for the role with the given name.
      *
-     * @param name the name of the role to search for
+     * @param names List of role names to search for
      */
-    void doesRoleExist(String name);
+    void doRolesExist(List<String> names);
+
+    /**
+     * This operation returns the user's roles.
+     *
+     * @param userId The unique identifier of user.
+     * @return The user's roles.
+     */
+     List<Role> fetchUserRoles(String userId);
 
     /**
      * This method paginates a list of objects.

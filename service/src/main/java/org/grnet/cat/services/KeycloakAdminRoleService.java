@@ -6,8 +6,11 @@ import jakarta.inject.Named;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.RoleDto;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.Role;
 import org.grnet.cat.mappers.RoleMapper;
 import org.grnet.cat.repositories.RoleRepository;
+
+import java.util.List;
 
 /**
  * The KeycloakAdminRoleService class provides methods to connect and interact with the Keycloak admin API.
@@ -36,13 +39,15 @@ public class KeycloakAdminRoleService implements RoleService {
     }
 
     /**
-     * Adds a given role to a specified user ID.
-     * @param role The role to be added.
-     * @param userId The identifier of the user.
+     * Assigns new roles to a specific user.
+     *
+     * @param userId The unique identifier of the user.
+     * @param roles  List of role names to be assigned to the user.
      */
-    public void addRoleToUser(String role, String userId){
+    @Override
+    public void assignRolesToUser(String userId, List<String> roles) {
 
-        roleRepository.doesRoleExist(role);
-        roleRepository.addRoleToUser(role, userId);
+        roleRepository.doRolesExist(roles);
+        roleRepository.assignRoles(userId, roles);
     }
 }

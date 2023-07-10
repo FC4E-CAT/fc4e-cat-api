@@ -1,7 +1,5 @@
 package org.grnet.cat.validators;
 
-
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.vavr.control.Try;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.validation.ConstraintValidator;
@@ -9,6 +7,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.exceptions.CustomValidationException;
+import org.grnet.cat.repositories.Repository;
 
 import java.util.Objects;
 
@@ -20,7 +19,7 @@ import java.util.Objects;
 public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEntity, Object> {
 
     private String message;
-    private Class<? extends PanacheRepositoryBase<?,?>> repository;
+    private Class<? extends Repository<?,?>> repository;
 
     @Override
     public void initialize(NotFoundEntity constraintAnnotation) {
@@ -40,13 +39,12 @@ public class NotFoundEntityValidator implements ConstraintValidator<NotFoundEnti
         builder.append(StringUtils.SPACE);
         builder.append(value);
 
-        PanacheRepositoryBase repository = CDI.current().select(this.repository).get();
+        Repository repository = CDI.current().select(this.repository).get();
 
         Try
-                .run(()->repository.findByIdOptional(value).orElseThrow(()->new CustomValidationException(builder.toString(), 404)))
+                .run(()->repository.searchByIdOptional(value).orElseThrow(()->new CustomValidationException(builder.toString(), 404)))
                 .getOrElseThrow(()->new CustomValidationException(builder.toString(), 404));
 
         return true;
     }
-
 }

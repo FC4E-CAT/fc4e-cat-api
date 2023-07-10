@@ -55,9 +55,9 @@ public class UserService {
      */
     public UserProfileDto getUserProfile(String id){
 
-        var userProfile = userRepository.fetchUserProfile(id);
+        var userProfile = userRepository.fetchUser(id);
 
-        return UserMapper.INSTANCE.userProfileToDto(userProfile);
+        return UserMapper.INSTANCE.userToProfileDto(userProfile);
     }
 
     /**
@@ -82,10 +82,13 @@ public class UserService {
      * @param name The user's name.
      * @param surname The user's surname.
      * @param email The user's email address.
+     * @return The updated user's profile
      */
-    public void updateUserProfileMetadata(String id, String name, String surname, String email){
+    public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email){
 
-        userRepository.updateUserProfileMetadata(id, name, surname, email);
+        var user = userRepository.updateUserMetadata(id, name, surname, email);
+
+        return UserMapper.INSTANCE.userToProfileDto(user);
     }
 
     /**
@@ -94,9 +97,9 @@ public class UserService {
      * @param id User's voperson_id
      */
     @Transactional
-    public void register(String id){
+    public UserProfileDto register(String id){
 
-        var optionalUser = userRepository.findByIdOptional(id);
+        var optionalUser = userRepository.searchByIdOptional(id);
 
         optionalUser.ifPresent(s -> {throw new ConflictException("User already exists in the database.");});
 
@@ -106,6 +109,8 @@ public class UserService {
         identified.setType(UserType.Identified);
 
         userRepository.persist(identified);
+
+        return UserMapper.INSTANCE.userToProfileDto(identified);
     }
 
     /**
@@ -139,17 +144,6 @@ public class UserService {
         validationService.store(validation);
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
-    }
-
-    /**
-     * This operation turns an Identified user into Validated user;
-     *
-     * @param id The Identified user to be turned into Validated user.
-     */
-    @Transactional
-    public void turnIdentifiedUserIntoValidatedUser(String id){
-
-        userRepository.turnIdentifiedUserIntoValidatedUser(id);
     }
 
     /**
