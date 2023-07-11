@@ -158,11 +158,13 @@ public class KeycloakAdminRepository implements RoleRepository{
 
         var usersResource = realmResource.users();
 
+        var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
+
         var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, vopersonId)).stream().findFirst().get();
 
         var userResource = usersResource.get(userRepresentation.getId());
 
-        var roleRepresentations = userResource.roles().getAll().getClientMappings().get(clientId).getMappings();
+        var roleRepresentations = userResource.roles().clientLevel(clientRepresentation.getId()).listEffective(true);
 
         return roleRepresentations
                 .stream()
