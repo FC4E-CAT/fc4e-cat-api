@@ -28,6 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
 import org.grnet.cat.dtos.ValidationRequest;
@@ -91,10 +92,10 @@ public class AdminValidationsEndpoint {
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByPage(page-1, size, uriInfo, utility.getValidationComparator());
+        var validations = validationService.getValidationsByPage(page-1, size, status, uriInfo, utility.getValidationComparator());
 
         return Response.ok().entity(validations).build();
     }

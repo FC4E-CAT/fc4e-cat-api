@@ -6,9 +6,11 @@ import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
@@ -88,11 +90,20 @@ public class ValidationService {
      * @param size The maximum number of validation requests to include in a page.
      * @param uriInfo The Uri Info.
      * @param userID The ID of the user.
+     * @param status Validation status to search for.
      * @return A list of ValidationResponse objects representing the submitted promotion requests in the requested page.
      */
-    public PageResource<ValidationResponse> getValidationsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, Comparator<Validation> comparator){
+    public PageResource<ValidationResponse> getValidationsByUserAndPage(int page, int size, String status, UriInfo uriInfo, String userID, Comparator<Validation> comparator){
 
-        var validations = validationRepository.fetchValidationsByUserAndPage(page, size, userID);
+        PageQuery<Validation> validations = null;
+
+        if(StringUtils.isNotEmpty(status)) {
+
+            validations = validationRepository.fetchValidationsByUserAndStatusAndPage(ValidationStatus.valueOf(status), page, size, userID);
+        } else {
+
+            validations = validationRepository.fetchValidationsByUserAndPage(page, size, userID);
+        }
 
         return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list().stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
     }
@@ -103,11 +114,20 @@ public class ValidationService {
      * @param page The index of the page to retrieve (starting from 0).
      * @param size The maximum number of validation requests to include in a page.
      * @param uriInfo The Uri Info.
+     * @param status Validation status to search for.
      * @return A list of ValidationResponse objects representing the submitted promotion requests in the requested page.
      */
-    public PageResource<ValidationResponse> getValidationsByPage(int page, int size, UriInfo uriInfo, Comparator<Validation> comparator){
+    public PageResource<ValidationResponse> getValidationsByPage(int page, int size, String status, UriInfo uriInfo, Comparator<Validation> comparator){
 
-        var validations = validationRepository.fetchValidationsByPage(page, size);
+        PageQuery<Validation> validations = null;
+
+        if(StringUtils.isNotEmpty(status)){
+
+            validations = validationRepository.fetchValidationsByStatusAndPage(ValidationStatus.valueOf(status), page, size);
+        } else {
+
+            validations = validationRepository.fetchValidationsByPage(page, size);
+        }
 
         return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list().stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
     }

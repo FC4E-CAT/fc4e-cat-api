@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -28,13 +29,16 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
+import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.enums.Source;
+import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
@@ -65,6 +69,9 @@ public class ValidationsEndpoint {
     @Inject
     ValidationService validationService;
 
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
+
 
     @Tag(name = "Validation")
     @Operation(
@@ -72,7 +79,7 @@ public class ValidationsEndpoint {
             description = "This endpoint allows an identified user to request promotion to become a validated user."+
                     " The identified user should provide the necessary information to support their promotion request, which will be reviewed by the administrators.")
     @APIResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "User promotion request submitted.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
@@ -123,7 +130,7 @@ public class ValidationsEndpoint {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response validate(@Valid @NotNull(message = "The request body is empty.") ValidationRequest request) {
+    public Response validate(@Valid @NotNull(message = "The request body is empty.") ValidationRequest request, @Context UriInfo uriInfo) {
 
         var userProfile = userService.getUserProfile(utility.getUserUniqueIdentifier());
 
@@ -135,7 +142,9 @@ public class ValidationsEndpoint {
 
         var response = userService.validate(utility.getUserUniqueIdentifier(), request);
 
-        return Response.ok().entity(response).build();
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
     }
 
     @Tag(name = "Validation")
@@ -175,10 +184,10 @@ public class ValidationsEndpoint {
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier(), utility.getValidationComparator());
+        var validations = validationService.getValidationsByUserAndPage(page-1, size, status, uriInfo, utility.getUserUniqueIdentifier(), utility.getValidationComparator());
 
         return Response.ok().entity(validations).build();
     }

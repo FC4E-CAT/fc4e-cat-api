@@ -33,7 +33,7 @@ public class StringEnumerationValidator implements ConstraintValidator<StringEnu
     }
 
     private boolean check(String value){
-        if ( value == null ) {
+        if ( value == null || value.isEmpty() ) {
             return true;
         } else {
             return AVAILABLE_ENUM_NAMES.contains(value);

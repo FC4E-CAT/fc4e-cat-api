@@ -82,8 +82,6 @@ public class IntegrationsEndpoint {
         return Response.ok().entity(integrations).build();
     }
 
-//    
-//    
     @Tag(name = "Integration")
     @Operation(
             summary = "Retrieve an organisation by Id, from the integration source",

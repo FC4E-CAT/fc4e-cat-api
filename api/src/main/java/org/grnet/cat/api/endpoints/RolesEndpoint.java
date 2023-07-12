@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -133,7 +134,7 @@ public class RolesEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-    @POST
+    @PUT
     @Path("/assign-roles")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration

@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -28,6 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
+import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
@@ -60,12 +62,15 @@ public class UsersEndpoint {
     @Inject
     Utility utility;
 
+    @ConfigProperty(name = "server.url")
+    String serverUrl;
+
     @Tag(name = "User")
     @Operation(
             summary = "Registers a user in the CAT database.",
             description = "This endpoint creates a new user entity in the database by extracting the voperson_id from the access token and assigning it to the user.")
     @APIResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "When a user is successfully registered in the database.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
@@ -92,11 +97,13 @@ public class UsersEndpoint {
     @Path("/register")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response register() {
+    public Response register(@Context UriInfo uriInfo) {
+
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         var response = userService.register(utility.getUserUniqueIdentifier());
 
-        return Response.ok().entity(response).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().replacePath("/v1/users/profile").build()).entity(response).build();
     }
 
     @Tag(name = "User")
