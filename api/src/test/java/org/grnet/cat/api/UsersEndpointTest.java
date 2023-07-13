@@ -199,17 +199,7 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void updateMetadataSurnameIsEmpty() {
 
-        register("alice");
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .post("/register")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserProfileDto.class);
+        register("bob");
 
         var update = new UpdateUserProfileDto();
         update.name = "foo";

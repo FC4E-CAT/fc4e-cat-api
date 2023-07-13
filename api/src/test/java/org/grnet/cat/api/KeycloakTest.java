@@ -52,7 +52,7 @@ public class KeycloakTest {
                 .post("/register")
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(UserProfileDto.class);
 

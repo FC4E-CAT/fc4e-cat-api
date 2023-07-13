@@ -9,6 +9,8 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
 
@@ -306,7 +308,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
 
@@ -370,7 +372,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
 
@@ -426,7 +428,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
 
@@ -470,7 +472,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
 
@@ -511,7 +513,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
 
@@ -551,7 +553,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
 
@@ -568,5 +570,94 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .as(ValidationResponse.class);
 
         assertEquals(validation.id, response.id);
+    }
+
+    @Test
+    public void getApprovedValidationRequestByAdmin() {
+
+        register("alice");
+        register("admin");
+
+        var request = new ValidationRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 2L;
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var request1 = new ValidationRequest();
+        request1.organisationRole = "Manager";
+        request1.organisationId = "00tjv0s33";
+        request1.organisationName = "Keimyung University";
+        request1.organisationSource = "ROR";
+        request1.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request1.actorId = 5L;
+
+        var validation = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request1)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var updateStatus = new UpdateValidationStatus();
+
+        updateStatus.status = "APPROVED";
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/admin/validations")
+                .contentType(ContentType.JSON)
+                .body(updateStatus)
+                .put("/{id}/update-status", validation.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var responseWithStatus = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/admin/validations")
+                .contentType(ContentType.JSON)
+                .queryParam("status", ValidationStatus.APPROVED)
+                .get()
+                .body()
+                .as(PageResource.class);
+
+        assertEquals(1, responseWithStatus.getTotalElements());
+        assertEquals(1, responseWithStatus.getSizeOfPage());
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/admin/validations")
+                .contentType(ContentType.JSON)
+                .get()
+                .body()
+                .as(PageResource.class);
+
+        assertEquals(2, response.getTotalElements());
+        assertEquals(2, response.getSizeOfPage());
     }
 }
