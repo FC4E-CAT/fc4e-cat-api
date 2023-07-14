@@ -70,6 +70,16 @@ public class UserProfileDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "The user's orcid id.",
+            example = "0000-0002-3843-3472"
+    )
+    @JsonProperty("orcid_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String orcidId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "Date and Time when the user's metadata have been updated.",
             example = " 2023-06-09 12:19:31.333059"
     )

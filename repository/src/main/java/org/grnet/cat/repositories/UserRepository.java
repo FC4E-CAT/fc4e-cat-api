@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -90,17 +91,21 @@ public class UserRepository implements UserRepositoryI<User, String>, PanacheRep
      * @param name The user's name.
      * @param surname The user's surname.
      * @param email The user's email address.
+     * @param orcidId The user's orcid id.
      * @return The updated user's profile
      */
     @Override
     @Transactional
-    public User updateUserMetadata(String id, String name, String surname, String email) {
+    public User updateUserMetadata(String id, String name, String surname, String email, String orcidId) {
 
         var user = findById(id);
 
         user.setName(name);
         user.setSurname(surname);
         user.setEmail(email);
+        if(StringUtils.isNotEmpty(orcidId)){
+            user.setOrcidId(orcidId);
+        }
         user.setUpdatedOn(Timestamp.from(Instant.now()));
 
         return user;
