@@ -994,6 +994,22 @@
             "icon_uri": ""
           },
           {
+            "name": "Template Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Template Resource",
+            "attributes": {},
+            "_id": "ca750510-a15b-4155-87cc-992a86c68dd7",
+            "uris": [
+              "/v1/templates/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Role Resource",
             "ownerManagedAccess": false,
             "displayName": "",
@@ -1088,7 +1104,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "UNANIMOUS",
             "config": {
-              "resources": "[\"Role Resource\",\"Administration Resource\"]",
+              "resources": "[\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1112,7 +1128,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"User Resource\",\"Integration Resource\",\"Validation Resource\",\"Codelist Resource\"]",
+              "resources": "[\"Template Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           }
@@ -2844,6 +2860,7 @@
       ],
       "clientRoles": {
         "backend-service": [
+          "identified",
           "validated"
         ]
       }
