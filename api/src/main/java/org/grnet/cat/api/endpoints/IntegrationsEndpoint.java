@@ -148,7 +148,7 @@ public class IntegrationsEndpoint {
                     required = true,
                     example = "00tjv0s33",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id) throws IOException {
+            @PathParam("id") String id)  {
 
         var integrations = integrationService.getOrganisation(Source.valueOf(source), id);
 

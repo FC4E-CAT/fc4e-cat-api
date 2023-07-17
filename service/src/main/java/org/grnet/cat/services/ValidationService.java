@@ -165,13 +165,10 @@ public class ValidationService {
     @Transactional
     public ValidationResponse updateValidationRequestStatus(Long id, ValidationStatus status, String userId) {
 
-        var validation = validationRepository.findById(id);
+         validationRepository.update("status = ?1 , validatedBy = ?2 ,validatedOn = ?3  where id = ?4", status,  userId,Timestamp.from(Instant.now()), id);
 
-        handleValidationStatus.accept(validation.getUser().getId(), status);
-
-        validation.setStatus(status);
-        validation.setValidatedBy(userId);
-        validation.setValidatedOn(Timestamp.from(Instant.now()));
+         var validation = validationRepository.findById(id);
+         handleValidationStatus.accept(validation.getUser().getId(), status);
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
