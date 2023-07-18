@@ -221,7 +221,33 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void updateMetadata() {
+    public void updateMetadataNotValidOrcid() {
+
+        register("alice");
+
+        var update = new UpdateUserProfileDto();
+        update.name = "foo";
+        update.surname = "foo";
+        update.email = "foo@admin.grnet.gr";
+        update.orcidId = "la-la-la-la";
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Not valid structure of the ORCID Identifier.", informativeResponse.message);
+    }
+
+    @Test
+    public void updateMetadataWithoutOrcid() {
 
         register("alice");
 
@@ -243,5 +269,31 @@ public class UsersEndpointTest extends KeycloakTest {
                 .as(UserProfileDto.class);
 
         assertEquals("foo@admin.grnet.gr", response.email);
+    }
+
+    @Test
+    public void updateMetadataWithOrcid() {
+
+        register("alice");
+
+        var update = new UpdateUserProfileDto();
+        update.name = "foo";
+        update.surname = "foo";
+        update.email = "foo@admin.grnet.gr";
+        update.orcidId = "0000-0002-1825-0097";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(UserProfileDto.class);
+
+        assertEquals("0000-0002-1825-0097", response.orcidId);
     }
 }

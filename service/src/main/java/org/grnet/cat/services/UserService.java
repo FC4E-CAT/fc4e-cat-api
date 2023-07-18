@@ -82,11 +82,12 @@ public class UserService {
      * @param name The user's name.
      * @param surname The user's surname.
      * @param email The user's email address.
+     * @param orcidId The user's orcid id.
      * @return The updated user's profile
      */
-    public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email){
+    public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId){
 
-        var user = userRepository.updateUserMetadata(id, name, surname, email);
+        var user = userRepository.updateUserMetadata(id, name, surname, email, orcidId);
 
         return UserMapper.INSTANCE.userToProfileDto(user);
     }

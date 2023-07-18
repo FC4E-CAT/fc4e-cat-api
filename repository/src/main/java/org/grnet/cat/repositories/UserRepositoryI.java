@@ -20,9 +20,10 @@ public interface UserRepositoryI<E, ID> extends Repository<E, ID>{
      * @param name The user's name.
      * @param surname The user's surname.
      * @param email The user's email address.
+     * @param orcidId The user's orcid id.
      * @return The updated user's profile
      */
-    E updateUserMetadata(ID id, String name, String surname, String email);
+    E updateUserMetadata(ID id, String name, String surname, String email, String orcidId);
 
     /**
      * Retrieves a page of users.

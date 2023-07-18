@@ -38,6 +38,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.UserService;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -232,7 +233,7 @@ public class UsersEndpoint {
     @Registration
     public Response updateProfile(@Valid @NotNull(message = "The request body is empty.") UpdateUserProfileDto updateUserProfileDto) {
 
-        var userProfile = userService.updateUserProfileMetadata(utility.getUserUniqueIdentifier(), updateUserProfileDto.name, updateUserProfileDto.surname, updateUserProfileDto.email);
+        var userProfile = userService.updateUserProfileMetadata(utility.getUserUniqueIdentifier(), updateUserProfileDto.name, updateUserProfileDto.surname, updateUserProfileDto.email, updateUserProfileDto.orcidId);
 
         return Response.ok().entity(userProfile).build();
     }

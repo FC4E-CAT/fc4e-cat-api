@@ -53,6 +53,12 @@ public class User {
     private String email;
 
     /**
+     * The user's orcid id.
+     */
+    @Column(name = "orcid_id")
+    private String orcidId;
+
+    /**
      * The date and time the user's metadata have been updated.
      */
     @Column(name = "updated_on")
@@ -134,5 +140,13 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getOrcidId() {
+        return orcidId;
+    }
+
+    public void setOrcidId(String orcidId) {
+        this.orcidId = orcidId;
     }
 }
