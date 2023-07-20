@@ -18,13 +18,14 @@ public class Template {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "template_doc", columnDefinition = "json")
 
-    private String template_doc;
+    @Column(name = "template_doc", columnDefinition = "json")
+    private String templateDoc;
 
     @ManyToOne
-    @JoinColumn(name = "assessment_type_id",referencedColumnName = "id")
+    @JoinColumn(name = "assessment_type_id", referencedColumnName = "id")
     private AssessmentType type;
+
     @ManyToOne
     @JoinColumn(name = "actor_id",referencedColumnName = "id")
     private Actor actor;
@@ -40,7 +41,6 @@ public class Template {
     public void setId(Long id) {
         this.id = id;
     }
-
 
     public Actor getActor() {
         return actor;
@@ -58,12 +58,12 @@ public class Template {
         this.createdOn = createdOn;
     }
 
-    public String getTemplate_doc() {
-        return template_doc;
+    public String getTemplateDoc() {
+        return templateDoc;
     }
 
-    public void setTemplate_doc(String template_doc) {
-        this.template_doc = template_doc;
+    public void setTemplateDoc(String templateDoc) {
+        this.templateDoc = templateDoc;
     }
 
     public AssessmentType getType() {
@@ -73,6 +73,4 @@ public class Template {
     public void setType(AssessmentType type) {
         this.type = type;
     }
-
-
 }

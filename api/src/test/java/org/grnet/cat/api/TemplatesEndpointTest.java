@@ -2,6 +2,7 @@ package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.TemplatesEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.TemplateDto;
@@ -14,56 +15,115 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestHTTPEndpoint(TemplatesEndpoint.class)
 public class TemplatesEndpointTest extends KeycloakTest {
 
-@Test
-public  void fetchTemplate(){
-
-    register("validated");
-    var response = given()
-            .auth()
-            .oauth2(getAccessToken("validated"))
-            .get("/types/{type-id}/by-actor/{actor-id}",1L,6L)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract()
-            .as(TemplateDto.class);
-
-    assertEquals(6L, response.actor.id);
-    assertEquals(1L, response.type.id);
-}
-
-
     @Test
-    public  void fetchTemplateActorNotExists(){
+    public void fetchTemplateByActorAndType() {
 
         register("validated");
+
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
-                .get("/types/{type-id}/by-actor/{actor-id}",1L,100L)                .then()
+                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 6L)
+                .then()
                 .assertThat()
-                .statusCode(404)
+                .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(TemplateDto.class);
 
-        assertEquals(404,response.code );
-        }
-
-
-    @Test
-    public  void fetchTemplateTypeNotExists(){
-
-        register("validated");
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get("/types/{type-id}/by-actor/{actor-id}",2L,6L)               .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404,response.code );
+        assertEquals(6L, response.actor.id);
+        assertEquals(1L, response.type.id);
     }
 
+    @Test
+    public void fetchTemplateActorNotExists() {
+
+        register("validated");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 100L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(404, response.code);
+    }
+
+
+    @Test
+    public void fetchTemplateTypeNotExists() {
+
+        register("validated");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/by-type/{type-id}/by-actor/{actor-id}", 2L, 6L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(404, response.code);
+    }
+
+    @Test
+    public void fetchTemplateNotExists() {
+
+        register("validated");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 2L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Template.", response.message);
+    }
+
+    @Test
+    public void createTemplateNotPermitted() {
+
+        register("validated");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", response.message);
+    }
+
+    @Test
+    public void fetchTemplate() {
+
+        register("admin");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .get("/{id}", 1L)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(TemplateDto.class);
+
+        assertEquals(6L, response.actor.id);
+        assertEquals(1L, response.type.id);
+    }
 }
