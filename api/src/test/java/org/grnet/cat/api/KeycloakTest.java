@@ -5,15 +5,24 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.grnet.cat.dtos.UpdateUserProfileDto;
-import org.grnet.cat.dtos.UserProfileDto;
+import jakarta.ws.rs.core.Response;
+import org.grnet.cat.api.endpoints.ValidationsEndpoint;
+import org.grnet.cat.dtos.*;
+import org.grnet.cat.entities.Actor;
 import org.grnet.cat.entities.Role;
-import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.entities.User;
+import org.grnet.cat.entities.Validation;
+import org.grnet.cat.enums.Source;
+import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.repositories.*;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -36,7 +45,6 @@ public class KeycloakTest {
         validationService.deleteAll();
         userService.deleteAll();
     }
-
     protected UserProfileDto register(String username) {
 
         var role = new Role("identidied_id", "identified", "The identified role");
@@ -61,6 +69,7 @@ public class KeycloakTest {
         update.surname = "foo";
         update.email = "foo@admin.grnet.gr";
 
+
         var profile = given()
                 .auth()
                 .oauth2(getAccessToken(username))
@@ -77,7 +86,10 @@ public class KeycloakTest {
         return profile;
     }
 
+
+
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);
     }
+
 }

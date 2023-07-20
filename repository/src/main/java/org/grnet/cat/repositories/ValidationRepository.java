@@ -1,11 +1,9 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.grnet.cat.entities.Page;
-import org.grnet.cat.entities.PageQuery;
-import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
@@ -128,4 +126,5 @@ public class ValidationRepository implements PanacheRepositoryBase<Validation, L
     public Optional<Validation> searchByIdOptional(Long id) {
         return findByIdOptional(id);
     }
+
 }
