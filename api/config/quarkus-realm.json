@@ -931,6 +931,22 @@
             "icon_uri": ""
           },
           {
+            "name": "Read Template By Type and Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Template By Type and Actor",
+            "attributes": {},
+            "_id": "06e57c4c-de0b-4a9e-b211-583ebbe2c622",
+            "uris": [
+              "/v1/templates/by-type/{type-id}/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "User Resource",
             "ownerManagedAccess": false,
             "displayName": "",
@@ -978,22 +994,6 @@
             "icon_uri": ""
           },
           {
-            "name": "Integration Resource",
-            "ownerManagedAccess": false,
-            "displayName": "Integration Resource",
-            "attributes": {},
-            "_id": "ca960110-a15b-4155-87ce-992d86c68dd3",
-            "uris": [
-              "/v1/integrations/*"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              }
-            ],
-            "icon_uri": ""
-          },
-          {
             "name": "Template Resource",
             "ownerManagedAccess": false,
             "displayName": "Template Resource",
@@ -1001,6 +1001,25 @@
             "_id": "ca750510-a15b-4155-87cc-992a86c68dd7",
             "uris": [
               "/v1/templates/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Integration Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Integration Resource",
+            "attributes": {},
+            "_id": "ca960110-a15b-4155-87ce-992d86c68dd3",
+            "uris": [
+              "/v1/integrations/*"
             ],
             "scopes": [
               {
@@ -1050,17 +1069,6 @@
             }
           },
           {
-            "id": "b8710fa6-160e-4de0-adf3-398c7007a0af",
-            "name": "Any User Policy",
-            "description": "Any user granted with the user role can access something",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"user\",\"required\":false}]"
-            }
-          },
-          {
             "id": "fcef30b2-68b2-4b78-9f3d-9162c6cdf5cb",
             "name": "Only Administrators",
             "description": "Only administrators can access",
@@ -1072,28 +1080,16 @@
             }
           },
           {
-            "id": "bb0808ed-f8a8-47b6-a1ce-a8f110239185",
-            "name": "Create Validation",
+            "id": "693ca2aa-92a1-4caa-a751-451d5ac848ae",
+            "name": "Read Template By Type and Actor",
             "description": "",
             "type": "scope",
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Validation Resource\"]",
-              "scopes": "[\"create\"]",
-              "applyPolicies": "[\"Any Identified Policy\"]"
-            }
-          },
-          {
-            "id": "3479dd56-02e9-4222-94fe-6a13cd065195",
-            "name": "User Resource Permission",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"User Resource\"]",
-              "applyPolicies": "[\"Any User Policy\"]"
+              "resources": "[\"Read Template By Type and Actor\"]",
+              "scopes": "[\"read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
           {
@@ -1102,7 +1098,7 @@
             "description": "",
             "type": "resource",
             "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
+            "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
@@ -1118,18 +1114,6 @@
             "config": {
               "resources": "[\"User Resource\",\"Integration Resource\",\"Validation Resource\",\"Codelist Resource\"]",
               "applyPolicies": "[\"Any Identified Policy\"]"
-            }
-          },
-          {
-            "id": "cfb564f9-2d23-4b6d-8042-bf111e5883e2",
-            "name": "Validated Permission",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"Template Resource\"]",
-              "applyPolicies": "[\"Any Validated Policy\"]"
             }
           }
         ],
@@ -2766,6 +2750,7 @@
       ],
       "clientRoles": {
         "backend-service": [
+          "identified",
           "admin"
         ]
       },
