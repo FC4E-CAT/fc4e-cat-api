@@ -931,6 +931,28 @@
             "icon_uri": ""
           },
           {
+            "name": "Assessment Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Assessment Resource",
+            "attributes": {},
+            "_id": "b8bb5be8-ded3-43de-bb6f-24d6d8169653",
+            "uris": [
+              "/v1/assessments/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              },
+              {
+                "name": "update"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Read Template By Type and Actor",
             "ownerManagedAccess": false,
             "displayName": "Read Template By Type and Actor",
@@ -1100,7 +1122,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1114,6 +1136,18 @@
             "config": {
               "resources": "[\"User Resource\",\"Integration Resource\",\"Validation Resource\",\"Codelist Resource\"]",
               "applyPolicies": "[\"Any Identified Policy\"]"
+            }
+          },
+          {
+            "id": "7f398fa1-6508-44c0-a3fa-84f77fe301e5",
+            "name": "Validated Permission",
+            "description": "The permissions for the validated user",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Assessment Resource\"]",
+              "applyPolicies": "[\"Any Validated Policy\"]"
             }
           }
         ],

@@ -8,15 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import org.grnet.cat.api.endpoints.ValidationsEndpoint;
 import org.grnet.cat.dtos.*;
-import org.grnet.cat.entities.Actor;
-import org.grnet.cat.entities.Role;
-import org.grnet.cat.entities.User;
-import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.*;
+import org.grnet.cat.services.AssessmentService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
+import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
@@ -39,13 +38,17 @@ public class KeycloakTest {
     @Inject
     ValidationService validationService;
 
+    @Inject
+    AssessmentService assessmentService;
+
     @BeforeEach
     public void setup() {
+        assessmentService.deleteAll();
 
         validationService.deleteAll();
         userService.deleteAll();
     }
-    protected UserProfileDto register(String username) {
+        protected UserProfileDto register(String username) {
 
         var role = new Role("identidied_id", "identified", "The identified role");
 
