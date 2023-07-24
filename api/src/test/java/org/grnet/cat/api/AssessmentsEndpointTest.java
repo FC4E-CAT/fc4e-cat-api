@@ -4,13 +4,7 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
-import org.grnet.cat.dtos.AssessmentRequest;
-import org.grnet.cat.dtos.AssessmentResponseDto;
-import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.TemplateDto;
-import org.grnet.cat.dtos.UpdateValidationStatus;
-import org.grnet.cat.dtos.ValidationRequest;
-import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -111,7 +105,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
         assertEquals(403, response.code);
     }
-
     @Test
     public void createAssessmentEmptyJson() throws ParseException {
 
@@ -246,6 +239,122 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals("You do not have permission to access this resource.", error.message);
     }
+    @Test
+    public void updateAssessment() throws ParseException {
+
+        register("validated");
+        register("admin");
+
+        ValidationResponse validation=makeValidation("validated");
+        TemplateDto templateDto=fetchTemplateByActorAndType();
+
+        AssessmentRequest request = new AssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc();
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(AssessmentResponseDto.class);
+        assertEquals(validation.id, response.validationId);
+        assertEquals(templateDto.id, response.templateId);
+
+        UpdateAssessmentRequest updateRequest = new UpdateAssessmentRequest();
+        updateRequest.assessmentDoc =makeJsonDocUpdated();
+
+        var updatedResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(updateRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}",response.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AssessmentResponseDto.class);
+
+        JSONObject json=makeJsonDocUpdated();
+        assertEquals(json.toString(),updatedResponse.assessmentDoc.toString());
+    }
+    @Test
+    public void updateAssessmentNotExists() throws ParseException {
+
+        register("validated");
+        register("admin");
+
+        UpdateAssessmentRequest updateRequest = new UpdateAssessmentRequest();
+        updateRequest.assessmentDoc =makeJsonDocUpdated();
+
+        var updatedResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(updateRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}",1L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+       assertEquals(404,updatedResponse.code);
+    }
+
+    @Test
+    public void updateAssessmentNotAuthorizedUser() throws ParseException {
+
+        register("validated");
+        register("admin");
+        register("alice");
+        ValidationResponse validation=makeValidation("validated");
+        TemplateDto templateDto=fetchTemplateByActorAndType();
+
+        AssessmentRequest request = new AssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc();
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(AssessmentResponseDto.class);
+        assertEquals(validation.id, response.validationId);
+        assertEquals(templateDto.id, response.templateId);
+
+        UpdateAssessmentRequest updateRequest = new UpdateAssessmentRequest();
+        updateRequest.assessmentDoc =makeJsonDocUpdated();
+
+        var updatedResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(updateRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}",response.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(403,updatedResponse.code);
+    }
+
 
     @Test
     public void getAssessmentNotExist() {
@@ -264,6 +373,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals("There is no Assessment with the following id: "+8, response.message);
     }
+
 
     private ValidationResponse approveValidation(Long valId) {
 
@@ -345,7 +455,62 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"type\": \"PID POLICY \",\n" +
                 "    \"name\": \"services pid policy\"\n" +
                 "  },\n" +
-                "  \"assesment_type\": \"eosc pid policy\",\n" +
+                "  \"assessment_type\": \"eosc pid policy\",\n" +
+                "  \"actor\": \"owner\",\n" +
+                "  \"organisation\": {\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"name\": \"test\"\n" +
+                "  },\n" +
+                "  \"result\": {\n" +
+                "    \"compliance\": true,\n" +
+                "    \"ranking\": 0.6\n" +
+                "  },\n" +
+                "  \"principles\": [\n" +
+                "    {\n" +
+                "      \"name\": \"Principle 1\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"name\": \"Measurement\",\n" +
+                "          \"type\": \"optional\",\n" +
+                "          \"metric\": {\n" +
+                "            \"type\": \"number\",\n" +
+                "            \"algorithm\": \"sum\",\n" +
+                "            \"benchmark\": {\n" +
+                "              \"equal_greater_than\": 1\n" +
+                "            },\n" +
+                "            \"value\": 2,\n" +
+                "            \"result\": 1,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"type\": \"binary\",\n" +
+                "                \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
+                "                \"value\": 1,\n" +
+                "                \"evidence_url\": [\"www.in.gr\"]\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        JSONParser parser = new JSONParser();
+        JSONObject docObj = (JSONObject) parser.parse(doc);
+        return docObj;
+    }
+    private JSONObject makeJsonDocUpdated() throws ParseException {
+        String doc = "{\n" +
+                "  \"id\": \"9994-9399-9399-0932\",\n" +
+                "  \"status\": \"PUBLICLY VIEWED\",\n" +
+                "  \"version\": \"1\",\n" +
+                "  \"name\": \"first assessment updated\",\n" +
+                "  \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
+                "  \"subject\": {\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"type\": \"PID POLICY \",\n" +
+                "    \"name\": \"services pid policy\"\n" +
+                "  },\n" +
+                "  \"assessment_type\": \"eosc pid policy\",\n" +
                 "  \"actor\": \"owner\",\n" +
                 "  \"organisation\": {\n" +
                 "    \"id\": \"1\",\n" +
