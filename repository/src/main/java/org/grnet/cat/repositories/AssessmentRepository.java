@@ -2,9 +2,11 @@ package org.grnet.cat.repositories;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.Assessment;
-import org.grnet.cat.entities.Template;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -16,4 +18,4 @@ public class AssessmentRepository  implements PanacheRepositoryBase<Assessment, 
             return findByIdOptional(id);
         }
 
-    }
+}

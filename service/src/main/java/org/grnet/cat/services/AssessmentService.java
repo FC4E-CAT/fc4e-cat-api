@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import org.grnet.cat.dtos.AssessmentRequest;
 import org.grnet.cat.dtos.AssessmentResponseDto;
+import org.grnet.cat.dtos.*;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.mappers.AssessmentMapper;
@@ -79,5 +80,28 @@ public class AssessmentService {
     @Transactional
     public void deleteAll() {
         assessmentRepository.deleteAll();
+    }
+
+
+    /**
+     * Updates the Assessment's json document.
+     *
+     * @param id   The ID of the assessment whose json doc is being updated.
+     * @param request The update request.
+     * @return The updated assessment
+     */
+@Transactional
+    public AssessmentResponseDto updateAssessment(Long id, String userId, UpdateAssessmentRequest request) {
+
+        var assessment = assessmentRepository.findById(id);
+
+        if (!assessment.getValidation().getUser().getId().equals(userId)) {
+            throw new ForbiddenException("User not authorized to update assessment with ID " + id);
+        }
+        assessment.setAssessmentDoc(request.assessmentDoc.toString());
+        assessment.setUpdatedOn(Timestamp.from(Instant.now()));
+        assessmentRepository.persist(assessment);
+
+        return AssessmentMapper.INSTANCE.assessmentToResponseDto(assessment);
     }
 }

@@ -9,6 +9,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -29,6 +30,7 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.AssessmentRequest;
 import org.grnet.cat.dtos.AssessmentResponseDto;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.*;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.services.AssessmentService;
 
@@ -105,11 +107,9 @@ public class AssessmentsEndpoint {
     public Response create(@Valid @NotNull(message = "The request body is empty.") AssessmentRequest request, @Context UriInfo uriInfo) {
 
         var response = assessmentService.createAssessment(utility.getUserUniqueIdentifier(), request);
-
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
     }
-
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get Assessment.",
@@ -148,10 +148,65 @@ public class AssessmentsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                         @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") Long id) {
+                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") Long id) {
 
         var validations = assessmentService.getAssessment(utility.getUserUniqueIdentifier(), id);
 
         return Response.ok().entity(validations).build();
     }
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Update Assessment Json Document.",
+            description = "Updates the json document for an assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment's json document updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AssessmentResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Path("/{id}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response updateAssessment(@Parameter(
+            description = "The ID of the assessment to update.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                     @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
+                                     @Valid @NotNull(message = "The request body is empty.") UpdateAssessmentRequest updateAssessmentRequest) {
+
+        var assessment =assessmentService.updateAssessment(id,utility.getUserUniqueIdentifier(),updateAssessmentRequest);
+
+        return Response.ok().entity(assessment).build();
+    }
+
+
+
 }
