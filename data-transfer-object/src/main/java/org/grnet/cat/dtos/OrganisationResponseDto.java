@@ -38,4 +38,8 @@ public class OrganisationResponseDto {
     @JsonProperty("website")
     public String website;
 
+
+    @JsonProperty("acronym")
+    public String acronym;
+
 }

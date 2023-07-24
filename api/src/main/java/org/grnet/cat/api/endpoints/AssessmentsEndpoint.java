@@ -154,6 +154,8 @@ public class AssessmentsEndpoint {
 
         return Response.ok().entity(validations).build();
     }
+
+
     @Tag(name = "Assessment")
     @Operation(
             summary = "Update Assessment Json Document.",
@@ -198,15 +200,14 @@ public class AssessmentsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                     @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
+                                         @PathParam("id")
+                                         @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
                                      @Valid @NotNull(message = "The request body is empty.") UpdateAssessmentRequest updateAssessmentRequest) {
 
         var assessment =assessmentService.updateAssessment(id,utility.getUserUniqueIdentifier(),updateAssessmentRequest);
 
         return Response.ok().entity(assessment).build();
     }
-
 
 
 }

@@ -354,8 +354,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals(403,updatedResponse.code);
     }
-
-
     @Test
     public void getAssessmentNotExist() {
 
@@ -373,7 +371,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals("There is no Assessment with the following id: "+8, response.message);
     }
-
 
     private ValidationResponse approveValidation(Long valId) {
 
