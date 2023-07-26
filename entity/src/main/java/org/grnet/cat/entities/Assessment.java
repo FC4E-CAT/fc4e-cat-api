@@ -19,8 +19,8 @@ public class Assessment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "assessment_doc", columnDefinition = "json")
 
+    @Column(name = "assessment_doc", columnDefinition = "json")
     private String assessmentDoc;
 
     @ManyToOne
@@ -30,9 +30,11 @@ public class Assessment {
     @ManyToOne
     @JoinColumn(name = "validation_id", referencedColumnName = "id")
     private Validation validation;
+
     @Column(name = "created_on")
     @NotNull
     private Timestamp createdOn;
+
     @Column(name = "updated_on")
     private Timestamp updatedOn;
 
