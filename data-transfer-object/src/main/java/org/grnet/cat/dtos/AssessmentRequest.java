@@ -28,7 +28,6 @@ public class AssessmentRequest {
     )
     @JsonProperty("validation_id")
     @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:")
-
     @NotNull
     public Long validationId;
 
@@ -41,7 +40,6 @@ public class AssessmentRequest {
     )
     @JsonProperty("template_id")
     @NotFoundEntity(repository = TemplateRepository.class, message = "There is no Template with the following id:")
-
     @NotNull
     public Long templateId;
 
@@ -103,7 +101,6 @@ public class AssessmentRequest {
     )
     @JsonProperty("assessment_doc")
     @NotEmpty(message = "assessment doc may not be empty")
-
     @NotNull
     public JSONObject assessmentDoc;
 }

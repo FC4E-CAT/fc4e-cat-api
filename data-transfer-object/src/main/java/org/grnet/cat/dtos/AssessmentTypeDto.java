@@ -16,7 +16,6 @@ public class AssessmentTypeDto{
     @JsonProperty("id")
     public Long id;
 
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -26,7 +25,6 @@ public class AssessmentTypeDto{
     @JsonProperty("name")
     public String name;
 
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -35,6 +33,4 @@ public class AssessmentTypeDto{
     )
     @JsonProperty("label")
     public String label;
-
-
 }
