@@ -31,13 +31,13 @@ public class AssessmentResponseDto {
             description = "The validation id of the assessment")
     @JsonProperty("validationId")
     public Long validationId;
+
     @Schema(
             type = SchemaType.OBJECT,
             implementation = JSONObject.class,
             description = "The assessment doc")
     @JsonProperty("assessmentDoc")
     public JSONObject assessmentDoc;
-
 
     @Schema(
             type = SchemaType.STRING,
@@ -48,7 +48,6 @@ public class AssessmentResponseDto {
     @JsonProperty("created_on")
     public String createdOn;
 
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -57,5 +56,4 @@ public class AssessmentResponseDto {
     )
     @JsonProperty("updated_on")
     public String updatedOn;
-
 }

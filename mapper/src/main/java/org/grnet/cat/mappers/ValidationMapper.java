@@ -29,5 +29,4 @@ public interface ValidationMapper {
     @Mapping(target = "userSurname", expression = "java(validation.getUser().getSurname())")
     @Mapping(target = "userEmail", expression = "java(validation.getUser().getEmail())")
     ValidationResponse validationToDto(Validation validation);
-
 }

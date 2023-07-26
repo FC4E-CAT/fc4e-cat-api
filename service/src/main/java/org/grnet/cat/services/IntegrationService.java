@@ -19,7 +19,6 @@ import org.grnet.cat.mappers.SourceMapper;
  * The IntegrationService provides operations for managing integrations.
  */
 @ApplicationScoped
-
 public class IntegrationService {
 
     /**
