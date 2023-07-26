@@ -3,12 +3,14 @@ package org.grnet.cat.api;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
-import org.grnet.cat.dtos.*;
-import org.grnet.cat.repositories.ActorRepository;
-import org.grnet.cat.repositories.AssessmentTypeRepository;
-import org.grnet.cat.repositories.UserRepository;
+import org.grnet.cat.dtos.AssessmentRequest;
+import org.grnet.cat.dtos.AssessmentResponseDto;
+import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.TemplateDto;
+import org.grnet.cat.dtos.UpdateValidationStatus;
+import org.grnet.cat.dtos.ValidationRequest;
+import org.grnet.cat.dtos.ValidationResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -20,12 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @QuarkusTest
 @TestHTTPEndpoint(AssessmentsEndpoint.class)
 public class AssessmentsEndpointTest extends KeycloakTest {
-    @Inject
-    ActorRepository actorRepository;
-    @Inject
-    UserRepository userRepository;
-    @Inject
-    AssessmentTypeRepository assessmentTypeRepository;
 
     @Test
     public void createAssessment() throws ParseException {
@@ -33,8 +29,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation=makeValidation("validated");
-        TemplateDto templateDto=fetchTemplateByActorAndType();
+        ValidationResponse validation = makeValidation("validated");
+        TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = validation.id;
@@ -56,6 +52,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals(templateDto.id, response.templateId);
 
     }
+
     @Test
     public void createAssessmentNotAuthorizedNotOwner() throws ParseException {
 
@@ -63,8 +60,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
 
         register("validated");
-        ValidationResponse validation=makeValidation("alice");
-        TemplateDto templateDto=fetchTemplateByActorAndType();
+        ValidationResponse validation = makeValidation("alice");
+        TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = validation.id;
@@ -93,8 +90,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
 
         register("validated");
-        ValidationResponse validation=makeValidationRequest("alice");
-        TemplateDto templateDto=fetchTemplateByActorAndType();
+        ValidationResponse validation = makeValidationRequest("alice");
+        TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = validation.id;
@@ -121,8 +118,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation=makeValidation("validated");
-        TemplateDto templateDto=fetchTemplateByActorAndType();
+        ValidationResponse validation = makeValidation("validated");
+        TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = validation.id;
@@ -141,7 +138,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-         assertEquals(400, response.code);
+        assertEquals(400, response.code);
     }
 
     @Test
@@ -150,7 +147,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        TemplateDto templateDto=fetchTemplateByActorAndType();
+        TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = 2L;
@@ -178,7 +175,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation=makeValidation("validated");
+        ValidationResponse validation = makeValidation("validated");
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = validation.id;
         request.templateId = 2L;
@@ -195,11 +192,80 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
+
         assertEquals(404, response.code);
-
     }
-    private ValidationResponse approveValidation(Long valId) {
 
+    @Test
+    public void getAssessment() throws ParseException {
+
+        register("validated");
+        register("admin");
+
+        ValidationResponse validation = makeValidation("validated");
+        TemplateDto templateDto = fetchTemplateByActorAndType();
+
+        AssessmentRequest request = new AssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc();
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(AssessmentResponseDto.class);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AssessmentResponseDto.class);
+
+        assertEquals(assessment.id, response.id);
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("bob"))
+                .get("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
+
+    @Test
+    public void getAssessmentNotExist() {
+
+        register("validated");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/{id}", 8L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Assessment with the following id: "+8, response.message);
+    }
+
+    private ValidationResponse approveValidation(Long valId) {
 
         var updateStatus = new UpdateValidationStatus();
 
@@ -242,11 +308,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
-return response;
+        return response;
     }
 
     public TemplateDto fetchTemplateByActorAndType() {
-
 
         var response = given()
                 .auth()
@@ -260,11 +325,14 @@ return response;
                 .as(TemplateDto.class);
         return response;
     }
-private ValidationResponse makeValidation(String username){
-        var response=makeValidationRequest(username);
-        var approveResponse=approveValidation(response.id);
+
+    private ValidationResponse makeValidation(String username) {
+
+        var response = makeValidationRequest(username);
+        var approveResponse = approveValidation(response.id);
         return approveResponse;
-}
+    }
+
     private JSONObject makeJsonDoc() throws ParseException {
         String doc = "{\n" +
                 "  \"id\": \"9994-9399-9399-0932\",\n" +
@@ -320,6 +388,7 @@ private ValidationResponse makeValidation(String username){
         JSONObject docObj = (JSONObject) parser.parse(doc);
         return docObj;
     }
+
     private JSONObject makeEmptyJsonDoc() throws ParseException {
         String doc = "{}";
         JSONParser parser = new JSONParser();

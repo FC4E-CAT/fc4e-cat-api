@@ -43,8 +43,8 @@ public class KeycloakTest {
 
     @BeforeEach
     public void setup() {
-        assessmentService.deleteAll();
 
+        assessmentService.deleteAll();
         validationService.deleteAll();
         userService.deleteAll();
     }
