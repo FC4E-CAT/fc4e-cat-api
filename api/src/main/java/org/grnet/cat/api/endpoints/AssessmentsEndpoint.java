@@ -4,8 +4,10 @@ import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -16,18 +18,19 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.api.utils.Utility;
+import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.AssessmentRequest;
+import org.grnet.cat.dtos.AssessmentResponseDto;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.services.AssessmentService;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 @Path("/v1/assessments")
 @Authenticated
@@ -52,7 +55,7 @@ public class AssessmentsEndpoint {
             description = "Assessment creation successful.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = Response.class)))
+                    implementation = AssessmentResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -107,4 +110,48 @@ public class AssessmentsEndpoint {
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
     }
 
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get Assessment.",
+            description = "Returns a specific assessment if it belongs to the user.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding assessment.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AssessmentResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getAssessment(@Parameter(
+            description = "The ID of the assessment to retrieve.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                                         @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") Long id) {
+
+        var validations = assessmentService.getAssessment(utility.getUserUniqueIdentifier(), id);
+
+        return Response.ok().entity(validations).build();
+    }
 }
