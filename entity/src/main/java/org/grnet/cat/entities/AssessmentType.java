@@ -13,9 +13,9 @@ public class AssessmentType {
     @Column(name = "name")
     private String name;
 
-
     @Column(name = "label")
     private String label;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "type")
     private List<Template> templates;
 
