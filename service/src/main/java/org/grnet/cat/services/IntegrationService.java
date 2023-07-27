@@ -45,7 +45,7 @@ public class IntegrationService {
     public OrganisationResponseDto getOrganisation(Source source, String id) {
 
         var org = source.execute(id);
-        return OrganisationMapper.INSTANCE.organisationToResponse(new Organisation(org[0], org[1], org[2]));
+        return OrganisationMapper.INSTANCE.organisationToResponse(new Organisation(org[0], org[1], org[2],org[3]));
     }
 
     /**
@@ -58,7 +58,7 @@ public class IntegrationService {
     public PageResource<OrganisationResponseDto> searchOrganisationsByNameAndPage(String name, int page, UriInfo uriInfo) {
 
         var orgs = Source.ROR.execute(name, page);
-        var organisations = orgs.getOrgElements().stream().map(org -> new Organisation(org[0], org[1], org[2])).collect(Collectors.toList());
+        var organisations = orgs.getOrgElements().stream().map(org -> new Organisation(org[0], org[1], org[2],org[3])).collect(Collectors.toList());
     
         var pageable = new PageQueryImpl<Organisation>();
 

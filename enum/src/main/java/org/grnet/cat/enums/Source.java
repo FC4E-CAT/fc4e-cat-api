@@ -27,8 +27,7 @@ public enum Source {
     ROR("ror", "ROR", "https://api.ror.org/organizations") {
 
         public RorSearchInfo execute(String name, int page) {
-
-            Response resp = connectHttpClient(url + "?query.advanced=name:" + name + "&page=" + page, name);
+            Response resp = connectHttpClient(url + "?query.advanced=name:" + name +"+OR+"+"acronyms:"+name+ "&page=" + page, name);
             try {
               return  buildOrgsInfo(resp.body().string());
             } catch (IOException ex) {
@@ -116,7 +115,6 @@ public enum Source {
 
     @SneakyThrows
     Response connectHttpClient(String url, String identifier) {
-
         var client = new OkHttpClient().newBuilder()
                 .build();
 
@@ -181,8 +179,16 @@ public enum Source {
             website = jRoot.get("website").getAsString();
 
         }
-
-      return new String[]{id,name,website};
+        String acronym=null;
+        if (jRoot.has("acronyms")) {
+            JsonArray acronyms=jRoot.get("acronyms").getAsJsonArray();
+          if(!acronyms.isEmpty()) {
+              acronym = acronyms.get(0).getAsString();
+          }
+        }else if(jRoot.has("abbreviation")){
+            acronym=jRoot.get("abbreviation").getAsString();
+        }
+        return new String[]{id,name,website,acronym};
 
     }
     

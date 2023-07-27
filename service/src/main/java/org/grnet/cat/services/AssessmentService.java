@@ -15,6 +15,7 @@ import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 
