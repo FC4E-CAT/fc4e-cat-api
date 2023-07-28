@@ -66,4 +66,27 @@ public class TemplateRepository implements PanacheRepositoryBase<Template, Long>
 
         return pageable;
     }
+
+    /**
+     * Retrieves from the database a page of assessment templates for a specific type.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of templates to include in a page.
+     * @param actorId The Assessment Actor the templates belong to.
+     * @return A list of Template objects representing the assessment templates in the requested page.
+     */
+    public PageQuery<Template> fetchTemplatesByActor(int page, int size, Long actorId){
+
+        var panache = find("from Template t where t.actor.id = ?1", actorId).page(page, size);
+
+        var pageable = new PageQueryImpl<Template>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
 }
