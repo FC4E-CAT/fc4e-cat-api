@@ -5,6 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
 import org.grnet.cat.dtos.*;
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -23,7 +24,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated");
+        ValidationResponse validation = makeValidation("validated", 6L);
         TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -54,7 +55,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
 
         register("validated");
-        ValidationResponse validation = makeValidation("alice");
+        ValidationResponse validation = makeValidation("alice", 6L);
         TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -84,7 +85,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
 
         register("validated");
-        ValidationResponse validation = makeValidationRequest("alice");
+        ValidationResponse validation = makeValidationRequest("alice", 6L);
         TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -111,7 +112,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated");
+        ValidationResponse validation = makeValidation("validated", 6L);
         TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -168,7 +169,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated");
+        ValidationResponse validation = makeValidation("validated", 6L);
         AssessmentRequest request = new AssessmentRequest();
         request.validationId = validation.id;
         request.templateId = 2L;
@@ -190,12 +191,41 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
+    public void createAssessmentMismatch() throws ParseException {
+
+        register("validated");
+        register("admin");
+
+        ValidationResponse validation = makeValidation("validated", 1L);
+        TemplateDto templateDto = fetchTemplateByActorAndType();
+
+        AssessmentRequest request = new AssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc();
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Actor in Validation Request mismatches actor in Template.", informativeResponse.message);
+    }
+
+    @Test
     public void getAssessment() throws ParseException {
 
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated");
+        ValidationResponse validation = makeValidation("validated", 6L);
         TemplateDto templateDto = fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -239,13 +269,53 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals("You do not have permission to access this resource.", error.message);
     }
+
+    @Test
+    public void getAssessments() throws ParseException {
+
+        register("validated");
+        register("admin");
+
+        ValidationResponse validation = makeValidation("validated", 6L);
+        TemplateDto templateDto = fetchTemplateByActorAndType();
+
+        AssessmentRequest request = new AssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc();
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(AssessmentResponseDto.class);
+
+        var pageResource = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get()
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, pageResource.getTotalElements());
+    }
+
     @Test
     public void updateAssessment() throws ParseException {
 
         register("validated");
         register("admin");
 
-        ValidationResponse validation=makeValidation("validated");
+        ValidationResponse validation=makeValidation("validated", 6L);
         TemplateDto templateDto=fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -285,6 +355,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         JSONObject json=makeJsonDocUpdated();
         assertEquals(json.toString(),updatedResponse.assessmentDoc.toString());
     }
+
     @Test
     public void updateAssessmentNotExists() throws ParseException {
 
@@ -315,7 +386,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
         register("alice");
-        ValidationResponse validation=makeValidation("validated");
+        ValidationResponse validation=makeValidation("validated", 6L);
         TemplateDto templateDto=fetchTemplateByActorAndType();
 
         AssessmentRequest request = new AssessmentRequest();
@@ -354,6 +425,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals(403,updatedResponse.code);
     }
+
     @Test
     public void getAssessmentNotExist() {
 
@@ -393,7 +465,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     }
 
-    private ValidationResponse makeValidationRequest(String username) {
+    private ValidationResponse makeValidationRequest(String username, Long actorId) {
 
         var request = new ValidationRequest();
         request.organisationRole = "Manager";
@@ -401,7 +473,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 6L;
+        request.actorId = actorId;
 
         var response = given()
                 .auth()
@@ -433,9 +505,9 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return response;
     }
 
-    private ValidationResponse makeValidation(String username) {
+    private ValidationResponse makeValidation(String username, Long actorId) {
 
-        var response = makeValidationRequest(username);
+        var response = makeValidationRequest(username, actorId);
         var approveResponse = approveValidation(response.id);
         return approveResponse;
     }

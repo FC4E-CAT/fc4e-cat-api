@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
+import lombok.EqualsAndHashCode;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
@@ -21,10 +22,12 @@ import java.sql.Timestamp;
  * This entity represents an application that an identified user can request to be promoted to a validated user.
  */
 @Entity
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Validation {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
