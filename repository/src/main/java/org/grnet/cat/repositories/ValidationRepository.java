@@ -1,7 +1,5 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.Source;
@@ -9,14 +7,12 @@ import org.grnet.cat.enums.ValidationStatus;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-
 
 /**
  * The ValidationRepository interface provides data access methods for the Validation entity.
  */
 @ApplicationScoped
-public class ValidationRepository implements PanacheRepositoryBase<Validation, Long>, Repository<Validation, Long> {
+public class ValidationRepository implements Repository<Validation, Long> {
 
     /**
      * It executes a query in database to check if there is a promotion request for a specific user and organisation.
@@ -121,10 +117,4 @@ public class ValidationRepository implements PanacheRepositoryBase<Validation, L
 
         return pageable;
     }
-
-    @Override
-    public Optional<Validation> searchByIdOptional(Long id) {
-        return findByIdOptional(id);
-    }
-
 }

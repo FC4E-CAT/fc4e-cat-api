@@ -8,8 +8,10 @@ import org.grnet.cat.entities.Template;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import java.sql.Timestamp;
@@ -25,6 +27,10 @@ public interface AssessmentMapper {
 
     AssessmentMapper INSTANCE = Mappers.getMapper(AssessmentMapper.class);
 
+    @IterableMapping(qualifiedByName="mapWithExpression")
+    List<AssessmentResponseDto> assessmentsToDto(List<Assessment> assessments);
+
+    @Named("mapWithExpression")
     @Mapping(target = "assessmentDoc", expression = "java(convertToJson(assessment.getAssessmentDoc()))")
     @Mapping(target = "templateId", expression = "java(assessment.getTemplate().getId())")
     @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")

@@ -2,15 +2,15 @@ package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import static io.restassured.RestAssured.given;
 import org.grnet.cat.api.endpoints.IntegrationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.dtos.SourceResponseDto;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestHTTPEndpoint(IntegrationsEndpoint.class)
@@ -109,7 +109,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .queryParam("name","Keimyung University")
+                .queryParam("name", "Keimyung University")
                 .get("/organisations/ROR/search")
                 .thenReturn();
 
@@ -117,6 +117,8 @@ public class IntegrationsEndpointTest extends KeycloakTest {
         assertEquals(3, response.body().as(PageResource.class).getTotalElements());
 
     }
+
+    @Test
     public void fetchRorOrganisationByNameEmpty() {
 
         register("alice");
@@ -124,7 +126,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .queryParam("name","")
+                .queryParam("name", "")
                 .get("/organisations/ROR/search")
                 .then()
                 .assertThat()
@@ -132,17 +134,18 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The parameter is empty.", response.message);
-
+        assertEquals("Value must be at least 2 characters.", response.message);
     }
-      public void fetchRorOrganisationByNameLessThan2Chars() {
+
+    @Test
+    public void fetchRorOrganisationByNameLessThan2Chars() {
 
         register("alice");
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .queryParam("name","K")
+                .queryParam("name", "K")
                 .get("/organisations/ROR/search")
                 .then()
                 .assertThat()
@@ -150,7 +153,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Value must be at least 2 characters", response.message);
-
+        assertEquals("Value must be at least 2 characters.", response.message);
     }
 }

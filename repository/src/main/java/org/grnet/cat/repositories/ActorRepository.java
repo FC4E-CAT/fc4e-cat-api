@@ -1,20 +1,17 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Actor;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
-import java.util.Optional;
-
 
 /**
  * The ActorRepository interface provides data access methods for the Actor entity.
  */
 @ApplicationScoped
-public class ActorRepository implements PanacheRepositoryBase<Actor, Long>, Repository<Actor, Long> {
+public class ActorRepository implements Repository<Actor, Long> {
 
     /**
      * Retrieves a page of from the database.
@@ -35,10 +32,5 @@ public class ActorRepository implements PanacheRepositoryBase<Actor, Long>, Repo
         pageable.page = Page.of(page, size);
 
         return pageable;
-    }
-
-    @Override
-    public Optional<Actor> searchByIdOptional(Long id) {
-        return findByIdOptional(id);
     }
 }

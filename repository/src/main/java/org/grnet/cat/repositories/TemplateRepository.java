@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
@@ -10,12 +9,7 @@ import org.grnet.cat.entities.Template;
 import java.util.Optional;
 
 @ApplicationScoped
-public class TemplateRepository implements PanacheRepositoryBase<Template, Long>, Repository<Template, Long> {
-
-    @Override
-    public Optional<Template> searchByIdOptional(Long id) {
-        return findByIdOptional(id);
-    }
+public class TemplateRepository implements Repository<Template, Long> {
 
     public Optional<Template> fetchTemplateByActorAndType(Long actorId, Long typeId){
 
