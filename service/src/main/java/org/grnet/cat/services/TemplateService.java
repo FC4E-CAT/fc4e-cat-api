@@ -109,4 +109,21 @@ public class TemplateService {
 
         return new PageResource<>(templates, TemplateMapper.INSTANCE.templatesToDto(templates.list()), uriInfo);
     }
+
+
+    /**
+     * Retrieves a page of assessment templates for a specific type.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of templates to include in a page.
+     * @param actorId The Assessment actor the templates belong to.
+     * @param uriInfo The Uri Info.
+     * @return A list of TemplateDto objects representing the assessment templates in the requested page.
+     */
+    public PageResource<TemplateDto> getTemplatesByActor(int page, int size, Long actorId, UriInfo uriInfo){
+
+        var templates = templateRepository.fetchTemplatesByActor(page, size, actorId);
+
+        return new PageResource<>(templates, TemplateMapper.INSTANCE.templatesToDto(templates.list()), uriInfo);
+    }
 }

@@ -1016,6 +1016,22 @@
             "icon_uri": ""
           },
           {
+            "name": "Read Template By Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Template By Actor",
+            "attributes": {},
+            "_id": "65a726ee-7820-40a6-ba4f-1d36cddd7ab1",
+            "uris": [
+              "/v1/templates/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Template Resource",
             "ownerManagedAccess": false,
             "displayName": "Template Resource",
@@ -1124,6 +1140,19 @@
             "config": {
               "resources": "[\"Assessment Resource\",\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "3c5edc94-ef82-4a25-9162-b71fe0b8fce2",
+            "name": "Read Template By Actor",
+            "description": "",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Template By Actor\"]",
+              "scopes": "[\"read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
           {
