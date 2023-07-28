@@ -16,7 +16,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import java.io.IOException;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -208,18 +207,19 @@ public class IntegrationsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response searchRorByName(
-            @Valid @NotNull(message = "The parameter is empty.")
+            @Valid
+            @Size(min=2, message = "Value must be at least 2 characters.")
             @Parameter(
                     description = "The query param to search organisation by name. Name size must be >=2 chars",
                     required = true,
                     example = "Keimyung University",
                     schema = @Schema(type = SchemaType.STRING))
-            @QueryParam("name") @Size(min=2) String name,
+            @QueryParam("name") String name,
             @Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
              @Context UriInfo uriInfo)  {
 
-        var integrations = integrationService.searchOrganisationsByNameAndPage(name,page,uriInfo);
+        var integrations = integrationService.searchOrganisationsByNameAndPage(name, page, uriInfo);
 
         return Response.ok().entity(integrations).build();
     }

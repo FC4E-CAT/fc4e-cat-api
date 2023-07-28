@@ -3,6 +3,8 @@ package org.grnet.cat.api.endpoints;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -27,12 +29,19 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.dtos.AssessmentRequest;
 import org.grnet.cat.dtos.AssessmentResponseDto;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.*;
+import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.services.AssessmentService;
+
+import java.util.List;
+
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/v1/assessments")
 @Authenticated
@@ -107,9 +116,11 @@ public class AssessmentsEndpoint {
     public Response create(@Valid @NotNull(message = "The request body is empty.") AssessmentRequest request, @Context UriInfo uriInfo) {
 
         var response = assessmentService.createAssessment(utility.getUserUniqueIdentifier(), request);
+
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
     }
+
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get Assessment.",
@@ -209,5 +220,63 @@ public class AssessmentsEndpoint {
         return Response.ok().entity(assessment).build();
     }
 
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Retrieve assessments for a specific user.",
+            description = "This endpoint retrieves the assessments submitted by the specified user." +
+                    "By default, the first page of 10 assessments will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of assessments.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response validations(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                @Parameter(name = "size", in = QUERY,
+                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
+                                @Context UriInfo uriInfo) {
 
+        var assessments = assessmentService.getAssessmentsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
+
+        return Response.ok().entity(assessments).build();
+    }
+
+    public static class PageableAssessmentResponse extends PageResource<AssessmentResponseDto> {
+
+        private List<AssessmentResponseDto> content;
+
+        @Override
+        public List<AssessmentResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<AssessmentResponseDto> content) {
+            this.content = content;
+        }
+    }
 }
