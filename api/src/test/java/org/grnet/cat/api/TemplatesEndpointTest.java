@@ -126,4 +126,39 @@ public class TemplatesEndpointTest extends KeycloakTest {
         assertEquals(6L, response.actor.id);
         assertEquals(1L, response.type.id);
     }
+    @Test
+    public void fetchTemplatesByActorNotExist() {
+
+        register("validated");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/by-actor/{actor-id}", 100L)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(404, response.code);
+    }
+
+    @Test
+    public void fetchTemplatesByActorForbiddenAccess() {
+
+        register("alice");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/by-actor/{actor-id}", 6L)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(403, response.code);
+    }
 }

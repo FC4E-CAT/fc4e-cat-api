@@ -124,7 +124,12 @@ public enum Source {
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .build();
 
-        Response resp = client.newCall(request).execute();
+        Response resp = null;
+        try {
+            resp = client.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         if (resp.code() == 404) {
             throw new EntityNotFoundException("Organisation " + identifier + ", not found in " + organisationSource);
