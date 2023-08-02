@@ -95,7 +95,7 @@ public class AdminValidationsEndpoint {
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByPage(page-1, size, status, uriInfo, utility.getValidationComparator());
+        var validations = validationService.getValidationsByPage(page-1, size, status, uriInfo);
 
         return Response.ok().entity(validations).build();
     }
