@@ -253,11 +253,11 @@ public class AssessmentsEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response validations(@Parameter(name = "page", in = QUERY,
+    public Response assessments(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAssessmentsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier());

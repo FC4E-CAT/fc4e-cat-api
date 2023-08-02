@@ -1,6 +1,7 @@
 package org.grnet.cat.entities;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
+import org.grnet.cat.converter.StatusAttributeConverter;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
@@ -63,8 +65,7 @@ public class Validation {
     @NotNull
     private Timestamp createdOn;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 8)
+    @Convert(converter = StatusAttributeConverter.class)
     @NotNull
     private ValidationStatus status;
 
