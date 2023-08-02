@@ -93,7 +93,7 @@ public class ValidationService {
      * @param status Validation status to search for.
      * @return A list of ValidationResponse objects representing the submitted promotion requests in the requested page.
      */
-    public PageResource<ValidationResponse> getValidationsByUserAndPage(int page, int size, String status, UriInfo uriInfo, String userID, Comparator<Validation> comparator){
+    public PageResource<ValidationResponse> getValidationsByUserAndPage(int page, int size, String status, UriInfo uriInfo, String userID){
 
         PageQuery<Validation> validations = null;
 
@@ -105,7 +105,7 @@ public class ValidationService {
             validations = validationRepository.fetchValidationsByUserAndPage(page, size, userID);
         }
 
-        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list().stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
+        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list()), uriInfo);
     }
 
     /**
@@ -117,7 +117,7 @@ public class ValidationService {
      * @param status Validation status to search for.
      * @return A list of ValidationResponse objects representing the submitted promotion requests in the requested page.
      */
-    public PageResource<ValidationResponse> getValidationsByPage(int page, int size, String status, UriInfo uriInfo, Comparator<Validation> comparator){
+    public PageResource<ValidationResponse> getValidationsByPage(int page, int size, String status, UriInfo uriInfo){
 
         PageQuery<Validation> validations = null;
 
@@ -129,7 +129,7 @@ public class ValidationService {
             validations = validationRepository.fetchValidationsByPage(page, size);
         }
 
-        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list().stream().sorted(comparator).collect(Collectors.toList())), uriInfo);
+        return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list()), uriInfo);
     }
 
     /**

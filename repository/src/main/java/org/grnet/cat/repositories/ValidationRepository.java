@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.Source;
@@ -39,7 +40,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      */
     public PageQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID){
 
-        var panache = find("from Validation v where v.user.id = ?1", userID).page(page, size);
+        var panache = find("from Validation v where v.user.id = ?1", Sort.by("status"), userID).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
@@ -84,7 +85,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      */
     public PageQuery<Validation> fetchValidationsByPage(int page, int size){
 
-        var panache = findAll().page(page, size);
+        var panache = findAll(Sort.by("status")).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
