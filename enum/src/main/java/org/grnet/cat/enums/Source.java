@@ -26,19 +26,19 @@ public enum Source {
 
     ROR("ror", "ROR", "https://api.ror.org/organizations") {
 
-        public RorSearchInfo execute(String name, int page) {
-            Response resp = connectHttpClient(url + "?query.advanced=name:" + name +"+OR+"+"acronyms:"+name+ "&page=" + page, name);
+        public RorSearchInfo execute(String query, int page) {
+            Response resp = connectHttpClient(url + "?query=" + query + "&page=" + page, query);
             try {
-              return  buildOrgsInfo(resp.body().string());
+              return  buildOrgsInfo(resp.body().string(),query);
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
             }
             return null;
         }
 
-        public String[] execute(String id) {
+        public String[] execute(String query) {
             try {
-                Response resp = connectHttpClient(url + "/" + id, id);
+                Response resp = connectHttpClient(url + "/" + query, query);
                 return buildOrgInfo(resp.body().string());
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
@@ -48,9 +48,9 @@ public enum Source {
 
     },
     EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider") {
-        public String[] execute(String id) {
+        public String[] execute(String query) {
             try {
-                Response resp = connectHttpClient(url + "/" + id, id);
+                Response resp = connectHttpClient(url + "/" + query, query);
                 return buildOrgInfo(resp.body().string());
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
@@ -60,24 +60,24 @@ public enum Source {
         }
 
         @Override
-        public RorSearchInfo execute(String id, int page) {
+        public RorSearchInfo execute(String query, int page) {
             throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     },
     RE3DATA("re3data", "RE3DATA", "") {
-        public String[] execute(String id) {
+        public String[] execute(String query) {
             throw new InternalServerErrorException("Source re3data is not supported.", 501);
         }
 
         @Override
-        public RorSearchInfo execute(String id, int page) {
+        public RorSearchInfo execute(String query, int page) {
             throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     };
 
-    public abstract String[] execute(String id);
+    public abstract String[] execute(String query);
 
-    public abstract RorSearchInfo execute(String id, int page);
+    public abstract RorSearchInfo execute(String query, int page);
 
     public final String label;
     public final String organisationSource;
@@ -117,6 +117,7 @@ public enum Source {
     Response connectHttpClient(String url, String identifier) {
         var client = new OkHttpClient().newBuilder()
                 .build();
+        System.out.println("url is "+url);
 
         var request = new Request.Builder()
                 .url(url)
@@ -149,7 +150,7 @@ public enum Source {
         return returnOrgInfo(jRoot);
     }
 
-    RorSearchInfo buildOrgsInfo(String content) {
+    RorSearchInfo buildOrgsInfo(String content,String query) {
 
         JsonParser jsonParser = new JsonParser();
         JsonElement jElement = jsonParser.parse(content);
@@ -157,6 +158,10 @@ public enum Source {
         
       
         int total = jRoot.get("number_of_results").getAsInt();
+        if(total==0){
+            throw new EntityNotFoundException("Organisation " + query + ", not found in " + organisationSource);
+
+        }
         JsonArray items=jRoot.get("items").getAsJsonArray();
         
         List<String[]> list=new ArrayList<>();
