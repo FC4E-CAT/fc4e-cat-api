@@ -117,9 +117,7 @@ public enum Source {
     Response connectHttpClient(String url, String identifier) {
         var client = new OkHttpClient().newBuilder()
                 .build();
-        System.out.println("url is "+url);
-
-        var request = new Request.Builder()
+               var request = new Request.Builder()
                 .url(url)
                 .method("GET", null)
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
