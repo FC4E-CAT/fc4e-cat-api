@@ -3,7 +3,7 @@ package org.grnet.cat.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.AssessmentTypeDto;
+import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.mappers.AssessmentTypeMapper;
 import org.grnet.cat.repositories.AssessmentTypeRepository;

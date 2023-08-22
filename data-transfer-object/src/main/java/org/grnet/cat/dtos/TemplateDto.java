@@ -3,6 +3,7 @@ package org.grnet.cat.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
 import org.json.simple.JSONObject;
 
 @Schema(name = "Template", description = "This object represents the Template.")
