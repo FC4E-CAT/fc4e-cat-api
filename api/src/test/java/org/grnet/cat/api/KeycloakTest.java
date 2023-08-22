@@ -5,23 +5,15 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
-import org.grnet.cat.api.endpoints.ValidationsEndpoint;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.entities.*;
-import org.grnet.cat.enums.Source;
-import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.*;
-import org.grnet.cat.services.AssessmentService;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
-import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -39,12 +31,12 @@ public class KeycloakTest {
     ValidationService validationService;
 
     @Inject
-    AssessmentService assessmentService;
+    JsonAssessmentService jsonAssessmentService;
 
     @BeforeEach
     public void setup() {
 
-        assessmentService.deleteAll();
+        jsonAssessmentService.deleteAll();
         validationService.deleteAll();
         userService.deleteAll();
     }

@@ -1,4 +1,4 @@
-package org.grnet.cat.dtos;
+package org.grnet.cat.dtos.assessment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;

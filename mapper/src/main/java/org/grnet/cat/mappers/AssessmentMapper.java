@@ -1,10 +1,8 @@
 package org.grnet.cat.mappers;
 
 
-import org.grnet.cat.dtos.AssessmentResponseDto;
-import org.grnet.cat.dtos.TemplateDto;
+import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.entities.Assessment;
-import org.grnet.cat.entities.Template;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -28,7 +26,7 @@ public interface AssessmentMapper {
     AssessmentMapper INSTANCE = Mappers.getMapper(AssessmentMapper.class);
 
     @IterableMapping(qualifiedByName="mapWithExpression")
-    List<AssessmentResponseDto> assessmentsToDto(List<Assessment> assessments);
+    List<JsonAssessmentResponse> assessmentsToJsonAssessments(List<Assessment> assessments);
 
     @Named("mapWithExpression")
     @Mapping(target = "assessmentDoc", expression = "java(convertToJson(assessment.getAssessmentDoc()))")
@@ -36,7 +34,7 @@ public interface AssessmentMapper {
     @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
     @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
-    AssessmentResponseDto assessmentToResponseDto(Assessment assessment);
+    JsonAssessmentResponse assessmentToJsonAssessment(Assessment assessment);
     default JSONObject convertToJson(String doc) {
         JSONParser parser = new JSONParser();
         JSONObject json = null;
