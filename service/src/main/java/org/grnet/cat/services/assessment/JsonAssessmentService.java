@@ -1,15 +1,16 @@
-package org.grnet.cat.services;
+package org.grnet.cat.services.assessment;
 
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.AssessmentRequest;
-import org.grnet.cat.dtos.AssessmentResponseDto;
-import org.grnet.cat.dtos.*;
+import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
+import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.enums.ValidationStatus;
@@ -22,10 +23,11 @@ import java.sql.Timestamp;
 import java.time.Instant;
 
 /**
- * The AssessmentService provides operations for managing assessments.
+ * The AssessmentService provides operations for managing assessments expressed by a JSON object.
  */
 @ApplicationScoped
-public class AssessmentService {
+@Named("json-assessment-service")
+public class JsonAssessmentService implements AssessmentService<JsonAssessmentRequest, UpdateJsonAssessmentRequest, JsonAssessmentResponse> {
 
     @Inject
     AssessmentRepository assessmentRepository;
@@ -37,7 +39,7 @@ public class AssessmentService {
     ValidationRepository validationRepository;
 
     @Transactional
-    public AssessmentResponseDto createAssessment(String userId, AssessmentRequest request) {
+    public JsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
 
         var validation = validationRepository.findById(request.validationId);
 
@@ -63,7 +65,7 @@ public class AssessmentService {
 
         assessmentRepository.persist(assessment);
 
-        return AssessmentMapper.INSTANCE.assessmentToResponseDto(assessment);
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
     }
 
     /**
@@ -74,7 +76,7 @@ public class AssessmentService {
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    public AssessmentResponseDto getAssessment(String userId, Long assessmentId) {
+    public JsonAssessmentResponse getAssessment(String userId, Long assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
@@ -82,7 +84,7 @@ public class AssessmentService {
             throw new ForbiddenException("Not Permitted.");
         }
 
-        return AssessmentMapper.INSTANCE.assessmentToResponseDto(assessment);
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
     }
 
     @Transactional
@@ -98,18 +100,18 @@ public class AssessmentService {
      * @return The updated assessment
      */
     @Transactional
-    public AssessmentResponseDto updateAssessment(Long id, String userId, UpdateAssessmentRequest request) {
+    public JsonAssessmentResponse updateAssessment(Long id, String userId, UpdateJsonAssessmentRequest request) {
 
         var assessment = assessmentRepository.findById(id);
 
         if (!assessment.getValidation().getUser().getId().equals(userId)) {
             throw new ForbiddenException("User not authorized to update assessment with ID " + id);
         }
+
         assessment.setAssessmentDoc(request.assessmentDoc.toString());
         assessment.setUpdatedOn(Timestamp.from(Instant.now()));
-        assessmentRepository.persist(assessment);
 
-        return AssessmentMapper.INSTANCE.assessmentToResponseDto(assessment);
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
     }
 
     /**
@@ -121,10 +123,10 @@ public class AssessmentService {
      * @param userID The ID of the user.
      * @return A list of AssessmentResponseDto objects representing the submitted assessments in the requested page.
      */
-    public PageResource<AssessmentResponseDto> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
+    public PageResource<JsonAssessmentResponse> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID);
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToDto(assessments.list()), uriInfo);
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list()), uriInfo);
     }
 }

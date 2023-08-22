@@ -5,6 +5,9 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
 import org.grnet.cat.dtos.*;
+import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
+import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -24,10 +27,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated", 6L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -42,10 +45,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
+
         assertEquals(validation.id, response.validationId);
         assertEquals(templateDto.id, response.templateId);
-
     }
 
     @Test
@@ -53,12 +56,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         register("alice");
         register("admin");
-
         register("validated");
-        ValidationResponse validation = makeValidation("alice", 6L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var validation = makeValidation("alice", 6L);
+        var templateDto = fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -74,8 +77,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-        assertEquals(403, response.code);
 
+        assertEquals(403, response.code);
     }
 
     @Test
@@ -83,12 +86,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         register("alice");
         register("admin");
-
         register("validated");
-        ValidationResponse validation = makeValidationRequest("alice", 6L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var validation = makeValidationRequest("alice", 6L);
+        var templateDto = fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -104,18 +107,20 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
+
         assertEquals(403, response.code);
     }
+
     @Test
     public void createAssessmentEmptyJson() throws ParseException {
 
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated", 6L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeEmptyJsonDoc();
@@ -141,9 +146,9 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        TemplateDto templateDto = fetchTemplateByActorAndType();
+        var templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = 2L;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -159,8 +164,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-        assertEquals(404, response.code);
 
+        assertEquals(404, response.code);
     }
 
     @Test
@@ -169,8 +174,9 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated", 6L);
-        AssessmentRequest request = new AssessmentRequest();
+        var validation = makeValidation("validated", 6L);
+
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = 2L;
         request.assessmentDoc = makeJsonDoc();
@@ -196,10 +202,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated", 1L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
+        var validation = makeValidation("validated", 1L);
+        var templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -225,10 +231,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated", 6L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -243,7 +249,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
 
         var response = given()
                 .auth()
@@ -253,7 +259,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
 
         assertEquals(assessment.id, response.id);
 
@@ -276,10 +282,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation = makeValidation("validated", 6L);
-        TemplateDto templateDto = fetchTemplateByActorAndType();
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -294,7 +300,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
 
         var pageResource = given()
                 .auth()
@@ -315,10 +321,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        ValidationResponse validation=makeValidation("validated", 6L);
-        TemplateDto templateDto=fetchTemplateByActorAndType();
+        var validation=makeValidation("validated", 6L);
+        var templateDto=fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -333,11 +339,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
+
         assertEquals(validation.id, response.validationId);
         assertEquals(templateDto.id, response.templateId);
 
-        UpdateAssessmentRequest updateRequest = new UpdateAssessmentRequest();
+        var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc =makeJsonDocUpdated();
 
         var updatedResponse = given()
@@ -350,9 +357,9 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
 
-        JSONObject json=makeJsonDocUpdated();
+        var json = makeJsonDocUpdated();
         assertEquals(json.toString(),updatedResponse.assessmentDoc.toString());
     }
 
@@ -362,7 +369,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        UpdateAssessmentRequest updateRequest = new UpdateAssessmentRequest();
+        var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc =makeJsonDocUpdated();
 
         var updatedResponse = given()
@@ -386,10 +393,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
         register("alice");
-        ValidationResponse validation=makeValidation("validated", 6L);
-        TemplateDto templateDto=fetchTemplateByActorAndType();
 
-        AssessmentRequest request = new AssessmentRequest();
+        var validation=makeValidation("validated", 6L);
+        var templateDto=fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
         request.assessmentDoc = makeJsonDoc();
@@ -404,11 +412,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(AssessmentResponseDto.class);
+                .as(JsonAssessmentResponse.class);
+
         assertEquals(validation.id, response.validationId);
         assertEquals(templateDto.id, response.templateId);
 
-        UpdateAssessmentRequest updateRequest = new UpdateAssessmentRequest();
+        var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc =makeJsonDocUpdated();
 
         var updatedResponse = given()
@@ -629,6 +638,5 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         JSONObject docObj = (JSONObject) parser.parse(doc);
         return docObj;
     }
-
 }
 

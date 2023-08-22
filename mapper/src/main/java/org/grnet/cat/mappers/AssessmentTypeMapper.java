@@ -1,7 +1,7 @@
 package org.grnet.cat.mappers;
 
 
-import org.grnet.cat.dtos.AssessmentTypeDto;
+import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
 import org.grnet.cat.entities.AssessmentType;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

@@ -1,20 +1,29 @@
-package org.grnet.cat.dtos;
+package org.grnet.cat.dtos.assessment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import io.netty.util.Constant;
-import jakarta.json.Json;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.repositories.TemplateRepository;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-@Schema(name="UpdateAssessmentRequest", description="Update Assessment Request.")
+@Schema(name="JsonAssessmentRequest", description="Json Assessment Request.")
+public class JsonAssessmentRequest extends AssessmentRequest{
 
-public class UpdateAssessmentRequest {
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = Long.class,
+            required = true,
+            description = "The template id the assessment doc is generated from.",
+            example = "1"
+    )
+    @JsonProperty("template_id")
+    @NotFoundEntity(repository = TemplateRepository.class, message = "There is no Template with the following id:")
+    @NotNull
+    public Long templateId;
+
     @Schema(
             type = SchemaType.OBJECT,
             implementation = JSONObject.class,
@@ -23,6 +32,7 @@ public class UpdateAssessmentRequest {
             example =  "{\n" +
                     "  \"id\": \"9994-9399-9399-0932\",\n" +
                     "  \"status\": \"PRIVATE\",\n" +
+                    "  \"published\": false,\n" +
                     "  \"version\": \"1\",\n" +
                     "  \"name\": \"first assessment\",\n" +
                     "  \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
@@ -72,8 +82,7 @@ public class UpdateAssessmentRequest {
                     "}"
     )
     @JsonProperty("assessment_doc")
-    @NotEmpty(message = "assessment doc may not be empty.")
-
+    @NotEmpty(message = "assessment doc may not be empty")
     @NotNull
     public JSONObject assessmentDoc;
 }

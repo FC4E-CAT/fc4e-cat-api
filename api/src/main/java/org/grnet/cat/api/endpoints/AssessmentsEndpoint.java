@@ -29,15 +29,13 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.constraints.StringEnumeration;
-import org.grnet.cat.dtos.AssessmentRequest;
-import org.grnet.cat.dtos.AssessmentResponseDto;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.*;
+import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
+import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
-import org.grnet.cat.services.AssessmentService;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 
 import java.util.List;
 
@@ -50,11 +48,12 @@ public class AssessmentsEndpoint {
 
     @Inject
     Utility utility;
+
     @ConfigProperty(name = "server.url")
     String serverUrl;
 
     @Inject
-    AssessmentService assessmentService;
+    JsonAssessmentService assessmentService;
 
     @Tag(name = "Assessment")
     @Operation(
@@ -66,7 +65,7 @@ public class AssessmentsEndpoint {
             description = "Assessment creation successful.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AssessmentResponseDto.class)))
+                    implementation = JsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -113,7 +112,7 @@ public class AssessmentsEndpoint {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response create(@Valid @NotNull(message = "The request body is empty.") AssessmentRequest request, @Context UriInfo uriInfo) {
+    public Response create(@Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest request, @Context UriInfo uriInfo) {
 
         var response = assessmentService.createAssessment(utility.getUserUniqueIdentifier(), request);
 
@@ -130,7 +129,7 @@ public class AssessmentsEndpoint {
             description = "The corresponding assessment.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AssessmentResponseDto.class)))
+                    implementation = JsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -176,7 +175,7 @@ public class AssessmentsEndpoint {
             description = "Assessment's json document updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AssessmentResponseDto.class)))
+                    implementation = JsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -213,9 +212,9 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.NUMBER))
                                          @PathParam("id")
                                          @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
-                                     @Valid @NotNull(message = "The request body is empty.") UpdateAssessmentRequest updateAssessmentRequest) {
+                                     @Valid @NotNull(message = "The request body is empty.") UpdateJsonAssessmentRequest updateJsonAssessmentRequest) {
 
-        var assessment =assessmentService.updateAssessment(id,utility.getUserUniqueIdentifier(),updateAssessmentRequest);
+        var assessment = assessmentService.updateAssessment(id,utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
 
         return Response.ok().entity(assessment).build();
     }
@@ -265,17 +264,17 @@ public class AssessmentsEndpoint {
         return Response.ok().entity(assessments).build();
     }
 
-    public static class PageableAssessmentResponse extends PageResource<AssessmentResponseDto> {
+    public static class PageableAssessmentResponse extends PageResource<JsonAssessmentResponse> {
 
-        private List<AssessmentResponseDto> content;
+        private List<JsonAssessmentResponse> content;
 
         @Override
-        public List<AssessmentResponseDto> getContent() {
+        public List<JsonAssessmentResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<AssessmentResponseDto> content) {
+        public void setContent(List<JsonAssessmentResponse> content) {
             this.content = content;
         }
     }
