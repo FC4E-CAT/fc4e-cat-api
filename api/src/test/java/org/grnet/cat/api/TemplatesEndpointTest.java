@@ -5,7 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.TemplatesEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.TemplateDto;
+import org.grnet.cat.dtos.template.TemplateResponse;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -28,7 +28,7 @@ public class TemplatesEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TemplateDto.class);
+                .as(TemplateResponse.class);
 
         assertEquals(6L, response.actor.id);
         assertEquals(1L, response.type.id);
@@ -121,7 +121,7 @@ public class TemplatesEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TemplateDto.class);
+                .as(TemplateResponse.class);
 
         assertEquals(6L, response.actor.id);
         assertEquals(1L, response.type.id);

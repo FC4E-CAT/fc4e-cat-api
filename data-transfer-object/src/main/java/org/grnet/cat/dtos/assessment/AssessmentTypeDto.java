@@ -20,7 +20,7 @@ public class AssessmentTypeDto{
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The name of the assessment type .",
-            example = "PID POLICY"
+            example = "EOSC PID POLICY"
     )
     @JsonProperty("name")
     public String name;
@@ -29,7 +29,7 @@ public class AssessmentTypeDto{
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The label of the assessment type .",
-            example = "Pid Policy"
+            example = "eosc pid policy"
     )
     @JsonProperty("label")
     public String label;

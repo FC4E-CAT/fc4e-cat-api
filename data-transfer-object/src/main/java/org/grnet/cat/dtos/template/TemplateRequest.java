@@ -1,4 +1,4 @@
-package org.grnet.cat.dtos.assessment;
+package org.grnet.cat.dtos.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
@@ -6,30 +6,17 @@ import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.repositories.TemplateRepository;
+import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.json.simple.JSONObject;
 
-@Schema(name="JsonAssessmentRequest", description="Json Assessment Request.")
-public class JsonAssessmentRequest extends AssessmentRequest{
+@Schema(name="TemplateRequest", description="This object represents a request for creating a new assessment template.")
+public class TemplateRequest {
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
             required = true,
-            description = "The template id the assessment doc is generated from.",
-            example = "1"
-    )
-    @JsonProperty("template_id")
-    @NotFoundEntity(repository = TemplateRepository.class, message = "There is no Template with the following id:")
-    @NotNull
-    public Long templateId;
-
-    @Schema(
-            type = SchemaType.OBJECT,
-            implementation = JSONObject.class,
-            required = true,
-            description = "The assessment doc.",
-            example =  "{\n" +
+            description = "The assessment template in JSON format.",
+            example = "{\n" +
                     "  \"id\": \"9994-9399-9399-0932\",\n" +
                     "  \"status\": \"PRIVATE\",\n" +
                     "  \"published\": false,\n" +
@@ -87,8 +74,31 @@ public class JsonAssessmentRequest extends AssessmentRequest{
                     "  ]\n" +
                     "}"
     )
-    @JsonProperty("assessment_doc")
-    @NotEmpty(message = "assessment doc may not be empty")
-    @NotNull
-    public JSONObject assessmentDoc;
+    @JsonProperty("template_doc")
+    @NotNull(message = "template_doc may not be empty.")
+    public JSONObject templateDoc;
+
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = Long.class,
+            required = true,
+            description = "The actor to whom this template belongs.",
+            example = "6"
+    )
+    @JsonProperty("actor_id")
+    @NotNull(message = "actor_id may not be empty.")
+    @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:")
+    public Long actorId;
+
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = Long.class,
+            required = true,
+            description = "The type of the template.",
+            example = "1"
+    )
+    @JsonProperty("type_id")
+    @NotNull(message = "type_id may not be empty.")
+    @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:")
+    public Long typeId;
 }
