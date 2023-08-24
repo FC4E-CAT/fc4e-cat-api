@@ -31,8 +31,14 @@ public class JsonAssessmentResponse extends AssessmentResponse {
             "    \"type\": \"PID POLICY \",\n" +
             "    \"name\": \"services pid policy\"\n" +
             "  },\n" +
-            "  \"assessment_type\": \"eosc pid policy\",\n" +
-            "  \"actor\": \"owner\",\n" +
+            "  \"assessment_type\": {\n" +
+            "    \"id\": 1,\n" +
+            "    \"name\": \"eosc pid policy\"\n" +
+            "  },\n" +
+            "  \"actor\": {\n" +
+            "    \"id\": 6,\n" +
+            "    \"name\": \"PID Owner\"\n" +
+            "  },\n" +
             "  \"organisation\": {\n" +
             "    \"id\": \"1\",\n" +
             "    \"name\": \"test\"\n" +

@@ -4,8 +4,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.TemplateRequest;
-import org.grnet.cat.dtos.TemplateDto;
+import org.grnet.cat.dtos.template.TemplateRequest;
+import org.grnet.cat.dtos.template.TemplateResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.EntityNotFoundException;
@@ -33,7 +33,7 @@ public class TemplateService {
     @Inject
     ActorRepository actorRepository;
 
-    public TemplateDto getTemplateByActorAndType(Long actorId, Long typeId) {
+    public TemplateResponse getTemplateByActorAndType(Long actorId, Long typeId) {
 
         var optionalTemplate = templateRepository.fetchTemplateByActorAndType(actorId, typeId);
 
@@ -48,7 +48,7 @@ public class TemplateService {
      * @return The created template.
      */
     @Transactional
-    public TemplateDto createAssessmentTemplate(TemplateRequest request) {
+    public TemplateResponse createAssessmentTemplate(TemplateRequest request) {
 
         var optionalTemplate = templateRepository.fetchTemplateByActorAndType(request.actorId, request.typeId);
 
@@ -73,7 +73,7 @@ public class TemplateService {
      * @param id The ID of the assessment template to retrieve.
      * @return The corresponding assessment template.
      */
-    public TemplateDto getAssessmentTemplate(Long id){
+    public TemplateResponse getAssessmentTemplate(Long id){
 
         var template = templateRepository.findById(id);
         return TemplateMapper.INSTANCE.templateToDto(template);
@@ -88,7 +88,7 @@ public class TemplateService {
      * @param uriInfo The Uri Info.
      * @return A list of TemplateDto objects representing the assessment templates in the requested page.
      */
-    public PageResource<TemplateDto> getTemplatesByType(int page, int size, Long typeId, UriInfo uriInfo){
+    public PageResource<TemplateResponse> getTemplatesByType(int page, int size, Long typeId, UriInfo uriInfo){
 
         var templates = templateRepository.fetchTemplatesByType(page, size, typeId);
 
@@ -103,7 +103,7 @@ public class TemplateService {
      * @param uriInfo The Uri Info.
      * @return A list of TemplateDto objects representing the assessment templates in the requested page.
      */
-    public PageResource<TemplateDto> getTemplates(int page, int size, UriInfo uriInfo){
+    public PageResource<TemplateResponse> getTemplates(int page, int size, UriInfo uriInfo){
 
         var templates = templateRepository.fetchTemplates(page, size);
 
@@ -120,7 +120,7 @@ public class TemplateService {
      * @param uriInfo The Uri Info.
      * @return A list of TemplateDto objects representing the assessment templates in the requested page.
      */
-    public PageResource<TemplateDto> getTemplatesByActor(int page, int size, Long actorId, UriInfo uriInfo){
+    public PageResource<TemplateResponse> getTemplatesByActor(int page, int size, Long actorId, UriInfo uriInfo){
 
         var templates = templateRepository.fetchTemplatesByActor(page, size, actorId);
 

@@ -9,6 +9,7 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.template.TemplateResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -499,7 +500,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return response;
     }
 
-    public TemplateDto fetchTemplateByActorAndType() {
+    public TemplateResponse fetchTemplateByActorAndType() {
 
         var response = given()
                 .auth()
@@ -510,7 +511,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TemplateDto.class);
+                .as(TemplateResponse.class);
         return response;
     }
 

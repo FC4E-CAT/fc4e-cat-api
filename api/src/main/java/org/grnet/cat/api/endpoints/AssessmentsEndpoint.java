@@ -165,7 +165,6 @@ public class AssessmentsEndpoint {
         return Response.ok().entity(validations).build();
     }
 
-
     @Tag(name = "Assessment")
     @Operation(
             summary = "Update Assessment Json Document.",

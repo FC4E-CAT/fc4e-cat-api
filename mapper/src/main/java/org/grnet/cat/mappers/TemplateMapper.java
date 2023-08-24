@@ -1,7 +1,7 @@
 package org.grnet.cat.mappers;
 
-import org.grnet.cat.dtos.TemplateDto;
-import org.grnet.cat.dtos.TemplateRequest;
+import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.entities.Template;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,14 +26,14 @@ public interface TemplateMapper {
 
     @Named("mapWithExpression")
     @Mapping(target = "templateDoc", expression = "java(stringToJson(template.getTemplateDoc()))")
-    TemplateDto templateToDto(Template template);
+    TemplateResponse templateToDto(Template template);
 
     @Mapping(target = "templateDoc", expression = "java(jsonToString(request.templateDoc))")
     @Mapping(target = "createdOn", expression = "java(Timestamp.from(Instant.now()))")
     Template dtoToTemplate(TemplateRequest request);
 
     @IterableMapping(qualifiedByName="mapWithExpression")
-    List<TemplateDto> templatesToDto(List<Template> templates);
+    List<TemplateResponse> templatesToDto(List<Template> templates);
 
     default JSONObject stringToJson(String doc) {
 
