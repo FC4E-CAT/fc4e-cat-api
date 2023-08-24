@@ -1,35 +1,40 @@
-package org.grnet.cat.dtos.assessment;
+package org.grnet.cat.dtos.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.repositories.TemplateRepository;
+import org.grnet.cat.dtos.ActorDto;
+import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
 import org.json.simple.JSONObject;
 
-@Schema(name="JsonAssessmentRequest", description="Json Assessment Request.")
-public class JsonAssessmentRequest extends AssessmentRequest{
+@Schema(name = "Template", description = "This object represents the Template.")
+public class TemplateResponse {
 
     @Schema(
             type = SchemaType.NUMBER,
             implementation = Long.class,
-            required = true,
-            description = "The template id the assessment doc is generated from.",
+            description = "The ID of Template.",
             example = "1"
     )
-    @JsonProperty("template_id")
-    @NotFoundEntity(repository = TemplateRepository.class, message = "There is no Template with the following id:")
-    @NotNull
-    public Long templateId;
+    @JsonProperty("id")
+    public Long id;
 
     @Schema(
             type = SchemaType.OBJECT,
-            implementation = JSONObject.class,
-            required = true,
-            description = "The assessment doc.",
-            example =  "{\n" +
+            implementation = AssessmentTypeDto.class,
+            description = "The assessment type of the template.")
+    @JsonProperty("type")
+    public AssessmentTypeDto type;
+
+    @Schema(
+            type = SchemaType.OBJECT,
+            implementation = ActorDto.class,
+            description = "The actor of the template.")
+    @JsonProperty("actor")
+    public ActorDto actor;
+
+    @Schema(description = "The template doc.",
+            example = "{\n" +
                     "  \"id\": \"9994-9399-9399-0932\",\n" +
                     "  \"status\": \"PRIVATE\",\n" +
                     "  \"published\": false,\n" +
@@ -85,10 +90,7 @@ public class JsonAssessmentRequest extends AssessmentRequest{
                     "      ]\n" +
                     "    }\n" +
                     "  ]\n" +
-                    "}"
-    )
-    @JsonProperty("assessment_doc")
-    @NotEmpty(message = "assessment doc may not be empty")
-    @NotNull
-    public JSONObject assessmentDoc;
+                    "}")
+    @JsonProperty("template_doc")
+    public JSONObject templateDoc;
 }

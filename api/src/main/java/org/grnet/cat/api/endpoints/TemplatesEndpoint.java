@@ -29,9 +29,9 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.dtos.TemplateRequest;
+import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.TemplateDto;
+import org.grnet.cat.dtos.template.TemplateResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
@@ -61,7 +61,7 @@ public class TemplatesEndpoint {
             description = "Actor's assessment template by type.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TemplateDto.class)))
+                    implementation = TemplateResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -86,17 +86,16 @@ public class TemplatesEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getAssessmentTemplateByActorAndType(@Parameter(
-            description = "The Actor to retrieve template.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER))
-                        @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
-                        @Parameter(
                                 description = "The Type to retrieve template.",
                                 required = true,
                                 example = "1",
                                 schema = @Schema(type = SchemaType.NUMBER))
-                        @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId) {
+                        @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
+            description = "The Actor to retrieve template.",
+            required = true,
+            example = "6",
+            schema = @Schema(type = SchemaType.NUMBER))
+    @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId) {
 
         var template = templateService.getTemplateByActorAndType(actorId, typeId);
         return Response.ok().entity(template).build();
@@ -111,7 +110,7 @@ public class TemplatesEndpoint {
             description = "Template created successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TemplateDto.class)))
+                    implementation = TemplateResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -157,7 +156,7 @@ public class TemplatesEndpoint {
             description = "The corresponding assessment template.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TemplateDto.class)))
+                    implementation = TemplateResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -291,21 +290,6 @@ public class TemplatesEndpoint {
         return Response.ok().entity(templates).build();
     }
 
-    public class PageableTemplate extends PageResource<TemplateDto> {
-
-        private List<TemplateDto> content;
-
-        @Override
-        public List<TemplateDto> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<TemplateDto> content) {
-            this.content = content;
-        }
-    }
-
     @Tag(name = "Template")
     @Operation(
             summary = "Retrieve assessment templates for a specific actor.",
@@ -342,21 +326,34 @@ public class TemplatesEndpoint {
     @Registration
     public Response getTemplatesByActor(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                       @Parameter(name = "size", in = QUERY,
-                                               description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                       @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                       @Parameter(
-                                               description = "The Actor to retrieve templates.",
-                                               required = true,
-                                               example = "1",
-                                               schema = @Schema(type = SchemaType.NUMBER))
-                                       @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long typeId,
-                                       @Context UriInfo uriInfo) {
+                                        @Parameter(name = "size", in = QUERY,
+                                                description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                        @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                        @Parameter(
+                                                description = "The Actor to retrieve templates.",
+                                                required = true,
+                                                example = "6",
+                                                schema = @Schema(type = SchemaType.NUMBER))
+                                        @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long typeId,
+                                        @Context UriInfo uriInfo) {
 
         var templates = templateService.getTemplatesByActor(page-1, size, typeId, uriInfo);
 
         return Response.ok().entity(templates).build();
     }
 
+    public class PageableTemplate extends PageResource<TemplateResponse> {
 
+        private List<TemplateResponse> content;
+
+        @Override
+        public List<TemplateResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<TemplateResponse> content) {
+            this.content = content;
+        }
+    }
 }
