@@ -16,6 +16,13 @@ public class AssessmentResponse {
     public Long id;
 
     @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The user to whom the assessments belongs.")
+    @JsonProperty("user_id")
+    public String userId;
+
+    @Schema(
             type = SchemaType.NUMBER,
             implementation = Long.class,
             description = "The validation id of the assessment")

@@ -33,6 +33,7 @@ public interface AssessmentMapper {
     @Mapping(target = "templateId", expression = "java(assessment.getTemplate().getId())")
     @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
     @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
+    @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
     JsonAssessmentResponse assessmentToJsonAssessment(Assessment assessment);
     default JSONObject convertToJson(String doc) {
