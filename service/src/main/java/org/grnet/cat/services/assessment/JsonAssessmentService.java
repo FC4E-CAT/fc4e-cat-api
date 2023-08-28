@@ -129,4 +129,21 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list()), uriInfo);
     }
+
+    /**
+     * Retrieves a page of published assessments categorized by type and actor, created by all users.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessments to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param typeId The ID of the Assessment Type.
+     * @param actorId The Actor's id.
+     * @return A list of AssessmentResponseDto objects representing the submitted assessments in the requested page.
+     */
+    public PageResource<JsonAssessmentResponse> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
+
+        var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId);
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list()), uriInfo);
+    }
 }

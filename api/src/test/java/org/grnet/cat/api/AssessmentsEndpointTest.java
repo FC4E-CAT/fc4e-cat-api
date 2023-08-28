@@ -34,7 +34,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -65,7 +65,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -95,7 +95,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -152,7 +152,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = 2L;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -180,7 +180,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = 2L;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -209,7 +209,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var informativeResponse = given()
                 .auth()
@@ -238,7 +238,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var assessment = given()
                 .auth()
@@ -289,7 +289,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         given()
                 .auth()
@@ -328,7 +328,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -401,7 +401,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
         request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc();
+        request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
                 .auth()
@@ -515,6 +515,47 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return response;
     }
 
+    @Test
+    public void getPublishedAssessments() throws ParseException {
+
+        register("validated");
+        register("admin");
+
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc(true);
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(JsonAssessmentResponse.class);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 6L)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, response.getTotalElements());
+    }
+
     private ValidationResponse makeValidation(String username, Long actorId) {
 
         var response = makeValidationRequest(username, actorId);
@@ -522,12 +563,13 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return approveResponse;
     }
 
-    private JSONObject makeJsonDoc() throws ParseException {
+    private JSONObject makeJsonDoc(boolean published) throws ParseException {
         String doc = "{\n" +
                 "  \"id\": \"9994-9399-9399-0932\",\n" +
                 "  \"status\": \"PRIVATE\",\n" +
                 "  \"version\": \"1\",\n" +
                 "  \"name\": \"first assessment\",\n" +
+                "  \"published\": "+published+",\n" +
                 "  \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
                 "  \"subject\": {\n" +
                 "    \"id\": \"1\",\n" +
@@ -535,7 +577,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"name\": \"services pid policy\"\n" +
                 "  },\n" +
                 "  \"assessment_type\": \"eosc pid policy\",\n" +
-                "  \"actor\": \"owner\",\n" +
+                "  \"actor\": {\n" +
+                "    \"id\": 6,\n" +
+                "    \"name\": \"PID Owner\"\n" +
+                "  },\n" +
                 "  \"organisation\": {\n" +
                 "    \"id\": \"1\",\n" +
                 "    \"name\": \"test\"\n" +
@@ -582,6 +627,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "  \"id\": \"9994-9399-9399-0932\",\n" +
                 "  \"status\": \"PUBLICLY VIEWED\",\n" +
                 "  \"version\": \"1\",\n" +
+                "  \"published\": false,\n" +
                 "  \"name\": \"first assessment updated\",\n" +
                 "  \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
                 "  \"subject\": {\n" +
@@ -590,7 +636,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"name\": \"services pid policy\"\n" +
                 "  },\n" +
                 "  \"assessment_type\": \"eosc pid policy\",\n" +
-                "  \"actor\": \"owner\",\n" +
+                "  \"actor\": {\n" +
+                "    \"id\": 6,\n" +
+                "    \"name\": \"PID Owner\"\n" +
+                "  },\n" +
                 "  \"organisation\": {\n" +
                 "    \"id\": \"1\",\n" +
                 "    \"name\": \"test\"\n" +
