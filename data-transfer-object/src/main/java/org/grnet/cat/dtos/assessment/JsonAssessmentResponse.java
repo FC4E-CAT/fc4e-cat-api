@@ -11,13 +11,13 @@ public class JsonAssessmentResponse extends AssessmentResponse {
             type = SchemaType.NUMBER,
             implementation = Long.class,
             description = "The template id for the assessment")
-    @JsonProperty("templateId")
+    @JsonProperty("template_id")
     public Long templateId;
 
     @Schema(
             type = SchemaType.OBJECT,
             implementation = AssessmentDoc.class,
             description = "The assessment doc")
-    @JsonProperty("assessmentDoc")
+    @JsonProperty("assessment_doc")
     public AssessmentDoc assessmentDoc;
 }
