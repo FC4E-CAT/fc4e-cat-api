@@ -1,11 +1,12 @@
 package org.grnet.cat.mappers;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
+import org.grnet.cat.dtos.assessment.AssessmentDoc;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.entities.Assessment;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,25 +26,26 @@ public interface AssessmentMapper {
 
     AssessmentMapper INSTANCE = Mappers.getMapper(AssessmentMapper.class);
 
-    @IterableMapping(qualifiedByName="mapWithExpression")
+    @IterableMapping(qualifiedByName = "mapWithExpression")
     List<JsonAssessmentResponse> assessmentsToJsonAssessments(List<Assessment> assessments);
 
     @Named("mapWithExpression")
-    @Mapping(target = "assessmentDoc", expression = "java(convertToJson(assessment.getAssessmentDoc()))")
+    @Mapping(target = "assessmentDoc", expression = "java(stringJsonToDto(assessment.getAssessmentDoc()))")
     @Mapping(target = "templateId", expression = "java(assessment.getTemplate().getId())")
     @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
     @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
     @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
     JsonAssessmentResponse assessmentToJsonAssessment(Assessment assessment);
-    default JSONObject convertToJson(String doc) {
-        JSONParser parser = new JSONParser();
-        JSONObject json = null;
-        try {
-            json = (JSONObject) parser.parse(doc);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        return json;
+
+    @Mapping(target = "id", ignore = true)
+    AssessmentDoc templateDocToAssessmentDoc(TemplateDto template);
+
+    @SneakyThrows
+    default AssessmentDoc stringJsonToDto(String doc) {
+
+        var objectMapper = new ObjectMapper();
+        return objectMapper.readValue(doc, AssessmentDoc.class);
+
     }
 }

@@ -1,11 +1,11 @@
 package org.grnet.cat.mappers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
+import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.dtos.template.TemplateResponse;
 import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.entities.Template;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,30 +25,28 @@ public interface TemplateMapper {
     TemplateMapper INSTANCE = Mappers.getMapper(TemplateMapper.class);
 
     @Named("mapWithExpression")
-    @Mapping(target = "templateDoc", expression = "java(stringToJson(template.getTemplateDoc()))")
+    @Mapping(target = "templateDoc", expression = "java(stringJsonToDto(template.getTemplateDoc()))")
     TemplateResponse templateToDto(Template template);
 
-    @Mapping(target = "templateDoc", expression = "java(jsonToString(request.templateDoc))")
+    @Mapping(target = "templateDoc", expression = "java(dtoToStringJson(request.templateDoc))")
     @Mapping(target = "createdOn", expression = "java(Timestamp.from(Instant.now()))")
     Template dtoToTemplate(TemplateRequest request);
 
     @IterableMapping(qualifiedByName="mapWithExpression")
     List<TemplateResponse> templatesToDto(List<Template> templates);
 
-    default JSONObject stringToJson(String doc) {
+    @SneakyThrows
+    default TemplateDto stringJsonToDto(String doc) {
 
-        JSONParser parser = new JSONParser();
-        JSONObject json = null;
-        try {
-            json = (JSONObject) parser.parse(doc);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        return json;
+        var objectMapper = new ObjectMapper();
+        return objectMapper.readValue(doc, TemplateDto.class);
     }
 
-    default String jsonToString(JSONObject object) {
+    @SneakyThrows
+    default String dtoToStringJson(TemplateDto templateDto) {
 
-        return object.toJSONString();
+        var objectMapper = new ObjectMapper();
+
+        return objectMapper.writeValueAsString(templateDto);
     }
 }

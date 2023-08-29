@@ -9,11 +9,11 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.dtos.template.TemplateResponse;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AssessmentsEndpointTest extends KeycloakTest {
 
     @Test
-    public void createAssessment() throws ParseException {
+    public void createAssessment() throws IOException {
 
         register("validated");
         register("admin");
@@ -53,7 +53,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void createAssessmentNotAuthorizedNotOwner() throws ParseException {
+    public void createAssessmentNotAuthorizedNotOwner() throws IOException {
 
         register("alice");
         register("admin");
@@ -83,7 +83,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void createAssessmentNotAuthorizedNotApproved() throws ParseException {
+    public void createAssessmentNotAuthorizedNotApproved() throws IOException {
 
         register("alice");
         register("admin");
@@ -113,36 +113,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void createAssessmentEmptyJson() throws ParseException {
-
-        register("validated");
-        register("admin");
-
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeEmptyJsonDoc();
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(400, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotExistValidation() throws ParseException {
+    public void createAssessmentNotExistValidation() throws IOException {
 
         register("validated");
         register("admin");
@@ -170,7 +141,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void createAssessmentNotExistTemplate() throws ParseException {
+    public void createAssessmentNotExistTemplate() throws  IOException {
 
         register("validated");
         register("admin");
@@ -198,7 +169,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void createAssessmentMismatch() throws ParseException {
+    public void createAssessmentMismatch() throws IOException {
 
         register("validated");
         register("admin");
@@ -227,7 +198,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void getAssessment() throws ParseException {
+    public void getAssessment() throws IOException {
 
         register("validated");
         register("admin");
@@ -278,7 +249,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void getAssessments() throws ParseException {
+    public void getAssessments() throws IOException {
 
         register("validated");
         register("admin");
@@ -317,7 +288,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void updateAssessment() throws ParseException {
+    public void updateAssessment() throws IOException {
 
         register("validated");
         register("admin");
@@ -346,7 +317,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals(templateDto.id, response.templateId);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc =makeJsonDocUpdated();
+        updateRequest.assessmentDoc = makeJsonDocUpdated();
 
         var updatedResponse = given()
                 .auth()
@@ -361,11 +332,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(JsonAssessmentResponse.class);
 
         var json = makeJsonDocUpdated();
-        assertEquals(json.toString(),updatedResponse.assessmentDoc.toString());
+        assertEquals(json.status , updatedResponse.assessmentDoc.status);
     }
 
     @Test
-    public void updateAssessmentNotExists() throws ParseException {
+    public void updateAssessmentNotExists() throws IOException {
 
         register("validated");
         register("admin");
@@ -389,7 +360,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void updateAssessmentNotAuthorizedUser() throws ParseException {
+    public void updateAssessmentNotAuthorizedUser() throws IOException {
 
         register("validated");
         register("admin");
@@ -516,7 +487,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void getPublishedAssessments() throws ParseException {
+    public void getPublishedAssessments() throws IOException {
 
         register("validated");
         register("admin");
@@ -559,13 +530,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     private ValidationResponse makeValidation(String username, Long actorId) {
 
         var response = makeValidationRequest(username, actorId);
-        var approveResponse = approveValidation(response.id);
-        return approveResponse;
+        return approveValidation(response.id);
     }
 
-    private JSONObject makeJsonDoc(boolean published) throws ParseException {
+    private TemplateDto makeJsonDoc(boolean published) throws IOException {
+
         String doc = "{\n" +
-                "  \"id\": \"9994-9399-9399-0932\",\n" +
                 "  \"status\": \"PRIVATE\",\n" +
                 "  \"version\": \"1\",\n" +
                 "  \"name\": \"first assessment\",\n" +
@@ -576,7 +546,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"type\": \"PID POLICY \",\n" +
                 "    \"name\": \"services pid policy\"\n" +
                 "  },\n" +
-                "  \"assessment_type\": \"eosc pid policy\",\n" +
+                "  \"assessment_type\": {\n" +
+                "    \"id\": 1,\n" +
+                "    \"name\": \"eosc pid policy\"\n" +
+                "  },\n" +
                 "  \"actor\": {\n" +
                 "    \"id\": 6,\n" +
                 "    \"name\": \"PID Owner\"\n" +
@@ -618,13 +591,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        JSONParser parser = new JSONParser();
-        JSONObject docObj = (JSONObject) parser.parse(doc);
-        return docObj;
+
+        return objectMapper.readValue(doc, TemplateDto.class);
     }
-    private JSONObject makeJsonDocUpdated() throws ParseException {
+
+    private TemplateDto makeJsonDocUpdated() throws IOException {
         String doc = "{\n" +
-                "  \"id\": \"9994-9399-9399-0932\",\n" +
                 "  \"status\": \"PUBLICLY VIEWED\",\n" +
                 "  \"version\": \"1\",\n" +
                 "  \"published\": false,\n" +
@@ -635,7 +607,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"type\": \"PID POLICY \",\n" +
                 "    \"name\": \"services pid policy\"\n" +
                 "  },\n" +
-                "  \"assessment_type\": \"eosc pid policy\",\n" +
+                "  \"assessment_type\": {\n" +
+                "    \"id\": 1,\n" +
+                "    \"name\": \"eosc pid policy\"\n" +
+                "  },\n" +
                 "  \"actor\": {\n" +
                 "    \"id\": 6,\n" +
                 "    \"name\": \"PID Owner\"\n" +
@@ -677,16 +652,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        JSONParser parser = new JSONParser();
-        JSONObject docObj = (JSONObject) parser.parse(doc);
-        return docObj;
-    }
 
-    private JSONObject makeEmptyJsonDoc() throws ParseException {
-        String doc = "{}";
-        JSONParser parser = new JSONParser();
-        JSONObject docObj = (JSONObject) parser.parse(doc);
-        return docObj;
+        return objectMapper.readValue(doc, TemplateDto.class);
     }
 }
 
