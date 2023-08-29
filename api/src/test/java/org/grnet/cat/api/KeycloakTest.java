@@ -1,16 +1,18 @@
 package org.grnet.cat.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.grnet.cat.dtos.*;
-import org.grnet.cat.entities.*;
-import org.grnet.cat.repositories.*;
-import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.dtos.UpdateUserProfileDto;
+import org.grnet.cat.dtos.UserProfileDto;
+import org.grnet.cat.entities.Role;
+import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
@@ -33,6 +35,9 @@ public class KeycloakTest {
     @Inject
     JsonAssessmentService jsonAssessmentService;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @BeforeEach
     public void setup() {
 
@@ -40,7 +45,8 @@ public class KeycloakTest {
         validationService.deleteAll();
         userService.deleteAll();
     }
-        protected UserProfileDto register(String username) {
+
+    protected UserProfileDto register(String username) {
 
         var role = new Role("identidied_id", "identified", "The identified role");
 
@@ -80,7 +86,6 @@ public class KeycloakTest {
 
         return profile;
     }
-
 
 
     protected String getAccessToken(String userName) {
