@@ -1,6 +1,6 @@
 package org.grnet.cat.services.assessment;
 
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
+import lombok.SneakyThrows;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
@@ -38,7 +39,11 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
     @Inject
     ValidationRepository validationRepository;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @Transactional
+    @SneakyThrows
     public JsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
 
         var validation = validationRepository.findById(request.validationId);
@@ -58,14 +63,21 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
         }
 
         Assessment assessment = new Assessment();
-        assessment.setAssessmentDoc(request.assessmentDoc.toString());
+        assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
         assessment.setCreatedOn(Timestamp.from(Instant.now()));
         assessment.setTemplate(template);
         assessment.setValidation(validation);
 
         assessmentRepository.persist(assessment);
 
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+        //assign assessment id to json
+        var storedAssessment = assessmentRepository.findById(assessment.getId());
+
+        var assessmentDoc = AssessmentMapper.INSTANCE.templateDocToAssessmentDoc(request.assessmentDoc);
+        assessmentDoc.id = assessment.getId();
+        storedAssessment.setAssessmentDoc(objectMapper.writeValueAsString(assessmentDoc));
+
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(storedAssessment);
     }
 
     /**
@@ -100,6 +112,7 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      * @return The updated assessment
      */
     @Transactional
+    @SneakyThrows
     public JsonAssessmentResponse updateAssessment(Long id, String userId, UpdateJsonAssessmentRequest request) {
 
         var assessment = assessmentRepository.findById(id);
@@ -108,7 +121,10 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
             throw new ForbiddenException("User not authorized to update assessment with ID " + id);
         }
 
-        assessment.setAssessmentDoc(request.assessmentDoc.toString());
+        var assessmentDoc = AssessmentMapper.INSTANCE.templateDocToAssessmentDoc(request.assessmentDoc);
+        assessmentDoc.id = assessment.getId();
+
+        assessment.setAssessmentDoc(objectMapper.writeValueAsString(assessmentDoc));
         assessment.setUpdatedOn(Timestamp.from(Instant.now()));
 
         return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
