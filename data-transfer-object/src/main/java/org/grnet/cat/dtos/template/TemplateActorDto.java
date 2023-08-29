@@ -12,12 +12,12 @@ public class TemplateActorDto {
             example = "6"
     )
     public long id;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The name of Actor.",
             example = "PID Owner"
     )
-
     public String name;
 }

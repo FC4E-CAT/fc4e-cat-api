@@ -26,7 +26,7 @@ public class AssessmentResponse {
             type = SchemaType.NUMBER,
             implementation = Long.class,
             description = "The validation id of the assessment")
-    @JsonProperty("validationId")
+    @JsonProperty("validation_id")
     public Long validationId;
 
     @Schema(
