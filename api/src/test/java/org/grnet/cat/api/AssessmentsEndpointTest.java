@@ -150,7 +150,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         var request = new JsonAssessmentRequest();
         request.validationId = validation.id;
-        request.templateId = 2L;
+        request.templateId = 100L;
         request.assessmentDoc = makeJsonDoc(false);
 
         var response = given()
