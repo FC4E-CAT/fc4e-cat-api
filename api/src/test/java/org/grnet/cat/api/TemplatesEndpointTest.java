@@ -79,7 +79,7 @@ public class TemplatesEndpointTest extends KeycloakTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
-                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 2L)
+                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 3L)
                 .then()
                 .assertThat()
                 .statusCode(404)
