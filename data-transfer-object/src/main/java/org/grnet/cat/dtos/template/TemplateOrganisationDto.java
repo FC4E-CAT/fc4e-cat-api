@@ -1,7 +1,6 @@
 package org.grnet.cat.dtos.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -15,6 +14,7 @@ public class TemplateOrganisationDto {
     )
     @JsonProperty("id")
     public String id;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

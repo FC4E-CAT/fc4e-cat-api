@@ -9,8 +9,10 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
+import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.Assessment;
@@ -28,7 +30,7 @@ import java.time.Instant;
  */
 @ApplicationScoped
 @Named("json-assessment-service")
-public class JsonAssessmentService implements AssessmentService<JsonAssessmentRequest, UpdateJsonAssessmentRequest, JsonAssessmentResponse> {
+public class JsonAssessmentService implements AssessmentService<JsonAssessmentRequest, UpdateJsonAssessmentRequest, AssessmentResponse> {
 
     @Inject
     AssessmentRepository assessmentRepository;
@@ -92,7 +94,9 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
 
         var assessment = assessmentRepository.findById(assessmentId);
 
-        if(!assessment.getValidation().getUser().getId().equals(userId)){
+        var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+
+        if(!assessment.getValidation().getUser().getId().equals(userId) && !assessmentDto.assessmentDoc.published){
             throw new ForbiddenException("Not Permitted.");
         }
 
@@ -137,13 +141,15 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      * @param size The maximum number of assessments to include in a page.
      * @param uriInfo The Uri Info.
      * @param userID The ID of the user.
-     * @return A list of AssessmentResponseDto objects representing the submitted assessments in the requested page.
+     * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
-    public PageResource<JsonAssessmentResponse> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
+    public PageResource<PartialJsonAssessmentResponse> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID);
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list()), uriInfo);
+        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
     /**
@@ -154,12 +160,14 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      * @param uriInfo The Uri Info.
      * @param typeId The ID of the Assessment Type.
      * @param actorId The Actor's id.
-     * @return A list of AssessmentResponseDto objects representing the submitted assessments in the requested page.
+     * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
-    public PageResource<JsonAssessmentResponse> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
+    public PageResource<PartialJsonAssessmentResponse> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
 
         var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId);
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list()), uriInfo);
+        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 }
