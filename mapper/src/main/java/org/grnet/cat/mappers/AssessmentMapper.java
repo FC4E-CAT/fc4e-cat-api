@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.assessment.AssessmentDoc;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.entities.Assessment;
 import org.mapstruct.IterableMapping;
@@ -25,6 +26,22 @@ import java.util.List;
 public interface AssessmentMapper {
 
     AssessmentMapper INSTANCE = Mappers.getMapper(AssessmentMapper.class);
+
+    @IterableMapping(qualifiedByName = "partialMapWithExpression")
+    List<PartialJsonAssessmentResponse> assessmentsToPartialJsonAssessments(List<JsonAssessmentResponse> assessments);
+
+    @Named("partialMapWithExpression")
+    @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
+    @Mapping(target = "type", expression = "java(assessment.assessmentDoc.assessmentType.name)")
+    @Mapping(target = "actor", expression = "java(assessment.assessmentDoc.actor.name)")
+    @Mapping(target = "organisation", expression = "java(assessment.assessmentDoc.organisation.name)")
+    @Mapping(target = "published", expression = "java(assessment.assessmentDoc.published)")
+    @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
+    @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
+    @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
+    @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
+    PartialJsonAssessmentResponse assessmentToPartialJsonAssessment(JsonAssessmentResponse assessment);
+
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<JsonAssessmentResponse> assessmentsToJsonAssessments(List<Assessment> assessments);

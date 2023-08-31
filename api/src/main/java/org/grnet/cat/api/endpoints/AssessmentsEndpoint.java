@@ -6,12 +6,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -32,6 +34,7 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.repositories.ActorRepository;
@@ -124,7 +127,7 @@ public class AssessmentsEndpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get Assessment.",
-            description = "Returns a specific assessment if it belongs to the user.")
+            description = "Returns a specific assessment if it belongs to the user. The published assessment is returned as well.")
     @APIResponse(
             responseCode = "200",
             description = "The corresponding assessment.",
@@ -210,11 +213,11 @@ public class AssessmentsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                         @PathParam("id")
-                                         @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
+                                     @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
                                      @Valid @NotNull(message = "The request body is empty.") UpdateJsonAssessmentRequest updateJsonAssessmentRequest) {
 
-        var assessment = assessmentService.updateAssessment(id,utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
+        var assessment = assessmentService.updateAssessment(id, utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
 
         return Response.ok().entity(assessment).build();
     }
@@ -229,7 +232,7 @@ public class AssessmentsEndpoint {
             description = "List of assessments.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableAssessmentResponse.class)))
+                    implementation = PageablePartialAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -259,7 +262,7 @@ public class AssessmentsEndpoint {
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                 @Context UriInfo uriInfo) {
 
-        var assessments = assessmentService.getAssessmentsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
+        var assessments = assessmentService.getAssessmentsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(assessments).build();
     }
@@ -274,7 +277,7 @@ public class AssessmentsEndpoint {
             description = "List of assessments.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableAssessmentResponse.class)))
+                    implementation = PageablePartialAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -302,35 +305,35 @@ public class AssessmentsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                                  @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
+                                              @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
             description = "The Actor to retrieve template.",
             required = true,
             example = "6",
             schema = @Schema(type = SchemaType.NUMBER))
-                                                  @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
+                                              @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
                                               @Parameter(name = "page", in = QUERY,
-                                              description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                @Parameter(name = "size", in = QUERY,
-                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                @Context UriInfo uriInfo) {
+                                                      description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                              @Parameter(name = "size", in = QUERY,
+                                                      description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                              @Context UriInfo uriInfo) {
 
-        var assessments = assessmentService.getPublishedAssessmentsByTypeAndActorAndPage(page-1, size, typeId, actorId, uriInfo);
+        var assessments = assessmentService.getPublishedAssessmentsByTypeAndActorAndPage(page - 1, size, typeId, actorId, uriInfo);
 
         return Response.ok().entity(assessments).build();
     }
 
-    public static class PageableAssessmentResponse extends PageResource<JsonAssessmentResponse> {
+    public static class PageablePartialAssessmentResponse extends PageResource<PartialJsonAssessmentResponse> {
 
-        private List<JsonAssessmentResponse> content;
+        private List<PartialJsonAssessmentResponse> content;
 
         @Override
-        public List<JsonAssessmentResponse> getContent() {
+        public List<PartialJsonAssessmentResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<JsonAssessmentResponse> content) {
+        public void setContent(List<PartialJsonAssessmentResponse> content) {
             this.content = content;
         }
     }

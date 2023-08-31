@@ -15,5 +15,7 @@ public interface AssessmentService <Request extends AssessmentRequest, Update, R
 
     Response updateAssessment(Long id, String userId, Update request);
 
-    PageResource<Response> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
+    PageResource<? extends Response> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
+
+    PageResource<? extends Response> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo);
 }
