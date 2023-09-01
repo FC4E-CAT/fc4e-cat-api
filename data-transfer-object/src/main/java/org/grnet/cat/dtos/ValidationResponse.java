@@ -135,7 +135,7 @@ public class ValidationResponse {
             description = "The date and time the validation request has been created.",
             example = "2023-06-22T15:21:53.277+03:00"
     )
-    @JsonProperty("createdOn")
+    @JsonProperty("created_on")
     public String createdOn;
 
     @Schema(
@@ -154,7 +154,7 @@ public class ValidationResponse {
             description = "The user who has validated the validation request.",
             example = " 2023-06-09 12:19:31.333059"
     )
-    @JsonProperty("validatedBy")
+    @JsonProperty("validated_by")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String validatedBy;
 }
