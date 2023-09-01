@@ -146,7 +146,3 @@ Use the following credentials to log into Dev Service Keycloak:
 
 - username : `alice`
 - password : `alice`
-
-
-
-

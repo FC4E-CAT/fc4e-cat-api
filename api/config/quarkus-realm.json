@@ -5,9 +5,9 @@
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
   "refreshTokenMaxReuse": 0,
-  "accessTokenLifespan": 300,
-  "accessTokenLifespanForImplicitFlow": 900,
-  "ssoSessionIdleTimeout": 1800,
+  "accessTokenLifespan": 7200,
+  "accessTokenLifespanForImplicitFlow": 14000,
+  "ssoSessionIdleTimeout": 7200,
   "ssoSessionMaxLifespan": 36000,
   "ssoSessionIdleTimeoutRememberMe": 0,
   "ssoSessionMaxLifespanRememberMe": 0,
@@ -18,9 +18,9 @@
   "clientSessionMaxLifespan": 0,
   "clientOfflineSessionIdleTimeout": 0,
   "clientOfflineSessionMaxLifespan": 0,
-  "accessCodeLifespan": 60,
-  "accessCodeLifespanUserAction": 300,
-  "accessCodeLifespanLogin": 1800,
+  "accessCodeLifespan": 7200,
+  "accessCodeLifespanUserAction": 14000,
+  "accessCodeLifespanLogin": 18000,
   "actionTokenGeneratedByAdminLifespan": 43200,
   "actionTokenGeneratedByUserLifespan": 300,
   "oauth2DeviceCodeLifespan": 600,
@@ -931,6 +931,44 @@
             "icon_uri": ""
           },
           {
+            "name": "Assessment Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Assessment Resource",
+            "attributes": {},
+            "_id": "b8bb5be8-ded3-43de-bb6f-24d6d8169653",
+            "uris": [
+              "/v1/assessments/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              },
+              {
+                "name": "update"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Read Template By Type and Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Template By Type and Actor",
+            "attributes": {},
+            "_id": "06e57c4c-de0b-4a9e-b211-583ebbe2c622",
+            "uris": [
+              "/v1/templates/by-type/{type-id}/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "User Resource",
             "ownerManagedAccess": false,
             "displayName": "",
@@ -970,6 +1008,41 @@
               },
               {
                 "name": "delete"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Read Template By Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Template By Actor",
+            "attributes": {},
+            "_id": "65a726ee-7820-40a6-ba4f-1d36cddd7ab1",
+            "uris": [
+              "/v1/templates/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Template Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Template Resource",
+            "attributes": {},
+            "_id": "ca750510-a15b-4155-87cc-992a86c68dd7",
+            "uris": [
+              "/v1/templates/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
               },
               {
                 "name": "create"
@@ -1034,17 +1107,6 @@
             }
           },
           {
-            "id": "b8710fa6-160e-4de0-adf3-398c7007a0af",
-            "name": "Any User Policy",
-            "description": "Any user granted with the user role can access something",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"user\",\"required\":false}]"
-            }
-          },
-          {
             "id": "fcef30b2-68b2-4b78-9f3d-9162c6cdf5cb",
             "name": "Only Administrators",
             "description": "Only administrators can access",
@@ -1056,28 +1118,16 @@
             }
           },
           {
-            "id": "bb0808ed-f8a8-47b6-a1ce-a8f110239185",
-            "name": "Create Validation",
+            "id": "693ca2aa-92a1-4caa-a751-451d5ac848ae",
+            "name": "Read Template By Type and Actor",
             "description": "",
             "type": "scope",
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Validation Resource\"]",
-              "scopes": "[\"create\"]",
-              "applyPolicies": "[\"Any Identified Policy\"]"
-            }
-          },
-          {
-            "id": "3479dd56-02e9-4222-94fe-6a13cd065195",
-            "name": "User Resource Permission",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"User Resource\"]",
-              "applyPolicies": "[\"Any User Policy\"]"
+              "resources": "[\"Read Template By Type and Actor\"]",
+              "scopes": "[\"read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
           {
@@ -1086,10 +1136,23 @@
             "description": "",
             "type": "resource",
             "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
+            "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Role Resource\",\"Administration Resource\"]",
+              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "3c5edc94-ef82-4a25-9162-b71fe0b8fce2",
+            "name": "Read Template By Actor",
+            "description": "",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Template By Actor\"]",
+              "scopes": "[\"read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
           {
@@ -1105,14 +1168,14 @@
             }
           },
           {
-            "id": "cfb564f9-2d23-4b6d-8042-bf111e5883e2",
+            "id": "7f398fa1-6508-44c0-a3fa-84f77fe301e5",
             "name": "Validated Permission",
-            "description": "",
+            "description": "The permissions for the validated user",
             "type": "resource",
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"User Resource\",\"Integration Resource\",\"Validation Resource\",\"Codelist Resource\"]",
+              "resources": "[\"Assessment Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           }
@@ -2750,6 +2813,7 @@
       ],
       "clientRoles": {
         "backend-service": [
+          "identified",
           "admin"
         ]
       },
@@ -2844,6 +2908,7 @@
       ],
       "clientRoles": {
         "backend-service": [
+          "identified",
           "validated"
         ]
       }

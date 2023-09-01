@@ -1,10 +1,9 @@
 package org.grnet.cat.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 
 @Entity
 public class Actor {
@@ -18,6 +17,17 @@ public class Actor {
 
     @NotNull
     private String description;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "actor")
+    private List<Template> templates;
+
+    public List<Template> getTemplates() {
+        return templates;
+    }
+
+    public void setTemplates(List<Template> templates) {
+        this.templates = templates;
+    }
 
     public Long getId() {
         return id;

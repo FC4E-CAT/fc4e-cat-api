@@ -2,15 +2,18 @@ package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import static io.restassured.RestAssured.given;
 import org.grnet.cat.api.endpoints.IntegrationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.dtos.SourceResponseDto;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.Organisation;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestHTTPEndpoint(IntegrationsEndpoint.class)
@@ -47,14 +50,10 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(OrganisationResponseDto.class);
+                .as(PageResource.class);
 
-        assertEquals("00tjv0s33", response.id);
-
-        assertEquals("Keimyung University", response.name);
-
-        assertEquals("http://www.kmu.ac.kr/main.jsp", response.website);
-    }
+        assertEquals(1,response.getTotalElements());
+     }
 
     @Test
     public void nonRegisterUserRequestsOrganisation() {
@@ -109,48 +108,43 @@ public class IntegrationsEndpointTest extends KeycloakTest {
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .queryParam("name","Keimyung University")
-                .get("/organisations/ROR/search")
+                .get("/organisations/ROR/Keimyung University")
                 .thenReturn();
 
         assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
-        assertEquals(3, response.body().as(PageResource.class).getTotalElements());
-
     }
-    public void fetchRorOrganisationByNameEmpty() {
+
+
+    @Test
+    public void fetchRorOrganisationByNameLessThan2Chars() {
 
         register("alice");
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .queryParam("name","")
-                .get("/organisations/ROR/search")
+                .get("/organisations/ROR/K")
                 .then()
                 .assertThat()
                 .statusCode(400)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The parameter is empty.", response.message);
-
+        assertEquals("Value must be at least 2 characters.", response.message);
     }
-      public void fetchRorOrganisationByNameLessThan2Chars() {
+    @Test
+    public void fetchOrganisationByRE3DATA() {
 
         register("alice");
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .queryParam("name","K")
-                .get("/organisations/ROR/search")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
+                .get("/organisations/RE3DATA/00tjv0s33")
+                .thenReturn();
 
-        assertEquals("Value must be at least 2 characters", response.message);
+        assertEquals(501, response.statusCode());
 
     }
+
 }

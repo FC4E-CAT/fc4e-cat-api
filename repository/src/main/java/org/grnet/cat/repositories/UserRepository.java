@@ -1,7 +1,5 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -18,14 +16,13 @@ import org.grnet.cat.enums.UserType;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * The IdentifiedRepository interface provides data access methods for the User entity.
  */
 @ApplicationScoped
-public class UserRepository implements UserRepositoryI<User, String>, PanacheRepositoryBase<User, String> {
+public class UserRepository implements UserRepositoryI<User, String> {
 
     @Inject
     @Named("keycloak-repository")
@@ -109,11 +106,6 @@ public class UserRepository implements UserRepositoryI<User, String>, PanacheRep
         user.setUpdatedOn(Timestamp.from(Instant.now()));
 
         return user;
-    }
-
-    @Override
-    public Optional<User> searchByIdOptional(String id) {
-        return findByIdOptional(id);
     }
 
     private UserType findUserType(List<Role> roles){

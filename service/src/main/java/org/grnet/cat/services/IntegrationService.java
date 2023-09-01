@@ -19,7 +19,6 @@ import org.grnet.cat.mappers.SourceMapper;
  * The IntegrationService provides operations for managing integrations.
  */
 @ApplicationScoped
-
 public class IntegrationService {
 
     /**
@@ -39,38 +38,38 @@ public class IntegrationService {
      * Retrieves an organisation by Id, for external integration source.
      *
      * @param source, the integration source to retrieve the organisation e.g
-     * ROR
-     * @param id , the id of the organisation
+     *                ROR
+     * @param id      , the id of the organisation
      * @return An Organisation sources.
      */
     public OrganisationResponseDto getOrganisation(Source source, String id) {
 
         var org = source.execute(id);
-        return OrganisationMapper.INSTANCE.organisationToResponse(new Organisation(org[0], org[1], org[2]));
+        return OrganisationMapper.INSTANCE.organisationToResponse(new Organisation(org[0], org[1], org[2], org[3]));
     }
 
     /**
      * Retrieves an organisation by Id, for external integration source.
      *
-     * @param name
+     * @param query
      * @param page
      * @return An Organisation sources.
      */
-    public PageResource<OrganisationResponseDto> searchOrganisationsByNameAndPage(String name, int page, UriInfo uriInfo) {
+    public PageResource<OrganisationResponseDto> getOrganisation(String query, int page, UriInfo uriInfo) {
 
-        var orgs = Source.ROR.execute(name, page);
-        var organisations = orgs.getOrgElements().stream().map(org -> new Organisation(org[0], org[1], org[2])).collect(Collectors.toList());
-    
+        var orgs = Source.ROR.execute(query, page);
+        var organisations = orgs.getOrgElements().stream().map(org -> new Organisation(org[0], org[1], org[2], org[3])).collect(Collectors.toList());
+
         var pageable = new PageQueryImpl<Organisation>();
 
         pageable.list = organisations;
-        pageable.index = page-1;
+        pageable.index = page - 1;
         pageable.size = 20;
         pageable.count = orgs.getTotal();
-        pageable.page = Page.of(page-1, 20);
+        pageable.page = Page.of(page - 1, 20);
 
-        List<OrganisationResponseDto> resp=OrganisationMapper.INSTANCE.organisationsToResponse(organisations);
+        List<OrganisationResponseDto> resp = OrganisationMapper.INSTANCE.organisationsToResponse(organisations);
 
-        return new PageResource(pageable,resp, uriInfo);
+        return new PageResource(pageable, resp, uriInfo);
     }
 }

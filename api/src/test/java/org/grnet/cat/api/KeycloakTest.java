@@ -1,5 +1,6 @@
 package org.grnet.cat.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
@@ -11,6 +12,7 @@ import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
@@ -30,9 +32,16 @@ public class KeycloakTest {
     @Inject
     ValidationService validationService;
 
+    @Inject
+    JsonAssessmentService jsonAssessmentService;
+
+    @Inject
+    ObjectMapper objectMapper;
+
     @BeforeEach
     public void setup() {
 
+        jsonAssessmentService.deleteAll();
         validationService.deleteAll();
         userService.deleteAll();
     }
@@ -61,6 +70,7 @@ public class KeycloakTest {
         update.surname = "foo";
         update.email = "foo@admin.grnet.gr";
 
+
         var profile = given()
                 .auth()
                 .oauth2(getAccessToken(username))
@@ -77,7 +87,9 @@ public class KeycloakTest {
         return profile;
     }
 
+
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);
     }
+
 }

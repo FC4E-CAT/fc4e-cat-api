@@ -5,9 +5,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.cat.entities.Validation;
-
-import java.util.Comparator;
 
 @ApplicationScoped
 public class Utility {
@@ -35,13 +32,5 @@ public class Utility {
         }
 
         return id;
-    }
-
-    public Comparator<Validation> getValidationComparator(){
-
-        Comparator<Validation> comparator = (Validation v1, Validation v2)->v1.getStatus().orderBy(v2.getStatus());
-        comparator.thenComparing(Validation::getCreatedOn);
-
-        return comparator;
     }
 }

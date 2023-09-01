@@ -26,20 +26,19 @@ public enum Source {
 
     ROR("ror", "ROR", "https://api.ror.org/organizations") {
 
-        public RorSearchInfo execute(String name, int page) {
-
-            Response resp = connectHttpClient(url + "?query.advanced=name:" + name + "&page=" + page, name);
+        public RorSearchInfo execute(String query, int page) {
+            Response resp = connectHttpClient(url + "?query=" + query + "&page=" + page, query);
             try {
-              return  buildOrgsInfo(resp.body().string());
+              return  buildOrgsInfo(resp.body().string(),query);
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
             }
             return null;
         }
 
-        public String[] execute(String id) {
+        public String[] execute(String query) {
             try {
-                Response resp = connectHttpClient(url + "/" + id, id);
+                Response resp = connectHttpClient(url + "/" + query, query);
                 return buildOrgInfo(resp.body().string());
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
@@ -49,9 +48,9 @@ public enum Source {
 
     },
     EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider") {
-        public String[] execute(String id) {
+        public String[] execute(String query) {
             try {
-                Response resp = connectHttpClient(url + "/" + id, id);
+                Response resp = connectHttpClient(url + "/" + query, query);
                 return buildOrgInfo(resp.body().string());
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
@@ -61,24 +60,24 @@ public enum Source {
         }
 
         @Override
-        public RorSearchInfo execute(String id, int page) {
+        public RorSearchInfo execute(String query, int page) {
             throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     },
     RE3DATA("re3data", "RE3DATA", "") {
-        public String[] execute(String id) {
+        public String[] execute(String query) {
             throw new InternalServerErrorException("Source re3data is not supported.", 501);
         }
 
         @Override
-        public RorSearchInfo execute(String id, int page) {
+        public RorSearchInfo execute(String query, int page) {
             throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     };
 
-    public abstract String[] execute(String id);
+    public abstract String[] execute(String query);
 
-    public abstract RorSearchInfo execute(String id, int page);
+    public abstract RorSearchInfo execute(String query, int page);
 
     public final String label;
     public final String organisationSource;
@@ -116,17 +115,20 @@ public enum Source {
 
     @SneakyThrows
     Response connectHttpClient(String url, String identifier) {
-
         var client = new OkHttpClient().newBuilder()
                 .build();
-
-        var request = new Request.Builder()
+               var request = new Request.Builder()
                 .url(url)
                 .method("GET", null)
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
                 .build();
 
-        Response resp = client.newCall(request).execute();
+        Response resp = null;
+        try {
+            resp = client.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         if (resp.code() == 404) {
             throw new EntityNotFoundException("Organisation " + identifier + ", not found in " + organisationSource);
@@ -146,7 +148,7 @@ public enum Source {
         return returnOrgInfo(jRoot);
     }
 
-    RorSearchInfo buildOrgsInfo(String content) {
+    RorSearchInfo buildOrgsInfo(String content,String query) {
 
         JsonParser jsonParser = new JsonParser();
         JsonElement jElement = jsonParser.parse(content);
@@ -154,6 +156,10 @@ public enum Source {
         
       
         int total = jRoot.get("number_of_results").getAsInt();
+        if(total==0){
+            throw new EntityNotFoundException("Organisation " + query + ", not found in " + organisationSource);
+
+        }
         JsonArray items=jRoot.get("items").getAsJsonArray();
         
         List<String[]> list=new ArrayList<>();
@@ -181,8 +187,16 @@ public enum Source {
             website = jRoot.get("website").getAsString();
 
         }
-
-      return new String[]{id,name,website};
+        String acronym=null;
+        if (jRoot.has("acronyms")) {
+            JsonArray acronyms=jRoot.get("acronyms").getAsJsonArray();
+          if(!acronyms.isEmpty()) {
+              acronym = acronyms.get(0).getAsString();
+          }
+        }else if(jRoot.has("abbreviation")){
+            acronym=jRoot.get("abbreviation").getAsString();
+        }
+        return new String[]{id,name,website,acronym};
 
     }
     
