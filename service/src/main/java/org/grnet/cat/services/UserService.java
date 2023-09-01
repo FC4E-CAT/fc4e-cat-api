@@ -107,7 +107,6 @@ public class UserService {
         var identified = new User();
         identified.setId(id);
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
-        identified.setType(UserType.Identified);
 
         userRepository.persist(identified);
 
