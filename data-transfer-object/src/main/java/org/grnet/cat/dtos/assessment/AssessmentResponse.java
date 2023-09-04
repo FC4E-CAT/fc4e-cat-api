@@ -7,13 +7,13 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public class AssessmentResponse {
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The ID of Assessment.",
-            example = "1"
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0"
     )
     @JsonProperty("id")
-    public Long id;
+    public String id;
 
     @Schema(
             type = SchemaType.STRING,

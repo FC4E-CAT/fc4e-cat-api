@@ -90,7 +90,7 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    public JsonAssessmentResponse getAssessment(String userId, Long assessmentId) {
+    public JsonAssessmentResponse getAssessment(String userId, String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
@@ -117,7 +117,7 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      */
     @Transactional
     @SneakyThrows
-    public JsonAssessmentResponse updateAssessment(Long id, String userId, UpdateJsonAssessmentRequest request) {
+    public JsonAssessmentResponse updateAssessment(String id, String userId, UpdateJsonAssessmentRequest request) {
 
         var assessment = assessmentRepository.findById(id);
 

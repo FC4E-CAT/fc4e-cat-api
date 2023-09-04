@@ -11,8 +11,8 @@ public class AssessmentDoc extends TemplateDto {
             type = SchemaType.NUMBER,
             implementation = Long.class,
             description = "The ID of Assessment.",
-            example = "1"
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0"
     )
     @JsonProperty("id")
-    public Long id;
+    public String id;
 }
