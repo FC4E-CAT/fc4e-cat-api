@@ -175,9 +175,9 @@ public class AssessmentsEndpoint {
     public Response getAssessment(@Parameter(
             description = "The ID of the assessment to retrieve.",
             required = true,
-            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
-            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") Long id) {
 
         var validations = assessmentService.getDtoAssessment(utility.getUserUniqueIdentifier(), id);
 
@@ -233,11 +233,11 @@ public class AssessmentsEndpoint {
     public Response updateAssessment(@Parameter(
             description = "The ID of the assessment to update.",
             required = true,
-            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
-            schema = @Schema(type = SchemaType.STRING))
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
                                      @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") String id,
-                                     @Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest updateJsonAssessmentRequest) {
+                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
+                                     @Valid @NotNull(message = "The request body is empty.") UpdateJsonAssessmentRequest updateJsonAssessmentRequest) {
 
         var assessment = assessmentService.updatePrivateAssessmentBelongsToUser(id, utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
 

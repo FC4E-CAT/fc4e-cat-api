@@ -12,12 +12,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class AssessmentRepository implements Repository<Assessment, String> {
+
+public class AssessmentRepository implements Repository<Assessment, Long> {
 
     @Inject
     ObjectMapper objectMapper;

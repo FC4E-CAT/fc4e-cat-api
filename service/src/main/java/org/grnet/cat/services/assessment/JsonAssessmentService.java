@@ -263,8 +263,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    @Override
-    public JsonAssessmentResponse getDtoAssessment(String userId, String assessmentId) {
+    public JsonAssessmentResponse getAssessment(String userId, Long assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
@@ -313,7 +312,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      */
     @Override
     @SneakyThrows
-    public JsonAssessmentResponse update(String id, String userId, JsonAssessmentRequest request) {
+    public JsonAssessmentResponse updateAssessment(Long id, String userId, UpdateJsonAssessmentRequest request) {
 
         handleSubjectDatabaseId(userId, request);
 

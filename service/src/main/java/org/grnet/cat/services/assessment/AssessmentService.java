@@ -8,13 +8,11 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     Response createAssessment(String userId, Request request);
 
-    Response getDtoAssessment(String userId, String id);
-
-    Response getPublicDtoAssessment(String id);
+    Response getAssessment(String userId, Long assessmentId);
 
     void deleteAll();
 
-    Response update(String id, String userId, Update request);
+    Response updateAssessment(Long id, String userId, Update request);
 
     PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId);
 
