@@ -8,10 +8,11 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
 import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
 
-public class AssessmentRepository implements Repository<Assessment, Long> {
+public class AssessmentRepository implements Repository<Assessment, String> {
 
     /**
      * Retrieves a page of assessments submitted by the specified user.

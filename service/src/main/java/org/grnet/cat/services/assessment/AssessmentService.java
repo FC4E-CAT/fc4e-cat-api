@@ -9,11 +9,11 @@ public interface AssessmentService <Request extends AssessmentRequest, Update, R
 
     Response createAssessment(String userId, Request request);
 
-    Response getAssessment(String userId, Long assessmentId);
+    Response getAssessment(String userId, String assessmentId);
 
     void deleteAll();
 
-    Response updateAssessment(Long id, String userId, Update request);
+    Response updateAssessment(String id, String userId, Update request);
 
     PageResource<? extends Response> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
 
