@@ -527,6 +527,127 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals(1, response.getTotalElements());
     }
 
+    @Test
+    public void deletePrivateAssessment() throws IOException {
+
+        register("validated");
+        register("admin");
+
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc(false);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(JsonAssessmentResponse.class);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .contentType(ContentType.JSON)
+                .delete("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Assessment has been successfully deleted.", informativeResponse.message);
+    }
+
+    @Test
+    public void deletePublishedAssessmentIsNotPermitted() throws IOException {
+
+        register("validated");
+        register("admin");
+
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc(true);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(JsonAssessmentResponse.class);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .contentType(ContentType.JSON)
+                .delete("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("It is not allowed to delete a published assessment.", informativeResponse.message);
+    }
+
+    @Test
+    public void deleteAssessmentCreatedByOtherUser() throws IOException {
+
+        register("validated");
+        register("admin");
+        register("evald");
+
+        var validation = makeValidation("validated", 6L);
+        var templateDto = fetchTemplateByActorAndType();
+
+        var request = new JsonAssessmentRequest();
+        request.validationId = validation.id;
+        request.templateId = templateDto.id;
+        request.assessmentDoc = makeJsonDoc(true);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(JsonAssessmentResponse.class);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("evald"))
+                .contentType(ContentType.JSON)
+                .delete("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("User not authorized to delete assessment with ID "+assessment.id, informativeResponse.message);
+    }
+
     private ValidationResponse makeValidation(String username, Long actorId) {
 
         var response = makeValidationRequest(username, actorId);

@@ -75,6 +75,12 @@ public class TemplatesEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -130,6 +136,12 @@ public class TemplatesEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -166,6 +178,12 @@ public class TemplatesEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -213,6 +231,12 @@ public class TemplatesEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -314,6 +338,12 @@ public class TemplatesEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -342,7 +372,7 @@ public class TemplatesEndpoint {
         return Response.ok().entity(templates).build();
     }
 
-    public class PageableTemplate extends PageResource<TemplateResponse> {
+    public static class PageableTemplate extends PageResource<TemplateResponse> {
 
         private List<TemplateResponse> content;
 

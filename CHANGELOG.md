@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Added
+
+-   [#76](https://github.com/FC4E-CAT/fc4e-cat-api/pull/76)    -  CAT-178 Delete private assessment.
+
 ### Changed
 
 -   [#73](https://github.com/FC4E-CAT/fc4e-cat-api/pull/73)    -  CAT-159 Change assessment id from bigint to uuid.
