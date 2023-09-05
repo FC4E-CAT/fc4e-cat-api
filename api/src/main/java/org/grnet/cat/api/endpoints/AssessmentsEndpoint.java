@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -147,6 +148,12 @@ public class AssessmentsEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -194,6 +201,12 @@ public class AssessmentsEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -291,6 +304,12 @@ public class AssessmentsEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -321,6 +340,61 @@ public class AssessmentsEndpoint {
         var assessments = assessmentService.getPublishedAssessmentsByTypeAndActorAndPage(page - 1, size, typeId, actorId, uriInfo);
 
         return Response.ok().entity(assessments).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Delete private Assessment.",
+            description = "Deletes a private assessment if it is not published and belongs to the authenticated user.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding assessment.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response deleteAssessment(@Parameter(
+            description = "The ID of the assessment to be deleted.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+
+        assessmentService.deletePrivateAssessment(utility.getUserUniqueIdentifier(), id);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "Assessment has been successfully deleted.";
+
+        return Response.ok().entity(informativeResponse).build();
     }
 
     public static class PageablePartialAssessmentResponse extends PageResource<PartialJsonAssessmentResponse> {

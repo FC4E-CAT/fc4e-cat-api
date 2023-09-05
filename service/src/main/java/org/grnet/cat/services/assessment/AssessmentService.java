@@ -18,4 +18,6 @@ public interface AssessmentService <Request extends AssessmentRequest, Update, R
     PageResource<? extends Response> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
 
     PageResource<? extends Response> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo);
+
+    void deletePrivateAssessment(String userID, String assessmentId);
 }

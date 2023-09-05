@@ -342,6 +342,14 @@
           "attributes": {}
         },
         {
+          "id": "df147a31-5da2-5bbc-866c-f20cf99b2637",
+          "name": "evald",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
           "id": "df147a91-4da7-5bbc-266c-f70cf99b2637",
           "name": "identified",
           "composite": false,
@@ -2891,6 +2899,25 @@
       "clientRoles": {
         "backend-service": [
           "identified"
+        ]
+      }
+    },
+    {
+      "username": "evald",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["evald_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "evald"
+        }
+      ],
+      "clientRoles": {
+        "backend-service": [
+          "identified",
+          "validated"
         ]
       }
     },

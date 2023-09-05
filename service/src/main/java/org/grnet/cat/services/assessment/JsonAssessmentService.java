@@ -85,7 +85,7 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
     /**
      * Retrieves a specific assessment if it belongs to the user.
      *
-     * @param userId The ID of the user.
+     * @param userId The ID of the user who requests a specific assessment.
      * @param assessmentId The ID of the assessment to retrieve.
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
@@ -112,6 +112,7 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      * Updates the Assessment's json document.
      *
      * @param id   The ID of the assessment whose json doc is being updated.
+     * @param userId The ID of the user who requests to update a specific assessment.
      * @param request The update request.
      * @return The updated assessment
      */
@@ -140,7 +141,7 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      * @param page The index of the page to retrieve (starting from 0).
      * @param size The maximum number of assessments to include in a page.
      * @param uriInfo The Uri Info.
-     * @param userID The ID of the user.
+     * @param userID The ID of the user who requests their assessments.
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     public PageResource<PartialJsonAssessmentResponse> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
@@ -169,5 +170,28 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
         var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+    }
+
+    /**
+     * Deletes a private assessment if it is not published and belongs to the authenticated user.
+     *
+     * @param userID The ID of the user who requests their assessments.
+     * @param assessmentId The ID of the assessment to be deleted.
+     * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published or doesn't belong to them).
+     */
+    @Transactional
+    public void deletePrivateAssessment(String userID, String assessmentId) {
+
+        var assessment = assessmentRepository.findById(assessmentId);
+
+        if (!assessment.getValidation().getUser().getId().equals(userID)) {
+            throw new ForbiddenException("User not authorized to delete assessment with ID " + assessmentId);
+        }
+
+        if(AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published){
+            throw new ForbiddenException("It is not allowed to delete a published assessment.");
+        }
+
+        assessmentRepository.delete(assessment);
     }
 }
