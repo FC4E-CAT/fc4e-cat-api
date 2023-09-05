@@ -16,13 +16,7 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId);
 
-    PageResource<? extends Response> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType);
+    PageResource<? extends Response> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo);
 
-    void assessmentBelongsToUser(String userID, String id);
-
-    Entity getAssessment(String id);
-
-    void forbidActionsToPublicAssessment(Entity assessment);
-
-    void delete(String id);
+    void deletePrivateAssessment(String userID, String assessmentId);
 }

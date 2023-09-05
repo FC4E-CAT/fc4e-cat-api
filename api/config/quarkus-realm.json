@@ -2942,7 +2942,13 @@
           "type": "password",
           "value": "evald"
         }
-      ]
+      ],
+      "clientRoles": {
+        "backend-service": [
+          "identified",
+          "validated"
+        ]
+      }
     },
     {
       "username": "validated",

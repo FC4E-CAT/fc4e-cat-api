@@ -444,69 +444,6 @@ public class AssessmentsEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @DELETE
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Authenticated
-    @Registration
-    public Response deleteAssessment(@Parameter(
-            description = "The ID of the assessment to be deleted.",
-            required = true,
-            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
-            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
-
-        assessmentService.deletePrivateAssessmentBelongsToUser(utility.getUserUniqueIdentifier(), id);
-
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.code = 200;
-        informativeResponse.message = "Assessment has been successfully deleted.";
-
-        return Response.ok().entity(informativeResponse).build();
-    }
-
-    @Tag(name = "Assessment")
-    @Operation(
-            summary = "Get list of assessment objects created / used by a specific user by a specific actor.",
-            description = "This endpoint returns a list of assessment objects created / used by a specific user by a specific actor." +
-                    "By default, the first page of 10 assessment objects will be returned. You can tune the default values by using the query parameters page and size.")
-    @APIResponse(
-            responseCode = "200",
-            description = "List of assessment objects created by a user.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableObjects.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
     @GET
     @Path("objects/by-actor/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -532,18 +469,11 @@ public class AssessmentsEndpoint {
 
     @Tag(name = "Assessment")
     @Operation(
-            summary = "Get list of assessment objects created / used by a specific user.",
-            description = "This endpoint returns a list of assessment objects created / used by a specific user." +
-                    "By default, the first page of 10 assessment objects will be returned. You can tune the default values by using the query parameters page and size.")
+            summary = "Delete private Assessment.",
+            description = "Deletes a private assessment if it is not published and belongs to the authenticated user.")
     @APIResponse(
             responseCode = "200",
-            description = "List of assessment objects created by a user.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableObjects.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Bad Request",
+            description = "The corresponding assessment.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -571,66 +501,25 @@ public class AssessmentsEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
-    @GET
-    @Path("objects")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Authenticated
-    @Registration
-    @Deprecated
-    public Response getAssessmentsObjects(@Parameter(name = "page", in = QUERY,
-                                                  description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                          @Parameter(name = "size", in = QUERY,
-                                                  description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                          @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                          @Context UriInfo uriInfo) {
-
-        var assessments = assessmentService.getAssessmentsObjectsByUser(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
-
-        return Response.ok().entity(assessments).build();
-    }
-
-    @Tag(name = "Assessment")
-    @Operation(
-            summary = "Get public assessment.",
-            description = "Returns a specific public assessment.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding public assessment.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/public/{id}")
+    @DELETE
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPublicAssessment(@Parameter(
-            description = "The ID of the public assessment to retrieve.",
+    @Registration
+    public Response deleteAssessment(@Parameter(
+            description = "The ID of the assessment to be deleted.",
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        var validations = assessmentService.getPublicDtoAssessment(id);
+        assessmentService.deletePrivateAssessment(utility.getUserUniqueIdentifier(), id);
 
-        return Response.ok().entity(validations).build();
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "Assessment has been successfully deleted.";
+
+        return Response.ok().entity(informativeResponse).build();
     }
 
     public static class PageablePartialAssessmentResponse extends PageResource<PartialJsonAssessmentResponse> {
