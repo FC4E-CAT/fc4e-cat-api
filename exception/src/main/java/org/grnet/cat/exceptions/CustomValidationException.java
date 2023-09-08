@@ -7,9 +7,9 @@ public class CustomValidationException extends ValidationException {
 
     private int code;
 
-    public CustomValidationException(String message, int status){
+    public CustomValidationException(String message, int code){
         super(message);
-        this.code = status;
+        this.code = code;
     }
 
     public int getCode() {
