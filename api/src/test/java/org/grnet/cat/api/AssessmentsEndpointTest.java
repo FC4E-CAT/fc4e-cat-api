@@ -657,122 +657,150 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     private TemplateDto makeJsonDoc(boolean published) throws IOException {
 
         String doc = "{\n" +
-                "  \"status\": \"PRIVATE\",\n" +
-                "  \"version\": \"1\",\n" +
-                "  \"name\": \"first assessment\",\n" +
-                "  \"published\": "+published+",\n" +
-                "  \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
-                "  \"subject\": {\n" +
-                "    \"id\": \"1\",\n" +
-                "    \"type\": \"PID POLICY \",\n" +
-                "    \"name\": \"services pid policy\"\n" +
-                "  },\n" +
-                "  \"assessment_type\": {\n" +
-                "    \"id\": 1,\n" +
-                "    \"name\": \"eosc pid policy\"\n" +
-                "  },\n" +
-                "  \"actor\": {\n" +
-                "    \"id\": 6,\n" +
-                "    \"name\": \"PID Owner\"\n" +
-                "  },\n" +
-                "  \"organisation\": {\n" +
-                "    \"id\": \"1\",\n" +
-                "    \"name\": \"test\"\n" +
-                "  },\n" +
-                "  \"result\": {\n" +
-                "    \"compliance\": true,\n" +
-                "    \"ranking\": 0.6\n" +
-                "  },\n" +
-                "  \"principles\": [\n" +
-                "    {\n" +
-                "      \"name\": \"Principle 1\",\n" +
-                "      \"criteria\": [\n" +
-                "        {\n" +
-                "          \"name\": \"Measurement\",\n" +
-                "          \"type\": \"optional\",\n" +
-                "          \"metric\": {\n" +
-                "            \"type\": \"number\",\n" +
-                "            \"algorithm\": \"sum\",\n" +
-                "            \"benchmark\": {\n" +
-                "              \"equal_greater_than\": 1\n" +
-                "            },\n" +
-                "            \"value\": 2,\n" +
-                "            \"result\": 1,\n" +
-                "            \"tests\": [\n" +
-                "              {\n" +
-                "                \"type\": \"binary\",\n" +
-                "                \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
-                "                \"value\": 1,\n" +
-                "                \"evidence_url\": [\"www.in.gr\"]\n" +
-                "              }\n" +
-                "            ]\n" +
+                "    \"status\": \"PRIVATE\",\n" +
+                "    \"published\": "+published+",\n" +
+                "    \"version\": \"1\",\n" +
+                "    \"name\": \"first assessment\",\n" +
+                "    \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
+                "    \"subject\": {\n" +
+                "      \"id\": \"1\",\n" +
+                "      \"type\": \"PID POLICY \",\n" +
+                "      \"name\": \"services pid policy\"\n" +
+                "    },\n" +
+                "    \"assessment_type\": {\n" +
+                "      \"id\": 1,\n" +
+                "      \"name\": \"eosc pid policy\"\n" +
+                "    },\n" +
+                "    \"actor\": {\n" +
+                "      \"id\": 6,\n" +
+                "      \"name\": \"PID Owner\"\n" +
+                "    },\n" +
+                "    \"organisation\": {\n" +
+                "      \"id\": \"1\",\n" +
+                "      \"name\": \"test\"\n" +
+                "    },\n" +
+                "    \"result\": {\n" +
+                "      \"compliance\": true,\n" +
+                "      \"ranking\": 5\n" +
+                "    },\n" +
+                "    \"principles\": [\n" +
+                "      {\n" +
+                "        \"id\": \"P1\",\n" +
+                "        \"name\": \"Principle 1\",\n" +
+                "        \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "        \"criteria\": [\n" +
+                "          {\n" +
+                "            \"id\": \"C4\",\n" +
+                "            \"name\": \"Measurement\",\n" +
+                "            \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "            \"imperative\": \"should\",\n" +
+                "            \"metric\": {\n" +
+                "              \"type\": \"number\",\n" +
+                "              \"algorithm\": \"sum\",\n" +
+                "              \"benchmark\": {\n" +
+                "                \"equal_greater_than\": 1\n" +
+                "              },\n" +
+                "              \"value\": 1,\n" +
+                "              \"result\": 1,\n" +
+                "              \"tests\": [\n" +
+                "                {\n" +
+                "                   \"id\": \"T4\",\n" +
+                "                  \"type\": \"binary\",\n" +
+                "                 \"name\": \"Maintenance\",\n" +
+                "                 \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
+                "                  \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
+                "                  \"value\": false,\n" +
+                "                  \"result\": 0,\n" +
+                "                  \"guidance\": {\n" +
+                "                  \"id\": \"G1\",\n" +
+                "                  \"description\": \"In practice, evaluation is very difficult, due to two factors: \\\\n - It requires that a sample of millions of PID owners be evaluated across all services, and \\\\n - Some entities may never have to be maintained and are, despite years of non-maintenance, up to date. \\\\n A measure of the mean update frequency of PIDs across a specific service, and monitoring its change over time against a benchmark, may be the only realistic assessment mechanism.\"\n" +
+                "                  },\n" +
+                "                  \"evidence_url\": [\n" +
+                "                    \"https://www.in.gr\"\n" +
+                "                  ]\n" +
+                "                }\n" +
+                "              ]\n" +
+                "            }\n" +
                 "          }\n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }";
 
         return objectMapper.readValue(doc, TemplateDto.class);
     }
 
     private TemplateDto makeJsonDocUpdated() throws IOException {
         String doc = "{\n" +
-                "  \"status\": \"PUBLICLY VIEWED\",\n" +
-                "  \"version\": \"1\",\n" +
-                "  \"published\": false,\n" +
-                "  \"name\": \"first assessment updated\",\n" +
-                "  \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
-                "  \"subject\": {\n" +
-                "    \"id\": \"1\",\n" +
-                "    \"type\": \"PID POLICY \",\n" +
-                "    \"name\": \"services pid policy\"\n" +
-                "  },\n" +
-                "  \"assessment_type\": {\n" +
-                "    \"id\": 1,\n" +
-                "    \"name\": \"eosc pid policy\"\n" +
-                "  },\n" +
-                "  \"actor\": {\n" +
-                "    \"id\": 6,\n" +
-                "    \"name\": \"PID Owner\"\n" +
-                "  },\n" +
-                "  \"organisation\": {\n" +
-                "    \"id\": \"1\",\n" +
-                "    \"name\": \"test\"\n" +
-                "  },\n" +
-                "  \"result\": {\n" +
-                "    \"compliance\": true,\n" +
-                "    \"ranking\": 0.6\n" +
-                "  },\n" +
-                "  \"principles\": [\n" +
-                "    {\n" +
-                "      \"name\": \"Principle 1\",\n" +
-                "      \"criteria\": [\n" +
-                "        {\n" +
-                "          \"name\": \"Measurement\",\n" +
-                "          \"type\": \"optional\",\n" +
-                "          \"metric\": {\n" +
-                "            \"type\": \"number\",\n" +
-                "            \"algorithm\": \"sum\",\n" +
-                "            \"benchmark\": {\n" +
-                "              \"equal_greater_than\": 1\n" +
-                "            },\n" +
-                "            \"value\": 2,\n" +
-                "            \"result\": 1,\n" +
-                "            \"tests\": [\n" +
-                "              {\n" +
-                "                \"type\": \"binary\",\n" +
-                "                \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
-                "                \"value\": 1,\n" +
-                "                \"evidence_url\": [\"www.in.gr\"]\n" +
-                "              }\n" +
-                "            ]\n" +
+                "    \"status\": \"PRIVATE\",\n" +
+                "    \"published\": false,\n" +
+                "    \"version\": \"1\",\n" +
+                "    \"name\": \"first assessment\",\n" +
+                "    \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
+                "    \"subject\": {\n" +
+                "      \"id\": \"1\",\n" +
+                "      \"type\": \"PID POLICY \",\n" +
+                "      \"name\": \"services pid policy\"\n" +
+                "    },\n" +
+                "    \"assessment_type\": {\n" +
+                "      \"id\": 1,\n" +
+                "      \"name\": \"eosc pid policy\"\n" +
+                "    },\n" +
+                "    \"actor\": {\n" +
+                "      \"id\": 6,\n" +
+                "      \"name\": \"PID Owner\"\n" +
+                "    },\n" +
+                "    \"organisation\": {\n" +
+                "      \"id\": \"1\",\n" +
+                "      \"name\": \"test\"\n" +
+                "    },\n" +
+                "    \"result\": {\n" +
+                "      \"compliance\": true,\n" +
+                "      \"ranking\": 5\n" +
+                "    },\n" +
+                "    \"principles\": [\n" +
+                "      {\n" +
+                "        \"id\": \"P1\",\n" +
+                "        \"name\": \"Principle 1\",\n" +
+                "        \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "        \"criteria\": [\n" +
+                "          {\n" +
+                "            \"id\": \"C4\",\n" +
+                "            \"name\": \"Measurement\",\n" +
+                "            \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "            \"imperative\": \"should\",\n" +
+                "            \"metric\": {\n" +
+                "              \"type\": \"number\",\n" +
+                "              \"algorithm\": \"sum\",\n" +
+                "              \"benchmark\": {\n" +
+                "                \"equal_greater_than\": 1\n" +
+                "              },\n" +
+                "              \"value\": 1,\n" +
+                "              \"result\": 1,\n" +
+                "              \"tests\": [\n" +
+                "                {\n" +
+                "                   \"id\": \"T4\",\n" +
+                "                  \"type\": \"binary\",\n" +
+                "                 \"name\": \"Maintenance\",\n" +
+                "                 \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
+                "                  \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
+                "                  \"value\": false,\n" +
+                "                  \"result\": 0,\n" +
+                "                  \"guidance\": {\n" +
+                "                  \"id\": \"G1\",\n" +
+                "                  \"description\": \"In practice, evaluation is very difficult, due to two factors: \\\\n - It requires that a sample of millions of PID owners be evaluated across all services, and \\\\n - Some entities may never have to be maintained and are, despite years of non-maintenance, up to date. \\\\n A measure of the mean update frequency of PIDs across a specific service, and monitoring its change over time against a benchmark, may be the only realistic assessment mechanism.\"\n" +
+                "                  },\n" +
+                "                  \"evidence_url\": [\n" +
+                "                    \"https://www.in.gr\"\n" +
+                "                  ]\n" +
+                "                }\n" +
+                "              ]\n" +
+                "            }\n" +
                 "          }\n" +
-                "        }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }";
 
         return objectMapper.readValue(doc, TemplateDto.class);
     }
