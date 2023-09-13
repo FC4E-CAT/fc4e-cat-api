@@ -1,9 +1,6 @@
 package org.grnet.cat.services.assessment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -27,8 +24,6 @@ import org.grnet.cat.repositories.ValidationRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * The AssessmentService provides operations for managing assessments expressed by a JSON object.
@@ -67,13 +62,6 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
 
         if(!validation.getActor().equals(template.getActor())){
             throw new BadRequestException("Actor in Validation Request mismatches actor in Template.");
-        }
-
-        var messages = validateJson(template.getJsonSchema(), objectMapper.writeValueAsString(request.assessmentDoc), SpecVersion.VersionFlag.V7);
-
-        if(!messages.isEmpty()){
-
-            throw new org.grnet.cat.exceptions.BadRequestException("Assessment validation error.", messages.stream().map(ValidationMessage::getMessage).collect(Collectors.toSet()));
         }
 
         Assessment assessment = new Assessment();
@@ -205,21 +193,5 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
         }
 
         assessmentRepository.delete(assessment);
-    }
-
-    /**
-     * Validates a JSON string against a JSON schema.
-     * @param jsonSchema A string containing the JSON schema against which the JSON will be validated.
-     * @param assessment A string containing the JSON data to be validated.
-     * @param version A version represents the set of keywords and semantics that can be used to evaluate a schema
-     * @return A set of Validation messages
-     */
-    @SneakyThrows
-    private Set<ValidationMessage> validateJson(String jsonSchema, String assessment, SpecVersion.VersionFlag version){
-
-        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(version);
-        var schema = schemaFactory.getSchema(jsonSchema);
-        var json = objectMapper.readTree(assessment);
-        return schema.validate(json);
     }
 }
