@@ -1,5 +1,7 @@
 package org.grnet.cat.api.endpoints;
 
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -38,12 +40,14 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.JsonSchema;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -118,6 +122,8 @@ public class AssessmentsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest request, @Context UriInfo uriInfo) {
+
+        utility.validateTemplateJson(JsonSchema.fetchById("assessment_json_schema").getJsonSchema(), request.assessmentDoc, SpecVersion.VersionFlag.V7);
 
         var response = assessmentService.createAssessment(utility.getUserUniqueIdentifier(), request);
 

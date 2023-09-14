@@ -34,9 +34,6 @@ public class Template {
     @NotNull
     private Timestamp createdOn;
 
-    @Column(name = "json_schema", columnDefinition = "json")
-    private String jsonSchema;
-
     public Long getId() {
         return id;
     }
@@ -75,13 +72,5 @@ public class Template {
 
     public void setType(AssessmentType type) {
         this.type = type;
-    }
-
-    public String getJsonSchema() {
-        return jsonSchema;
-    }
-
-    public void setJsonSchema(String jsonSchema) {
-        this.jsonSchema = jsonSchema;
     }
 }

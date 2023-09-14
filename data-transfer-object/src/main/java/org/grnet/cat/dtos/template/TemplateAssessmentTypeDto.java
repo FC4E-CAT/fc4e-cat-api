@@ -11,7 +11,7 @@ public class TemplateAssessmentTypeDto {
             description = "The assessment type id",
             example = "1"
     )
-    public long id;
+    public Long id;
 
     @Schema(
             type = SchemaType.STRING,

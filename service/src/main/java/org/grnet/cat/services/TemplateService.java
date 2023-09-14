@@ -3,10 +3,16 @@ package org.grnet.cat.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.UriInfo;
+import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
+import org.grnet.cat.dtos.template.TemplateActorDto;
+import org.grnet.cat.dtos.template.TemplateAssessmentTypeDto;
 import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.dtos.template.TemplateResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.Actor;
+import org.grnet.cat.entities.AssessmentType;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.EntityNotFoundException;
 import org.grnet.cat.mappers.TemplateMapper;
@@ -59,12 +65,31 @@ public class TemplateService {
         var type = assessmentTypeRepository.findById(request.typeId);
         var actor = actorRepository.findById(request.actorId);
 
+        equalityOfActors(request.templateDoc.actor, actor);
+        equalityOfAssessmentTypes(request.templateDoc.assessmentType, type);
+
         var template = TemplateMapper.INSTANCE.dtoToTemplate(request);
         template.setType(type);
         template.setActor(actor);
 
         templateRepository.persist(template);
         return TemplateMapper.INSTANCE.templateToDto(template);
+    }
+
+    private void equalityOfActors(TemplateActorDto actorDto, Actor actor){
+
+        if(!(actorDto.name.equals(actor.getName()) && actorDto.id.equals(actor.getId()))){
+
+            throw new BadRequestException("Actor in Template Request mismatches actor in json template.");
+        }
+    }
+
+    private void equalityOfAssessmentTypes(TemplateAssessmentTypeDto assessmentTypeDto, AssessmentType assessmentType){
+
+        if(!(assessmentTypeDto.name.equals(assessmentType.getName()) && assessmentTypeDto.id.equals(assessmentType.getId()))){
+
+            throw new BadRequestException("Assessment Type in Template Request mismatches assessment type in json template.");
+        }
     }
 
     /**

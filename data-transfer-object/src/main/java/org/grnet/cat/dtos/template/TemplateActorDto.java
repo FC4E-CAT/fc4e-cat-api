@@ -11,7 +11,7 @@ public class TemplateActorDto {
             description = "The ID of Actor.",
             example = "6"
     )
-    public long id;
+    public Long id;
 
     @Schema(
             type = SchemaType.STRING,

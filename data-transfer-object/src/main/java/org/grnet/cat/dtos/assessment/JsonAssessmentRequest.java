@@ -1,6 +1,7 @@
 package org.grnet.cat.dtos.assessment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -31,5 +32,6 @@ public class JsonAssessmentRequest extends AssessmentRequest{
     )
     @JsonProperty("assessment_doc")
     @NotNull(message = "assessment doc may not be empty")
+    @Valid
     public TemplateDto assessmentDoc;
 }
