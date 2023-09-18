@@ -13,4 +13,4 @@ SET status = CASE
                  ELSE '1'
                  END;
 
-ALTER TABLE Validation MODIFY status tinyint NOT NULL;
+ALTER TABLE Validation MODIFY status INTEGER NOT NULL;
