@@ -72,7 +72,7 @@ public class PartialJsonAssessmentResponse extends AssessmentResponse {
             example = "true"
     )
     @JsonProperty("compliance")
-    public boolean compliance;
+    public Boolean compliance;
 
     @Schema(
             type = SchemaType.NUMBER,
