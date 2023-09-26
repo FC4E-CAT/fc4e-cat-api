@@ -1,7 +1,6 @@
 package org.grnet.cat.api.endpoints;
 
 import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -47,7 +46,6 @@ import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -297,6 +295,12 @@ public class AssessmentsEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = PageablePartialAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",

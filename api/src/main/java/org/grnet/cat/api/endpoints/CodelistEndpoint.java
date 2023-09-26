@@ -55,6 +55,12 @@ public class CodelistEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = PageableActor.class)))
     @APIResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
             content = @Content(schema = @Schema(
