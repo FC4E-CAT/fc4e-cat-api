@@ -24,7 +24,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
      */
     public PageQuery<Assessment> fetchAssessmentsByUserAndPage(int page, int size, String userID){
 
-        var panache = find("from Assessment a where a.validation.user.id = ?1", userID).page(page, size);
+        var panache = find("from Assessment a where a.validation.user.id = ?1 order by a.createdOn desc", userID).page(page, size);
 
         var pageable = new PageQueryImpl<Assessment>();
         pageable.list = panache.list();
@@ -50,7 +50,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         var em = Panache.getEntityManager();
 
-        var query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true", Assessment.class)
+        var query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true ORDER BY a.created_on DESC", Assessment.class)
                 .setParameter("actorId", actorId)
                 .setParameter("typeId", typeId);
 
