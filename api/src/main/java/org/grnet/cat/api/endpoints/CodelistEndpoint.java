@@ -34,7 +34,6 @@ import java.util.List;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/v1/codelist")
-@Authenticated
 public class CodelistEndpoint {
 
     @Inject
@@ -46,7 +45,7 @@ public class CodelistEndpoint {
     @Tag(name = "Codelist")
     @Operation(
             summary = "Retrieve a list of available actors.",
-            description = "This endpoint returns a list of actors registered in the service. Each actor object includes basic information such as their id and name. " +
+            description = "This endpoint is public and any unauthenticated user can retrieve the list of actors registered in the service. Each actor object includes basic information such as their id and name. " +
                     " By default, the first page of 10 Actors will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
@@ -78,11 +77,9 @@ public class CodelistEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
     @GET
     @Path("/actors")
     @Produces(MediaType.APPLICATION_JSON)
-    @Registration
     public Response actorsByPage(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
@@ -128,6 +125,7 @@ public class CodelistEndpoint {
     @GET
     @Path("/assessment-types")
     @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
     @Registration
     public Response assessmentsByPage(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,

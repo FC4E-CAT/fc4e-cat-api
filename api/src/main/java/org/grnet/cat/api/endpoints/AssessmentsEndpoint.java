@@ -50,7 +50,6 @@ import java.util.List;
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/v1/assessments")
-@Authenticated
 public class AssessmentsEndpoint {
 
     @Inject
@@ -118,6 +117,7 @@ public class AssessmentsEndpoint {
     @SecurityRequirement(name = "Authentication")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest request, @Context UriInfo uriInfo) {
 
@@ -167,6 +167,7 @@ public class AssessmentsEndpoint {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
     @Registration
     public Response getAssessment(@Parameter(
             description = "The ID of the assessment to retrieve.",
@@ -224,6 +225,7 @@ public class AssessmentsEndpoint {
     @Path("/{id}")
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
     @Registration
     public Response updateAssessment(@Parameter(
             description = "The ID of the assessment to update.",
@@ -271,6 +273,7 @@ public class AssessmentsEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
     @Registration
     public Response assessments(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -287,7 +290,7 @@ public class AssessmentsEndpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get published assessments by type and actor.",
-            description = "Retrieves published assessments categorized by type and actor, created by all users." +
+            description = "This endpoint is public and any unauthenticated user can retrieve published assessments categorized by type and actor, created by all users." +
                     "By default, the first page of 10 assessments will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
@@ -328,7 +331,6 @@ public class AssessmentsEndpoint {
     @GET
     @Path("/by-type/{type-id}/by-actor/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Registration
     public Response assessmentsByTypeAndActor(@Parameter(
             description = "The Type of Assessment.",
             required = true,
@@ -390,6 +392,7 @@ public class AssessmentsEndpoint {
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
     @Registration
     public Response deleteAssessment(@Parameter(
             description = "The ID of the assessment to be deleted.",
