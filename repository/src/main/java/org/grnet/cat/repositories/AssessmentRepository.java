@@ -72,4 +72,27 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         return pageable;
     }
+
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessment objects to include in a page.
+     * @param userID The ID of the user.
+     * @param actorID The Actor id.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<Assessment> fetchAssessmentsObjectsByUserAndActor(int page, int size, String userID, Long actorID){
+
+        var panache = find("from Assessment a where a.validation.user.id = ?1 and a.template.actor.id = ?2", userID, actorID).page(page, size);
+
+        var pageable = new PageQueryImpl<Assessment>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
 }

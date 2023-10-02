@@ -15,6 +15,7 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.mappers.AssessmentMapper;
@@ -24,6 +25,7 @@ import org.grnet.cat.repositories.ValidationRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 /**
  * The AssessmentService provides operations for managing assessments expressed by a JSON object.
@@ -193,5 +195,30 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
         }
 
         assessmentRepository.delete(assessment);
+    }
+
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param userID The ID of the user who requests their assessments.
+     * @param actorID The actor ID.
+     * @return A list of TemplateSubjectDto objects representing the submitted assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUserAndActor(int page, int size, UriInfo uriInfo, String userID, Long actorID){
+
+        var assessments = assessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
+
+        var jsonAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+
+        var objects = jsonAssessments
+                .stream()
+                .map(json->json.assessmentDoc)
+                .map(doc->doc.subject)
+                .collect(Collectors.toList());
+
+        return new PageResource<>(assessments, objects, uriInfo);
     }
 }
