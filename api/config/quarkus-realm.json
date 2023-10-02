@@ -1040,6 +1040,22 @@
             "icon_uri": ""
           },
           {
+            "name": "Read Assessment Objects by Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Assessment Objects by Actor",
+            "attributes": {},
+            "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
+            "uris": [
+              "/v1/assessments/objects/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Template Resource",
             "ownerManagedAccess": false,
             "displayName": "Template Resource",
@@ -1185,6 +1201,19 @@
             "config": {
               "resources": "[\"Assessment Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
+            }
+          },
+          {
+            "id": "4d0e3e78-2296-410f-a7b6-40f6cc2c806d",
+            "name": "Read Assessment Objects by Actor",
+            "description": "Read Assessment Objects by Actor",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Assessment Objects by Actor\"]",
+              "scopes": "[\"read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           }
         ],

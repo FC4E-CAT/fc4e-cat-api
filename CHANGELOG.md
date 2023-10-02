@@ -28,15 +28,17 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 -   [#76](https://github.com/FC4E-CAT/fc4e-cat-api/pull/76)    -  CAT-178 Delete private assessment.
 -   [#81](https://github.com/FC4E-CAT/fc4e-cat-api/pull/81)    -  CAT-183 Generate JSON Schema for PID Owner Template.
+-   [#81](https://github.com/FC4E-CAT/fc4e-cat-api/pull/81)    -  CAT-183 Generate JSON Schema for PID Owner Template.
+-   [#92](https://github.com/FC4E-CAT/fc4e-cat-api/pull/92)    -  CAT-210 List of Objects.
 
 ### Changed
 
 -   [#73](https://github.com/FC4E-CAT/fc4e-cat-api/pull/73)    -  CAT-159 Change assessment id from bigint to uuid.
--   [#79](https://github.com/FC4E-CAT/fc4e-cat-api/pull/79)    -  CAT-169 Create template for actor: Scheme
--   [#80](https://github.com/FC4E-CAT/fc4e-cat-api/pull/80)    -  CAT-167 Create template for actor: Manager
--   [#81](https://github.com/FC4E-CAT/fc4e-cat-api/pull/81)    -  CAT-181 Generate JSON Schema for PID Owner Template
--   [#82](https://github.com/FC4E-CAT/fc4e-cat-api/pull/82)    -  fix json of scheme template
--   [#83](https://github.com/FC4E-CAT/fc4e-cat-api/pull/83)    -  CAT-168 Create template for actor: Service
+-   [#79](https://github.com/FC4E-CAT/fc4e-cat-api/pull/79)    -  CAT-169 Create template for actor: Scheme.
+-   [#80](https://github.com/FC4E-CAT/fc4e-cat-api/pull/80)    -  CAT-167 Create template for actor: Manager.
+-   [#81](https://github.com/FC4E-CAT/fc4e-cat-api/pull/81)    -  CAT-181 Generate JSON Schema for PID Owner Template.
+-   [#82](https://github.com/FC4E-CAT/fc4e-cat-api/pull/82)    -  fix json of scheme template.
+-   [#83](https://github.com/FC4E-CAT/fc4e-cat-api/pull/83)    -  CAT-168 Create template for actor: Service.
 
 
 ## 1.1.0 - 2023-09-01
