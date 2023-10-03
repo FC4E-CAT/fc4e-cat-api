@@ -1,6 +1,7 @@
 package org.grnet.cat.services.assessment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pivovarit.function.ThrowingFunction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -209,16 +210,14 @@ public class JsonAssessmentService implements AssessmentService<JsonAssessmentRe
      */
     public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUserAndActor(int page, int size, UriInfo uriInfo, String userID, Long actorID){
 
-        var assessments = assessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
+        var objects = assessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
 
-        var jsonAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
-
-        var objects = jsonAssessments
+        var jsonToObjects = objects
+                .list()
                 .stream()
-                .map(json->json.assessmentDoc)
-                .map(doc->doc.subject)
+                .map(ThrowingFunction.sneaky(json->objectMapper.readValue(json, TemplateSubjectDto.class)))
                 .collect(Collectors.toList());
 
-        return new PageResource<>(assessments, objects, uriInfo);
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 }

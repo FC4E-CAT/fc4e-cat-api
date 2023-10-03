@@ -38,7 +38,6 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.UserService;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 

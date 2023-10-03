@@ -1,10 +1,12 @@
 package org.grnet.cat.dtos.template;
 
 
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name = "AssessmentObject", description = "This object represents an assessment object.")
+@EqualsAndHashCode
 public class TemplateSubjectDto {
 
     @Schema(
