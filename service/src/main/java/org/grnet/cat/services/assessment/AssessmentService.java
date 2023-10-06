@@ -4,20 +4,27 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.assessment.AssessmentRequest;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.Assessment;
 
-public interface AssessmentService <Request extends AssessmentRequest, Update, Response extends AssessmentResponse> {
+public interface AssessmentService <Request extends AssessmentRequest, Update, Response extends AssessmentResponse, Entity> {
 
     Response createAssessment(String userId, Request request);
 
-    Response getAssessment(String userId, String assessmentId);
+    Response getDtoAssessment(String userId, String id);
 
     void deleteAll();
 
-    Response updateAssessment(String id, String userId, Update request);
+    Response update(String id, Update request);
 
-    PageResource<? extends Response> getAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
+    PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
 
-    PageResource<? extends Response> getPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo);
+    PageResource<? extends Response> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo);
 
-    void deletePrivateAssessment(String userID, String assessmentId);
+    void assessmentBelongsToUser(String userID, String id);
+
+    Entity getAssessment(String id);
+
+    void forbidActionsToPublicAssessment(Entity assessment);
+
+    void delete(String id);
 }

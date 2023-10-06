@@ -159,7 +159,7 @@ public class TemplatesEndpoint {
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") TemplateRequest request, @Context UriInfo uriInfo) {
 
-        utility.validateTemplateJson(JsonSchema.fetchById("assessment_json_schema").getJsonSchema(), request.templateDoc, SpecVersion.VersionFlag.V7);
+        utility.validateTemplateJson(JsonSchema.fetchById("template_json_schema").getJsonSchema(), request.templateDoc, SpecVersion.VersionFlag.V7);
 
         var template = templateService.createAssessmentTemplate(request);
 

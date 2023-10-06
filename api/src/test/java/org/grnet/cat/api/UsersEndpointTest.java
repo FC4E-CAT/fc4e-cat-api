@@ -1,7 +1,6 @@
 package org.grnet.cat.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.UsersEndpoint;
@@ -9,15 +8,10 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 
 @QuarkusTest
 @TestHTTPEndpoint(UsersEndpoint.class)
@@ -72,11 +66,12 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void fetchAllUsers() {
 
-        register("alice");
+        register("admin");
 
         var response = given()
+                .basePath("/v1/admin/users")
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .get()
                 .thenReturn();
@@ -88,11 +83,12 @@ public class UsersEndpointTest extends KeycloakTest {
     @Test
     public void fetchAllUsersBadRequest() {
 
-        register("alice");
+        register("admin");
 
         var informativeResponse = given()
+                .basePath("/v1/admin/users")
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
                 .queryParam("page", 0)
                 .get()

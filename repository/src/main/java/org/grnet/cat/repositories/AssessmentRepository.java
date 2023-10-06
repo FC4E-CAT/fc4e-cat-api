@@ -2,13 +2,15 @@ package org.grnet.cat.repositories;
 
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @ApplicationScoped
 
@@ -106,5 +108,19 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    @Transactional
+    public void deleteAssessmentById(String assessmentId){
+
+        delete("from Assessment where id = ?1", assessmentId);
+    }
+
+    @Transactional
+    public Assessment updateAssessmentDocById(String assessmentId, String assessmentDoc){
+
+        update("assessmentDoc = ?1 , updatedOn = ?2   where id = ?3", assessmentDoc,  Timestamp.from(Instant.now()), assessmentId);
+
+        return findById(assessmentId);
     }
 }
