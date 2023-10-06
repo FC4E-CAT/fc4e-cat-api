@@ -567,7 +567,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("It is not allowed to delete a published assessment.", informativeResponse.message);
+        assertEquals("It is not allowed to manage a published assessment.", informativeResponse.message);
     }
 
     @Test
@@ -608,7 +608,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("User not authorized to delete assessment with ID "+assessment.id, informativeResponse.message);
+        assertEquals("User not authorized to manage assessment with ID "+assessment.id, informativeResponse.message);
     }
 
     private ValidationResponse makeValidation(String username, Long actorId) {

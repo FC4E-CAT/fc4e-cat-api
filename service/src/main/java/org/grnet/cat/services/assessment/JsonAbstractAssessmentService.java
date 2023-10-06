@@ -1,9 +1,10 @@
 package org.grnet.cat.services.assessment;
 
 import jakarta.ws.rs.ForbiddenException;
+import org.grnet.cat.dtos.assessment.AssessmentRequest;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 
-public abstract class JsonAbstractAssessmentService<Request, Update, Response extends AssessmentResponse, Entity> implements AssessmentService<Request , Update, Response, Entity> {
+public abstract class JsonAbstractAssessmentService<Request extends AssessmentRequest, Update, Response extends AssessmentResponse, Entity> implements AssessmentService<Request , Update, Response, Entity> {
 
     /**
      * Deletes a private assessment if it is not published and belongs to the authenticated user.
@@ -14,8 +15,8 @@ public abstract class JsonAbstractAssessmentService<Request, Update, Response ex
      */
     public void deletePrivateAssessmentBelongsToUser(String userID, String assessmentId){
 
-        assessmentBelongsToUser(userID, assessmentId);
-        deletePrivateAssessment(assessmentId);
+         assessmentBelongsToUser(userID, assessmentId);
+         deletePrivateAssessment(assessmentId);
     }
 
     /**
@@ -30,7 +31,7 @@ public abstract class JsonAbstractAssessmentService<Request, Update, Response ex
     public Response updatePrivateAssessmentBelongsToUser(String id, String userId, Update request) {
 
         assessmentBelongsToUser(userId, id);
-        return updatePrivateAssessment(id, userId, request);
+        return updatePrivateAssessment(id, request);
     }
 
     /**
@@ -50,14 +51,13 @@ public abstract class JsonAbstractAssessmentService<Request, Update, Response ex
      * Updates a private assessment if it is not published.
      *
      * @param id The ID of the assessment whose is being updated.
-     * @param userId The ID of the user who requests to update a specific assessment.
      * @param request The update request.
      * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published).
      */
-    public Response updatePrivateAssessment(String id, String userId, Update request){
+    public Response updatePrivateAssessment(String id, Update request){
 
         var assessment = getAssessment(id);
         forbidActionsToPublicAssessment(assessment);
-        return update(id, userId, request);
+        return update(id, request);
     }
 }

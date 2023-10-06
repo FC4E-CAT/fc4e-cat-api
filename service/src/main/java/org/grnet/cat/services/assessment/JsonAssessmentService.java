@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 @ApplicationScoped
 @Named("json-assessment-service")
-public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAssessmentRequest, JsonAssessmentRequest, AssessmentResponse, Assessment> {
+public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAssessmentRequest, UpdateJsonAssessmentRequest, AssessmentResponse, Assessment> {
 
     @Inject
     AssessmentRepository assessmentRepository;
@@ -58,9 +58,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
     @Inject
     ObjectMapper objectMapper;
-
-    @Inject
-    SubjectService subjectService;
 
     @Override
     @Transactional
@@ -76,6 +73,10 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var timestamp = Timestamp.from(Instant.now());
         request.assessmentDoc.timestamp = timestamp.toString();
         request.assessmentDoc.organisation.name = validation.getOrganisationName();
+
+        var timestamp = Timestamp.from(Instant.now());
+
+        request.assessmentDoc.timestamp = timestamp.toString();
 
         Assessment assessment = new Assessment();
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
@@ -263,33 +264,14 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    public JsonAssessmentResponse getAssessment(String userId, Long assessmentId) {
+    @Override
+    public JsonAssessmentResponse getDtoAssessment(String userId, String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
         var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
 
         if (!assessment.getValidation().getUser().getId().equals(userId) && !assessmentDto.assessmentDoc.published) {
-            throw new ForbiddenException("Not Permitted.");
-        }
-
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
-    }
-
-    /**
-     * Retrieves a specific public assessment.
-     *
-     * @param assessmentId The ID of the assessment to retrieve.
-     * @return The assessment if it's public.
-     */
-    @Override
-    public JsonAssessmentResponse getPublicDtoAssessment(String assessmentId) {
-
-        var assessment = assessmentRepository.findById(assessmentId);
-
-        var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
-
-        if (!assessmentDto.assessmentDoc.published) {
             throw new ForbiddenException("Not Permitted.");
         }
 
@@ -305,16 +287,13 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     /**
      * Updates the Assessment's json document.
      *
-     * @param id   The ID of the assessment whose json doc is being updated.
-     * @param userId The ID of the user who requests to update a specific assessment.
+     * @param id The ID of the assessment whose json doc is being updated.
      * @param request The update request.
      * @return The updated assessment
      */
     @Override
     @SneakyThrows
-    public JsonAssessmentResponse updateAssessment(Long id, String userId, UpdateJsonAssessmentRequest request) {
-
-        handleSubjectDatabaseId(userId, request);
+    public JsonAssessmentResponse update(String id, UpdateJsonAssessmentRequest request) {
 
         var assessmentDoc = AssessmentMapper.INSTANCE.templateDocToAssessmentDoc(request.assessmentDoc);
 
@@ -335,7 +314,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId) {
+    public PageResource<PartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId);
 
@@ -357,7 +336,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType) {
+    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
 
         var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId, subjectName, subjectType);
 
@@ -366,26 +345,38 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
-    /**
-     * Deletes a private assessment if it is not published and belongs to the authenticated user.
-     *
-     * @param userID The ID of the user who requests their assessments.
-     * @param assessmentId The ID of the assessment to be deleted.
-     * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published or doesn't belong to them).
-     */
-    @Transactional
-    public void deletePrivateAssessment(String userID, String assessmentId) {
+    @Override
+    public void assessmentBelongsToUser(String userID, String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
         if (!assessment.getValidation().getUser().getId().equals(userID)) {
-            throw new ForbiddenException("User not authorized to delete assessment with ID " + assessmentId);
+            throw new ForbiddenException("User not authorized to manage assessment with ID " + assessmentId);
         }
+    }
+
+    @Override
+    public Assessment getAssessment(String assessmentId) {
+
+        return assessmentRepository.findById(assessmentId);
+    }
+
+    @Override
+    public void forbidActionsToPublicAssessment(Assessment assessment) {
 
         if(AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published){
-            throw new ForbiddenException("It is not allowed to delete a published assessment.");
+            throw new ForbiddenException("It is not allowed to manage a published assessment.");
         }
+    }
 
-        assessmentRepository.delete(assessment);
+    /**
+     * Deletes an assessment.
+     *
+     * @param assessmentId The ID of the assessment to be deleted.
+     */
+    @Override
+    public void delete(String assessmentId) {
+
+        assessmentRepository.deleteAssessmentById(assessmentId);
     }
 }

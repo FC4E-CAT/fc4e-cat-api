@@ -291,7 +291,7 @@ public class AssessmentsEndpoint {
                                         description = "The actor to filter.") @QueryParam("actor")  Long actorId,
                                 @Context UriInfo uriInfo) {
 
-        var assessments = assessmentService.getDtoAssessmentsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), subjectName, subjectType, actorId);
+        var assessments = assessmentService.getDtoAssessmentsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(assessments).build();
     }
@@ -462,7 +462,7 @@ public class AssessmentsEndpoint {
                                               @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                               @Context UriInfo uriInfo) {
 
-        var assessments = assessmentService.getAssessmentsObjectsByUserAndActor(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), actorId);
+        var assessments = assessmentService.getPublishedDtoAssessmentsByTypeAndActorAndPage(page - 1, size, typeId, actorId, uriInfo);
 
         return Response.ok().entity(assessments).build();
     }
@@ -473,7 +473,7 @@ public class AssessmentsEndpoint {
             description = "Deletes a private assessment if it is not published and belongs to the authenticated user.")
     @APIResponse(
             responseCode = "200",
-            description = "The corresponding assessment.",
+            description = "Deletion completed.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -513,7 +513,7 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        assessmentService.deletePrivateAssessment(utility.getUserUniqueIdentifier(), id);
+        assessmentService.deletePrivateAssessmentBelongsToUser(utility.getUserUniqueIdentifier(), id);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
