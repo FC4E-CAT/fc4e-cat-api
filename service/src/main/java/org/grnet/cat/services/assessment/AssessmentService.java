@@ -4,7 +4,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.assessment.AssessmentRequest;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.entities.Assessment;
 
 public interface AssessmentService <Request extends AssessmentRequest, Update, Response extends AssessmentResponse, Entity> {
 
@@ -16,7 +15,7 @@ public interface AssessmentService <Request extends AssessmentRequest, Update, R
 
     Response update(String id, Update request);
 
-    PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
+    PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId);
 
     PageResource<? extends Response> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo);
 
