@@ -184,7 +184,8 @@ public class ValidationsEndpoint {
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Parameter(name = "status", in = QUERY,
+            description = "The validation status to filter.") @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
                                 @Context UriInfo uriInfo) {
 
         var validations = validationService.getValidationsByUserAndPage(page-1, size, status, uriInfo, utility.getUserUniqueIdentifier());

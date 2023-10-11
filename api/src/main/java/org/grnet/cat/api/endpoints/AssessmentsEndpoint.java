@@ -281,9 +281,15 @@ public class AssessmentsEndpoint {
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Parameter(name = "subject_name", in = QUERY,
+                                        description = "The subject name to filter.") @QueryParam("subject_name") @DefaultValue("") String subjectName,
+                                @Parameter(name = "subject_type", in = QUERY,
+                                        description = "The subject type to filter.") @QueryParam("subject_type") @DefaultValue("") String subjectType,
+                                @Parameter(name = "actor", in = QUERY,
+                                        description = "The actor to filter.") @QueryParam("actor")  Long actorId,
                                 @Context UriInfo uriInfo) {
 
-        var assessments = assessmentService.getDtoAssessmentsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
+        var assessments = assessmentService.getDtoAssessmentsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), subjectName, subjectType, actorId);
 
         return Response.ok().entity(assessments).build();
     }
