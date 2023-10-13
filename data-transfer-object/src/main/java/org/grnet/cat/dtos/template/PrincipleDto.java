@@ -1,11 +1,13 @@
 package org.grnet.cat.dtos.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PrincipleDto {
 
     @Schema(
@@ -15,6 +17,7 @@ public class PrincipleDto {
             example = "P1"
     )
     @JsonProperty("id")
+    @EqualsAndHashCode.Include
     public String id;
 
     @Schema(
@@ -24,6 +27,7 @@ public class PrincipleDto {
             example = "Principle 1"
     )
     @JsonProperty("name")
+    @EqualsAndHashCode.Include
     public String name;
 
     @Schema(
@@ -33,6 +37,7 @@ public class PrincipleDto {
             example = "The PID owner SHOULD maintain PID attributes."
     )
     @JsonProperty("description")
+    @EqualsAndHashCode.Include
     public String description;
 
     @Schema(
@@ -40,5 +45,6 @@ public class PrincipleDto {
             implementation = CriteriaDto.class,
             description = "Principle criteria."
     )
+    @EqualsAndHashCode.Include
     public List<CriteriaDto> criteria;
 }

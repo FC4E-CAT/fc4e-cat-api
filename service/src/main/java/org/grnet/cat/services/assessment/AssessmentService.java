@@ -1,11 +1,10 @@
 package org.grnet.cat.services.assessment;
 
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.assessment.AssessmentRequest;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 
-public interface AssessmentService <Request extends AssessmentRequest, Update, Response extends AssessmentResponse, Entity> {
+public interface AssessmentService <Request, Update, Response extends AssessmentResponse, Entity> {
 
     Response createAssessment(String userId, Request request);
 

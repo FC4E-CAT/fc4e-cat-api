@@ -1,10 +1,12 @@
 package org.grnet.cat.dtos.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.json.simple.JSONArray;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MetricDto {
 
     @Schema(
@@ -14,6 +16,7 @@ public class MetricDto {
             example = "number."
     )
     @JsonProperty("type")
+    @EqualsAndHashCode.Include
     public String type;
 
     @Schema(
@@ -41,8 +44,8 @@ public class MetricDto {
             example = "sum."
     )
     @JsonProperty("algorithm")
+    @EqualsAndHashCode.Include
     public String algorithm;
-
 
     @Schema(
             type = SchemaType.OBJECT,

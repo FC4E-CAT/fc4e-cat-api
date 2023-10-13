@@ -1,7 +1,9 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
@@ -117,5 +119,21 @@ public class ValidationRepository implements Repository<Validation, Long> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    /**
+     * Retrieves the validation for a specific user's validation request on a specified actor and organization.
+     * @param userID The unique identifier of the user initiating the validation request.
+     * @param actorID The unique identifier of the actor involved in the validation process.
+     * @param organisationID The unique identifier of the organization associated with the validation request.
+     * @return The validation for the specified user, actor, and organization.
+     * @throws NotFoundException If the validation request is not found.
+     */
+    public Validation fetchValidationByUserAndActorAndOrganisation(String userID, Long actorID, String organisationID){
+
+        var optional = find("organisationId = :organisationID and user.id = : userID and actor.id = : actorID and status = : status",
+                Parameters.with("organisationID", organisationID).and("userID", userID).and("actorID", actorID).and("status", ValidationStatus.APPROVED)).firstResultOptional();
+
+        return optional.orElseThrow(()-> new NotFoundException("There is no approved validation request."));
     }
 }

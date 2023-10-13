@@ -1,10 +1,9 @@
 package org.grnet.cat.services.assessment;
 
 import jakarta.ws.rs.ForbiddenException;
-import org.grnet.cat.dtos.assessment.AssessmentRequest;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 
-public abstract class JsonAbstractAssessmentService<Request extends AssessmentRequest, Update, Response extends AssessmentResponse, Entity> implements AssessmentService<Request , Update, Response, Entity> {
+public abstract class JsonAbstractAssessmentService<Request, Update, Response extends AssessmentResponse, Entity> implements AssessmentService<Request , Update, Response, Entity> {
 
     /**
      * Deletes a private assessment if it is not published and belongs to the authenticated user.

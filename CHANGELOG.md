@@ -30,6 +30,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#81](https://github.com/FC4E-CAT/fc4e-cat-api/pull/81)    -  CAT-183 Generate JSON Schema for PID Owner Template.
 -   [#81](https://github.com/FC4E-CAT/fc4e-cat-api/pull/81)    -  CAT-183 Generate JSON Schema for PID Owner Template.
 -   [#92](https://github.com/FC4E-CAT/fc4e-cat-api/pull/92)    -  CAT-210 List of Objects.
+-   [#96](https://github.com/FC4E-CAT/fc4e-cat-api/pull/96)    -  CAT-220 Remove unnecessary properties from the assessment creation request.
 
 ### Changed
 

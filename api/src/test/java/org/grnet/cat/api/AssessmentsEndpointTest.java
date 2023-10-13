@@ -29,12 +29,9 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
 
         var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var response = given()
                 .auth()
@@ -49,7 +46,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(JsonAssessmentResponse.class);
 
         assertEquals(validation.id, response.validationId);
-        assertEquals(templateDto.id, response.templateId);
     }
 
     @Test
@@ -59,13 +55,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("validated");
 
-        var validation = makeValidation("alice", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("alice", 6L);
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var response = given()
                 .auth()
@@ -75,11 +68,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(403)
+                .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(403, response.code);
+        assertEquals(404, response.code);
     }
 
     @Test
@@ -89,13 +82,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("validated");
 
-        var validation = makeValidationRequest("alice", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidationRequest("alice", 6L);
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var response = given()
                 .auth()
@@ -118,12 +108,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var templateDto = fetchTemplateByActorAndType();
-
         var request = new JsonAssessmentRequest();
-        request.validationId = 2L;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var response = given()
                 .auth()
@@ -146,12 +132,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
+        makeValidation("validated", 6L);
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = 100L;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 200L);
 
         var response = given()
                 .auth()
@@ -174,13 +158,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 1L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 1L);
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var informativeResponse = given()
                 .auth()
@@ -190,11 +171,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Actor in Validation Request mismatches actor in Template.", informativeResponse.message);
+        assertEquals("There is no approved validation request.", informativeResponse.message);
     }
 
     @Test
@@ -203,13 +184,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var assessment = given()
                 .auth()
@@ -254,13 +233,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         given()
                 .auth()
@@ -293,13 +270,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation=makeValidation("validated", 6L);
-        var templateDto=fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var response = given()
                 .auth()
@@ -312,9 +286,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(JsonAssessmentResponse.class);
-
-        assertEquals(validation.id, response.validationId);
-        assertEquals(templateDto.id, response.templateId);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc = makeJsonDocUpdated();
@@ -366,13 +337,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("alice");
 
-        var validation=makeValidation("validated", 6L);
-        var templateDto=fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var response = given()
                 .auth()
@@ -385,9 +353,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(JsonAssessmentResponse.class);
-
-        assertEquals(validation.id, response.validationId);
-        assertEquals(templateDto.id, response.templateId);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc =makeJsonDocUpdated();
@@ -492,13 +457,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(true);
+        request.assessmentDoc = makeJsonDoc(true, 6L);
 
         given()
                 .auth()
@@ -533,13 +496,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var assessment = given()
                 .auth()
@@ -573,13 +534,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(true);
+        request.assessmentDoc = makeJsonDoc(true, 6L);
 
         var assessment = given()
                 .auth()
@@ -614,13 +573,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("evald");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(true);
+        request.assessmentDoc = makeJsonDoc(true, 6L);
 
         var assessment = given()
                 .auth()
@@ -654,7 +611,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return approveValidation(response.id);
     }
 
-    private TemplateDto makeJsonDoc(boolean published) throws IOException {
+    private TemplateDto makeJsonDoc(boolean published, Long actor) throws IOException {
 
         String doc = "{\n" +
                 "    \"status\": \"PRIVATE\",\n" +
@@ -672,11 +629,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "      \"name\": \"eosc pid policy\"\n" +
                 "    },\n" +
                 "    \"actor\": {\n" +
-                "      \"id\": 6,\n" +
+                "      \"id\": "+actor+",\n" +
                 "      \"name\": \"PID Owner\"\n" +
                 "    },\n" +
                 "    \"organisation\": {\n" +
-                "      \"id\": \"1\",\n" +
+                "      \"id\": \"00tjv0s33\",\n" +
                 "      \"name\": \"test\"\n" +
                 "    },\n" +
                 "    \"result\": {\n" +
@@ -686,8 +643,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"principles\": [\n" +
                 "      {\n" +
                 "        \"id\": \"P1\",\n" +
-                "        \"name\": \"Principle 1\",\n" +
-                "        \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "        \"name\": \"Application\",\n" +
+                "        \"description\": \"PID application depends on unambiguous ownership, proper maintenance, and unambiguous identification of the entity being referenced.\",\n" +
                 "        \"criteria\": [\n" +
                 "          {\n" +
                 "            \"id\": \"C4\",\n" +
@@ -708,12 +665,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                  \"type\": \"binary\",\n" +
                 "                 \"name\": \"Maintenance\",\n" +
                 "                 \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
-                "                  \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
+                "                  \"text\": \"Do you regularly maintain the metadata for your object?\",\n" +
                 "                  \"value\": false,\n" +
                 "                  \"result\": 0,\n" +
                 "                  \"guidance\": {\n" +
-                "                  \"id\": \"G1\",\n" +
-                "                  \"description\": \"In practice, evaluation is very difficult, due to two factors: \\\\n - It requires that a sample of millions of PID owners be evaluated across all services, and \\\\n - Some entities may never have to be maintained and are, despite years of non-maintenance, up to date. \\\\n A measure of the mean update frequency of PIDs across a specific service, and monitoring its change over time against a benchmark, may be the only realistic assessment mechanism.\"\n" +
+                "                  \"id\": \"G4\",\n" +
+                "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
                 "                  },\n" +
                 "                  \"evidence_url\": [\n" +
                 "                    \"https://www.in.gr\"\n" +
@@ -751,7 +708,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "      \"name\": \"PID Owner\"\n" +
                 "    },\n" +
                 "    \"organisation\": {\n" +
-                "      \"id\": \"1\",\n" +
+                "      \"id\": \"00tjv0s33\",\n" +
                 "      \"name\": \"test\"\n" +
                 "    },\n" +
                 "    \"result\": {\n" +
@@ -761,13 +718,13 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "    \"principles\": [\n" +
                 "      {\n" +
                 "        \"id\": \"P1\",\n" +
-                "        \"name\": \"Principle 1\",\n" +
+                "        \"name\": \"Application\",\n" +
                 "        \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
                 "        \"criteria\": [\n" +
                 "          {\n" +
                 "            \"id\": \"C4\",\n" +
                 "            \"name\": \"Measurement\",\n" +
-                "            \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "            \"description\": \"PID application depends on unambiguous ownership, proper maintenance, and unambiguous identification of the entity being referenced.\",\n" +
                 "            \"imperative\": \"should\",\n" +
                 "            \"metric\": {\n" +
                 "              \"type\": \"number\",\n" +
@@ -783,12 +740,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                  \"type\": \"binary\",\n" +
                 "                 \"name\": \"Maintenance\",\n" +
                 "                 \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
-                "                  \"text\": \"Do you regularly maintain the metadata for your object\",\n" +
+                "                  \"text\": \"Do you regularly maintain the metadata for your object?\",\n" +
                 "                  \"value\": false,\n" +
                 "                  \"result\": 0,\n" +
                 "                  \"guidance\": {\n" +
-                "                  \"id\": \"G1\",\n" +
-                "                  \"description\": \"In practice, evaluation is very difficult, due to two factors: \\\\n - It requires that a sample of millions of PID owners be evaluated across all services, and \\\\n - Some entities may never have to be maintained and are, despite years of non-maintenance, up to date. \\\\n A measure of the mean update frequency of PIDs across a specific service, and monitoring its change over time against a benchmark, may be the only realistic assessment mechanism.\"\n" +
+                "                  \"id\": \"G4\",\n" +
+                "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
                 "                  },\n" +
                 "                  \"evidence_url\": [\n" +
                 "                    \"https://www.in.gr\"\n" +
