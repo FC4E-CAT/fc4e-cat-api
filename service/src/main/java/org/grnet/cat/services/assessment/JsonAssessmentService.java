@@ -1,6 +1,10 @@
 package org.grnet.cat.services.assessment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingFunction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,14 +22,18 @@ import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
-import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
+import org.grnet.cat.mappers.TemplateMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -52,25 +60,14 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @SneakyThrows
     public JsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
 
-        var validation = validationRepository.findById(request.validationId);
+        var validation = validationRepository.fetchValidationByUserAndActorAndOrganisation(userId, request.assessmentDoc.actor.id, request.assessmentDoc.organisation.id);
+        var template = templateRepository.fetchTemplateByActor(request.assessmentDoc.actor.id);
 
-        if (!validation.getUser().getId().equals(userId)) {
-            throw new ForbiddenException("User not authorized to create assessment for Validation with ID " + request.validationId);
-        }
-
-        if (!validation.getStatus().equals(ValidationStatus.APPROVED)) {
-            throw new ForbiddenException("User not authorized to create assessment for non approved Validation with ID " + request.validationId);
-        }
-
-        var template = templateRepository.findById(request.templateId);
-
-        if(!validation.getActor().equals(template.getActor())){
-            throw new BadRequestException("Actor in Validation Request mismatches actor in Template.");
-        }
+        validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template).templateDoc));
 
         var timestamp = Timestamp.from(Instant.now());
-
         request.assessmentDoc.timestamp = timestamp.toString();
+        request.assessmentDoc.organisation.name = validation.getOrganisationName();
 
         Assessment assessment = new Assessment();
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
@@ -88,6 +85,124 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         storedAssessment.setAssessmentDoc(objectMapper.writeValueAsString(assessmentDoc));
 
         return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(storedAssessment);
+    }
+
+    private void validateAssessmentAgainstTemplate(String request, String template){
+
+        boolean isValid;
+
+        try {
+            var cmp = new JsonFieldComparator();
+
+            var expected =  (ObjectNode) objectMapper.readTree(template);
+            var actual = (ObjectNode) objectMapper.readTree(request);
+
+            isValid = equals(cmp, actual, expected);
+        } catch (JsonProcessingException e) {
+            throw new InternalServerErrorException("Server Error.", 500);
+        }
+
+        if(!isValid){
+
+            throw new BadRequestException("A field in Assessment Request mismatches a field in Template.");
+        }
+    }
+
+    private boolean equals(Comparator<JsonNode> comparator, ObjectNode actual, ObjectNode expected) {
+
+        var actualMap = actual.properties().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        var expectedMap = expected.properties().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        int len = actualMap.size();
+        if (expectedMap.size() != len) {
+            return false;
+        } else {
+            var actualIterator = actualMap.entrySet().iterator();
+
+            Map.Entry actualEntry;
+            JsonNode expectedKey;
+            var continueTheIteration = true;
+            do {
+                if (!actualIterator.hasNext()) {
+                    return true;
+                }
+
+                actualEntry = actualIterator.next();
+                expectedKey = expectedMap.get(actualEntry.getKey());
+
+                if(expected != null && expectedKey.isObject()){
+
+                    if(!equals(comparator, (ObjectNode) actualEntry.getValue(), (ObjectNode) expectedKey)){
+                        continueTheIteration = false;
+                    }
+                } else if (expectedKey != null && expectedKey.isArray()){
+
+                    if(!equals(comparator, (ArrayNode) actualEntry.getValue(), (ArrayNode) expectedKey)){
+                        continueTheIteration = false;
+                    }
+                } else{
+
+                    if(!(expectedKey != null && ((JsonNode) actualEntry.getValue()).equals(comparator, expectedKey))){
+
+                        continueTheIteration = false;
+                    }
+                }
+
+            } while (continueTheIteration);
+
+            return false;
+        }
+    }
+
+    private boolean equals(Comparator<JsonNode> comparator, ArrayNode actual, ArrayNode expected) {
+
+        if(expected.size() == 0){
+
+            return true;
+        }
+
+        int actualArraySize = actual.size();
+
+        if (expected.size() != actualArraySize) {
+
+            return false;
+        } else {
+
+            var actualList = new ArrayList<JsonNode>();
+
+            for(int i = 0; i < actual.size(); ++i){
+
+                actualList.add(actual.get(i));
+            }
+
+            var expectedList = new ArrayList<JsonNode>();
+
+            for(int i = 0; i < expected.size(); ++i){
+
+                expectedList.add(expected.get(i));
+            }
+
+            for(int i = 0; i < actualList.size(); ++i) {
+
+                if(actualList.get(i).isObject()){
+
+                    if(!equals(comparator, (ObjectNode) actualList.get(i), (ObjectNode) expectedList.get(i))){
+                        return false;
+                    }
+                } else if (actualList.get(i).isArray()){
+
+                    if(!equals(comparator, (ArrayNode) actualList.get(i), (ArrayNode) expectedList.get(i))){
+                        return false;
+                    }
+                } else {
+
+                    if ((comparator.compare(actualList.get(i), expectedList.get(i))!= 0)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 
     /**
