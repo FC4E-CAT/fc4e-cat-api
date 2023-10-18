@@ -463,7 +463,7 @@ public class AssessmentsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
-    public Response getAssessmentsObjects(@Parameter(
+    public Response getAssessmentsObjectsByActor(@Parameter(
             description = "The Actor to retrieve assessment objects.",
             required = true,
             example = "6",
@@ -477,6 +477,64 @@ public class AssessmentsEndpoint {
                                               @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAssessmentsObjectsByUserAndActor(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), actorId);
+
+        return Response.ok().entity(assessments).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get list of assessment objects created / used by a specific user.",
+            description = "This endpoint returns a list of assessment objects created / used by a specific user." +
+                    "By default, the first page of 10 assessment objects will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of assessment objects created by a user.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableObjects.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("objects")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response getAssessmentsObjects(@Parameter(name = "page", in = QUERY,
+                                                  description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                          @Parameter(name = "size", in = QUERY,
+                                                  description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                          @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                          @Context UriInfo uriInfo) {
+
+        var assessments = assessmentService.getAssessmentsObjectsByUser(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(assessments).build();
     }

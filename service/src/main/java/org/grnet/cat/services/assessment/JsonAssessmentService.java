@@ -349,4 +349,26 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
+
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param userID The ID of the user who requests their assessments.
+     * @return A list of TemplateSubjectDto objects representing the submitted assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUser(int page, int size, UriInfo uriInfo, String userID){
+
+        var objects = assessmentRepository.fetchAssessmentsObjectsByUser(page, size, userID);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json->objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
+    }
 }
