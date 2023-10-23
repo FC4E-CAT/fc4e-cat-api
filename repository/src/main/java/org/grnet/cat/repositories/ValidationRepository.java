@@ -42,7 +42,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      */
     public PageQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID){
 
-        var panache = find("from Validation v where v.user.id = ?1", Sort.by("status"), userID).page(page, size);
+        var panache = find("from Validation v where v.user.id = ?1", Sort.by("status").and("createdOn", Sort.Direction.Descending), userID).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
@@ -65,7 +65,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      */
     public PageQuery<Validation> fetchValidationsByUserAndStatusAndPage(ValidationStatus status, int page, int size, String userID){
 
-        var panache = find("from Validation v where v.user.id = ?1 and v.status = ?2", userID, status).page(page, size);
+        var panache = find("from Validation v where v.user.id = ?1 and v.status = ?2", Sort.by("createdOn", Sort.Direction.Descending), userID, status).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
@@ -87,7 +87,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      */
     public PageQuery<Validation> fetchValidationsByPage(int page, int size){
 
-        var panache = findAll(Sort.by("status")).page(page, size);
+        var panache = findAll(Sort.by("status").and("createdOn", Sort.Direction.Descending)).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
@@ -109,7 +109,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      */
     public PageQuery<Validation> fetchValidationsByStatusAndPage(ValidationStatus status, int page, int size){
 
-        var panache = find("status", status).page(page, size);
+        var panache = find("status", Sort.by("createdOn", Sort.Direction.Descending), status).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
