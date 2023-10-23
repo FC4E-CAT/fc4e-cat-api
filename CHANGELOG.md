@@ -41,6 +41,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#82](https://github.com/FC4E-CAT/fc4e-cat-api/pull/82)    -  fix json of scheme template.
 -   [#83](https://github.com/FC4E-CAT/fc4e-cat-api/pull/83)    -  CAT-168 Create template for actor: Service.
 -   [#95](https://github.com/FC4E-CAT/fc4e-cat-api/pull/95)    -  CAT-218 API move /users list under /admin path.
+-   [#99](https://github.com/FC4E-CAT/fc4e-cat-api/pull/95)    -  CAT-231 Sort the validation requests by creation date.
 
 
 ## 1.1.0 - 2023-09-01
