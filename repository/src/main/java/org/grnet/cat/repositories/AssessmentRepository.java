@@ -75,10 +75,12 @@ public class AssessmentRepository implements Repository<Assessment, String> {
      * @param size The maximum number of assessments to include in a page.
      * @param typeId The ID of the Assessment Type.
      * @param actorId The Actor's id.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
     @SuppressWarnings("unchecked")
-    public PageQuery<Assessment> fetchPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId){
+    public PageQuery<Assessment> fetchPublishedAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, String subjectName, String subjectType){
 
         var em = Panache.getEntityManager();
 
@@ -89,6 +91,47 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         var countQuery =  em.createNativeQuery("SELECT count(a.id) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true", Long.class)
                 .setParameter("actorId", actorId)
                 .setParameter("typeId", typeId);
+
+
+        if(StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)){
+
+            query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", Assessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("typeId", typeId)
+                    .setParameter("name", subjectName)
+                    .setParameter("type", subjectType);
+
+            countQuery =  em.createNativeQuery("SELECT count(a.id) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("typeId", typeId)
+                    .setParameter("name", subjectName)
+                    .setParameter("type", subjectType);
+
+
+        } else if(StringUtils.isNotEmpty(subjectName)){
+
+            query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name ORDER BY a.created_on DESC", Assessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("typeId", typeId)
+                    .setParameter("name", subjectName);
+
+            countQuery =  em.createNativeQuery("SELECT count(a.id) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("typeId", typeId)
+                    .setParameter("name", subjectName);
+
+        } else if(StringUtils.isNotEmpty(subjectType)){
+
+            query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", Assessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("typeId", typeId)
+                    .setParameter("type", subjectType);
+
+            countQuery =  em.createNativeQuery("SELECT count(a.id) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("typeId", typeId)
+                    .setParameter("type", subjectType);
+        }
 
         var list = (List<Assessment>) query
                 .setFirstResult(page * size)

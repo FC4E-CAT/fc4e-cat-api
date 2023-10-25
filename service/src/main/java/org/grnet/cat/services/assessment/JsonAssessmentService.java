@@ -260,6 +260,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @param size The maximum number of assessments to include in a page.
      * @param uriInfo The Uri Info.
      * @param userID The ID of the user who requests their assessments.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
+     * @param actorId Actor ID to search for.
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
@@ -280,12 +283,14 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @param uriInfo The Uri Info.
      * @param typeId The ID of the Assessment Type.
      * @param actorId The Actor's id.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
+    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType){
 
-        var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId);
+        var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId, subjectName, subjectType);
 
         var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
 
