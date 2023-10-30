@@ -312,18 +312,6 @@ public class AssessmentsEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
             responseCode = "404",
             description = "Entity Not Found.",
             content = @Content(schema = @Schema(
@@ -344,7 +332,7 @@ public class AssessmentsEndpoint {
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
                                               @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
-            description = "The Actor to retrieve template.",
+            description = "The Actor to retrieve assessments.",
             required = true,
             example = "6",
             schema = @Schema(type = SchemaType.NUMBER))
@@ -361,6 +349,61 @@ public class AssessmentsEndpoint {
                                               @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getPublishedDtoAssessmentsByTypeAndActorAndPage(page - 1, size, typeId, actorId, uriInfo, subjectName, subjectType);
+
+        return Response.ok().entity(assessments).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get list of public assessment objects created / used by a specific user by type and actor.",
+            description = "This endpoint is public and any unauthenticated user can retrieve published assessment objects categorized by type and actor, created by all users." +
+                    "By default, the first page of 10 assessments will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of public assessment objects.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableObjects.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("public-objects/by-type/{type-id}/by-actor/{actor-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response objectsByTypeAndActor(@Parameter(
+            description = "The Type of Assessment.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                              @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
+            description = "The Actor to retrieve assessments.",
+            required = true,
+            example = "6",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                              @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
+                                              @Parameter(name = "page", in = QUERY,
+                                                      description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                              @Parameter(name = "size", in = QUERY,
+                                                      description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                              @Context UriInfo uriInfo) {
+
+        var assessments = assessmentService.getPublishedDtoAssessmentObjectsByTypeAndActorAndPage(page - 1, size, typeId, actorId, uriInfo);
 
         return Response.ok().entity(assessments).build();
     }

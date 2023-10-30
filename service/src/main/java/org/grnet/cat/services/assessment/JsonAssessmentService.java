@@ -297,6 +297,29 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
+    /**
+     * Retrieves a page of public assessment objects by type and actor.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param typeId The ID of the Assessment Type.
+     * @param actorId The Actor's id.
+     * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getPublishedDtoAssessmentObjectsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
+
+        var objects = assessmentRepository.fetchPublishedAssessmentObjectsByTypeAndActorAndPage(page, size, typeId, actorId);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json->objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
+    }
+
     @Override
     public void assessmentBelongsToUser(String userID, String assessmentId) {
 
