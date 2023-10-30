@@ -149,6 +149,43 @@ public class AssessmentRepository implements Repository<Assessment, String> {
     }
 
     /**
+     * Retrieves a page of public assessment objects by type and actor.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessment objects to include in a page.
+     * @param typeId The ID of the Assessment Type.
+     * @param actorId The Actor's id.
+     * @return A list of string objects representing the public assessment objects in the requested page.
+     */
+    @SuppressWarnings("unchecked")
+    public PageQuery<String> fetchPublishedAssessmentObjectsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId){
+
+        var em = Panache.getEntityManager();
+
+        var query =  em.createNativeQuery("SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true")
+                .setParameter("actorId", actorId)
+                .setParameter("typeId", typeId);
+
+        var countQuery =  em.createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true")
+                .setParameter("actorId", actorId)
+                .setParameter("typeId", typeId);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
      * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
      *
      * @param page The index of the page to retrieve (starting from 0).
