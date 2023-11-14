@@ -586,6 +586,50 @@ public class AssessmentsEndpoint {
         return Response.ok().entity(assessments).build();
     }
 
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get public assessment.",
+            description = "Returns a specific public assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding public assessment.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = JsonAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/public/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPublicAssessment(@Parameter(
+            description = "The ID of the public assessment to retrieve.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+
+        var validations = assessmentService.getPublicDtoAssessment(id);
+
+        return Response.ok().entity(validations).build();
+    }
+
     public static class PageablePartialAssessmentResponse extends PageResource<PartialJsonAssessmentResponse> {
 
         private List<PartialJsonAssessmentResponse> content;
