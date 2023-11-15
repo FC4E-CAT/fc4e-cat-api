@@ -10,6 +10,8 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     Response getDtoAssessment(String userId, String id);
 
+    Response getPublicDtoAssessment(String id);
+
     void deleteAll();
 
     Response update(String id, Update request);

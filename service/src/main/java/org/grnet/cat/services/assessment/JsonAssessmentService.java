@@ -227,6 +227,26 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
     }
 
+    /**
+     * Retrieves a specific public assessment.
+     *
+     * @param assessmentId The ID of the assessment to retrieve.
+     * @return The assessment if it's public.
+     */
+    @Override
+    public JsonAssessmentResponse getPublicDtoAssessment(String assessmentId) {
+
+        var assessment = assessmentRepository.findById(assessmentId);
+
+        var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+
+        if(!assessmentDto.assessmentDoc.published){
+            throw new ForbiddenException("Not Permitted.");
+        }
+
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+    }
+
     @Override
     @Transactional
     public void deleteAll() {
