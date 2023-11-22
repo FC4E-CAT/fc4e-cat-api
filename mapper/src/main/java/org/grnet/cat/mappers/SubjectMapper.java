@@ -3,9 +3,13 @@ package org.grnet.cat.mappers;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
 import org.grnet.cat.entities.Subject;
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
+
+import java.util.List;
 
 /**
  * The SubjectMapper is responsible for mapping Subject entities to DTOs and vice versa.
@@ -20,5 +24,9 @@ public interface SubjectMapper {
     @Mapping(target = "createdBy", ignore = true)
     Subject dtoToSubject(SubjectRequest request);
 
+    @Named("map")
     SubjectResponse subjectToDto(Subject subject);
+
+    @IterableMapping(qualifiedByName="map")
+    List<SubjectResponse> subjectsToDto(List<Subject> subjects);
 }

@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import java.sql.Timestamp;
+
 @Entity
 public class Subject {
 
@@ -28,6 +30,10 @@ public class Subject {
     @Column(name = "created_by")
     @NotEmpty
     private String createdBy;
+
+    @Column(name = "created_on")
+    @NotNull
+    private Timestamp createdOn;
 
     public Long getId() {
         return id;
@@ -67,5 +73,13 @@ public class Subject {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Timestamp getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(Timestamp createdOn) {
+        this.createdOn = createdOn;
     }
 }

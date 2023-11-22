@@ -574,6 +574,7 @@ public class AssessmentsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
+    @Deprecated
     public Response getAssessmentsObjects(@Parameter(name = "page", in = QUERY,
                                                   description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                           @Parameter(name = "size", in = QUERY,

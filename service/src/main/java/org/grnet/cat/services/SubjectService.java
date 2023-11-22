@@ -4,12 +4,18 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.core.UriInfo;
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
+import org.grnet.cat.entities.PageQuery;
+import org.grnet.cat.entities.Subject;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.SubjectMapper;
 import org.grnet.cat.repositories.SubjectRepository;
-import org.hibernate.exception.ConstraintViolationException;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * The SubjectService provides operations for managing Subject entities.
@@ -32,13 +38,17 @@ public class SubjectService {
 
         var subject = SubjectMapper.INSTANCE.dtoToSubject(request);
         subject.setCreatedBy(userId);
+        subject.setCreatedOn(Timestamp.from(Instant.now()));
 
-        try
-        {
-            subjectRepository.persist(subject);
-        }catch (ConstraintViolationException e){
+        var optional = subjectRepository
+                .fetchSubjectByNameAndTypeAndSubjectId(request.name, request.type, request.id, userId);
+
+        if(optional.isPresent()){
+
             throw new ConflictException(String.format("This subject {%s, %s, %s} has already been created.", request.id, request.name, request.type));
         }
+
+        subjectRepository.persist(subject);
 
         return SubjectMapper.INSTANCE.subjectToDto(subject);
     }
@@ -60,5 +70,34 @@ public class SubjectService {
         }
 
         subjectRepository.delete(subject);
+    }
+
+    /**
+     * Retrieves a page of Subjects submitted by the specified user.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of Subjects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param userID The ID of the user.
+     * @return A list of SubjectResponse objects representing the submitted Subjects in the requested page.
+     */
+    public PageResource<SubjectResponse> getSubjectsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
+
+        PageQuery<Subject> subjects = subjectRepository.fetchSubjectsByUserAndPage(page, size, userID);
+
+        return new PageResource<>(subjects, SubjectMapper.INSTANCE.subjectsToDto(subjects.list()), uriInfo);
+    }
+
+
+    /**
+     * Retrieves a specific Subject.
+     *
+     * @param id The ID of the Subject to retrieve.
+     * @return The corresponding Subject.
+     */
+    public SubjectResponse getSubject(Long id){
+
+        var subject = subjectRepository.findById(id);
+        return SubjectMapper.INSTANCE.subjectToDto(subject);
     }
 }
