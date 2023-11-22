@@ -3,12 +3,17 @@ package org.grnet.cat.api.endpoints;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,11 +31,18 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
 import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.dtos.template.TemplateResponse;
 import org.grnet.cat.repositories.SubjectRepository;
+import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.services.SubjectService;
+
+import java.util.List;
+
+import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/v1/subjects")
 @Authenticated
@@ -157,5 +169,117 @@ public class SubjectsEndpoint {
         informativeResponse.message = "Subject has been successfully deleted.";
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Subject")
+    @Operation(
+            summary = "Get list of objects created by a specific user.",
+            description = "This endpoint retrieves the Subjects submitted by the specified user." +
+                    "By default, the first page of 10 Subjects will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Subjects.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableSubjectResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getSubjects(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                @Parameter(name = "size", in = QUERY,
+                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Context UriInfo uriInfo) {
+
+        var subjects = subjectService.getSubjectsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
+
+        return Response.ok().entity(subjects).build();
+    }
+
+    @Tag(name = "Subject")
+    @Operation(
+            summary = "Get specific Subject.",
+            description = "Returns a specific Subject.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Subject.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = SubjectResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getSubject(@Parameter(
+            description = "The ID of the Subject to retrieve.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                          @PathParam("id")
+                                          @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
+
+        var subject = subjectService.getSubject(id);
+
+        return Response.ok().entity(subject).build();
+    }
+
+    public static class PageableSubjectResponse extends PageResource<SubjectResponse> {
+
+        private List<SubjectResponse> content;
+
+        @Override
+        public List<SubjectResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<SubjectResponse> content) {
+            this.content = content;
+        }
     }
 }

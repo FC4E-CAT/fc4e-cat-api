@@ -32,6 +32,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#92](https://github.com/FC4E-CAT/fc4e-cat-api/pull/92)    -  CAT-210 List of Objects.
 -   [#104](https://github.com/FC4E-CAT/fc4e-cat-api/pull/104)  -  CAT-261 Create a new Subject.
 -   [#105](https://github.com/FC4E-CAT/fc4e-cat-api/pull/105)  -  CAT-263 Delete a Subject.
+-   [#106](https://github.com/FC4E-CAT/fc4e-cat-api/pull/106)  -  CAT-274 Fetch the created Subjects.
 
 ### Changed
 
