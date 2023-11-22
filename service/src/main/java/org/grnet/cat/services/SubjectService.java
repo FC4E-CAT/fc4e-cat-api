@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
+import org.grnet.cat.dtos.subject.UpdateSubjectRequestDto;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Subject;
 import org.grnet.cat.exceptions.ConflictException;
@@ -32,6 +33,7 @@ public class SubjectService {
      * @param request The Subject to be created.
      * @param userId The user who requests to create the subject.
      * @return The created Subject.
+     * @throws ConflictException  if a Subject exists for the user.
      */
     @Transactional
     public SubjectResponse createSubject(SubjectRequest request, String userId) {
@@ -88,16 +90,44 @@ public class SubjectService {
         return new PageResource<>(subjects, SubjectMapper.INSTANCE.subjectsToDto(subjects.list()), uriInfo);
     }
 
-
     /**
      * Retrieves a specific Subject.
      *
      * @param id The ID of the Subject to retrieve.
+     * @param userID The ID of the user who requests the subject.
      * @return The corresponding Subject.
      */
-    public SubjectResponse getSubject(Long id){
+    public SubjectResponse getSubject(Long id, String userID){
 
         var subject = subjectRepository.findById(id);
+
+        if (!subject.getCreatedBy().equals(userID)) {
+            throw new ForbiddenException("User not authorized to manage subject with ID " + id);
+        }
+
+        return SubjectMapper.INSTANCE.subjectToDto(subject);
+    }
+
+    /**
+     * This method updates a Subject.
+     *
+     * @param id The ID of the Subject to update.
+     * @param request The Subject attributes to be updated.
+     * @param userID The ID of the user who requests to update the subject.
+     * @return The updated Subject.
+     * @throws ConflictException  if a Subject exists for the user.
+     */
+    @Transactional
+    public SubjectResponse update(Long id, UpdateSubjectRequestDto request, String userID){
+
+        var subject = subjectRepository.findById(id);
+
+        if (!subject.getCreatedBy().equals(userID)) {
+            throw new ForbiddenException("User not authorized to manage subject with ID " + id);
+        }
+
+        SubjectMapper.INSTANCE.updateSubjectFromDto(request, subject);
+
         return SubjectMapper.INSTANCE.subjectToDto(subject);
     }
 }
