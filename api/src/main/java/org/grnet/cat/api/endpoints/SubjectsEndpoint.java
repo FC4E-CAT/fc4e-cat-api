@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.DELETE;
@@ -35,10 +36,12 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
 import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.dtos.subject.UpdateSubjectRequestDto;
+import org.grnet.cat.exceptions.ConflictException;
+import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.repositories.SubjectRepository;
-import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.services.SubjectService;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.List;
 
@@ -263,7 +266,80 @@ public class SubjectsEndpoint {
                                           @PathParam("id")
                                           @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
 
-        var subject = subjectService.getSubject(id);
+        var subject = subjectService.getSubject(id, utility.getUserUniqueIdentifier());
+
+        return Response.ok().entity(subject).build();
+    }
+
+    @Tag(name = "Subject")
+    @Operation(
+            summary = "Updates an existing Subject.",
+            description = "To update the resource properties, the body of the request must contain an updated representation of Subject. " +
+                    "You can update a part or all attributes of Subject. The empty or null values are ignored.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Subject was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = SubjectResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Subject already exists.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response updateSubject(@Parameter(
+            description = "The ID of the Subject to update.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                               @PathParam("id")
+                               @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id,
+                                  @Valid @NotNull(message = "The request body is empty.") UpdateSubjectRequestDto request) {
+
+        SubjectResponse subject = null;
+
+        try{
+            subject = subjectService.update(id, request, utility.getUserUniqueIdentifier());
+
+        } catch (Exception e){
+
+            if(e.getCause().getCause() instanceof ConstraintViolationException){
+
+                throw new ConflictException(String.format("This subject {%s, %s, %s} has already been created.", request.id, request.name, request.type));
+            } else {
+                throw new InternalServerErrorException("Internal Server Error", 500);
+            }
+        }
 
         return Response.ok().entity(subject).build();
     }
