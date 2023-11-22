@@ -52,7 +52,7 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 public class ValidationsEndpoint {
 
     /**
-     * Injection point for the Identified service
+     * Injection point for the User service
      */
     @Inject
     UserService userService;
