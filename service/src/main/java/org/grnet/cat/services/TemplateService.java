@@ -5,7 +5,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
 import org.grnet.cat.dtos.template.TemplateActorDto;
 import org.grnet.cat.dtos.template.TemplateAssessmentTypeDto;
 import org.grnet.cat.dtos.template.TemplateRequest;

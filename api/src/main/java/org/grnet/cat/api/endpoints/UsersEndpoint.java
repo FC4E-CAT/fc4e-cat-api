@@ -34,8 +34,6 @@ import org.grnet.cat.services.UserService;
 
 import java.util.List;
 
-import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
-
 @Path("/v1/users")
 @Authenticated
 @SecurityScheme(securitySchemeName = "Authentication",

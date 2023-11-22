@@ -920,25 +920,6 @@
             "icon_uri": ""
           },
           {
-            "name": "Validation Resource",
-            "ownerManagedAccess": false,
-            "displayName": "",
-            "attributes": {},
-            "_id": "fafb67c1-5be7-47b1-ac0b-c80868482975",
-            "uris": [
-              "/v1/validations/*"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              },
-              {
-                "name": "create"
-              }
-            ],
-            "icon_uri": ""
-          },
-          {
             "name": "Assessment Resource",
             "ownerManagedAccess": false,
             "displayName": "Assessment Resource",
@@ -953,6 +934,82 @@
               },
               {
                 "name": "update"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Read Assessment Objects by Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Assessment Objects by Actor",
+            "attributes": {},
+            "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
+            "uris": [
+              "/v1/assessments/objects/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Role Resource",
+            "ownerManagedAccess": false,
+            "displayName": "",
+            "attributes": {},
+            "_id": "afc4b539-eedb-4752-b514-aa51cfda6905",
+            "uris": [
+              "/v1/roles/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Subject Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Subject Resource",
+            "attributes": {},
+            "_id": "a60e563b-3109-49f9-99f6-f3c86828b29c",
+            "uris": [
+              "/v1/subjects/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              },
+              {
+                "name": "update"
+              },
+              {
+                "name": "delete"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Validation Resource",
+            "ownerManagedAccess": false,
+            "displayName": "",
+            "attributes": {},
+            "_id": "fafb67c1-5be7-47b1-ac0b-c80868482975",
+            "uris": [
+              "/v1/validations/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
               },
               {
                 "name": "create"
@@ -1040,22 +1097,6 @@
             "icon_uri": ""
           },
           {
-            "name": "Read Assessment Objects by Actor",
-            "ownerManagedAccess": false,
-            "displayName": "Read Assessment Objects by Actor",
-            "attributes": {},
-            "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
-            "uris": [
-              "/v1/assessments/objects/by-actor/{actor-id}"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              }
-            ],
-            "icon_uri": ""
-          },
-          {
             "name": "Template Resource",
             "ownerManagedAccess": false,
             "displayName": "Template Resource",
@@ -1082,22 +1123,6 @@
             "_id": "ca960110-a15b-4155-87ce-992d86c68dd3",
             "uris": [
               "/v1/integrations/*"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              }
-            ],
-            "icon_uri": ""
-          },
-          {
-            "name": "Role Resource",
-            "ownerManagedAccess": false,
-            "displayName": "",
-            "attributes": {},
-            "_id": "afc4b539-eedb-4752-b514-aa51cfda6905",
-            "uris": [
-              "/v1/roles/*"
             ],
             "scopes": [
               {
@@ -1162,7 +1187,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1199,7 +1224,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Assessment Resource\"]",
+              "resources": "[\"Assessment Resource\",\"Subject Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           },

@@ -1,13 +1,13 @@
-package org.grnet.cat.dtos.template;
+package org.grnet.cat.dtos.subject;
 
-
-import lombok.EqualsAndHashCode;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "AssessmentSubject", description = "This object represents an assessment subject.")
-@EqualsAndHashCode
-public class TemplateSubjectDto {
+@Schema(name="SubjectRequest", description="This object represents a request for creating a new subject.")
+public class SubjectRequest {
+
 
     @Schema(
             type = SchemaType.STRING,
@@ -15,6 +15,7 @@ public class TemplateSubjectDto {
             description = "The subject id.",
             example = "id"
     )
+    @NotEmpty(message = "id may not be empty.")
     public String id;
 
     @Schema(
@@ -23,6 +24,7 @@ public class TemplateSubjectDto {
             description = "The subject name.",
             example = "name"
     )
+    @NotEmpty(message = "name may not be empty.")
     public String name;
 
     @Schema(
@@ -31,5 +33,6 @@ public class TemplateSubjectDto {
             description = "The subject type.",
             example = "type"
     )
+    @NotEmpty(message = "type may not be empty.")
     public String type;
 }
