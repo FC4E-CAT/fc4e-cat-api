@@ -14,8 +14,8 @@ public abstract class JsonAbstractAssessmentService<Request, Update, Response ex
      */
     public void deletePrivateAssessmentBelongsToUser(String userID, String assessmentId){
 
-         assessmentBelongsToUser(userID, assessmentId);
-         deletePrivateAssessment(assessmentId);
+        assessmentBelongsToUser(userID, assessmentId);
+        deletePrivateAssessment(assessmentId);
     }
 
     /**
