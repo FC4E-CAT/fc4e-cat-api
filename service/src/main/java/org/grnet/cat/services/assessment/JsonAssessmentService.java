@@ -20,6 +20,7 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.exceptions.InternalServerErrorException;
@@ -28,12 +29,14 @@ import org.grnet.cat.mappers.TemplateMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.services.SubjectService;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +44,7 @@ import java.util.stream.Collectors;
  */
 @ApplicationScoped
 @Named("json-assessment-service")
-public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAssessmentRequest, UpdateJsonAssessmentRequest, AssessmentResponse, Assessment> {
+public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAssessmentRequest, JsonAssessmentRequest, AssessmentResponse, Assessment> {
 
     @Inject
     AssessmentRepository assessmentRepository;
@@ -55,11 +58,15 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    SubjectService subjectService;
+
     @Override
     @Transactional
     @SneakyThrows
     public JsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
 
+        handleSubjectDatabaseId(userId, request);
         var validation = validationRepository.fetchValidationByUserAndActorAndOrganisation(userId, request.assessmentDoc.actor.id, request.assessmentDoc.organisation.id);
         var template = templateRepository.fetchTemplateByActor(request.assessmentDoc.actor.id);
 
@@ -85,6 +92,48 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         storedAssessment.setAssessmentDoc(objectMapper.writeValueAsString(assessmentDoc));
 
         return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(storedAssessment);
+    }
+
+    /**
+     *The API should provide flexibility for clients to either use an existing Subject by specifying its id in the db_id property
+     * or create a new one by leaving db_id empty and filling in the other three properties (name, type and id).
+     *The API should also give precedence to the properties stored in the database. If a valid db_id is provided,
+     * its associated Subject should be retrieved, and the values of name, type, and id in the Assessment should be overwritten
+     * with the corresponding values from the existing  database Subject.
+     *
+     */
+    private void handleSubjectDatabaseId(String userId, JsonAssessmentRequest request){
+
+        if(Objects.isNull(request.assessmentDoc.subject.dbId)){
+
+            var optional = subjectService
+                    .getSubjectByNameAndTypeAndSubjectId(request.assessmentDoc.subject.name, request.assessmentDoc.subject.type, request.assessmentDoc.subject.id, userId);
+
+            if(optional.isEmpty()){
+
+                var newSubject = new SubjectRequest();
+                newSubject.name = request.assessmentDoc.subject.name;
+                newSubject.type = request.assessmentDoc.subject.type;
+                newSubject.id = request.assessmentDoc.subject.id;
+
+                var response = subjectService.createSubject(newSubject, userId);
+                request.assessmentDoc.subject.dbId = response.id;
+            } else {
+
+                request.assessmentDoc.subject.dbId = optional.get().getId();
+            }
+        } else{
+
+            var subject = subjectService.getSubjectById(request.assessmentDoc.subject.dbId);
+
+            if (!subject.getCreatedBy().equals(userId)) {
+                throw new ForbiddenException("User not authorized to manage subject with ID " + request.assessmentDoc.subject.dbId);
+            }
+
+            request.assessmentDoc.subject.name = subject.getName();
+            request.assessmentDoc.subject.type = subject.getType();
+            request.assessmentDoc.subject.id = subject.getSubjectId();
+        }
     }
 
     private void validateAssessmentAgainstTemplate(String request, String template){
@@ -257,12 +306,15 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * Updates the Assessment's json document.
      *
      * @param id The ID of the assessment whose json doc is being updated.
+     * @param userId The ID of the user who requests to update a specific assessment.
      * @param request The update request.
      * @return The updated assessment
      */
     @Override
     @SneakyThrows
-    public JsonAssessmentResponse update(String id, UpdateJsonAssessmentRequest request) {
+    public JsonAssessmentResponse update(String id, String userId, JsonAssessmentRequest request) {
+
+        handleSubjectDatabaseId(userId, request);
 
         var assessmentDoc = AssessmentMapper.INSTANCE.templateDocToAssessmentDoc(request.assessmentDoc);
 

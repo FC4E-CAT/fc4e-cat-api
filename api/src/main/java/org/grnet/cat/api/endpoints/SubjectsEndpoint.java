@@ -266,7 +266,7 @@ public class SubjectsEndpoint {
                                           @PathParam("id")
                                           @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
 
-        var subject = subjectService.getSubject(id, utility.getUserUniqueIdentifier());
+        var subject = subjectService.getSubjectByUserAndId(id, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(subject).build();
     }

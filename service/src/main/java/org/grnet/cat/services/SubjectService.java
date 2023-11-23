@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
@@ -17,6 +18,7 @@ import org.grnet.cat.repositories.SubjectRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Optional;
 
 /**
  * The SubjectService provides operations for managing Subject entities.
@@ -42,8 +44,7 @@ public class SubjectService {
         subject.setCreatedBy(userId);
         subject.setCreatedOn(Timestamp.from(Instant.now()));
 
-        var optional = subjectRepository
-                .fetchSubjectByNameAndTypeAndSubjectId(request.name, request.type, request.id, userId);
+        var optional = subjectRepository.fetchSubjectByNameAndTypeAndSubjectId(request.name, request.type, request.id, userId);
 
         if(optional.isPresent()){
 
@@ -53,6 +54,11 @@ public class SubjectService {
         subjectRepository.persist(subject);
 
         return SubjectMapper.INSTANCE.subjectToDto(subject);
+    }
+
+    public Optional<Subject> getSubjectByNameAndTypeAndSubjectId(String name, String type, String subjectId, String userID){
+
+        return subjectRepository.fetchSubjectByNameAndTypeAndSubjectId(name, type, subjectId, userID);
     }
 
     /**
@@ -97,7 +103,7 @@ public class SubjectService {
      * @param userID The ID of the user who requests the subject.
      * @return The corresponding Subject.
      */
-    public SubjectResponse getSubject(Long id, String userID){
+    public SubjectResponse getSubjectByUserAndId(Long id, String userID){
 
         var subject = subjectRepository.findById(id);
 
@@ -106,6 +112,19 @@ public class SubjectService {
         }
 
         return SubjectMapper.INSTANCE.subjectToDto(subject);
+    }
+
+    /**
+     * Retrieves a specific Subject.
+     *
+     * @param id The ID of the Subject to retrieve.
+     * @return The corresponding Subject.
+     */
+    public Subject getSubjectById(Long id){
+
+        var subject = subjectRepository.findByIdOptional(id);
+
+        return subject.orElseThrow(()-> new NotFoundException("There is no Subject with the following id: "+id));
     }
 
     /**
