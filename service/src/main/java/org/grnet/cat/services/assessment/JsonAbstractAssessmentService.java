@@ -31,7 +31,7 @@ public abstract class JsonAbstractAssessmentService<Request extends AssessmentRe
     public Response updatePrivateAssessmentBelongsToUser(String id, String userId, Update request) {
 
         assessmentBelongsToUser(userId, id);
-        return updatePrivateAssessment(id, request);
+        return updatePrivateAssessment(id, userId, request);
     }
 
     /**
@@ -51,13 +51,14 @@ public abstract class JsonAbstractAssessmentService<Request extends AssessmentRe
      * Updates a private assessment if it is not published.
      *
      * @param id The ID of the assessment whose is being updated.
+     * @param userId The ID of the user who requests to update a specific assessment.
      * @param request The update request.
      * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published).
      */
-    public Response updatePrivateAssessment(String id, Update request){
+    public Response updatePrivateAssessment(String id, String userId, Update request){
 
         var assessment = getAssessment(id);
         forbidActionsToPublicAssessment(assessment);
-        return update(id, request);
+        return update(id, userId, request);
     }
 }

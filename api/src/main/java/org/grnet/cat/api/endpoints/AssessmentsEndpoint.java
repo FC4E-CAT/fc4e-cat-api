@@ -236,8 +236,8 @@ public class AssessmentsEndpoint {
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
                                      @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") Long id,
-                                     @Valid @NotNull(message = "The request body is empty.") UpdateJsonAssessmentRequest updateJsonAssessmentRequest) {
+                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") String id,
+                                     @Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest updateJsonAssessmentRequest) {
 
         var assessment = assessmentService.updatePrivateAssessmentBelongsToUser(id, utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
 

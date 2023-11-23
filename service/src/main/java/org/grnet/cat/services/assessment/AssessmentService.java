@@ -13,7 +13,7 @@ public interface AssessmentService <Request extends AssessmentRequest, Update, R
 
     void deleteAll();
 
-    Response update(String id, Update request);
+    Response update(String id, String userId, Update request);
 
     PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID);
 
