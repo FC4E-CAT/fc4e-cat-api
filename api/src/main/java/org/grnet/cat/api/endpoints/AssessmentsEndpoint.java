@@ -66,7 +66,9 @@ public class AssessmentsEndpoint {
     @Operation(
             summary = "Request to create an assessment.",
             description = "This endpoint allows a validated user to create an assessment for a validation request." +
-                    " The validated user should provide the necessary information to support their request.")
+                    " The validated user should provide the necessary information to support their request. " +
+                    "The API provides flexibility for clients to either use an existing Subject by specifying its id in the subject.db_id property " +
+                    "or create a new one by leaving subject.db_id empty and filling in the other three properties (subject.name, subject.type and subject.id)")
     @APIResponse(
             responseCode = "201",
             description = "Assessment creation successful.",
@@ -235,7 +237,7 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.STRING))
                                      @PathParam("id")
                                      @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") String id,
-                                     @Valid @NotNull(message = "The request body is empty.") UpdateJsonAssessmentRequest updateJsonAssessmentRequest) {
+                                     @Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest updateJsonAssessmentRequest) {
 
         var assessment = assessmentService.updatePrivateAssessmentBelongsToUser(id, utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
 
