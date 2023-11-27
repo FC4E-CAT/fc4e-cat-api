@@ -39,10 +39,6 @@ public class Assessment {
     @Column(name = "updated_on")
     private Timestamp updatedOn;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subject_id")
-    private Subject subject;
-
     public String getId() {
         return id;
     }
@@ -89,13 +85,5 @@ public class Assessment {
 
     public void setValidation(Validation validation) {
         this.validation = validation;
-    }
-
-    public Subject getSubject() {
-        return subject;
-    }
-
-    public void setSubject(Subject subject) {
-        this.subject = subject;
     }
 }
