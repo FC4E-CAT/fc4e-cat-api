@@ -38,7 +38,11 @@ public class Assessment {
     @Column(name = "updated_on")
     private Timestamp updatedOn;
 
-    public Long getId() {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
+
+    public String getId() {
         return id;
     }
 
