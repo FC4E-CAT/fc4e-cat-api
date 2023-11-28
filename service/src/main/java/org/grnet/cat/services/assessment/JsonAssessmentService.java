@@ -18,7 +18,6 @@ import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
@@ -81,6 +80,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         assessment.setCreatedOn(timestamp);
         assessment.setTemplate(template);
         assessment.setValidation(validation);
+        assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
 
         assessmentRepository.persist(assessment);
 
