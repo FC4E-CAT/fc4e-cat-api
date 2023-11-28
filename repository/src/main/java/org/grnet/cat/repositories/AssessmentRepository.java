@@ -14,8 +14,7 @@ import java.time.Instant;
 import java.util.List;
 
 @ApplicationScoped
-
-public class AssessmentRepository implements Repository<Assessment, Long> {
+public class AssessmentRepository implements Repository<Assessment, String> {
 
     @Inject
     ObjectMapper objectMapper;
