@@ -34,6 +34,7 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
@@ -378,5 +379,49 @@ public class AdminEndpoint {
         var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Restrict a user's access.",
+            description = "Calling this endpoint results in the specified user being denied access to the API.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/deny-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response denyAccess( @Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
+
+        userService.addDenyAccessRole(utility.getUserUniqueIdentifier(), denyAccess.userId, denyAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role added successfully to the user. User now denied access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
     }
 }
