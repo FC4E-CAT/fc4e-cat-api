@@ -67,6 +67,9 @@ public class User {
     @Column(name = "validated_on")
     private Timestamp validatedOn;
 
+    @Column
+    private Boolean banned;
+
     @Transient
     private List<Role> roles;
 
@@ -148,5 +151,13 @@ public class User {
 
     public void setOrcidId(String orcidId) {
         this.orcidId = orcidId;
+    }
+
+    public Boolean isBanned() {
+        return banned;
+    }
+
+    public void setBanned(Boolean banned) {
+        this.banned = banned;
     }
 }
