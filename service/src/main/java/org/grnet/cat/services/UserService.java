@@ -194,4 +194,25 @@ public class UserService {
         historyRepository.persist(history);
         roleRepository.assignRoles(userId, List.of("deny_access"));
     }
+
+    /**
+     * Removes the deny_access role from the specified user in Keycloak, allowing access to the API.
+     *
+     * @param userId The unique identifier of the user to whom the access will be allowed.
+     * @param adminId The unique identifier of the admin allowing access to the user.
+     * @param reason The reason for allowing access to the user.
+     */
+    @Transactional
+    public void removeDenyAccessRole(String adminId, String userId, String reason){
+
+        var history = new History();
+        history.setAction(reason);
+        history.setUserId(adminId);
+        history.setPerformedOn(Timestamp.from(Instant.now()));
+
+        var userToBeBanned = userRepository.findById(userId);
+        userToBeBanned.setBanned(Boolean.FALSE);
+        historyRepository.persist(history);
+        roleRepository.removeRoles(userId, List.of("deny_access"));
+    }
 }

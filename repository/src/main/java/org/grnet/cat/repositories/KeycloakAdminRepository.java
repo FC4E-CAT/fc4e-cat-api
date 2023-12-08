@@ -124,6 +124,38 @@ public class KeycloakAdminRepository implements RoleRepository{
         }
     }
 
+    @Override
+    public void removeRoles(String userId, List<String> roles) {
+
+        try{
+
+            var realmResource = keycloak.realm(realm);
+
+            var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
+
+            var clientResource = realmResource.clients().get(clientRepresentation.getId());
+
+            var usersResource = realmResource.users();
+
+            var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, userId)).stream().findFirst().get();
+
+            var userResource = usersResource.get(userRepresentation.getId());
+
+            // Get client level roles
+            var rolesRepresentations = roles
+                    .stream()
+                    .map(role->clientResource.roles().get(role).toRepresentation())
+                    .collect(Collectors.toList());
+
+            // Remove client level role from user
+            userResource.roles().clientLevel(clientRepresentation.getId()).remove(rolesRepresentations);
+
+        } catch (Exception e){
+
+            throw new RuntimeException("Cannot communicate with keycloak.");
+        }
+    }
+
     /**
      * Checks if a role exists by searching for the role with the given name.
      *

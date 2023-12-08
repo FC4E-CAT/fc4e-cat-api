@@ -35,6 +35,7 @@ import org.grnet.cat.dtos.UpdateValidationStatus;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.access.DenyAccess;
+import org.grnet.cat.dtos.access.PermitAccess;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
@@ -420,7 +421,51 @@ public class AdminEndpoint {
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.message = "deny_access role added successfully to the user. User now denied access to the API.";
+        informativeResponse.message = "deny_access role added successfully to the user. The user is now denied access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Allow Access to previously banned user.",
+            description = "Executing this endpoint allows a user who has been previously banned to access the CAT Service again.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/permit-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response permitAccess( @Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
+
+        userService.removeDenyAccessRole(utility.getUserUniqueIdentifier(), permitAccess.userId, permitAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role removed successfully from the user. The user is now allowed access to the API.";
 
         return Response.ok().entity(informativeResponse).build();
     }
