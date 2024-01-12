@@ -163,7 +163,7 @@ public class SubjectsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
+                                  @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
 
         subjectService.deleteSubjectBelongsToUser(utility.getUserUniqueIdentifier(), id);
 
@@ -214,7 +214,7 @@ public class SubjectsEndpoint {
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                 @Context UriInfo uriInfo) {
 
-        var subjects = subjectService.getSubjectsByUserAndPage(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
+        var subjects = subjectService.getSubjectsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(subjects).build();
     }
@@ -263,8 +263,8 @@ public class SubjectsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                          @PathParam("id")
-                                          @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
+                               @PathParam("id")
+                               @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id) {
 
         var subject = subjectService.getSubjectByUserAndId(id, utility.getUserUniqueIdentifier());
 
@@ -322,18 +322,18 @@ public class SubjectsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                               @PathParam("id")
-                               @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id,
+                                  @PathParam("id")
+                                  @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id,
                                   @Valid @NotNull(message = "The request body is empty.") UpdateSubjectRequestDto request) {
 
         SubjectResponse subject = null;
 
-        try{
+        try {
             subject = subjectService.update(id, request, utility.getUserUniqueIdentifier());
 
-        } catch (Exception e){
+        } catch (Exception e) {
 
-            if(e.getCause().getCause() instanceof ConstraintViolationException){
+            if (e.getCause().getCause() instanceof ConstraintViolationException) {
 
                 throw new ConflictException(String.format("This subject {%s, %s, %s} has already been created.", request.id, request.name, request.type));
             } else {
@@ -342,6 +342,65 @@ public class SubjectsEndpoint {
         }
 
         return Response.ok().entity(subject).build();
+    }
+
+    @Tag(name = "Subject")
+    @Operation(
+            summary = "Get list of Assessments for a specific Subject.",
+            description = "Returns a list of Assessments.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The list of Assessments for a Subject.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AssessmentsEndpoint.PageablePartialAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/assessments")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getSubjectAssessments(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                          @Parameter(name = "size", in = QUERY,
+                                                  description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                          @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                          @Parameter(
+                                                  description = "The ID of the Subject to retrieve.",
+                                                  required = true,
+                                                  example = "1",
+                                                  schema = @Schema(type = SchemaType.NUMBER))
+                                          @PathParam("id")
+                                          @Valid @NotFoundEntity(repository = SubjectRepository.class, message = "There is no Subject with the following id:") Long id,
+
+                                          @Context UriInfo uriInfo) {
+
+        var assessments = subjectService.getAssessmentsPerSubject(page-1, size, id, uriInfo);
+
+        return Response.ok().entity(assessments).build();
     }
 
     public static class PageableSubjectResponse extends PageResource<SubjectResponse> {

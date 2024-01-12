@@ -6,16 +6,22 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.grnet.cat.dtos.assessment.AssessmentDoc;
+import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
 import org.grnet.cat.dtos.subject.UpdateSubjectRequestDto;
+import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Subject;
 import org.grnet.cat.exceptions.ConflictException;
+import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.SubjectMapper;
+import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.SubjectRepository;
 
+import java.awt.print.Pageable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
@@ -25,6 +31,10 @@ import java.util.Optional;
  */
 @ApplicationScoped
 public class SubjectService {
+
+
+    @Inject
+    AssessmentRepository assessmentRepository;
 
     @Inject
     SubjectRepository subjectRepository;
@@ -149,4 +159,17 @@ public class SubjectService {
 
         return SubjectMapper.INSTANCE.subjectToDto(subject);
     }
+
+    public PageResource<PartialJsonAssessmentResponse> getAssessmentsPerSubject(int page , int size,Long id,UriInfo uriInfo){
+
+
+        var assessments = assessmentRepository.fetchAssessmentsPerSubjectAndPage(page, size, id);
+
+
+        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+
+    }
+
 }
