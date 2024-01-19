@@ -10,6 +10,7 @@ import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.exceptions.EntityNotFoundException;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.Collections;
 import java.util.List;
@@ -203,4 +204,5 @@ public class KeycloakAdminRepository implements RoleRepository{
                 .map(roleRepresentation -> new Role(roleRepresentation.getId(), roleRepresentation.getName(), roleRepresentation.getDescription()))
                 .collect(Collectors.toList());
     }
+
 }

@@ -2,6 +2,8 @@ package org.grnet.cat.repositories;
 
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Role;
+import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
 import java.util.Map;
@@ -77,4 +79,5 @@ public interface RoleRepository {
                 .collect(toMap(i -> i / pageSize,
                         i -> list.subList(i, min(i + pageSize, list.size()))));
     }
+
 }

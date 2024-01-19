@@ -364,6 +364,14 @@
           "clientRole": true,
           "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
           "attributes": {}
+        },
+         {
+          "id": "df147a91-4db7-5bbc-266c-f70cf99b2630",
+          "name": "deny_access",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
         }
       ],
       "account-console": [],

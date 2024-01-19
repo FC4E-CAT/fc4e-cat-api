@@ -6,8 +6,10 @@ import lombok.SneakyThrows;
 import org.grnet.cat.dtos.assessment.AssessmentDoc;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.statistics.AssessmentPerActorDto;
 import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.entities.Assessment;
+import org.grnet.cat.entities.AssessmentPerActor;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -65,4 +67,13 @@ public interface AssessmentMapper {
         return objectMapper.readValue(doc, AssessmentDoc.class);
 
     }
+
+    @IterableMapping(qualifiedByName = "mapWithExpression")
+    List<AssessmentPerActorDto> assessmentPerActorsToAssessmentPerActorsDto(List<AssessmentPerActor> assessmentPerActors);
+    @Named("mapWithExpression")
+    @Mapping(target = "totalAssessmentNum", expression = "java(assessmentPerActor.getTotal())")
+    @Mapping(target = "actor", expression = "java(assessmentPerActor.getActor_name())")
+
+
+    AssessmentPerActorDto assessmentPerActorToAssessmentPerActorDto(AssessmentPerActor assessmentPerActor);
 }

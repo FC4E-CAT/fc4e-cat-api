@@ -9,6 +9,9 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.assessment.AssessmentDoc;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.statistics.StatisticsResponse;
+import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
+import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
 import org.grnet.cat.dtos.subject.UpdateSubjectRequestDto;
@@ -165,11 +168,9 @@ public class SubjectService {
 
         var assessments = assessmentRepository.fetchAssessmentsPerSubjectAndPage(page, size, id);
 
-
         var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
 
     }
-
 }

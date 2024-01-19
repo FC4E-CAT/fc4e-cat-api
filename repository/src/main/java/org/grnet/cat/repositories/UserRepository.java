@@ -5,12 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.entities.Page;
-import org.grnet.cat.entities.PageQuery;
-import org.grnet.cat.entities.PageQueryImpl;
-
-import org.grnet.cat.entities.Role;
-import org.grnet.cat.entities.User;
+import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
@@ -108,7 +103,7 @@ public class UserRepository implements UserRepositoryI<User, String> {
         return user;
     }
 
-    private UserType findUserType(List<Role> roles){
+    public UserType findUserType(List<Role> roles){
 
         var set = roles
                 .stream()
