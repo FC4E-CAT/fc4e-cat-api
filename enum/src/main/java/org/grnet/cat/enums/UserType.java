@@ -7,8 +7,8 @@ public enum UserType {
 
     Identified(0),
     Validated(1),
-    Admin(2);
-
+    Admin(2),
+    Deny_Access(3);
     UserType(int severity) {
         this.severity = severity;
     }

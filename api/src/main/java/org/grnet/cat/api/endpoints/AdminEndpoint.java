@@ -36,9 +36,14 @@ import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
+import org.grnet.cat.dtos.statistics.AssessmentStatisticsResponse;
+import org.grnet.cat.dtos.statistics.StatisticsResponse;
+import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
+import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
@@ -67,6 +72,12 @@ public class AdminEndpoint {
     @Inject
     UserService userService;
 
+
+    /**
+     * Injection point for the KeycloakAdminRole Service
+     */
+    @Inject
+    KeycloakAdminRoleService adminService;
 
     /**
      * Injection point for the Utility service
@@ -468,5 +479,45 @@ public class AdminEndpoint {
         informativeResponse.message = "deny_access role removed successfully from the user. The user is now allowed access to the API.";
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get  Statistics Results.",
+            description = "Returns results of Statistics.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Assessment Statistics request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = StatisticsResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/statistics")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getStatisticsRequest() {
+
+        var statistics = adminService.getStatistics();
+
+        return Response.ok().entity(statistics).build();
     }
 }

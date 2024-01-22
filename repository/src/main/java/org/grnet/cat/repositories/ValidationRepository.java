@@ -4,7 +4,10 @@ import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.NotFoundException;
-import org.grnet.cat.entities.*;
+import org.grnet.cat.entities.Page;
+import org.grnet.cat.entities.PageQuery;
+import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
@@ -19,13 +22,14 @@ public class ValidationRepository implements Repository<Validation, Long> {
 
     /**
      * It executes a query in database to check if there is a promotion request for a specific user and organisation.
-     * @param id The ID of the user.
-     * @param organisationId The ID of the organisation.
+     *
+     * @param id                 The ID of the user.
+     * @param organisationId     The ID of the organisation.
      * @param organisationSource The source of the organisation.
-     * @param actorId The actor id.
+     * @param actorId            The actor id.
      * @return {@code true} if a promotion request exists for the user and organization, {@code false} otherwise
      */
-    public boolean hasPromotionRequest(String id, String organisationId, String organisationSource, Long actorId){
+    public boolean hasPromotionRequest(String id, String organisationId, String organisationSource, Long actorId) {
 
         List<ValidationStatus> statuses = Arrays.asList(ValidationStatus.REVIEW, ValidationStatus.APPROVED, ValidationStatus.PENDING);
 
@@ -35,12 +39,12 @@ public class ValidationRepository implements Repository<Validation, Long> {
     /**
      * Retrieves a page of validation requests submitted by the specified user.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of validation requests to include in a page.
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
      * @param userID The ID of the user.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PageQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID){
+    public PageQuery<Validation> fetchValidationsByUserAndPage(int page, int size, String userID) {
 
         var panache = find("from Validation v where v.user.id = ?1", Sort.by("status").and("createdOn", Sort.Direction.Descending), userID).page(page, size);
 
@@ -57,13 +61,13 @@ public class ValidationRepository implements Repository<Validation, Long> {
     /**
      * Retrieves a page of validation requests submitted by the specified user.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of validation requests to include in a page.
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
      * @param userID The ID of the user.
      * @param status Validation status to search for.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PageQuery<Validation> fetchValidationsByUserAndStatusAndPage(ValidationStatus status, int page, int size, String userID){
+    public PageQuery<Validation> fetchValidationsByUserAndStatusAndPage(ValidationStatus status, int page, int size, String userID) {
 
         var panache = find("from Validation v where v.user.id = ?1 and v.status = ?2", Sort.by("createdOn", Sort.Direction.Descending), userID, status).page(page, size);
 
@@ -85,7 +89,7 @@ public class ValidationRepository implements Repository<Validation, Long> {
      * @param size The maximum number of validation requests to include in a page.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PageQuery<Validation> fetchValidationsByPage(int page, int size){
+    public PageQuery<Validation> fetchValidationsByPage(int page, int size) {
 
         var panache = findAll(Sort.by("status").and("createdOn", Sort.Direction.Descending)).page(page, size);
 
@@ -102,12 +106,12 @@ public class ValidationRepository implements Repository<Validation, Long> {
     /**
      * Retrieves a page of validation requests submitted by users.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of validation requests to include in a page.
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
      * @param status Validation status to search for.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PageQuery<Validation> fetchValidationsByStatusAndPage(ValidationStatus status, int page, int size){
+    public PageQuery<Validation> fetchValidationsByStatusAndPage(ValidationStatus status, int page, int size) {
 
         var panache = find("status", Sort.by("createdOn", Sort.Direction.Descending), status).page(page, size);
 
@@ -123,17 +127,20 @@ public class ValidationRepository implements Repository<Validation, Long> {
 
     /**
      * Retrieves the validation for a specific user's validation request on a specified actor and organization.
-     * @param userID The unique identifier of the user initiating the validation request.
-     * @param actorID The unique identifier of the actor involved in the validation process.
+     *
+     * @param userID         The unique identifier of the user initiating the validation request.
+     * @param actorID        The unique identifier of the actor involved in the validation process.
      * @param organisationID The unique identifier of the organization associated with the validation request.
      * @return The validation for the specified user, actor, and organization.
      * @throws NotFoundException If the validation request is not found.
      */
-    public Validation fetchValidationByUserAndActorAndOrganisation(String userID, Long actorID, String organisationID){
+    public Validation fetchValidationByUserAndActorAndOrganisation(String userID, Long actorID, String organisationID) {
 
         var optional = find("organisationId = :organisationID and user.id = : userID and actor.id = : actorID and status = : status",
                 Parameters.with("organisationID", organisationID).and("userID", userID).and("actorID", actorID).and("status", ValidationStatus.APPROVED)).firstResultOptional();
 
-        return optional.orElseThrow(()-> new NotFoundException("There is no approved validation request."));
+        return optional.orElseThrow(() -> new NotFoundException("There is no approved validation request."));
     }
+
+
 }

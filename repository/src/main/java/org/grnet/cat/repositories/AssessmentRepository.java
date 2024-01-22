@@ -1,7 +1,9 @@
 package org.grnet.cat.repositories;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.*;
@@ -12,9 +14,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AssessmentRepository implements Repository<Assessment, String> {
+
+    @Inject
+    ObjectMapper objectMapper;
 
     /**
      * Retrieves a page of assessments submitted by the specified user.
@@ -272,7 +278,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
      */
     public PageQuery<Assessment> fetchAssessmentsPerSubjectAndPage(int page, int size, Long subjectId) {
 
-        var panache = find("from Assessment a where a.subject.id =?1 ",subjectId).page(page,size);
+        var panache = find("from Assessment a where a.subject.id =?1 ", subjectId).page(page, size);
 
         var pageable = new PageQueryImpl<Assessment>();
         pageable.list = panache.list();
@@ -281,6 +287,11 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         pageable.count = panache.count();
         pageable.page = Page.of(page, size);
         return pageable;
+    }
+
+    public List<AssessmentPerActor> getStatistics() {
+
+        return find(" SELECT DISTINCT act.name as actor_name, COUNT(*) as total FROM Assessment a inner join Validation v on v.id=a.validation.id inner join Actor act on v.actor.id=act.id GROUP BY actor_name").project(AssessmentPerActor.class).stream().collect(Collectors.toList());
     }
 
 }

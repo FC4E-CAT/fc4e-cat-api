@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.Source;
@@ -21,10 +22,8 @@ import org.grnet.cat.repositories.ValidationRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 /**
  * The ValidationService provides operations for managing Validation entities.
@@ -209,4 +208,5 @@ public class ValidationService {
     public void deleteAll(){
         validationRepository.deleteAll();
     }
+
 }
