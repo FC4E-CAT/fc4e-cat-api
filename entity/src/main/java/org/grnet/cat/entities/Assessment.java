@@ -1,10 +1,7 @@
 package org.grnet.cat.entities;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.annotations.UuidGenerator;
-
 import java.sql.Timestamp;
 
 /**
@@ -18,8 +15,8 @@ public class Assessment {
      * As id
      */
     @Id
-    @UuidGenerator
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "assessment_doc", columnDefinition = "json")
     private String assessmentDoc;
@@ -47,7 +44,7 @@ public class Assessment {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
