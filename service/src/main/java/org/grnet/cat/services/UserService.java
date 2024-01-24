@@ -120,6 +120,8 @@ public class UserService {
 
         var optionalUser = userRepository.searchByIdOptional(id);
 
+        roleRepository.assignRoles(id, List.of("identified"));
+
         optionalUser.ifPresent(s -> {throw new ConflictException("User already exists in the database.");});
 
         var identified = new User();
@@ -127,8 +129,6 @@ public class UserService {
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
 
         userRepository.persist(identified);
-
-        roleRepository.assignRoles(id, List.of("identified"));
 
         return UserMapper.INSTANCE.userToProfileDto(identified);
     }
