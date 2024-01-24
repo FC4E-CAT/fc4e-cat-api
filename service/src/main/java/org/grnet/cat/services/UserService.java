@@ -9,7 +9,6 @@ import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.entities.history.History;
@@ -128,6 +127,8 @@ public class UserService {
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
 
         userRepository.persist(identified);
+
+        roleRepository.assignRoles(id, List.of("identified"));
 
         return UserMapper.INSTANCE.userToProfileDto(identified);
     }

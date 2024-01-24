@@ -909,7 +909,7 @@
       ],
       "authorizationSettings":{
         "allowRemoteResourceManagement": true,
-        "policyEnforcementMode": "ENFORCING",
+        "policyEnforcementMode": "PERMISSIVE",
         "resources": [
           {
             "name": "Codelist Resource",
@@ -1050,17 +1050,6 @@
             "uris": [
               "/v1/users/*"
             ],
-            "scopes": [
-              {
-                "name": "read"
-              },
-              {
-                "name": "update"
-              },
-              {
-                "name": "create"
-              }
-            ],
             "icon_uri": ""
           },
           {
@@ -1153,17 +1142,6 @@
             }
           },
           {
-            "id": "7bf886c7-74a3-48b7-b181-ded3dfd91629",
-            "name": "Any Identified Policy",
-            "description": "",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"backend-service/identified\",\"required\":false}]"
-            }
-          },
-          {
             "id": "fcef30b2-68b2-4b78-9f3d-9162c6cdf5cb",
             "name": "Only Administrators",
             "description": "Only administrators can access",
@@ -1210,18 +1188,6 @@
               "resources": "[\"Read Template By Actor\"]",
               "scopes": "[\"read\"]",
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
-            }
-          },
-          {
-            "id": "8019f0a4-687a-4f3b-92f3-d479b266921b",
-            "name": "Identified Permission",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"User Resource\",\"Integration Resource\",\"Validation Resource\",\"Codelist Resource\"]",
-              "applyPolicies": "[\"Any Identified Policy\"]"
             }
           },
           {
@@ -2960,7 +2926,8 @@
       ],
       "clientRoles": {
         "backend-service": [
-          "identified"
+          "identified",
+          "validated"
         ]
       }
     },
@@ -2975,13 +2942,7 @@
           "type": "password",
           "value": "evald"
         }
-      ],
-      "clientRoles": {
-        "backend-service": [
-          "identified",
-          "validated"
-        ]
-      }
+      ]
     },
     {
       "username": "validated",

@@ -216,7 +216,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("bob"))
+                .oauth2(getAccessToken("evald"))
                 .get("/{id}", assessment.id)
                 .then()
                 .assertThat()
@@ -571,7 +571,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         register("validated");
         register("admin");
-        register("evald");
+        register("bob");
 
         makeValidation("validated", 6L);
         fetchTemplateByActorAndType();
@@ -593,7 +593,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("evald"))
+                .oauth2(getAccessToken("bob"))
                 .contentType(ContentType.JSON)
                 .delete("/{id}", assessment.id)
                 .then()
