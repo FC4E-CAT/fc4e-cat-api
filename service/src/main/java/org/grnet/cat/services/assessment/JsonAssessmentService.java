@@ -19,6 +19,7 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.statistics.AssessmentStatisticsResponse;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
@@ -76,10 +77,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         request.assessmentDoc.timestamp = timestamp.toString();
         request.assessmentDoc.organisation.name = validation.getOrganisationName();
 
-        var timestamp = Timestamp.from(Instant.now());
-
-        request.assessmentDoc.timestamp = timestamp.toString();
-
         Assessment assessment = new Assessment();
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
         assessment.setCreatedOn(timestamp);
@@ -100,21 +97,20 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     }
 
     /**
-     *The API should provide flexibility for clients to either use an existing Subject by specifying its id in the db_id property
+     * The API should provide flexibility for clients to either use an existing Subject by specifying its id in the db_id property
      * or create a new one by leaving db_id empty and filling in the other three properties (name, type and id).
-     *The API should also give precedence to the properties stored in the database. If a valid db_id is provided,
+     * The API should also give precedence to the properties stored in the database. If a valid db_id is provided,
      * its associated Subject should be retrieved, and the values of name, type, and id in the Assessment should be overwritten
      * with the corresponding values from the existing  database Subject.
-     *
      */
-    private void handleSubjectDatabaseId(String userId, JsonAssessmentRequest request){
+    private void handleSubjectDatabaseId(String userId, JsonAssessmentRequest request) {
 
-        if(Objects.isNull(request.assessmentDoc.subject.dbId)){
+        if (Objects.isNull(request.assessmentDoc.subject.dbId)) {
 
             var optional = subjectService
                     .getSubjectByNameAndTypeAndSubjectId(request.assessmentDoc.subject.name, request.assessmentDoc.subject.type, request.assessmentDoc.subject.id, userId);
 
-            if(optional.isEmpty()){
+            if (optional.isEmpty()) {
 
                 var newSubject = new SubjectRequest();
                 newSubject.name = request.assessmentDoc.subject.name;
@@ -127,7 +123,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
                 request.assessmentDoc.subject.dbId = optional.get().getId();
             }
-        } else{
+        } else {
 
             var subject = subjectService.getSubjectById(request.assessmentDoc.subject.dbId);
 
@@ -141,7 +137,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         }
     }
 
-    private void validateAssessmentAgainstTemplate(String request, String template){
+    private void validateAssessmentAgainstTemplate(String request, String template) {
 
         boolean isValid;
 
@@ -262,7 +258,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     /**
      * Retrieves a specific assessment if it belongs to the user.
      *
-     * @param userId The ID of the user who requests a specific assessment.
+     * @param userId       The ID of the user who requests a specific assessment.
      * @param assessmentId The ID of the assessment to retrieve.
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
@@ -281,6 +277,26 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
     }
 
+    /**
+     * Retrieves a specific public assessment.
+     *
+     * @param assessmentId The ID of the assessment to retrieve.
+     * @return The assessment if it's public.
+     */
+    @Override
+    public JsonAssessmentResponse getPublicDtoAssessment(String assessmentId) {
+
+        var assessment = assessmentRepository.findById(assessmentId);
+
+        var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+
+        if (!assessmentDto.assessmentDoc.published) {
+            throw new ForbiddenException("Not Permitted.");
+        }
+
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+    }
+
     @Override
     @Transactional
     public void deleteAll() {
@@ -290,8 +306,8 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     /**
      * Updates the Assessment's json document.
      *
-     * @param id The ID of the assessment whose json doc is being updated.
-     * @param userId The ID of the user who requests to update a specific assessment.
+     * @param id      The ID of the assessment whose json doc is being updated.
+     * @param userId  The ID of the user who requests to update a specific assessment.
      * @param request The update request.
      * @return The updated assessment
      */
@@ -313,14 +329,17 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     /**
      * Retrieves a page of assessments submitted by the specified user.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of assessments to include in a page.
-     * @param uriInfo The Uri Info.
-     * @param userID The ID of the user who requests their assessments.
+     * @param page        The index of the page to retrieve (starting from 0).
+     * @param size        The maximum number of assessments to include in a page.
+     * @param uriInfo     The Uri Info.
+     * @param userID      The ID of the user who requests their assessments.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
+     * @param actorId     Actor ID to search for.
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID){
+    public PageResource<PartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId) {
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId);
 
@@ -342,13 +361,36 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo){
+    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType) {
 
         var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId, subjectName, subjectType);
 
         var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+    }
+
+    /**
+     * Retrieves a page of public assessment objects by type and actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param typeId  The ID of the Assessment Type.
+     * @param actorId The Actor's id.
+     * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getPublishedDtoAssessmentObjectsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo) {
+
+        var objects = assessmentRepository.fetchPublishedAssessmentObjectsByTypeAndActorAndPage(page, size, typeId, actorId);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 
     @Override
@@ -370,7 +412,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Override
     public void forbidActionsToPublicAssessment(Assessment assessment) {
 
-        if(AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published){
+        if (AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published) {
             throw new ForbiddenException("It is not allowed to manage a published assessment.");
         }
     }
@@ -384,5 +426,50 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     public void delete(String assessmentId) {
 
         assessmentRepository.deleteAssessmentById(assessmentId);
+    }
+
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param userID  The ID of the user who requests their assessments.
+     * @param actorID The actor ID.
+     * @return A list of TemplateSubjectDto objects representing the submitted assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUserAndActor(int page, int size, UriInfo uriInfo, String userID, Long actorID) {
+
+        var objects = assessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
+    }
+
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param userID  The ID of the user who requests their assessments.
+     * @return A list of TemplateSubjectDto objects representing the submitted assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUser(int page, int size, UriInfo uriInfo, String userID) {
+
+        var objects = assessmentRepository.fetchAssessmentsObjectsByUser(page, size, userID);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 }

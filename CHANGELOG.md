@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.2.0 - 2024-01-23
+
+---
+
 ### Added
 
 -   [#76](https://github.com/FC4E-CAT/fc4e-cat-api/pull/76)    -  CAT-178 Delete private assessment.
@@ -36,7 +40,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#107](https://github.com/FC4E-CAT/fc4e-cat-api/pull/107)  -  CAT-262 Update a Subject.
 -   [#109](https://github.com/FC4E-CAT/fc4e-cat-api/pull/109)  -  CAT-276 Implement Flexible Logic for Saving Assessments in the Database.
 -   [#112](https://github.com/FC4E-CAT/fc4e-cat-api/pull/112)  -  CAT-264 Update api calls to objects used for filters.
-
+-   [#113](https://github.com/FC4E-CAT/fc4e-cat-api/pull/113)  -  CAT-279 API Endpoint for assigning deny_access role.
+-   [#114](https://github.com/FC4E-CAT/fc4e-cat-api/pull/114)  -  CAT-280 API Endpoint for removing deny_access role.
+-   [#116](https://github.com/FC4E-CAT/fc4e-cat-api/pull/116)  -  CAT-289 As an admin i want to see some statistics in CAT
+-   [#121](https://github.com/FC4E-CAT/fc4e-cat-api/pull/121)  -  CAT-295 Assign identified role to user during registration through Keycloak API.
 ### Changed
 
 -   [#73](https://github.com/FC4E-CAT/fc4e-cat-api/pull/73)    -  CAT-159 Change assessment id from bigint to uuid.
@@ -49,8 +56,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   [#96](https://github.com/FC4E-CAT/fc4e-cat-api/pull/96)    -  CAT-220 Remove unnecessary properties from the assessment creation request.
 -   [#99](https://github.com/FC4E-CAT/fc4e-cat-api/pull/99)    -  CAT-231 Sort the validation requests by creation date.
 -   [#100](https://github.com/FC4E-CAT/fc4e-cat-api/pull/100)  -  CAT-229 Required fields on assessment metadata.
--   [#108](https://github.com/FC4E-CAT/fc4e-cat-api/pull/108)  -  CAT-275 Refactor the template json to handle subject db_id property.
--   [#110](https://github.com/FC4E-CAT/fc4e-cat-api/pull/110)  -  Update api calls to objects used for filters.
+-   [#108](https://github.com/FC4E-CAT/fc4e-cat-api/pull/108)  -  CAT-275 Refactor the template json to handle subject db_id property .
 
 
 ## 1.1.0 - 2023-09-01

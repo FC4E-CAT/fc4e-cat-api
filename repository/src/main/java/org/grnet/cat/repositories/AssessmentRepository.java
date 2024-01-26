@@ -3,15 +3,18 @@ package org.grnet.cat.repositories;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.grnet.cat.entities.Assessment;
-import org.grnet.cat.entities.Page;
-import org.grnet.cat.entities.PageQuery;
-import org.grnet.cat.entities.PageQueryImpl;
+import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.entities.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AssessmentRepository implements Repository<Assessment, String> {
@@ -83,7 +86,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         var em = Panache.getEntityManager();
 
-        var query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true ORDER BY a.created_on DESC", Assessment.class)
+        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true ORDER BY a.created_on DESC", Assessment.class)
                 .setParameter("actorId", actorId)
                 .setParameter("typeId", typeId);
 
@@ -94,7 +97,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         if (StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)) {
 
-            query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", Assessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", Assessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("typeId", typeId)
                     .setParameter("name", subjectName)
@@ -109,7 +112,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         } else if (StringUtils.isNotEmpty(subjectName)) {
 
-            query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name ORDER BY a.created_on DESC", Assessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name ORDER BY a.created_on DESC", Assessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("typeId", typeId)
                     .setParameter("name", subjectName);
@@ -121,7 +124,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         } else if (StringUtils.isNotEmpty(subjectType)) {
 
-            query =  em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", Assessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN AssessmentType at ON t.assessment_type_id = at.id WHERE actor.id = :actorId AND at.id = :typeId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", Assessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("typeId", typeId)
                     .setParameter("type", subjectType);
@@ -184,17 +187,111 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         return pageable;
     }
 
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param userID  The ID of the user.
+     * @param actorID The Actor id.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<String> fetchAssessmentsObjectsByUserAndActor(int page, int size, String userID, Long actorID) {
+
+
+        var query = Panache.getEntityManager().createNativeQuery("SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN User u ON u.id = v.user_id WHERE actor.id = :actorId AND u.id = :userId")
+                .setParameter("actorId", actorID)
+                .setParameter("userId", userID);
+
+        var countQuery = Panache.getEntityManager().createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN User u ON u.id = v.user_id WHERE actor.id = :actorId AND u.id = :userId")
+                .setParameter("actorId", actorID)
+                .setParameter("userId", userID);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of assessment objects to include in a page.
+     * @param userID The ID of the user.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<String> fetchAssessmentsObjectsByUser(int page, int size, String userID) {
+
+
+        var query = Panache.getEntityManager().createNativeQuery("SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') FROM Assessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN User u ON u.id = v.user_id WHERE u.id = :userId")
+                .setParameter("userId", userID);
+
+        var countQuery = Panache.getEntityManager().createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM Assessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN User u ON u.id = v.user_id WHERE u.id = :userId")
+                .setParameter("userId", userID);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
     @Transactional
-    public void deleteAssessmentById(String assessmentId){
+    public void deleteAssessmentById(String assessmentId) {
 
         delete("from Assessment where id = ?1", assessmentId);
     }
 
     @Transactional
-    public Assessment updateAssessmentDocById(String assessmentId, String assessmentDoc){
+    public Assessment updateAssessmentDocById(String assessmentId, String assessmentDoc) {
 
-        update("assessmentDoc = ?1 , updatedOn = ?2   where id = ?3", assessmentDoc,  Timestamp.from(Instant.now()), assessmentId);
+        update("assessmentDoc = ?1 , updatedOn = ?2   where id = ?3", assessmentDoc, Timestamp.from(Instant.now()), assessmentId);
 
         return findById(assessmentId);
     }
+
+    /**
+     * Retrieves a page of assessment objects for a specific subject.
+     *
+     * @param page      The index of the page to retrieve (starting from 0).
+     * @param size      The maximum number of assessment objects to include in a page.
+     * @param subjectId The ID of the Subject.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<Assessment> fetchAssessmentsPerSubjectAndPage(int page, int size, Long subjectId) {
+
+        var panache = find("from Assessment a where a.subject.id =?1 ", subjectId).page(page, size);
+
+        var pageable = new PageQueryImpl<Assessment>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+        return pageable;
+    }
+
+    public List<AssessmentPerActor> getStatistics() {
+
+        return find(" SELECT DISTINCT act.name as actor_name, COUNT(*) as total FROM Assessment a inner join Validation v on v.id=a.validation.id inner join Actor act on v.actor.id=act.id GROUP BY actor_name").project(AssessmentPerActor.class).stream().collect(Collectors.toList());
+    }
+
 }

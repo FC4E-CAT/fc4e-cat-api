@@ -496,13 +496,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(false);
+        request.assessmentDoc = makeJsonDoc(false, 6L);
 
         var assessment = given()
                 .auth()
@@ -536,13 +534,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(true);
+        request.assessmentDoc = makeJsonDoc(true, 6L);
 
         var assessment = given()
                 .auth()
@@ -575,15 +571,13 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         register("validated");
         register("admin");
-        register("evald");
+        register("bob");
 
-        var validation = makeValidation("validated", 6L);
-        var templateDto = fetchTemplateByActorAndType();
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
 
         var request = new JsonAssessmentRequest();
-        request.validationId = validation.id;
-        request.templateId = templateDto.id;
-        request.assessmentDoc = makeJsonDoc(true);
+        request.assessmentDoc = makeJsonDoc(true, 6L);
 
         var assessment = given()
                 .auth()
@@ -599,7 +593,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("evald"))
+                .oauth2(getAccessToken("bob"))
                 .contentType(ContentType.JSON)
                 .delete("/{id}", assessment.id)
                 .then()

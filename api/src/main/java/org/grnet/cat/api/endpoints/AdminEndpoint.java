@@ -43,6 +43,7 @@ import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
@@ -71,6 +72,12 @@ public class AdminEndpoint {
     @Inject
     UserService userService;
 
+
+    /**
+     * Injection point for the KeycloakAdminRole Service
+     */
+    @Inject
+    KeycloakAdminRoleService adminService;
 
     /**
      * Injection point for the Utility service
@@ -384,5 +391,133 @@ public class AdminEndpoint {
         var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Restrict a user's access.",
+            description = "Calling this endpoint results in the specified user being denied access to the API.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/deny-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response denyAccess( @Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
+
+        userService.addDenyAccessRole(utility.getUserUniqueIdentifier(), denyAccess.userId, denyAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role added successfully to the user. The user is now denied access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Allow Access to previously banned user.",
+            description = "Executing this endpoint allows a user who has been previously banned to access the CAT Service again.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/permit-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response permitAccess( @Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
+
+        userService.removeDenyAccessRole(utility.getUserUniqueIdentifier(), permitAccess.userId, permitAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role removed successfully from the user. The user is now allowed access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get  Statistics Results.",
+            description = "Returns results of Statistics.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Assessment Statistics request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = StatisticsResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/statistics")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getStatisticsRequest() {
+
+        var statistics = adminService.getStatistics();
+
+        return Response.ok().entity(statistics).build();
     }
 }
