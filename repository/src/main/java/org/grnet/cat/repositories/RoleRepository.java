@@ -2,6 +2,8 @@ package org.grnet.cat.repositories;
 
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Role;
+import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
 import java.util.Map;
@@ -33,10 +35,19 @@ public interface RoleRepository {
     /**
      * Assigns roles to a user.
      *
-     * @param userId  The unique identifier of the user. to assign roles to.
+     * @param userId  The unique identifier of the user to assign roles to.
      * @param roles The roles to be assigned to the user.
      */
     void assignRoles(String userId, List<String> roles);
+
+    /**
+     * Removes roles from a user.
+     *
+     * @param userId  The unique identifier of the user from whom the roles will be removed.
+     * @param roles The roles to be removed from the user.
+     */
+    void removeRoles(String userId, List<String> roles);
+
 
     /**
      * Checks if a role exists by searching for the role with the given name.
@@ -68,4 +79,5 @@ public interface RoleRepository {
                 .collect(toMap(i -> i / pageSize,
                         i -> list.subList(i, min(i + pageSize, list.size()))));
     }
+
 }

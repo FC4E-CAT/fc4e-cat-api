@@ -32,7 +32,7 @@ public class UserProfileDto {
             type = SchemaType.STRING,
             implementation = UserType.class,
             description = "Type of user (e.g., Identified, Validated, Admin).",
-            example = " Identified"
+            example = "Identified"
     )
     @JsonProperty("user_type")
     public String type;
@@ -106,4 +106,13 @@ public class UserProfileDto {
     @JsonProperty("roles")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<String> roles;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "If a User is banned.",
+            example = "false"
+    )
+    @JsonProperty("banned")
+    public Boolean banned;
 }

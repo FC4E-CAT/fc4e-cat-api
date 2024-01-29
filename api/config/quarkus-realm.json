@@ -342,6 +342,14 @@
           "attributes": {}
         },
         {
+          "id": "df147a31-5da2-5bbc-866c-f20cf99b2637",
+          "name": "evald",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+        {
           "id": "df147a91-4da7-5bbc-266c-f70cf99b2637",
           "name": "identified",
           "composite": false,
@@ -352,6 +360,14 @@
         {
           "id": "df947a91-4da7-2bbc-255c-f80cf99b2667",
           "name": "admin",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
+          "attributes": {}
+        },
+         {
+          "id": "df147a91-4db7-5bbc-266c-f70cf99b2630",
+          "name": "deny_access",
           "composite": false,
           "clientRole": true,
           "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
@@ -893,7 +909,7 @@
       ],
       "authorizationSettings":{
         "allowRemoteResourceManagement": true,
-        "policyEnforcementMode": "ENFORCING",
+        "policyEnforcementMode": "PERMISSIVE",
         "resources": [
           {
             "name": "Codelist Resource",
@@ -907,25 +923,6 @@
             "scopes": [
               {
                 "name": "read"
-              }
-            ],
-            "icon_uri": ""
-          },
-          {
-            "name": "Validation Resource",
-            "ownerManagedAccess": false,
-            "displayName": "",
-            "attributes": {},
-            "_id": "fafb67c1-5be7-47b1-ac0b-c80868482975",
-            "uris": [
-              "/v1/validations/*"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              },
-              {
-                "name": "create"
               }
             ],
             "icon_uri": ""
@@ -945,6 +942,82 @@
               },
               {
                 "name": "update"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Read Assessment Objects by Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Assessment Objects by Actor",
+            "attributes": {},
+            "_id": "9db7df46-e3db-4eb3-bfbf-486404496be0",
+            "uris": [
+              "/v1/assessments/objects/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Role Resource",
+            "ownerManagedAccess": false,
+            "displayName": "",
+            "attributes": {},
+            "_id": "afc4b539-eedb-4752-b514-aa51cfda6905",
+            "uris": [
+              "/v1/roles/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Subject Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Subject Resource",
+            "attributes": {},
+            "_id": "a60e563b-3109-49f9-99f6-f3c86828b29c",
+            "uris": [
+              "/v1/subjects/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
+              },
+              {
+                "name": "update"
+              },
+              {
+                "name": "delete"
+              },
+              {
+                "name": "create"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Validation Resource",
+            "ownerManagedAccess": false,
+            "displayName": "",
+            "attributes": {},
+            "_id": "fafb67c1-5be7-47b1-ac0b-c80868482975",
+            "uris": [
+              "/v1/validations/*"
+            ],
+            "scopes": [
+              {
+                "name": "read"
               },
               {
                 "name": "create"
@@ -976,17 +1049,6 @@
             "_id": "df1b74a9-3f10-499d-a581-368de48e512b",
             "uris": [
               "/v1/users/*"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              },
-              {
-                "name": "update"
-              },
-              {
-                "name": "create"
-              }
             ],
             "icon_uri": ""
           },
@@ -1065,22 +1127,6 @@
               }
             ],
             "icon_uri": ""
-          },
-          {
-            "name": "Role Resource",
-            "ownerManagedAccess": false,
-            "displayName": "",
-            "attributes": {},
-            "_id": "afc4b539-eedb-4752-b514-aa51cfda6905",
-            "uris": [
-              "/v1/roles/*"
-            ],
-            "scopes": [
-              {
-                "name": "read"
-              }
-            ],
-            "icon_uri": ""
           }
         ],
         "policies": [
@@ -1093,17 +1139,6 @@
             "decisionStrategy": "UNANIMOUS",
             "config": {
               "roles": "[{\"id\":\"backend-service/validated\",\"required\":false}]"
-            }
-          },
-          {
-            "id": "7bf886c7-74a3-48b7-b181-ded3dfd91629",
-            "name": "Any Identified Policy",
-            "description": "",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"backend-service/identified\",\"required\":false}]"
             }
           },
           {
@@ -1138,7 +1173,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1156,18 +1191,6 @@
             }
           },
           {
-            "id": "8019f0a4-687a-4f3b-92f3-d479b266921b",
-            "name": "Identified Permission",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"User Resource\",\"Integration Resource\",\"Validation Resource\",\"Codelist Resource\"]",
-              "applyPolicies": "[\"Any Identified Policy\"]"
-            }
-          },
-          {
             "id": "7f398fa1-6508-44c0-a3fa-84f77fe301e5",
             "name": "Validated Permission",
             "description": "The permissions for the validated user",
@@ -1175,8 +1198,21 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Assessment Resource\"]",
+              "resources": "[\"Assessment Resource\",\"Subject Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
+            }
+          },
+          {
+            "id": "4d0e3e78-2296-410f-a7b6-40f6cc2c806d",
+            "name": "Read Assessment Objects by Actor",
+            "description": "Read Assessment Objects by Actor",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Assessment Objects by Actor\"]",
+              "scopes": "[\"read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           }
         ],
@@ -2890,9 +2926,23 @@
       ],
       "clientRoles": {
         "backend-service": [
-          "identified"
+          "identified",
+          "validated"
         ]
       }
+    },
+    {
+      "username": "evald",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["evald_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "evald"
+        }
+      ]
     },
     {
       "username": "validated",

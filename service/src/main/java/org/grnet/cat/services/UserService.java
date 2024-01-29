@@ -2,6 +2,7 @@ package org.grnet.cat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.UserProfileDto;
@@ -10,17 +11,20 @@ import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.history.History;
 import org.grnet.cat.enums.Source;
-import org.grnet.cat.enums.UserType;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.repositories.HistoryRepository;
+import org.grnet.cat.repositories.RoleRepository;
 import org.grnet.cat.repositories.UserRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * The UserService provides operations for managing User entities.
@@ -46,6 +50,20 @@ public class UserService {
      */
     @Inject
     ActorRepository actorRepository;
+
+    /**
+     * Injection point for the Role repository
+     */
+    @Inject
+    @Named("keycloak-repository")
+    RoleRepository roleRepository;
+
+    /**
+     * Injection point for the history repository
+     */
+    @Inject
+    HistoryRepository historyRepository;
+
 
     /**
      * Get User's profile.
@@ -102,6 +120,8 @@ public class UserService {
 
         var optionalUser = userRepository.searchByIdOptional(id);
 
+        roleRepository.assignRoles(id, List.of("identified"));
+
         optionalUser.ifPresent(s -> {throw new ConflictException("User already exists in the database.");});
 
         var identified = new User();
@@ -154,5 +174,47 @@ public class UserService {
     public void deleteAll(){
 
         userRepository.deleteAll();
+    }
+
+    /**
+     * Adds the deny_access role to the specified user in Keycloak, denying access to the API.
+     *
+     * @param userId The unique identifier of the user to whom the access will be restricted.
+     * @param adminId The unique identifier of the admin denying access to the user.
+     * @param reason The reason for denying access to the user.
+     */
+    @Transactional
+    public void addDenyAccessRole(String adminId, String userId, String reason){
+
+        var history = new History();
+        history.setAction(reason);
+        history.setUserId(adminId);
+        history.setPerformedOn(Timestamp.from(Instant.now()));
+
+        var userToBeBanned = userRepository.findById(userId);
+        userToBeBanned.setBanned(Boolean.TRUE);
+        historyRepository.persist(history);
+        roleRepository.assignRoles(userId, List.of("deny_access"));
+    }
+
+    /**
+     * Removes the deny_access role from the specified user in Keycloak, allowing access to the API.
+     *
+     * @param userId The unique identifier of the user to whom the access will be allowed.
+     * @param adminId The unique identifier of the admin allowing access to the user.
+     * @param reason The reason for allowing access to the user.
+     */
+    @Transactional
+    public void removeDenyAccessRole(String adminId, String userId, String reason){
+
+        var history = new History();
+        history.setAction(reason);
+        history.setUserId(adminId);
+        history.setPerformedOn(Timestamp.from(Instant.now()));
+
+        var userToBeBanned = userRepository.findById(userId);
+        userToBeBanned.setBanned(Boolean.FALSE);
+        historyRepository.persist(history);
+        roleRepository.removeRoles(userId, List.of("deny_access"));
     }
 }

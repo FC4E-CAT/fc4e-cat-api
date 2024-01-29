@@ -3,6 +3,7 @@ package org.grnet.cat.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Timestamp;
 
@@ -17,8 +18,8 @@ public class Assessment {
      * As id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @UuidGenerator
+    private String id;
 
     @Column(name = "assessment_doc", columnDefinition = "json")
     private String assessmentDoc;
@@ -38,11 +39,15 @@ public class Assessment {
     @Column(name = "updated_on")
     private Timestamp updatedOn;
 
-    public Long getId() {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -84,5 +89,13 @@ public class Assessment {
 
     public void setValidation(Validation validation) {
         this.validation = validation;
+    }
+
+    public Subject getSubject() {
+        return subject;
+    }
+
+    public void setSubject(Subject subject) {
+        this.subject = subject;
     }
 }

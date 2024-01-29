@@ -1,6 +1,7 @@
 package org.grnet.cat.repositories;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.NotFoundException;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -62,7 +63,7 @@ public class TemplateRepository implements Repository<Template, Long> {
     }
 
     /**
-     * Retrieves from the database a page of assessment templates for a specific type.
+     * Retrieves from the database a page of assessment templates for a specific actor.
      *
      * @param page The index of the page to retrieve (starting from 0).
      * @param size The maximum number of templates to include in a page.
@@ -83,4 +84,16 @@ public class TemplateRepository implements Repository<Template, Long> {
         return pageable;
     }
 
+    /**
+     * Retrieves from the database a page of assessment templates for a specific type.
+     *
+     * @param actorId The Assessment Actor the templates belong to.
+     * @return A Template object representing the assessment template.
+     */
+    public Template fetchTemplateByActor(Long actorId){
+
+        var optional = find("from Template t where t.actor.id = ?1", actorId).stream().findFirst();
+
+        return optional.orElseThrow(()-> new NotFoundException("There is no template for an actor : "+actorId));
+    }
 }

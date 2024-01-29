@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PUT;
@@ -33,21 +34,50 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.access.DenyAccess;
+import org.grnet.cat.dtos.access.PermitAccess;
+import org.grnet.cat.dtos.statistics.AssessmentStatisticsResponse;
+import org.grnet.cat.dtos.statistics.StatisticsResponse;
+import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
+import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.services.KeycloakAdminRoleService;
+import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/v1/admin/validations")
+@Path("/v1/admin")
 @Authenticated
-public class AdminValidationsEndpoint {
+public class AdminEndpoint {
 
     /**
      * Injection point for the Validation service
      */
     @Inject
     ValidationService validationService;
+
+    /**
+     * Injection point for the JsonAssessment service
+     */
+    @Inject
+    JsonAssessmentService assessmentService;
+
+    /**
+     * Injection point for the User Service
+     */
+    @Inject
+    UserService userService;
+
+
+    /**
+     * Injection point for the KeycloakAdminRole Service
+     */
+    @Inject
+    KeycloakAdminRoleService adminService;
 
     /**
      * Injection point for the Utility service
@@ -86,6 +116,7 @@ public class AdminValidationsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
+    @Path("/validations")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response validations(@Parameter(name = "page", in = QUERY,
@@ -142,7 +173,7 @@ public class AdminValidationsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/{id}")
+    @Path("/validations/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response updateValidation(@Parameter(
@@ -200,7 +231,7 @@ public class AdminValidationsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/{id}/update-status")
+    @Path("/validations/{id}/update-status")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response updateTheStatusOfValidation(@Parameter(
@@ -246,7 +277,7 @@ public class AdminValidationsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/{id}")
+    @Path("/validations/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getValidationRequest(@Parameter(
@@ -259,5 +290,234 @@ public class AdminValidationsEndpoint {
         var validations = validationService.getValidationRequest(id);
 
         return Response.ok().entity(validations).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Delete private Assessment.",
+            description = "Deletes a private assessment if it is not published.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Deletion completed.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/assessments/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response deleteAssessment(@Parameter(
+            description = "The ID of the assessment to be deleted.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+
+        assessmentService.deletePrivateAssessment(id);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "Assessment has been successfully deleted.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a list of available users.",
+            description = "This endpoint returns a list of users registered in the service. Each user object includes basic information such as their type and unique id. " +
+                    " By default, the first page of 10 Users will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Users.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = UsersEndpoint.PageableUserProfile.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response usersByPage(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                @Parameter(name = "size", in = QUERY,
+                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
+                                @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size,
+                                @Context UriInfo uriInfo) {
+
+        var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
+
+        return Response.ok().entity(userProfile).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Restrict a user's access.",
+            description = "Calling this endpoint results in the specified user being denied access to the API.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/deny-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response denyAccess( @Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
+
+        userService.addDenyAccessRole(utility.getUserUniqueIdentifier(), denyAccess.userId, denyAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role added successfully to the user. The user is now denied access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Allow Access to previously banned user.",
+            description = "Executing this endpoint allows a user who has been previously banned to access the CAT Service again.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful operation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/users/permit-access")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response permitAccess( @Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
+
+        userService.removeDenyAccessRole(utility.getUserUniqueIdentifier(), permitAccess.userId, permitAccess.reason);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "deny_access role removed successfully from the user. The user is now allowed access to the API.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get  Statistics Results.",
+            description = "Returns results of Statistics.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Assessment Statistics request.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = StatisticsResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/statistics")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getStatisticsRequest() {
+
+        var statistics = adminService.getStatistics();
+
+        return Response.ok().entity(statistics).build();
     }
 }

@@ -1,5 +1,6 @@
 package org.grnet.cat.api.endpoints;
 
+import com.networknt.schema.SpecVersion;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -28,11 +29,13 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
+import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.template.TemplateResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.JsonSchema;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.repositories.TemplateRepository;
@@ -51,6 +54,9 @@ public class TemplatesEndpoint {
 
     @ConfigProperty(name = "server.url")
     String serverUrl;
+
+    @Inject
+    Utility utility;
 
     @Tag(name = "Template")
     @Operation(
@@ -71,6 +77,12 @@ public class TemplatesEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -130,6 +142,12 @@ public class TemplatesEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -141,7 +159,10 @@ public class TemplatesEndpoint {
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") TemplateRequest request, @Context UriInfo uriInfo) {
 
+        utility.validateTemplateJson(JsonSchema.fetchById("template_json_schema").getJsonSchema(), request.templateDoc, SpecVersion.VersionFlag.V7);
+
         var template = templateService.createAssessmentTemplate(request);
+
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(template.id)).build()).entity(template).build();
@@ -166,6 +187,12 @@ public class TemplatesEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -213,6 +240,12 @@ public class TemplatesEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -314,6 +347,12 @@ public class TemplatesEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -342,7 +381,7 @@ public class TemplatesEndpoint {
         return Response.ok().entity(templates).build();
     }
 
-    public class PageableTemplate extends PageResource<TemplateResponse> {
+    public static class PageableTemplate extends PageResource<TemplateResponse> {
 
         private List<TemplateResponse> content;
 

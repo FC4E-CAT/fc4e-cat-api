@@ -2,14 +2,10 @@ package org.grnet.cat.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.constraints.StringEnumeration;
-import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
-import org.grnet.cat.repositories.ActorRepository;
 
 @Schema(name="UpdateValidationStatus", description="Request promotion to validated user.")
 public class UpdateValidationStatus {
