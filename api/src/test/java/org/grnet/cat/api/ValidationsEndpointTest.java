@@ -1,8 +1,8 @@
 package org.grnet.cat.api;
 
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.ValidationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
