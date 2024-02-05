@@ -26,7 +26,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
     @InjectMock
     KeycloakAdminRoleService keycloakAdminRoleService;
-    @ConfigProperty(name = "auto.approve.validations")
+    @ConfigProperty(name = "cat.validations.approve.auto")
     boolean autoApprove;
 
 
