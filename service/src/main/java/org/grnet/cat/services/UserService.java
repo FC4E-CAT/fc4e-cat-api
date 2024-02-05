@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
@@ -64,6 +65,8 @@ public class UserService {
     @Inject
     HistoryRepository historyRepository;
 
+    @ConfigProperty(name = "auto.approve.validations")
+    boolean autoApprove;
 
     /**
      * Get User's profile.
@@ -71,7 +74,7 @@ public class UserService {
      * @param id User's voperson_id
      * @return User's Profile.
      */
-    public UserProfileDto getUserProfile(String id){
+    public UserProfileDto getUserProfile(String id) {
 
         var userProfile = userRepository.fetchUser(id);
 
@@ -81,12 +84,12 @@ public class UserService {
     /**
      * Retrieves a page of users from the database.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of users to include in a page.
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of users to include in a page.
      * @param uriInfo The Uri Info.
      * @return A list of UserProfileDto objects representing the users in the requested page.
      */
-    public PageResource<UserProfileDto> getUsersByPage(int page, int size, UriInfo uriInfo){
+    public PageResource<UserProfileDto> getUsersByPage(int page, int size, UriInfo uriInfo) {
 
         var users = userRepository.fetchUsersByPage(page, size);
 
@@ -96,14 +99,14 @@ public class UserService {
     /**
      * Updates the metadata for a user's profile.
      *
-     * @param id The ID of the user whose metadata is being updated.
-     * @param name The user's name.
+     * @param id      The ID of the user whose metadata is being updated.
+     * @param name    The user's name.
      * @param surname The user's surname.
-     * @param email The user's email address.
+     * @param email   The user's email address.
      * @param orcidId The user's orcid id.
      * @return The updated user's profile
      */
-    public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId){
+    public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId) {
 
         var user = userRepository.updateUserMetadata(id, name, surname, email, orcidId);
 
@@ -113,16 +116,19 @@ public class UserService {
     /**
      * This operations registers a user on the CAT service.
      * Typically, it constructs an {@link User Identified} object and stores it in the database.
+     *
      * @param id User's voperson_id
      */
     @Transactional
-    public UserProfileDto register(String id){
+    public UserProfileDto register(String id) {
 
         var optionalUser = userRepository.searchByIdOptional(id);
 
         roleRepository.assignRoles(id, List.of("identified"));
 
-        optionalUser.ifPresent(s -> {throw new ConflictException("User already exists in the database.");});
+        optionalUser.ifPresent(s -> {
+            throw new ConflictException("User already exists in the database.");
+        });
 
         var identified = new User();
         identified.setId(id);
@@ -136,13 +142,16 @@ public class UserService {
     /**
      * Requests user promotion to become a validated user.
      *
-     * @param id The ID of the identified user requesting promotion.
+     * @param id                The ID of the identified user requesting promotion.
      * @param validationRequest The promotion request information.
      * @return The submitted validation requesgt.
      */
     @Transactional
-    public ValidationResponse validate(String id, ValidationRequest validationRequest){
-
+    public ValidationResponse validate(String id, ValidationRequest validationRequest) {
+        ValidationStatus status = ValidationStatus.REVIEW;
+        if (autoApprove) {
+            status = ValidationStatus.APPROVED;
+        }
         validationService.hasPromotionRequest(id, validationRequest);
 
         var user = userRepository.findById(id);
@@ -154,7 +163,8 @@ public class UserService {
         validation.setUser(user);
         validation.setActor(actor);
         validation.setCreatedOn(Timestamp.from(Instant.now()));
-        validation.setStatus(ValidationStatus.REVIEW);
+
+        validation.setStatus(status);
         validation.setOrganisationId(validationRequest.organisationId);
         validation.setOrganisationName(validationRequest.organisationName);
         validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
@@ -168,10 +178,9 @@ public class UserService {
 
     /**
      * Delete identified users from the database.
-     *
      */
     @Transactional
-    public void deleteAll(){
+    public void deleteAll() {
 
         userRepository.deleteAll();
     }
@@ -179,12 +188,12 @@ public class UserService {
     /**
      * Adds the deny_access role to the specified user in Keycloak, denying access to the API.
      *
-     * @param userId The unique identifier of the user to whom the access will be restricted.
+     * @param userId  The unique identifier of the user to whom the access will be restricted.
      * @param adminId The unique identifier of the admin denying access to the user.
-     * @param reason The reason for denying access to the user.
+     * @param reason  The reason for denying access to the user.
      */
     @Transactional
-    public void addDenyAccessRole(String adminId, String userId, String reason){
+    public void addDenyAccessRole(String adminId, String userId, String reason) {
 
         var history = new History();
         history.setAction(reason);
@@ -200,12 +209,12 @@ public class UserService {
     /**
      * Removes the deny_access role from the specified user in Keycloak, allowing access to the API.
      *
-     * @param userId The unique identifier of the user to whom the access will be allowed.
+     * @param userId  The unique identifier of the user to whom the access will be allowed.
      * @param adminId The unique identifier of the admin allowing access to the user.
-     * @param reason The reason for allowing access to the user.
+     * @param reason  The reason for allowing access to the user.
      */
     @Transactional
-    public void removeDenyAccessRole(String adminId, String userId, String reason){
+    public void removeDenyAccessRole(String adminId, String userId, String reason) {
 
         var history = new History();
         history.setAction(reason);
