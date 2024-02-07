@@ -57,7 +57,6 @@ public class UserRepository implements UserRepositoryI<User, String> {
         var addedRolesAndUserType = users
                 .stream()
                 .map(user->{
-
                     var roles = roleRepository.fetchUserRoles(user.getId());
                     user.setRoles(roles);
                     user.setType(findUserType(roles));

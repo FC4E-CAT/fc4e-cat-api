@@ -13,19 +13,20 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.entities.history.History;
+import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
-import org.grnet.cat.repositories.ActorRepository;
-import org.grnet.cat.repositories.HistoryRepository;
-import org.grnet.cat.repositories.RoleRepository;
-import org.grnet.cat.repositories.UserRepository;
+import org.grnet.cat.repositories.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * The UserService provides operations for managing User entities.
@@ -33,7 +34,8 @@ import java.util.List;
 
 @ApplicationScoped
 public class UserService {
-
+    @Inject
+    MailerService mailerService;
     /**
      * Injection point for the User Repository
      */
@@ -71,6 +73,9 @@ public class UserService {
 
     @ConfigProperty(name = "cat.validations.approve.auto")
     boolean autoApprove;
+
+    @Inject
+    KeycloakAdminRepository keycloakAdminRepository;
 
     /**
      * Get User's profile.
@@ -151,6 +156,7 @@ public class UserService {
      * @return The submitted validation requesgt.
      */
     @Transactional
+
     public ValidationResponse validate(String id, ValidationRequest validationRequest) {
         ValidationStatus status = ValidationStatus.REVIEW;
 
@@ -163,7 +169,6 @@ public class UserService {
         var validation = new Validation();
 
         if (autoApprove) {
-
             status = ValidationStatus.APPROVED;
             roleService.assignRolesToUser(id, List.of("validated"));
             validation.setValidatedBy(id);
@@ -180,9 +185,12 @@ public class UserService {
         validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
         validation.setOrganisationWebsite(validationRequest.organisationWebsite);
         validation.setOrganisationRole(validationRequest.organisationRole);
-
         validationService.store(validation);
+        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
+        MailerService.CustomCompletableFuture.supplyAsync(() ->
+            mailerService.retrieveAdminEmails()
+        , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 
@@ -225,7 +233,6 @@ public class UserService {
      */
     @Transactional
     public void removeDenyAccessRole(String adminId, String userId, String reason) {
-
         var history = new History();
         history.setAction(reason);
         history.setUserId(adminId);
@@ -236,4 +243,5 @@ public class UserService {
         historyRepository.persist(history);
         roleRepository.removeRoles(userId, List.of("deny_access"));
     }
+
 }
