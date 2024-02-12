@@ -65,6 +65,10 @@ public class UserService {
     @Inject
     HistoryRepository historyRepository;
 
+    @Inject
+    @Named("keycloak-service")
+    RoleService roleService;
+
     @ConfigProperty(name = "cat.validations.approve.auto")
     boolean autoApprove;
 
@@ -149,14 +153,17 @@ public class UserService {
     @Transactional
     public ValidationResponse validate(String id, ValidationRequest validationRequest) {
         ValidationStatus status = ValidationStatus.REVIEW;
-        if (autoApprove) {
-            status = ValidationStatus.APPROVED;
-        }
+
         validationService.hasPromotionRequest(id, validationRequest);
 
         var user = userRepository.findById(id);
 
         var actor = actorRepository.findById(validationRequest.actorId);
+
+        if (autoApprove) {
+            status = ValidationStatus.APPROVED;
+            roleService.assignRolesToUser(id, List.of("validated"));
+        }
 
         var validation = new Validation();
 
