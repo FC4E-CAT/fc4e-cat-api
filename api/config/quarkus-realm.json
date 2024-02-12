@@ -2912,6 +2912,44 @@
         ]
       }
     },
+
+    {
+      "username": "admin_ui",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["admin_ui_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin_ui"
+        }
+      ],
+      "clientRoles": {
+        "backend-service": [
+          "identified",
+          "admin"
+        ]
+      }
+    },
+    {
+      "username": "identified_ui",
+      "enabled": true,
+      "attributes": {
+        "voperson_id": ["identified_ui_voperson_id"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "identified_ui"
+        }
+      ],
+      "clientRoles": {
+        "backend-service": [
+          "identified"
+        ]
+      }
+    },
     {
       "username": "bob",
       "enabled": true,

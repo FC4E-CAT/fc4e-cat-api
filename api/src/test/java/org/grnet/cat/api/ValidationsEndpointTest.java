@@ -1,9 +1,10 @@
 package org.grnet.cat.api;
 
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.restassured.http.ContentType;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.api.endpoints.ValidationsEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
@@ -25,6 +26,9 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
     @InjectMock
     KeycloakAdminRoleService keycloakAdminRoleService;
+    @ConfigProperty(name = "cat.validations.approve.auto")
+    boolean autoApprove;
+
 
     @Test
     public void validationRequestBodyIsEmpty() {
@@ -644,9 +648,12 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .get()
                 .body()
                 .as(PageResource.class);
-
-        assertEquals(1, responseWithStatus.getTotalElements());
-        assertEquals(1, responseWithStatus.getSizeOfPage());
+        int expectedApproved=1;
+        if(autoApprove){
+            expectedApproved=2;
+        }
+        assertEquals(expectedApproved, responseWithStatus.getTotalElements());
+        assertEquals(expectedApproved, responseWithStatus.getSizeOfPage());
 
         var response = given()
                 .auth()
