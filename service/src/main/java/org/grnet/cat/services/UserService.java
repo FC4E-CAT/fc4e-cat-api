@@ -65,7 +65,7 @@ public class UserService {
     @Inject
     HistoryRepository historyRepository;
 
-    @ConfigProperty(name = "auto.approve.validations")
+    @ConfigProperty(name = "cat.validations.approve.auto")
     boolean autoApprove;
 
     /**
