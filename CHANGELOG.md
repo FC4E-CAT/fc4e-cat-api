@@ -24,6 +24,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.2.2 - 2024-02-12
+
+---
+
+### Fixed
+
+- Assign validated role to user upon auto-approve validation
+
 ## 1.2.1 - 2024-02-12
 
 ---
