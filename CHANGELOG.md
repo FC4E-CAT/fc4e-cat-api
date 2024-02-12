@@ -24,6 +24,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.2.1 - 2024-02-12
+
+---
+
+### Added
+
+- [#130](https://github.com/FC4E-CAT/fc4e-cat-api/pull/130) - CAT-299 Enable automatic approval of validation requests on cat-api demo.
+
 ## 1.2.0 - 2024-01-23
 
 ---
