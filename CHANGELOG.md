@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Added
+
+- [#136](https://github.com/FC4E-CAT/fc4e-cat-api/pull/136) - Fill in Validation with User Details.
+
 ## 1.2.2 - 2024-02-12
 
 ---
