@@ -160,12 +160,15 @@ public class UserService {
 
         var actor = actorRepository.findById(validationRequest.actorId);
 
+        var validation = new Validation();
+
         if (autoApprove) {
+
             status = ValidationStatus.APPROVED;
             roleService.assignRolesToUser(id, List.of("validated"));
+            validation.setValidatedBy(id);
+            validation.setValidatedOn(Timestamp.from(Instant.now()));
         }
-
-        var validation = new Validation();
 
         validation.setUser(user);
         validation.setActor(actor);
