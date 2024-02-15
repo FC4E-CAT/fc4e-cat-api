@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Added
+
+- [#139](https://github.com/FC4E-CAT/fc4e-cat-api/pull/139) - CAT-320 Implement Custom Organization Source Feature.
+
 ## 1.2.3 - 2024-02-13
 
 ---

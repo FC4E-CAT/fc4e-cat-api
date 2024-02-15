@@ -29,9 +29,7 @@ public class IntegrationService {
      */
     public List<SourceResponseDto> getOrganisationSources() {
 
-        var sources = Arrays.asList(Source.values());
-
-        return SourceMapper.INSTANCE.sourcesToResponse(sources);
+        return SourceMapper.INSTANCE.sourcesToResponse(Source.getAvailableSources());
     }
 
     /**

@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,13 +19,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Enumeration of Integration Sources
  */
 public enum Source {
 
-    ROR("ror", "ROR", "https://api.ror.org/organizations") {
+    ROR("ror", "ROR", "https://api.ror.org/organizations", true) {
 
         public RorSearchInfo execute(String query, int page) {
             Response resp = connectHttpClient(url + "?query=" + query + "&page=" + page, query);
@@ -47,31 +49,37 @@ public enum Source {
         }
 
     },
-    EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider") {
+    EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider", false) {
         public String[] execute(String query) {
-            try {
-                Response resp = connectHttpClient(url + "/" + query, query);
-                return buildOrgInfo(resp.body().string());
-            } catch (IOException ex) {
-                Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
-            }
-            return null;
 
+                throw new InternalServerErrorException("Source EOSC is not supported.", 501);
         }
 
         @Override
         public RorSearchInfo execute(String query, int page) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            throw new InternalServerErrorException("Source EOSC is not supported.", 501);
         }
     },
-    RE3DATA("re3data", "RE3DATA", "") {
+    RE3DATA("re3data", "RE3DATA", "", false) {
         public String[] execute(String query) {
-            throw new InternalServerErrorException("Source re3data is not supported.", 501);
+            throw new InternalServerErrorException("Source RE3DATA is not supported.", 501);
         }
 
         @Override
         public RorSearchInfo execute(String query, int page) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            throw new InternalServerErrorException("Source RE3DATA is not supported.", 501);
+        }
+    },
+
+    CUSTOM("custom", "CUSTOM", "", true) {
+        @Override
+        public String[] execute(String query) {
+            return new String[0];
+        }
+
+        @Override
+        public RorSearchInfo execute(String query, int page) {
+            return null;
         }
     };
 
@@ -79,39 +87,26 @@ public enum Source {
 
     public abstract RorSearchInfo execute(String query, int page);
 
+    @Getter
     public final String label;
+    @Getter
     public final String organisationSource;
+    @Getter
     public final String url;
+    public final boolean enabled;
 
-    Source(String label, String organisationSource, String url) {
+    Source(String label, String organisationSource, String url, boolean enabled) {
         this.label = label;
         this.organisationSource = organisationSource;
         this.url = url;
+        this.enabled = enabled;
     }
 
-    public String getLabel() {
-        return label;
+    public static List<Source> getAvailableSources(){
 
+        return Arrays.stream(Source.values()).filter(source-> source.enabled).collect(Collectors.toList());
     }
 
-    public String getOrganisationSource() {
-        return organisationSource;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public Source getEnumNameForValue(String value) {
-        List<Source> values = Arrays.asList(Source.values());
-        for (Source op : values) {
-
-            if (op.getLabel().equalsIgnoreCase(value)) {
-                return op;
-            }
-        }
-        return null;
-    }
 
     @SneakyThrows
     Response connectHttpClient(String url, String identifier) {
@@ -217,12 +212,6 @@ public enum Source {
         public List<String[]> getOrgElements() {
             return orgElements;
         }
-        
-        
-        
-    
-    }
-    
-    
 
+    }
 }
