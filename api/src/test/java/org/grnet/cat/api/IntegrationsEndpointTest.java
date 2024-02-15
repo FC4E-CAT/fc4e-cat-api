@@ -34,7 +34,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(SourceResponseDto[].class);
 
-        assertEquals(3, response.length);
+        assertEquals(2, response.length);
     }
 
     @Test

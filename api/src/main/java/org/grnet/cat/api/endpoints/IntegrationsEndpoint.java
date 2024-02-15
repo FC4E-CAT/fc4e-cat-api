@@ -24,6 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.services.IntegrationService;
 
 import java.util.List;
@@ -159,17 +160,11 @@ public class IntegrationsEndpoint {
     ) {
         Source enumSource = Source.valueOf(source);
         switch (enumSource) {
-            case EOSC:
-                OrganisationResponseDto eoscOrg = integrationService.getOrganisation(Source.valueOf(source), query);
-                return Response.ok().entity(eoscOrg).build();
             case ROR:
                 PageResource rorOrg = integrationService.getOrganisation(query, page, uriInfo);
                 return Response.ok().entity(rorOrg).build();
-            case RE3DATA:
-                OrganisationResponseDto re3dataOrg = integrationService.getOrganisation(Source.valueOf(source), query);
-                return Response.ok().entity(re3dataOrg).build();
             default:
-                return null;
+                throw new InternalServerErrorException("You cannot query this source.", 501);
         }
     }
 }

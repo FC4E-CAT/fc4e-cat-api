@@ -177,7 +177,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("The value NOT_VALID is not a valid organisation_source. Valid organisation_source values are: [RE3DATA, ROR, EOSC]", response.message);
+        assertEquals("The value NOT_VALID is not a valid organisation_source. Valid organisation_source values are: [RE3DATA, ROR, CUSTOM, EOSC]", response.message);
     }
 
     @Test
@@ -201,11 +201,11 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .post()
                 .then()
                 .assertThat()
-                .statusCode(404)
+                .statusCode(501)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Organisation https://ror.org/00tjv0s33, not found in EOSC", response.message);
+        assertEquals("Source EOSC is not supported.", response.message);
     }
 
     @Test
@@ -233,7 +233,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Source re3data is not supported.", response.message);
+        assertEquals("Source RE3DATA is not supported.", response.message);
     }
 
     @Test
