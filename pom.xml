@@ -136,6 +136,17 @@
         <artifactId>json-schema-validator</artifactId>
         <version>${json.schema.validator}</version>
       </dependency>
+
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-mailer</artifactId>
+        <version>3.6.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.mailpit</groupId>
+        <artifactId>quarkus-mailpit</artifactId>
+      <version>0.0.9</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
