@@ -186,11 +186,9 @@ public class UserService {
         validation.setOrganisationWebsite(validationRequest.organisationWebsite);
         validation.setOrganisationRole(validationRequest.organisationRole);
         validationService.store(validation);
-        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
         MailerService.CustomCompletableFuture.supplyAsync(() ->
-            mailerService.retrieveAdminEmails()
-        , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
+            mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 
