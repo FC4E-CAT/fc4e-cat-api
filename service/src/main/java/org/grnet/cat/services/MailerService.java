@@ -1,6 +1,5 @@
 package org.grnet.cat.services;
 
-
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,6 +41,7 @@ public class MailerService {
 
     public List<String> retrieveAdminEmails() {
 
+        LOG.info("Retrieve emails:");
         ArrayList<String> vops = new ArrayList<>();
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
         admins.stream().map(admin -> admin.getAttributes().get("voperson_id")).forEach(vops::addAll);
@@ -51,9 +51,12 @@ public class MailerService {
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
+                LOG.info("Notify Admins: "+ Arrays.toString(mailAddrs.toArray())+" for validation "+val.getId());
                 notifyAdmins(val, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
+                LOG.info("Notify User: "+ val.getUser().getEmail()+" for validation "+val.getId());
+
                 var addrs = new ArrayList<String>();
                 addrs.add(val.getUser().getEmail());
                 notifyUser(val, addrs);
@@ -82,7 +85,6 @@ public class MailerService {
 
         var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, String.valueOf(Arrays.asList(mailAddrs)));
         try{
-
             mailer.send(mail);
         } catch (Exception e){
 
@@ -97,7 +99,7 @@ public class MailerService {
 
         var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION, String.valueOf(Arrays.asList(mailAddrs)));
         try{
-
+            LOG.info("EMAIL INFO "+"from: "+mail.getFrom()+" to: "+Arrays.toString(mail.getTo().toArray())+" subject: "+mail.getSubject()+" message:"+mail.getText());
             mailer.send(mail);
         } catch (Exception e){
 
