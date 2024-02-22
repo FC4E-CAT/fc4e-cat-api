@@ -108,59 +108,36 @@ public class MailerService {
             LOG.error("Cannot send the email because of : "+e.getMessage());
         }
     }
-//    public static class CustomCompletableFuture<T> extends CompletableFuture<T> {
-//        static final Executor EXEC = Executors.newFixedThreadPool(4,
-//                runnable -> new Thread(runnable)
-//        );
-//
-//        @Override
-//        public Executor defaultExecutor() {
-//            return EXEC;
-//
-//        }
-//
-//        @Override
-//        public <U> CompletableFuture<U> newIncompleteFuture() {
-//            return new CustomCompletableFuture<>();
-//        }
-//
-//
-//        public static CompletableFuture<Void> runAsync(Runnable runnable) {
-//            return supplyAsync(() -> {
-//                Log.info("Running on thread: "+Thread.currentThread().getName());
-//                runnable.run();
-//                return null;
-//            });
-//        }
-//
-//        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
-//           Log.info("Syncing on thread: "+Thread.currentThread().getName());
-//            return new CompletableFuture<U>().completeAsync(supplier);
-//        }
-//    }
-
     public static class CustomCompletableFuture<T> extends CompletableFuture<T> {
-        private static final Executor executor = Executors.newFixedThreadPool(4,
-              runnable -> new Thread(runnable)
+        static final Executor EXEC = Executors.newFixedThreadPool(4,
+                runnable -> new Thread(runnable)
         );
 
         @Override
         public Executor defaultExecutor() {
-            return executor;
-        }
-        public static <TYPE> CustomCompletableFuture<TYPE> supplyAsync(Supplier<TYPE> supplier) {
+            return EXEC;
 
-            LOG.info("SYNC in thread --- "+Thread.currentThread().getName());
-            CustomCompletableFuture<TYPE> future = new CustomCompletableFuture<>();
-            executor.execute(() -> {
-                try {
-                    future.complete(supplier.get());
-                } catch (Exception ex) {
-                    future.completeExceptionally(ex);
-                }
+        }
+
+        @Override
+        public <U> CompletableFuture<U> newIncompleteFuture() {
+            return new CustomCompletableFuture<>();
+        }
+
+
+        public static CompletableFuture<Void> runAsync(Runnable runnable) {
+            return supplyAsync(() -> {
+                Log.info("Running on thread: "+Thread.currentThread().getName());
+                runnable.run();
+                return null;
             });
-            return future;
+        }
+
+        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
+           Log.info("Syncing on thread: "+Thread.currentThread().getName());
+            return new CompletableFuture<U>().completeAsync(supplier);
         }
     }
+
 }
 
