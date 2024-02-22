@@ -49,7 +49,7 @@ public class ValidationService {
     RoleService roleService;
 
     @ConfigProperty(name = "ui.base.url")
-    private String uiBaseUrl;
+    String uiBaseUrl;
 
     BiConsumer<String, ValidationStatus> handleValidationStatus = (userId, status) -> {
 
