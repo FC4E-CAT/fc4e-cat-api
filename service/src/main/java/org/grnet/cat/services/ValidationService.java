@@ -20,14 +20,12 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
 
 /**
@@ -50,6 +48,7 @@ public class ValidationService {
 
     @ConfigProperty(name = "ui.base.url")
     String uiBaseUrl;
+    private static final Logger LOG = Logger.getLogger(ValidationService.class);
 
     BiConsumer<String, ValidationStatus> handleValidationStatus = (userId, status) -> {
 
@@ -180,6 +179,7 @@ public class ValidationService {
 
         var validation = validationRepository.findById(id);
         handleValidationStatus.accept(validation.getUser().getId(), status);
+        LOG.info("UPDATE VALIDATION STATUS -- CURRENT THREAD"+Thread.currentThread().getName());
         MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, Arrays.asList(validation.getUser().getEmail())));
 
 
