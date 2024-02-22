@@ -11,6 +11,7 @@ import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.UserRepository;
+import org.jboss.logging.Logger;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -32,8 +33,9 @@ public class MailerService {
     @Inject
     UserRepository userRepository;
     @ConfigProperty(name = "ui.base.url")
-    private String uiBaseUrl;
+    String uiBaseUrl;
 
+    private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     @Inject
     KeycloakAdminRepository keycloakAdminRepository;
@@ -52,7 +54,9 @@ public class MailerService {
                 notifyAdmins(val, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
-                notifyUser(val, mailAddrs);
+                var addrs = new ArrayList<String>();
+                addrs.add(val.getUser().getEmail());
+                notifyUser(val, addrs);
                 break;
             default:
                 break;
@@ -76,8 +80,14 @@ public class MailerService {
         templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
         templateParams.put("status", validation.getStatus().name());
 
-        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, validation.getUser().getEmail());
-        mailer.send(mail);
+        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, String.valueOf(Arrays.asList(mailAddrs)));
+        try{
+
+            mailer.send(mail);
+        } catch (Exception e){
+
+            LOG.error("Cannot send the email because of : "+e.getMessage());
+        }
     }
 
     private void notifyAdmins(Validation validation, List<String> mailAddrs) {
@@ -86,7 +96,13 @@ public class MailerService {
         templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + validation.getId());
 
         var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION, String.valueOf(Arrays.asList(mailAddrs)));
-        mailer.send(mail);
+        try{
+
+            mailer.send(mail);
+        } catch (Exception e){
+
+            LOG.error("Cannot send the email because of : "+e.getMessage());
+        }
     }
     public static class CustomCompletableFuture<T> extends CompletableFuture<T> {
         static final Executor EXEC = Executors.newFixedThreadPool(10,
