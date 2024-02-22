@@ -182,7 +182,7 @@ public class ValidationService {
         handleValidationStatus.accept(validation.getUser().getId(), status);
         MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, Arrays.asList(validation.getUser().getEmail())));
 
-        //notifyUser(validation);
+
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 

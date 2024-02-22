@@ -1,5 +1,6 @@
 package org.grnet.cat.services;
 
+import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -126,12 +127,14 @@ public class MailerService {
         public static CompletableFuture<Void> runAsync(Runnable runnable) {
             Objects.requireNonNull(runnable);
             return supplyAsync(() -> {
+                Log.info("Running on thread: "+Thread.currentThread().getName());
                 runnable.run();
                 return null;
             });
         }
 
         public static <U> CompletableFuture<U> supplyAsync​(Supplier<U> supplier) {
+           Log.info("Syncing on thread: "+Thread.currentThread().getName());
             return new CustomCompletableFuture<U>().completeAsync(supplier);
         }
     }
