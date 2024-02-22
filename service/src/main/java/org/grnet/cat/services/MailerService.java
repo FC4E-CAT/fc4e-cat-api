@@ -50,6 +50,7 @@ public class MailerService {
     }
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
+        LOG.info("SEND MAILS - CURRENT THREAD "+Thread.currentThread().getName());
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
                 LOG.info("Notify Admins: "+ Arrays.toString(mailAddrs.toArray())+" for validation "+val.getId());
@@ -108,7 +109,7 @@ public class MailerService {
         }
     }
     public static class CustomCompletableFuture<T> extends CompletableFuture<T> {
-        static final Executor EXEC = Executors.newFixedThreadPool(10,
+        static final Executor EXEC = Executors.newFixedThreadPool(4,
                 runnable -> new Thread(runnable)
         );
 
@@ -125,7 +126,6 @@ public class MailerService {
 
 
         public static CompletableFuture<Void> runAsync(Runnable runnable) {
-            Objects.requireNonNull(runnable);
             return supplyAsync(() -> {
                 Log.info("Running on thread: "+Thread.currentThread().getName());
                 runnable.run();
@@ -133,9 +133,9 @@ public class MailerService {
             });
         }
 
-        public static <U> CompletableFuture<U> supplyAsync​(Supplier<U> supplier) {
+        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
            Log.info("Syncing on thread: "+Thread.currentThread().getName());
-            return new CustomCompletableFuture<U>().completeAsync(supplier);
+            return new CompletableFuture<U>().completeAsync(supplier);
         }
     }
 

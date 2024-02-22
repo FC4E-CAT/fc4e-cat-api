@@ -1,5 +1,6 @@
 package org.grnet.cat.services;
 
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -20,14 +21,11 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.*;
+import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-
 /**
  * The UserService provides operations for managing User entities.
  */
@@ -74,8 +72,7 @@ public class UserService {
     @ConfigProperty(name = "cat.validations.approve.auto")
     boolean autoApprove;
 
-    @Inject
-    KeycloakAdminRepository keycloakAdminRepository;
+    private static final Logger LOG = Logger.getLogger(UserService.class);
 
     /**
      * Get User's profile.
@@ -187,6 +184,7 @@ public class UserService {
         validation.setOrganisationRole(validationRequest.organisationRole);
         validationService.store(validation);
 
+        LOG.info("CREATE VALIDATION -MAIN THREAD: "+Thread.currentThread().getName());
         MailerService.CustomCompletableFuture.supplyAsync(() ->
             mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
