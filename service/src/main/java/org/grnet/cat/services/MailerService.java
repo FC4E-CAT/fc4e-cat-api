@@ -1,6 +1,5 @@
 package org.grnet.cat.services;
 
-import io.quarkus.logging.Log;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +42,7 @@ public class MailerService {
     public List<String> retrieveAdminEmails() {
 
         LOG.info("Retrieve emails:");
+        LOG.info("Retrieve emails Active Threads:"+Thread.activeCount());
         ArrayList<String> vops = new ArrayList<>();
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
         admins.stream().map(admin -> admin.getAttributes().get("voperson_id")).forEach(vops::addAll);
@@ -51,6 +51,7 @@ public class MailerService {
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
         LOG.info("SEND MAILS - CURRENT THREAD "+Thread.currentThread().getName());
+        LOG.info("Send emails Active Threads:"+Thread.activeCount());
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
                 LOG.info("Notify Admins: "+ Arrays.toString(mailAddrs.toArray())+" for validation "+val.getId());
@@ -109,9 +110,7 @@ public class MailerService {
         }
     }
     public static class CustomCompletableFuture<T> extends CompletableFuture<T> {
-        static final Executor EXEC = Executors.newFixedThreadPool(4,
-                runnable -> new Thread(runnable)
-        );
+        static final Executor EXEC = Executors.newCachedThreadPool();
 
         @Override
         public Executor defaultExecutor() {
@@ -127,15 +126,17 @@ public class MailerService {
 
         public static CompletableFuture<Void> runAsync(Runnable runnable) {
             return supplyAsync(() -> {
-                Log.info("Running on thread: "+Thread.currentThread().getName());
+                LOG.info("Running on thread: "+Thread.currentThread().getName());
                 runnable.run();
                 return null;
             });
         }
 
         public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
-           Log.info("Syncing on thread: "+Thread.currentThread().getName());
-            return new CompletableFuture<U>().completeAsync(supplier);
+           LOG.info("Syncing on thread: "+Thread.currentThread().getName());
+           LOG.info("Active Threads: "+Thread.activeCount());
+
+           return new CompletableFuture<U>().completeAsync(supplier);
         }
     }
 
