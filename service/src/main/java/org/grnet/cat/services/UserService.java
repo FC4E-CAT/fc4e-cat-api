@@ -26,6 +26,10 @@ import org.jboss.logging.Logger;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * The UserService provides operations for managing User entities.
  */
@@ -187,8 +191,16 @@ public class UserService {
         LOG.info("CREATE VALIDATION -MAIN THREAD: "+Thread.currentThread().getName());
        LOG.info("Create Validation Active Threads: "+Thread.activeCount());
 
-        MailerService.CustomCompletableFuture.supplyAsync(() ->
-            mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
+
+        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+
+        CompletableFuture.supplyAsync(() ->
+                        mailerService.retrieveAdminEmails()
+                , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
+
+
+//        MailerService.CustomCompletableFuture.supplyAsync(() ->
+//            mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 
