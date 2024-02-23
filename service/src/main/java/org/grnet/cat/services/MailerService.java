@@ -45,6 +45,7 @@ public class MailerService {
         LOG.info("Retrieve emails Active Threads:"+Thread.activeCount());
         ArrayList<String> vops = new ArrayList<>();
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
+        LOG.info("Fetch admins successful ");
         admins.stream().map(admin -> admin.getAttributes().get("voperson_id")).forEach(vops::addAll);
         return vops.stream().map(person -> userRepository.fetchUser(person).getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
     }
