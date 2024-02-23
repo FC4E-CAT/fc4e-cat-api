@@ -51,16 +51,22 @@ public class MailerService {
         List<String> emails = new ArrayList<>();
         for (UserRepresentation ur : admins) {
             for(String key:ur.getAttributes().keySet()) {
-                LOG.info("user representation"+ key+ur.getAttributes().get(key));
+                LOG.info("user representation key: "+ key+" has value : "+ur.getAttributes().get(key));
             }
             List<String> voips = ur.getAttributes().get("voperson_id");
-            for (String voip : voips) {
-                LOG.info("VOIP: " + voip);
-                var user = userRepository.fetchUser(voip);
-                if (user.getEmail() != null) {
-                    emails.add(user.getEmail());
+            if(voips==null){
+                LOG.info("null voips --");
+                emails.add("cthermolia@gmail.com");
+            }else {
+                for (String voip : voips) {
+                    LOG.info("VOIP: " + voip);
+                    var user = userRepository.fetchUser(voip);
+                    if (user.getEmail() != null) {
+                        emails.add(user.getEmail());
+                    }
                 }
             }
+
         }
         return emails;
         //        admins.stream().map(admin -> admin.getAttributes().get("voperson_id")).forEach(vops::addAll);
