@@ -25,6 +25,7 @@ import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -192,14 +193,18 @@ public class UserService {
        LOG.info("Create Validation Active Threads: "+Thread.activeCount());
 
 
+
 //        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 //        CompletableFuture.supplyAsync(() ->
 //                        mailerService.retrieveAdminEmails()
 //                , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
 
 
-        MailerService.CustomCompletableFuture.supplyAsync(() ->
-            mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
+        MailerService.CustomCompletableFuture.supplyAsync(() -> {
+         var mails=  mailerService.retrieveAdminEmails();
+         LOG.info("list of mails : "+ Arrays.toString(mails.toArray()));
+         return mails;
+        }).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 
