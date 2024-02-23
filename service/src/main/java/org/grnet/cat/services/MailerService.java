@@ -46,9 +46,13 @@ public class MailerService {
         LOG.info("Retrieve emails Active Threads:" + Thread.activeCount());
         ArrayList<String> vops = new ArrayList<>();
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
-        LOG.info("Fetch admins successful ");
+        LOG.info("Fetch admins successful "+admins.size());
+
         List<String> emails = new ArrayList<>();
         for (UserRepresentation ur : admins) {
+            for(String key:ur.getAttributes().keySet()) {
+                LOG.info("user representation"+ key+ur.getAttributes().get(key));
+            }
             List<String> voips = ur.getAttributes().get("voperson_id");
             for (String voip : voips) {
                 LOG.info("VOIP: " + voip);
