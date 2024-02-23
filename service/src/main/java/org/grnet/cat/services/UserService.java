@@ -192,15 +192,14 @@ public class UserService {
        LOG.info("Create Validation Active Threads: "+Thread.activeCount());
 
 
-        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+//        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+//        CompletableFuture.supplyAsync(() ->
+//                        mailerService.retrieveAdminEmails()
+//                , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
 
-        CompletableFuture.supplyAsync(() ->
-                        mailerService.retrieveAdminEmails()
-                , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
 
-
-//        MailerService.CustomCompletableFuture.supplyAsync(() ->
-//            mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
+        MailerService.CustomCompletableFuture.supplyAsync(() ->
+            mailerService.retrieveAdminEmails()).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 
