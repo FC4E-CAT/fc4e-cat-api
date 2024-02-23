@@ -191,10 +191,9 @@ public class UserService {
         LOG.info("CREATE VALIDATION -MAIN THREAD: "+Thread.currentThread().getName());
        LOG.info("Create Validation Active Threads: "+Thread.activeCount());
 
-        var mails=mailerService.retrieveAdminEmails();
-        mailerService.sendMails(validation,MailType.ADMIN_ALERT_NEW_VALIDATION,mails);
 
         ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+
         CompletableFuture.supplyAsync(() ->
                         mailerService.retrieveAdminEmails()
                 , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
