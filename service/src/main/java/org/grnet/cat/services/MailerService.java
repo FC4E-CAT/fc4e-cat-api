@@ -42,24 +42,25 @@ public class MailerService {
 
     @ConfigProperty(name = "keycloak.admin-client.search.user.by.attribute")
     String attribute;
+
     public List<String> retrieveAdminEmails() {
 
         LOG.info("Retrieve emails:");
         LOG.info("Retrieve emails Active Threads:" + Thread.activeCount());
         ArrayList<String> vops = new ArrayList<>();
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
-        LOG.info("Fetch admins successful "+admins.size());
+        LOG.info("Fetch admins successful " + admins.size());
 
         List<String> emails = new ArrayList<>();
         for (UserRepresentation ur : admins) {
-            for(String key:ur.getAttributes().keySet()) {
-                LOG.info("user representation key: "+ key+" has value : "+ur.getAttributes().get(key));
+            for (String key : ur.getAttributes().keySet()) {
+                LOG.info("user representation key: " + key + " has value : " + ur.getAttributes().get(key));
             }
             List<String> voips = ur.getAttributes().get(attribute);
-            if(voips==null){
+            if (voips == null) {
                 LOG.info("null voips --");
                 emails.add("cthermolia@gmail.com");
-            }else {
+            } else {
                 for (String voip : voips) {
                     LOG.info("VOIP: " + voip);
                     var user = userRepository.fetchUser(voip);
@@ -112,14 +113,16 @@ public class MailerService {
         templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
         templateParams.put("status", validation.getStatus().name());
 
-      //  var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, String.valueOf(Arrays.asList(mailAddrs)));
+        //  var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, String.valueOf(Arrays.asList(mailAddrs)));
 
-        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, "cthermolia@gmail.com");
-        try {
-            mailer.send(mail);
-        } catch (Exception e) {
+        for (String emailAddr : mailAddrs) {
+            var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, emailAddr);
+            try {
+                mailer.send(mail);
+            } catch (Exception e) {
 
-            LOG.error("Cannot send the email because of : " + e.getMessage());
+                LOG.error("Cannot send the email because of : " + e.getMessage());
+            }
         }
     }
 
@@ -128,13 +131,15 @@ public class MailerService {
         HashMap<String, String> templateParams = new HashMap();
         templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + validation.getId());
 
-        var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION, String.valueOf(Arrays.asList(mailAddrs)));
-        try {
-            LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
-            mailer.send(mail);
-        } catch (Exception e) {
+        for (String emailAddr : mailAddrs) {
+            var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION, emailAddr);
+            try {
+                LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
+                mailer.send(mail);
+            } catch (Exception e) {
 
-            LOG.error("Cannot send the email because of : " + e.getMessage());
+                LOG.error("Cannot send the email because of : " + e.getMessage());
+            }
         }
     }
 
