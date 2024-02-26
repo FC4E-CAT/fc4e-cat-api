@@ -40,6 +40,8 @@ public class MailerService {
     @Inject
     KeycloakAdminRepository keycloakAdminRepository;
 
+    @ConfigProperty(name = "keycloak.admin-client.search.user.by.attribute")
+    String attribute;
     public List<String> retrieveAdminEmails() {
 
         LOG.info("Retrieve emails:");
@@ -53,7 +55,7 @@ public class MailerService {
             for(String key:ur.getAttributes().keySet()) {
                 LOG.info("user representation key: "+ key+" has value : "+ur.getAttributes().get(key));
             }
-            List<String> voips = ur.getAttributes().get("voperson_id");
+            List<String> voips = ur.getAttributes().get(attribute);
             if(voips==null){
                 LOG.info("null voips --");
                 emails.add("cthermolia@gmail.com");
