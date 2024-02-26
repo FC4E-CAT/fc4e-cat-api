@@ -179,9 +179,7 @@ public class ValidationService {
 
         var validation = validationRepository.findById(id);
         handleValidationStatus.accept(validation.getUser().getId(), status);
-        LOG.info("UPDATE VALIDATION STATUS -- CURRENT THREAD"+Thread.currentThread().getName());
         MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, Arrays.asList(validation.getUser().getEmail())));
-
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }

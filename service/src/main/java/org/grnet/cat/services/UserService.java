@@ -189,9 +189,6 @@ public class UserService {
         validation.setOrganisationRole(validationRequest.organisationRole);
         validationService.store(validation);
 
-        LOG.info("CREATE VALIDATION -MAIN THREAD: "+Thread.currentThread().getName());
-       LOG.info("Create Validation Active Threads: "+Thread.activeCount());
-
         CompletableFuture.supplyAsync(() ->
                         mailerService.retrieveAdminEmails()
         ).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
