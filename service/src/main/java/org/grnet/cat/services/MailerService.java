@@ -49,13 +49,13 @@ public class MailerService {
         List<String> emails = new ArrayList<>();
         for (UserRepresentation ur : admins) {
             List<String> voips = ur.getAttributes().get(attribute);
-              if(voips==null){
-                  return emails;
-              }
-                for (String voip : voips) {
-                    var user = userRepository.fetchUser(voip);
-                    if (user.getEmail() != null) {
-                        emails.add(user.getEmail());
+            if (voips == null) {
+                return emails;
+            }
+            for (String voip : voips) {
+                var user = userRepository.fetchUser(voip);
+                if (user.getEmail() != null) {
+                    emails.add(user.getEmail());
                 }
             }
 
@@ -69,7 +69,7 @@ public class MailerService {
                 notifyAdmins(val, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
-                 var addrs = new ArrayList<String>();
+                var addrs = new ArrayList<String>();
                 addrs.add(val.getUser().getEmail());
                 notifyUser(val, addrs);
                 break;
@@ -80,11 +80,9 @@ public class MailerService {
 
     }
 
-    public Mail buildEmail(HashMap<String, String> templateParams, MailType mailType, String... to) {
+    public Mail buildEmail(HashMap<String, String> templateParams, MailType mailType) {
         MailType.MailTemplate mailTemplate = mailType.execute(templateParams);
-
         Mail mail = new Mail();
-        mail.addTo(to);
         mail.setText(mailTemplate.getBody());
         mail.setSubject(mailTemplate.getSubject());
         return mail;
@@ -95,13 +93,12 @@ public class MailerService {
         templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
         templateParams.put("status", validation.getStatus().name());
 
-     for (String emailAddr : mailAddrs) {
-            var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, emailAddr);
-            try {
-                mailer.send(mail);
-            } catch (Exception e) {
-                LOG.error("Cannot send the email because of : " + e.getMessage());
-            }
+        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS);
+        mail.setBcc(mailAddrs);
+        try {
+            mailer.send(mail);
+        } catch (Exception e) {
+            LOG.error("Cannot send the email because of : " + e.getMessage());
         }
     }
 
@@ -110,15 +107,15 @@ public class MailerService {
         HashMap<String, String> templateParams = new HashMap();
         templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + validation.getId());
 
-        for (String emailAddr : mailAddrs) {
-            var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION, emailAddr);
-            try {
-                LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
-                mailer.send(mail);
-            } catch (Exception e) {
-                LOG.error("Cannot send the email because of : " + e.getMessage());
-            }
+        var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION);
+        mail.setBcc(mailAddrs);
+        try {
+            LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
+            mailer.send(mail);
+        } catch (Exception e) {
+            LOG.error("Cannot send the email because of : " + e.getMessage());
         }
+
     }
 
     public static class CustomCompletableFuture<T> extends CompletableFuture<T> {
