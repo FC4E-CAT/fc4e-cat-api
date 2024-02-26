@@ -189,24 +189,13 @@ public class UserService {
         validation.setOrganisationRole(validationRequest.organisationRole);
         validationService.store(validation);
 
-        var mails=mailerService.retrieveAdminEmails();
-        mailerService.sendMails(validation,MailType.ADMIN_ALERT_NEW_VALIDATION,mails);
         LOG.info("CREATE VALIDATION -MAIN THREAD: "+Thread.currentThread().getName());
        LOG.info("Create Validation Active Threads: "+Thread.activeCount());
 
+        CompletableFuture.supplyAsync(() ->
+                        mailerService.retrieveAdminEmails()
+        ).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
 
-
-//        ThreadPoolExecutor exec = (ThreadPoolExecutor) Executors.newCachedThreadPool();
-//        CompletableFuture.supplyAsync(() ->
-//                        mailerService.retrieveAdminEmails()
-//                , exec).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
-
-
-        MailerService.CustomCompletableFuture.supplyAsync(() -> {
-         var emails=  mailerService.retrieveAdminEmails();
-         LOG.info("list of mails : "+ Arrays.toString(emails.toArray()));
-         return mails;
-        }).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
 
