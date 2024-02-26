@@ -112,7 +112,9 @@ public class MailerService {
         templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
         templateParams.put("status", validation.getStatus().name());
 
-        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, String.valueOf(Arrays.asList(mailAddrs)));
+      //  var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, String.valueOf(Arrays.asList(mailAddrs)));
+
+        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, "cthermolia@gmail.com");
         try {
             mailer.send(mail);
         } catch (Exception e) {
