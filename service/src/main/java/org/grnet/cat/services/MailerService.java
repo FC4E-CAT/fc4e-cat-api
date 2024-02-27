@@ -11,6 +11,7 @@ import org.grnet.cat.enums.MailType;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.jboss.logging.Logger;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -44,8 +45,9 @@ public class MailerService {
 
     public List<String> retrieveAdminEmails() {
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
-        LOG.info("Fetch admins successful ");
+        LOG.info("Fetch admins successful "+Arrays.toString(admins.toArray()));
         ArrayList<String> emails = new ArrayList<>();
+
         admins.stream().map(admin -> admin.getAttributes().get(attribute)).forEach(emails::addAll);
         return emails.stream().map(person -> userRepository.fetchUser(person).getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
     }
