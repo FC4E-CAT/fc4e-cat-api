@@ -11,7 +11,6 @@ import org.grnet.cat.enums.MailType;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.jboss.logging.Logger;
-import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -44,24 +43,13 @@ public class MailerService {
     String attribute;
 
     public List<String> retrieveAdminEmails() {
-
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
-        List<String> emails = new ArrayList<>();
-        for (UserRepresentation ur : admins) {
-            List<String> voips = ur.getAttributes().get(attribute);
-            LOG.info("VOIPS : "+Arrays.toString(voips.toArray()));
-            if (voips == null) {
-                return emails;
-            }
-            for (String voip : voips) {
-                var user = userRepository.fetchUser(voip);
-                if (user.getEmail() != null) {
-                    emails.add(user.getEmail());
-                }
-            }
-        }
-        return emails;
+        LOG.info("Fetch admins successful ");
+        ArrayList<String> emails = new ArrayList<>();
+        admins.stream().map(admin -> admin.getAttributes().get(attribute)).forEach(emails::addAll);
+        return emails.stream().map(person -> userRepository.fetchUser(person).getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
     }
+
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
@@ -71,7 +59,7 @@ public class MailerService {
             case VALIDATED_ALERT_CREATE_VALIDATION:
                 var addrs = new ArrayList<String>();
                 addrs.add(val.getUser().getEmail());
-                notifyUser(val, addrs,type);
+                notifyUser(val, addrs, type);
                 break;
             default:
                 break;
@@ -88,7 +76,7 @@ public class MailerService {
         return mail;
     }
 
-    private void notifyUser(Validation validation, List<String> mailAddrs,MailType mailType) {
+    private void notifyUser(Validation validation, List<String> mailAddrs, MailType mailType) {
         HashMap<String, String> templateParams = new HashMap();
         templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
         templateParams.put("status", validation.getStatus().name());
@@ -97,7 +85,7 @@ public class MailerService {
         mail.setBcc(mailAddrs);
         try {
             mailer.send(mail);
-            LOG.info("RECIPIENTS : "+Arrays.toString(mail.getBcc().toArray()));
+            LOG.info("RECIPIENTS : " + Arrays.toString(mail.getBcc().toArray()));
         } catch (Exception e) {
             LOG.error("Cannot send the email because of : " + e.getMessage());
         }
@@ -113,7 +101,7 @@ public class MailerService {
         try {
             LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
             mailer.send(mail);
-            LOG.info("RECIPIENTS : "+Arrays.toString(mail.getBcc().toArray()));
+            LOG.info("RECIPIENTS : " + Arrays.toString(mail.getBcc().toArray()));
         } catch (Exception e) {
             LOG.error("Cannot send the email because of : " + e.getMessage());
         }
