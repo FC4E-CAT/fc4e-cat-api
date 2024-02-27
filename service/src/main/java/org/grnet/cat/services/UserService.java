@@ -191,7 +191,10 @@ public class UserService {
 
         CompletableFuture.supplyAsync(() ->
                         mailerService.retrieveAdminEmails()
-        ).thenAccept(addrs -> mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs));
+        ).thenAccept(addrs -> {
+            mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs);
+            mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CREATE_VALIDATION, Arrays.asList(validation.getUser().getEmail()));
+        });
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
