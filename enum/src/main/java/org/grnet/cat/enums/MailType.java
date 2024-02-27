@@ -38,7 +38,21 @@ public enum MailType {
             return new MailTemplate("Validation Request updated status", "Status of the following validation request is updated to  " + templateParams.get("status") + "\n"+url.toString());
         }
 
+    },
+    VALIDATED_ALERT_CREATE_VALIDATION {
+        public MailTemplate execute(HashMap<String,String> templateParams) {
+            URL url;
+            String urlString=templateParams.get("valUrl");
+            try {
+                url=new URL(urlString);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            return new MailTemplate("Validation Request Created", "A new Validation Request is created : " + url.toString());
+        }
+
     };
+
     public abstract MailTemplate execute(HashMap<String,String> templateParams);
 
 

@@ -68,9 +68,10 @@ public class MailerService {
                 notifyAdmins(val, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
+            case VALIDATED_ALERT_CREATE_VALIDATION:
                 var addrs = new ArrayList<String>();
                 addrs.add(val.getUser().getEmail());
-                notifyUser(val, addrs);
+                notifyUser(val, addrs,type);
                 break;
             default:
                 break;
@@ -87,12 +88,12 @@ public class MailerService {
         return mail;
     }
 
-    private void notifyUser(Validation validation, List<String> mailAddrs) {
+    private void notifyUser(Validation validation, List<String> mailAddrs,MailType mailType) {
         HashMap<String, String> templateParams = new HashMap();
         templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
         templateParams.put("status", validation.getStatus().name());
 
-        var mail = buildEmail(templateParams, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS);
+        var mail = buildEmail(templateParams, mailType);
         mail.setBcc(mailAddrs);
         try {
             mailer.send(mail);
