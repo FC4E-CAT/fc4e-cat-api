@@ -49,6 +49,7 @@ public class MailerService {
         List<String> emails = new ArrayList<>();
         for (UserRepresentation ur : admins) {
             List<String> voips = ur.getAttributes().get(attribute);
+            LOG.info("VOIPS : "+Arrays.toString(voips.toArray()));
             if (voips == null) {
                 return emails;
             }
@@ -58,11 +59,9 @@ public class MailerService {
                     emails.add(user.getEmail());
                 }
             }
-
         }
         return emails;
     }
-
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
@@ -97,6 +96,7 @@ public class MailerService {
         mail.setBcc(mailAddrs);
         try {
             mailer.send(mail);
+            LOG.info("RECIPIENTS : "+Arrays.toString(mail.getBcc().toArray()));
         } catch (Exception e) {
             LOG.error("Cannot send the email because of : " + e.getMessage());
         }
@@ -112,6 +112,7 @@ public class MailerService {
         try {
             LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
             mailer.send(mail);
+            LOG.info("RECIPIENTS : "+Arrays.toString(mail.getBcc().toArray()));
         } catch (Exception e) {
             LOG.error("Cannot send the email because of : " + e.getMessage());
         }

@@ -21,7 +21,6 @@ import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.jboss.logging.Logger;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
