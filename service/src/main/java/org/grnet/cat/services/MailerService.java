@@ -46,21 +46,8 @@ public class MailerService {
     public List<String> retrieveAdminEmails() {
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
         List<String> emails = new ArrayList<>();
-        for (UserRepresentation ur : admins) {
-            List<String> voips = ur.getAttributes().get(attribute);
-            LOG.info("ADMIN VOIPS : "+Arrays.toString(voips.toArray()));
-            if (voips == null) {
-                return emails;
-            }
-            for (String voip : voips) {
-                var user = userRepository.fetchUser(voip);
-                if (user.getEmail() != null) {
-                    emails.add(user.getEmail());
-                }
-            }
-        }
-        return emails;
-
+        admins.stream().map(admin -> admin.getAttributes().get(attribute)).forEach(emails::addAll);
+        return emails.stream().map(person -> userRepository.fetchUser(person).getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
