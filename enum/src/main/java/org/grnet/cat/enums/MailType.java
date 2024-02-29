@@ -1,5 +1,7 @@
 package org.grnet.cat.enums;
 
+import io.quarkus.qute.Template;
+import jakarta.inject.Inject;
 import okhttp3.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -13,59 +15,69 @@ import java.util.logging.Logger;
 
 public enum MailType {
 
+
     ADMIN_ALERT_NEW_VALIDATION() {
-        public MailTemplate execute(HashMap<String,String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
             URL url;
-            String urlString=templateParams.get("valUrl");
+            String urlString = templateParams.get("valUrl");
+            String body = "";
             try {
-                url=new URL(urlString);
+                url = new URL(urlString);
+                body = emailTemplate.data("urlpath", url.toString()).render();
+
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
-            return new MailTemplate( "New Validation Request", "There is a new validation request: "+url.toString() );
+            return new MailTemplate("Validation Request Created", body);
         }
     },
 
     VALIDATED_ALERT_CHANGE_VALIDATION_STATUS {
-        public MailTemplate execute(HashMap<String,String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
             URL url;
-            String urlString=templateParams.get("valUrl");
+            String urlString = templateParams.get("valUrl");
+            String body = "";
             try {
-                url=new URL(urlString);
+                url = new URL(urlString);
+                body = emailTemplate.data("urlpath", url.toString()).data("status", templateParams.get("status")).render();
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
-            return new MailTemplate("Validation Request updated status", "Status of the following validation request is updated to  " + templateParams.get("status") + "\n"+url.toString());
+            return new MailTemplate("Validation Request updated status", body);
         }
 
     },
     VALIDATED_ALERT_CREATE_VALIDATION {
-        public MailTemplate execute(HashMap<String,String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
             URL url;
-            String urlString=templateParams.get("valUrl");
+
+            String urlString = templateParams.get("valUrl");
+            String body = "";
             try {
-                url=new URL(urlString);
+                url = new URL(urlString);
+                body = emailTemplate.data("urlpath", url.toString()).render();
+
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
-            return new MailTemplate("Validation Request Created", "A new Validation Request is created : " + url.toString());
+            return new MailTemplate("Validation Request Created", body);
         }
 
     };
 
-    public abstract MailTemplate execute(HashMap<String,String> templateParams);
+    public abstract MailTemplate execute(Template mailTemplate, HashMap<String, String> templateParams);
 
 
-   public class MailTemplate {
+    public class MailTemplate {
         String subject;
         String body;
 
-        public MailTemplate( String subject, String body) {
+        public MailTemplate(String subject, String body) {
             this.subject = subject;
             this.body = body;
         }
 
-       public String getSubject() {
+        public String getSubject() {
             return subject;
         }
 

@@ -147,6 +147,10 @@
         <artifactId>quarkus-mailpit</artifactId>
       <version>0.0.9</version>
       </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-resteasy-reactive-qute</artifactId>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>

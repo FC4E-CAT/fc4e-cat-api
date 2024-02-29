@@ -129,11 +129,9 @@ public class ValidationsEndpoint {
         if (StringUtils.isEmpty(userProfile.name) || StringUtils.isEmpty(userProfile.surname) || StringUtils.isEmpty(userProfile.email)) {
             throw new ForbiddenException("You have to update your profile before requesting a validation.");
         }
-
         Source.valueOf(request.organisationSource).execute(request.organisationId);
 
-        var response = userService.validate(utility.getUserUniqueIdentifier(), request);
-
+        var response = userService.validate( utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
