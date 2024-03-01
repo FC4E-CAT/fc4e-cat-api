@@ -6,14 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -36,10 +29,7 @@ import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
-import org.grnet.cat.dtos.statistics.AssessmentStatisticsResponse;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
-import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
-import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
@@ -126,7 +116,7 @@ public class AdminEndpoint {
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByPage(page-1, size, status, uriInfo);
+        var validations = validationService.getValidationsByPage(page - 1, size, status, uriInfo);
 
         return Response.ok().entity(validations).build();
     }
@@ -181,8 +171,8 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                         @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
-                                     @Valid @NotNull(message = "The request body is empty.")ValidationRequest validationRequest) {
+                                     @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
+                                     @Valid @NotNull(message = "The request body is empty.") ValidationRequest validationRequest) {
 
         var response = validationService.updateValidationRequest(id, validationRequest);
 
@@ -239,10 +229,10 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                     @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
-                                     @Valid @NotNull(message = "The request body is empty.") UpdateValidationStatus updateValidationStatus) {
+                                                @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
+                                                @Valid @NotNull(message = "The request body is empty.") UpdateValidationStatus updateValidationStatus) {
 
-        var response  = validationService.updateValidationRequestStatus(id, ValidationStatus.valueOf(updateValidationStatus.status), utility.getUserUniqueIdentifier());
+        var response = validationService.updateValidationRequestStatus(id, ValidationStatus.valueOf(updateValidationStatus.status), utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(response).build();
     }
@@ -388,7 +378,7 @@ public class AdminEndpoint {
                                 @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size,
                                 @Context UriInfo uriInfo) {
 
-        var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
+        var userProfile = userService.getUsersByPage(page - 1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
     }
@@ -426,7 +416,7 @@ public class AdminEndpoint {
     @Path("/users/deny-access")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response denyAccess( @Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
+    public Response denyAccess(@Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
 
         userService.addDenyAccessRole(utility.getUserUniqueIdentifier(), denyAccess.userId, denyAccess.reason);
 
@@ -470,7 +460,7 @@ public class AdminEndpoint {
     @Path("/users/permit-access")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response permitAccess( @Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
+    public Response permitAccess(@Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
 
         userService.removeDenyAccessRole(utility.getUserUniqueIdentifier(), permitAccess.userId, permitAccess.reason);
 

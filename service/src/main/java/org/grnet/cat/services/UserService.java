@@ -1,6 +1,7 @@
 package org.grnet.cat.services;
 
 import io.quarkus.logging.Log;
+import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -190,7 +191,7 @@ public class UserService {
         validationService.store(validation);
 
         CompletableFuture.supplyAsync(() ->
-                        mailerService.retrieveAdminEmails()
+                mailerService.retrieveAdminEmails()
         ).thenAccept(addrs -> {
             mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs);
             mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CREATE_VALIDATION, Arrays.asList(validation.getUser().getEmail()));

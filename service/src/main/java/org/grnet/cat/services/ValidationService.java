@@ -1,5 +1,6 @@
 package org.grnet.cat.services;
 
+import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -21,6 +22,7 @@ import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.jboss.logging.Logger;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;

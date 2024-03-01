@@ -2,6 +2,8 @@ package org.grnet.cat.services;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
+import io.quarkus.qute.Location;
+import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
@@ -11,7 +13,6 @@ import org.grnet.cat.enums.MailType;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.jboss.logging.Logger;
-import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -35,6 +36,13 @@ public class MailerService {
     @ConfigProperty(name = "ui.base.url")
     String uiBaseUrl;
 
+    @Inject
+    @Location("user_created_validation.html")
+    Template userCreatedValitionTemplate;
+
+    @Inject
+    @Location("validation_status_updated.html")
+    Template validationStatusUpdateTemplate;
     private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     @Inject
@@ -51,38 +59,40 @@ public class MailerService {
     }
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
+        HashMap<String, String> templateParams = new HashMap();
+        templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
+        templateParams.put("status", val.getStatus().name());
+
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
-                notifyAdmins(val, mailAddrs);
+                notifyAdmins(userCreatedValitionTemplate, templateParams, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
+
+                notifyUser(validationStatusUpdateTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
+                break;
             case VALIDATED_ALERT_CREATE_VALIDATION:
-                var addrs = new ArrayList<String>();
-                addrs.add(val.getUser().getEmail());
-                notifyUser(val, addrs, type);
+                notifyUser(userCreatedValitionTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             default:
                 break;
-
         }
-
     }
 
-    public Mail buildEmail(HashMap<String, String> templateParams, MailType mailType) {
-        MailType.MailTemplate mailTemplate = mailType.execute(templateParams);
+    public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
+
+        MailType.MailTemplate mailTemplate = mailType.execute(emailTemplate, templateParams);
         Mail mail = new Mail();
-        mail.setText(mailTemplate.getBody());
+        mail.setHtml(mailTemplate.getBody());
         mail.setSubject(mailTemplate.getSubject());
         return mail;
     }
+    private void notifyUser(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs, MailType mailType) {
 
-    private void notifyUser(Validation validation, List<String> mailAddrs, MailType mailType) {
-        HashMap<String, String> templateParams = new HashMap();
-        templateParams.put("valUrl", uiBaseUrl + "/validations/" + validation.getId());
-        templateParams.put("status", validation.getStatus().name());
 
-        var mail = buildEmail(templateParams, mailType);
+        var mail = buildEmail(emailTemplate, templateParams, mailType);
         mail.setBcc(mailAddrs);
+
         try {
             mailer.send(mail);
             LOG.info("RECIPIENTS : " + Arrays.toString(mail.getBcc().toArray()));
@@ -91,12 +101,9 @@ public class MailerService {
         }
     }
 
-    private void notifyAdmins(Validation validation, List<String> mailAddrs) {
+    private void notifyAdmins(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs) {
 
-        HashMap<String, String> templateParams = new HashMap();
-        templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + validation.getId());
-
-        var mail = buildEmail(templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION);
+        var mail = buildEmail(emailTemplate, templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION);
         mail.setBcc(mailAddrs);
         try {
             LOG.info("EMAIL INFO " + "from: " + mail.getFrom() + " to: " + Arrays.toString(mail.getTo().toArray()) + " subject: " + mail.getSubject() + " message:" + mail.getText());
