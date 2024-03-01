@@ -60,18 +60,19 @@ public class MailerService {
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
         HashMap<String, String> templateParams = new HashMap();
-        templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
         templateParams.put("status", val.getStatus().name());
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
+                templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + val.getId());
                 notifyAdmins(userCreatedValitionTemplate, templateParams, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
-
+                templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
                 notifyUser(validationStatusUpdateTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             case VALIDATED_ALERT_CREATE_VALIDATION:
+                templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
                 notifyUser(userCreatedValitionTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             default:
