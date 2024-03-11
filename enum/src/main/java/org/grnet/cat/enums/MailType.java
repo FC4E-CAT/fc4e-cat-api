@@ -23,7 +23,7 @@ public enum MailType {
             String body = "";
             try {
                 url = new URL(urlString);
-                body = emailTemplate.data("urlpath", url.toString()).render();
+                body = emailTemplate.data("urlpath", url.toString()).data("image",templateParams.get("image")).render();
 
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -39,7 +39,7 @@ public enum MailType {
             String body = "";
             try {
                 url = new URL(urlString);
-                body = emailTemplate.data("urlpath", url.toString()).data("status", templateParams.get("status")).render();
+                body = emailTemplate.data("urlpath", url.toString()).data("status", templateParams.get("status")).data("image",templateParams.get("image")).render();
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -55,8 +55,8 @@ public enum MailType {
             String body = "";
             try {
                 url = new URL(urlString);
-                body = emailTemplate.data("urlpath", url.toString()).render();
-
+                body = emailTemplate.data("urlpath", url.toString()).data("image",templateParams.get("image")).render();
+                System.out.println("body*** " +body);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
