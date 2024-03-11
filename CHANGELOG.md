@@ -24,6 +24,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Changed
+
+- [#175](https://github.com/FC4E-CAT/fc4e-cat-api/pull/175) CAT-331 Naming convention to Keycloak
+
+
 ## 1.2.5 - 2024-02-19
 
 ---

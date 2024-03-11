@@ -922,7 +922,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -938,13 +938,13 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.create"
               },
               {
-                "name": "update"
+                "name": "cat.update"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -960,7 +960,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.assessment.object.by.actor.read"
               }
             ],
             "icon_uri": ""
@@ -976,7 +976,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -992,16 +992,16 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.delete"
               },
               {
-                "name": "update"
+                "name": "cat.create"
               },
               {
-                "name": "delete"
+                "name": "cat.update"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1017,10 +1017,10 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.create"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1036,7 +1036,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.template.by.type.actor.read"
               }
             ],
             "icon_uri": ""
@@ -1063,16 +1063,16 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.delete"
               },
               {
-                "name": "update"
+                "name": "cat.create"
               },
               {
-                "name": "delete"
+                "name": "cat.update"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1088,7 +1088,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.template.by.actor.read"
               }
             ],
             "icon_uri": ""
@@ -1104,10 +1104,10 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.create"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1123,7 +1123,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1153,15 +1153,28 @@
             }
           },
           {
-            "id": "693ca2aa-92a1-4caa-a751-451d5ac848ae",
+            "id": "839406ad-46c6-40ad-9423-305acaaeb8b7",
             "name": "Read Template By Type and Actor",
-            "description": "",
+            "description": "Read Template By Type and Actor",
             "type": "scope",
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Read Template By Type and Actor\"]",
-              "scopes": "[\"read\"]",
+              "scopes": "[\"cat.template.by.type.actor.read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "a75a135b-661c-4f74-8372-2e244d535a15",
+            "name": "Read Template By Actor",
+            "description": "Read Template By Actor",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Template By Actor\"]",
+              "scopes": "[\"cat.template.by.actor.read\"]",
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
@@ -1178,19 +1191,6 @@
             }
           },
           {
-            "id": "3c5edc94-ef82-4a25-9162-b71fe0b8fce2",
-            "name": "Read Template By Actor",
-            "description": "",
-            "type": "scope",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"Read Template By Actor\"]",
-              "scopes": "[\"read\"]",
-              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
-            }
-          },
-          {
             "id": "7f398fa1-6508-44c0-a3fa-84f77fe301e5",
             "name": "Validated Permission",
             "description": "The permissions for the validated user",
@@ -1203,7 +1203,7 @@
             }
           },
           {
-            "id": "4d0e3e78-2296-410f-a7b6-40f6cc2c806d",
+            "id": "7068638d-5502-404c-821b-660f895fc29e",
             "name": "Read Assessment Objects by Actor",
             "description": "Read Assessment Objects by Actor",
             "type": "scope",
@@ -1211,7 +1211,7 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Read Assessment Objects by Actor\"]",
-              "scopes": "[\"read\"]",
+              "scopes": "[\"cat.assessment.object.by.actor.read\"]",
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           }
@@ -1219,25 +1219,43 @@
         "scopes": [
           {
             "id": "4afca033-df0f-4deb-8d29-eeefcdb96bd4",
-            "name": "read",
+            "name": "cat.read",
             "iconUri": "",
             "displayName": "read"
           },
           {
             "id": "eff83577-2a19-4ab6-81d0-38dc30ff9084",
-            "name": "update",
+            "name": "cat.update",
             "iconUri": "",
             "displayName": "update"
           },
           {
+            "id": "518cfa46-4d48-41cf-9748-3985169850d3",
+            "name": "cat.template.by.type.actor.read",
+            "iconUri": "",
+            "displayName": "Read Template By Type and Actor"
+          },
+          {
+            "id": "313b1743-55bd-4b9a-9bd0-ea32d5738672",
+            "name": "cat.template.by.actor.read",
+            "iconUri": "",
+            "displayName": "Read Template By Actor"
+          },
+          {
+            "id": "c8aec437-90da-4f7e-9c8d-97431ef8a106",
+            "name": "cat.assessment.object.by.actor.read",
+            "iconUri": "",
+            "displayName": "Read Assessment Objects by Actor"
+          },
+          {
             "id": "7b44be40-8316-4054-beb1-d80e02f879fe",
-            "name": "create",
+            "name": "cat.create",
             "iconUri": "",
             "displayName": "create"
           },
           {
             "id": "40613513-b0c3-4173-aa7c-a92a34e2fc89",
-            "name": "delete",
+            "name": "cat.delete",
             "iconUri": "",
             "displayName": "delete"
           }
