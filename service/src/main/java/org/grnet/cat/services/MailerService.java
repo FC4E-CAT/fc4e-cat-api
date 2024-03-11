@@ -61,6 +61,7 @@ public class MailerService {
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
         HashMap<String, String> templateParams = new HashMap();
         templateParams.put("status", val.getStatus().name());
+        templateParams.put("image",uiBaseUrl+"/assets/logo-grnet-1454c5d7.png");
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
