@@ -1,34 +1,37 @@
 package org.grnet.cat.enums;
 
 import io.quarkus.qute.Template;
-import jakarta.inject.Inject;
-import okhttp3.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public enum MailType {
 
 
     ADMIN_ALERT_NEW_VALIDATION() {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+
             URL url;
             String urlString = templateParams.get("valUrl");
-            String body = "";
             try {
-                System.out.println("testign template");
                 url = new URL(urlString);
-                body = emailTemplate.data("urlpath", url.toString()).data("image",templateParams.get("image")).render();
-                System.out.println("body is : "+body);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
+
+            String body = emailTemplate.data("urlpath", url.toString())
+                    .data("image", templateParams.get("image"))
+                    .data("image1", templateParams.get("image1"))
+                    .data("image2", templateParams.get("image2"))
+                    .data("image3", templateParams.get("image3"))
+                    .data("image4", templateParams.get("image4"))
+                    .data("cat", templateParams.get("cat"))
+                    .data("userrole", templateParams.get("userrole"))
+                    .data("contactMail", templateParams.get("contactMail"))
+
+                    .render();
+
             return new MailTemplate("Validation Request Created", body);
         }
     },
@@ -37,13 +40,22 @@ public enum MailType {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
             URL url;
             String urlString = templateParams.get("valUrl");
-            String body = "";
             try {
                 url = new URL(urlString);
-                body = emailTemplate.data("urlpath", url.toString()).data("status", templateParams.get("status")).data("image",templateParams.get("image")).render();
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
+
+            String body = emailTemplate.data("urlpath", url.toString())
+                    .data("image", templateParams.get("image"))
+                    .data("image1", templateParams.get("image1"))
+                    .data("image2", templateParams.get("image2"))
+                    .data("image3", templateParams.get("image3"))
+                    .data("image4", templateParams.get("image4"))
+                    .data("cat", templateParams.get("cat"))
+                    .data("userrole", templateParams.get("userrole"))
+                    .data("contactMail", templateParams.get("contactMail"))
+                    .data("status", templateParams.get("status")).render();
             return new MailTemplate("Validation Request updated status", body);
         }
 
@@ -51,16 +63,23 @@ public enum MailType {
     VALIDATED_ALERT_CREATE_VALIDATION {
         public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
             URL url;
-
             String urlString = templateParams.get("valUrl");
-            String body = "";
             try {
                 url = new URL(urlString);
-                body = emailTemplate.data("urlpath", url.toString()).data("image",templateParams.get("image")).render();
-                System.out.println("body*** " +body);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
+
+            String body = emailTemplate.data("urlpath", url.toString())
+                    .data("image", templateParams.get("image"))
+                    .data("image1", templateParams.get("image1"))
+                    .data("image2", templateParams.get("image2"))
+                    .data("image3", templateParams.get("image3"))
+                    .data("image4", templateParams.get("image4"))
+                    .data("cat", templateParams.get("cat"))
+                    .data("userrole", templateParams.get("userrole"))
+                    .data("contactMail", templateParams.get("contactMail"))
+                    .render();
             return new MailTemplate("Validation Request Created", body);
         }
 
@@ -94,5 +113,4 @@ public enum MailType {
             this.body = body;
         }
     }
-
 }

@@ -35,8 +35,11 @@ public class MailerService {
     UserRepository userRepository;
     @ConfigProperty(name = "ui.base.url")
     String uiBaseUrl;
-    @ConfigProperty(name = "service.url")
+    @ConfigProperty(name = "server.url")
     String serviceUrl;
+
+    @ConfigProperty(name = "quarkus.smallrye-openapi.info-contact-email")
+    String contactMail;
     @Inject
     @Location("user_created_validation.html")
     Template userCreatedValitionTemplate;
@@ -62,20 +65,29 @@ public class MailerService {
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
 
         HashMap<String, String> templateParams = new HashMap();
+        templateParams.put("contactMail",contactMail);
         templateParams.put("status", val.getStatus().name());
-        templateParams.put("image",serviceUrl+"/v1/images/logo-grnet.png");
+        templateParams.put("image",serviceUrl+"/v1/images/logo.png");
+        templateParams.put("image1",serviceUrl+"/v1/images/logo-dans.png");
+        templateParams.put("image2",serviceUrl+"/v1/images/logo-grnet.png");
+        templateParams.put("image3",serviceUrl+"/v1/images/logo-datacite.png");
+        templateParams.put("image4",serviceUrl+"/v1/images/logo-gwdg.png");
+        templateParams.put("cat",uiBaseUrl);
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
                 templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + val.getId());
+                templateParams.put("userrole", "Admin");
                 notifyAdmins(userCreatedValitionTemplate, templateParams, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
+                templateParams.put("userrole","User");
                 notifyUser(validationStatusUpdateTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             case VALIDATED_ALERT_CREATE_VALIDATION:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
+                templateParams.put("userrole","User");
                 notifyUser(userCreatedValitionTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             default:
