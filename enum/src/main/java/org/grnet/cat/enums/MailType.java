@@ -22,9 +22,10 @@ public enum MailType {
             String urlString = templateParams.get("valUrl");
             String body = "";
             try {
+                System.out.println("testign template");
                 url = new URL(urlString);
                 body = emailTemplate.data("urlpath", url.toString()).data("image",templateParams.get("image")).render();
-
+                System.out.println("body is : "+body);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
