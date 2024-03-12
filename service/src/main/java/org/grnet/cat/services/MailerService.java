@@ -35,8 +35,8 @@ public class MailerService {
     UserRepository userRepository;
     @ConfigProperty(name = "ui.base.url")
     String uiBaseUrl;
-    @ConfigProperty(name = "server.url")
-    String serverUrl;
+    @ConfigProperty(name = "service.url")
+    String serviceUrl;
     @Inject
     @Location("user_created_validation.html")
     Template userCreatedValitionTemplate;
@@ -60,9 +60,10 @@ public class MailerService {
     }
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
+
         HashMap<String, String> templateParams = new HashMap();
         templateParams.put("status", val.getStatus().name());
-        templateParams.put("image",serverUrl+"/v1/images/logo-grnet.png");
+        templateParams.put("image",serviceUrl+"/v1/images/logo-grnet.png");
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
