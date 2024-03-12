@@ -507,6 +507,7 @@ public class AssessmentsEndpoint {
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
     @GET
     @Path("objects/by-actor/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
