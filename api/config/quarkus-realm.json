@@ -567,7 +567,9 @@
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
-      "authenticationFlowBindingOverrides": {},
+      "authenticationFlowBindingOverrides": {
+        "browser": "287b288a-1cf1-4974-bbed-747b0ee5c1f8"
+      },
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
@@ -2348,6 +2350,56 @@
       ]
     },
     {
+      "id": "ced7521e-4732-4959-84f8-cff994343b90",
+      "alias": "CAT Service - Browser with deny access login-flow",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 25,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 35,
+          "autheticatorFlow": true,
+          "flowAlias": "CAT Service - Browser With Deny Access Keycloak Form2",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "cal2525e-4732-4959-84f8-cff994343b90",
+      "alias": "CAT Service - Browser With Deny Access Keycloak Form2",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
       "id": "e7013c43-177c-48ce-bcc8-b1d3e6f57280",
       "alias": "Verify Existing Account by Re-authentication",
       "description": "Reauthentication of existing account",
@@ -2411,6 +2463,59 @@
           "priority": 30,
           "autheticatorFlow": true,
           "flowAlias": "forms",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "287b288a-1cf1-4974-bbed-747b0ee5c1f8",
+      "alias": "CAT Service - Browser with deny access",
+      "description": "browser based authentication",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorFlow": true,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": true,
+          "flowAlias": "CAT Service - Browser with deny access login-flow",
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "CONDITIONAL",
+          "priority": 25,
+          "autheticatorFlow": true,
+          "flowAlias": "CAT Service - Browser with deny access Checking User Access",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "dfd9261e-6132-4959-84f8-bdd994343b90",
+      "alias": "CAT Service - Browser with deny access Checking User Access",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorConfig": "CAT Service - Browser with deny access check-realm-admin",
+          "authenticator": "conditional-user-role",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorConfig": "CAT Service - Browser with deny access deny-access",
+          "authenticator": "deny-access-authenticator",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 25,
+          "autheticatorFlow": false,
           "userSetupAllowed": false
         }
       ]
@@ -2716,6 +2821,21 @@
       "alias": "create unique user config",
       "config": {
         "require.password.update.after.registration": "false"
+      }
+    },
+    {
+      "id": "a33ba77d-00ff-4912-80e7-84aa35d3bacc",
+      "alias": "CAT Service - Browser with deny access check-realm-admin",
+      "config": {
+        "negate": "false",
+        "condUserRole": "backend-service.deny_access"
+      }
+    },
+    {
+      "id": "342a7304-bc7f-4502-a05b-8bfe12f1465f",
+      "alias": "CAT Service - Browser with deny access deny-access",
+      "config": {
+        "denyErrorMessage": "<!DOCTYPE html> <html lang=\"en\"> <head>     <meta charset=\"UTF-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">     <title>Access Denied</title>     <style>         body {             font-family: 'Arial', sans-serif;             text-align: center;             margin: 50px;         }          .error-message {             color: #d9534f;             font-size: 18px;             margin-bottom: 20px;         }          .contact-support {             font-size: 16px;             margin-bottom: 20px;         }          .sophisticated-message {             font-size: 20px;             margin-bottom: 20px;             color: #5bc0de;         }          .redirect-button {             padding: 10px 20px;             font-size: 16px;             text-decoration: none;             background-color: #5bc0de;             color: #fff;             border-radius: 5px;         }     </style> </head> <body>     <div class=\"error-message\">         <p><strong>Access Denied:</strong> You do not have permission to log in to CAT service.</p>     </div>      <div class=\"contact-support\">         <p>If you believe this is an error, please <a href=\"mailto:cat-support@einfra.grnet.gr\">contact our support team</a>.</p>     </div>      <div class=\"sophisticated-message\">         <p> Explore more about our services and features by visiting our application, CAT Service.</p>     </div>      <a class=\"redirect-button\" href=\"http://localhost:8080\">Discover CAT Service</a> </body> </html>"
       }
     },
     {
