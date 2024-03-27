@@ -51,7 +51,6 @@ public class MailerService {
 
     @Inject
     KeycloakAdminRepository keycloakAdminRepository;
-
     @ConfigProperty(name = "keycloak.admin-client.search.user.by.attribute")
     String attribute;
 
@@ -73,11 +72,12 @@ public class MailerService {
         templateParams.put("image3",serviceUrl+"/v1/images/logo-datacite.png");
         templateParams.put("image4",serviceUrl+"/v1/images/logo-gwdg.png");
         templateParams.put("cat",uiBaseUrl);
+        templateParams.put("valId", String.valueOf(val.getId()));
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
                 templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + val.getId());
-                templateParams.put("userrole", "Admin");
+                templateParams.put("userrole", "Administrator");
                 notifyAdmins(userCreatedValitionTemplate, templateParams, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
