@@ -21,6 +21,7 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
                     .data("image2", templateParams.get("image2"))
@@ -47,6 +48,7 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
                     .data("image2", templateParams.get("image2"))
@@ -71,6 +73,7 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
                     .data("image2", templateParams.get("image2"))
@@ -79,6 +82,7 @@ public enum MailType {
                     .data("cat", templateParams.get("cat"))
                     .data("userrole", templateParams.get("userrole"))
                     .data("contactMail", templateParams.get("contactMail"))
+                    .data("valId", templateParams.get("valId"))
                     .render();
             return new MailTemplate("Validation Request Created", body);
         }
