@@ -47,6 +47,10 @@ public class MailerService {
     @Inject
     @Location("validation_status_updated.html")
     Template validationStatusUpdateTemplate;
+
+    @Inject
+    @Location("admin_created_validation.html")
+    Template adminCreatedValidationTemplate;
     private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     @Inject
@@ -78,7 +82,7 @@ public class MailerService {
             case ADMIN_ALERT_NEW_VALIDATION:
                 templateParams.put("valUrl", uiBaseUrl + "/admin/validations/" + val.getId());
                 templateParams.put("userrole", "Administrator");
-                notifyAdmins(userCreatedValitionTemplate, templateParams, mailAddrs);
+                notifyAdmins(adminCreatedValidationTemplate, templateParams, mailAddrs);
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
