@@ -1,7 +1,5 @@
 package org.grnet.cat.services;
 
-import io.quarkus.logging.Log;
-import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -21,7 +19,10 @@ import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
-import org.grnet.cat.repositories.*;
+import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.repositories.HistoryRepository;
+import org.grnet.cat.repositories.RoleRepository;
+import org.grnet.cat.repositories.UserRepository;
 import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
@@ -29,8 +30,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * The UserService provides operations for managing User entities.
@@ -194,7 +193,9 @@ public class UserService {
                 mailerService.retrieveAdminEmails()
         ).thenAccept(addrs -> {
             mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs);
-            mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CREATE_VALIDATION, Arrays.asList(validation.getUser().getEmail()));
+            if (!addrs.contains(validation.getUser().getEmail())) {
+                mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CREATE_VALIDATION, Arrays.asList(validation.getUser().getEmail()));
+            }
         });
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
