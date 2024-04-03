@@ -62,7 +62,7 @@ public class ValidationsEndpoint {
     @Inject
     ValidationService validationService;
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Tag(name = "Validation")

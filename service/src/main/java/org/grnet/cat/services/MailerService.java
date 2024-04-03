@@ -33,9 +33,9 @@ public class MailerService {
 
     @Inject
     UserRepository userRepository;
-    @ConfigProperty(name = "ui.base.url")
+    @ConfigProperty(name = "api.ui.url")
     String uiBaseUrl;
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serviceUrl;
 
     @ConfigProperty(name = "quarkus.smallrye-openapi.info-contact-email")
@@ -55,16 +55,17 @@ public class MailerService {
 
     @Inject
     KeycloakAdminRepository keycloakAdminRepository;
-    @ConfigProperty(name = "keycloak.admin-client.search.user.by.attribute")
+    @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
 
     public List<String> retrieveAdminEmails() {
-        var admins = keycloakAdminRepository.fetchRolesMembers("admin");
-        List<String> emails = new ArrayList<>();
-        admins.stream().map(admin -> admin.getAttributes().get(attribute)).forEach(emails::addAll);
-        return emails.stream().map(person -> userRepository.fetchUser(person).getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
-    }
 
+        var admins = keycloakAdminRepository.fetchRolesMembers("admin");
+        var vopersonIds = new ArrayList<String>();
+        admins.stream().map(admin -> admin.getAttributes().get(attribute)).forEach(vopersonIds::addAll);
+        var users = vopersonIds.stream().map(person -> userRepository.findByIdOptional(person)).filter(Optional::isPresent).collect(Collectors.toList());
+        return users.stream().map(user -> user.get().getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
+    }
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
 
         HashMap<String, String> templateParams = new HashMap();

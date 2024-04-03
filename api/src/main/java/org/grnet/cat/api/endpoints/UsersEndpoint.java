@@ -55,7 +55,7 @@ public class UsersEndpoint {
     @Inject
     Utility utility;
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Tag(name = "User")

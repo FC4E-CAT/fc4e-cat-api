@@ -74,7 +74,7 @@ public class UserService {
     @Named("keycloak-service")
     RoleService roleService;
 
-    @ConfigProperty(name = "cat.validations.approve.auto")
+    @ConfigProperty(name = "api.cat.validations.approve.auto")
     boolean autoApprove;
 
     private static final Logger LOG = Logger.getLogger(UserService.class);

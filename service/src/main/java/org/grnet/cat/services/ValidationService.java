@@ -47,7 +47,7 @@ public class ValidationService {
     @Named("keycloak-service")
     RoleService roleService;
 
-    @ConfigProperty(name = "ui.base.url")
+    @ConfigProperty(name = "api.ui.url")
     String uiBaseUrl;
     private static final Logger LOG = Logger.getLogger(ValidationService.class);
 

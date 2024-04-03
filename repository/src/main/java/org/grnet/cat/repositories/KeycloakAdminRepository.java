@@ -35,7 +35,7 @@ public class KeycloakAdminRepository implements RoleRepository {
     @ConfigProperty(name = "quarkus.keycloak.admin-client.realm")
     String realm;
 
-    @ConfigProperty(name = "keycloak.admin-client.search.user.by.attribute")
+    @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
 
     /**
