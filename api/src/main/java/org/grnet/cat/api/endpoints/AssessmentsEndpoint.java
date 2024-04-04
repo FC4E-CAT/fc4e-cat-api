@@ -56,7 +56,7 @@ public class AssessmentsEndpoint {
     @Inject
     Utility utility;
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Inject

@@ -52,7 +52,7 @@ public class TemplatesEndpoint {
     @Inject
     TemplateService templateService;
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Inject

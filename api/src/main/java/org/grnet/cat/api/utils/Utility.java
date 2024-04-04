@@ -24,7 +24,7 @@ public class Utility {
     @Inject
     TokenIntrospection tokenIntrospection;
 
-    @ConfigProperty(name = "oidc.user.unique.id")
+    @ConfigProperty(name = "api.oidc.user.unique.id")
     String key;
 
     @Inject

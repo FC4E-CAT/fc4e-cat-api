@@ -20,22 +20,22 @@ public class HtmlTemplate {
     @Inject
     Template index;
 
-    @ConfigProperty(name = "html.cat.oidc.client.url")
+    @ConfigProperty(name = "api.html.oidc.client.url")
     String catOidcClientUrl;
 
-    @ConfigProperty(name = "html.cat.api.documentation")
+    @ConfigProperty(name = "api.html.swagger.documentation")
     String catApiDocumentation;
 
-    @ConfigProperty(name = "html.keycloak.server.url")
+    @ConfigProperty(name = "api.html.keycloak.url")
     String keycloakServerUrl;
 
-    @ConfigProperty(name = "html.keycloak.server.realm")
+    @ConfigProperty(name = "api.html.keycloak.realm")
     String keycloakServerRealm;
 
-    @ConfigProperty(name = "html.keycloak.server.client.id")
+    @ConfigProperty(name = "api.html.keycloak.public.client.id")
     String keycloakServerClientId;
 
-    @ConfigProperty(name = "html.keycloak.server.javascript.adapter")
+    @ConfigProperty(name = "api.html.keycloak.javascript.adapter")
     String keycloakServerJavascriptAdapter;
 
     @Tag(name = "Authentication")

@@ -26,7 +26,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Changed
 
-- [#175](https://github.com/FC4E-CAT/fc4e-cat-api/pull/175) CAT-331 Naming convention to Keycloak
+- [#175](https://github.com/FC4E-CAT/fc4e-cat-api/pull/175) CAT-331 Naming convention to Keycloak.
+- [#187](https://github.com/FC4E-CAT/fc4e-cat-api/pull/187) CAT-340 Update Environment Variable Naming Convention for CAT API.
 
 
 ## 1.2.5 - 2024-02-19
@@ -35,7 +36,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Changed
 
-- Update Manager template to include best practices in guidelines
+- Update Manager template to include best practices in guidelines.
 
 
 ## 1.2.4 - 2024-02-16
