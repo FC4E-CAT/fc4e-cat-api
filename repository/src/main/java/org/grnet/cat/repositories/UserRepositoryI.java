@@ -28,10 +28,15 @@ public interface UserRepositoryI<E, ID> extends Repository<E, ID>{
     /**
      * Retrieves a page of users.
      *
+     * @param search  Enables clients to specify a text string for searching specific fields within User entity.
+     * @param sort Specifies the field by which the results to be sorted.
+     * @param order Specifies the order in which the sorted results should be returned.
+     * @param status Indicates whether the user is active or deleted.
      * @param page The index of the page to retrieve (starting from 0).
+     * @param type Filters the results based on the type of user.
      * @param size The maximum number of users to include in a page.
      * @return A list of User objects representing the users in the
      * requested page.
      */
-    PageQuery<E> fetchUsersByPage(int page, int size);
+    PageQuery<E> fetchUsersByPage(String search, String sort, String order, String status, String type, int page, int size);
 }

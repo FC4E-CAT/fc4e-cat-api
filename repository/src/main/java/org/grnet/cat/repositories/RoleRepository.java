@@ -80,4 +80,6 @@ public interface RoleRepository {
                         i -> list.subList(i, min(i + pageSize, list.size()))));
     }
 
+    List<UserRepresentation> fetchRolesMembers(String role);
+
 }

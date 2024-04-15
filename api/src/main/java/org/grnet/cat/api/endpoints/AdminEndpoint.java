@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -37,6 +38,8 @@ import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -376,9 +379,56 @@ public class AdminEndpoint {
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
                                 @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size,
+                                @Parameter(name = "search", in = QUERY,
+                                        description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in User entity. The search will be conducted in the following fields : id, name, surname, email, orcid_id.") @QueryParam("search") String search,
+                                @Parameter(name = "sort", in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "id"),
+                                        examples = {@ExampleObject(name = "id", value = "id"), @ExampleObject(name = "name", value = "name"), @ExampleObject(name = "surname", value = "surname"), @ExampleObject(name = "email", value = "email"), @ExampleObject(name = "orcid id", value = "orcidId")},
+                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("id") @QueryParam("sort") String sort,
+                                @Parameter(name = "order",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "ASC"),
+                                        examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
+                                        description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("ASC") @QueryParam("order") String order,
+                                @Parameter(name = "status",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Active", value = "active"), @ExampleObject(name = "Deleted", value = "deleted")},
+                                        description = "The \"status\" parameter allows clients to filter the results based on the status of the user, indicating whether the user is active or deleted.") @QueryParam("status") String status,
+                                @Parameter(name = "type",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Admin", value = "Admin"), @ExampleObject(name = "Identified", value = "Identified"), @ExampleObject(name = "Validated", value = "Validated")},
+                                        description = "The \"type\" parameter allows clients to filter the results based on the type of user.") @QueryParam("type") String type,
                                 @Context UriInfo uriInfo) {
 
-        var userProfile = userService.getUsersByPage(page - 1, size, uriInfo);
+
+        var statusValues = List.of("active", "deleted");
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("id", "name", "surname", "email", "orcidId");
+        var typeValues = List.of("Admin", "Identified", "Validated");
+
+        if(!orderValues.contains(order)){
+
+            throw new BadRequestException("The available values of order parameter are : " + orderValues);
+        }
+
+        if(!sortValues.contains(sort)){
+
+            throw new BadRequestException("The available values of sort parameter are : " + sortValues);
+        }
+
+        if(status!=null && !statusValues.contains(status)){
+
+            throw new BadRequestException("The available values of status parameter are : " + statusValues);
+        }
+
+        if(type!=null && !typeValues.contains(type)){
+
+            throw new BadRequestException("The available values of type parameter are : " + typeValues);
+        }
+
+        var userProfile = userService.getUsersByPage(search, sort, order, status, type, page - 1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
     }
