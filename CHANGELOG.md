@@ -24,6 +24,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Added
+
+- [#188](https://github.com/FC4E-CAT/fc4e-cat-api/pull/188) CAT-350 Search Users as an admin.
+
 ### Changed
 
 - [#175](https://github.com/FC4E-CAT/fc4e-cat-api/pull/175) CAT-331 Naming convention to Keycloak.

@@ -61,8 +61,7 @@ public class MailerService {
     public List<String> retrieveAdminEmails() {
 
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
-        var vopersonIds = new ArrayList<String>();
-        admins.stream().map(admin -> admin.getAttributes().get(attribute)).forEach(vopersonIds::addAll);
+        var vopersonIds = admins.stream().map(admin -> admin.getAttributes().get(attribute)).flatMap(Collection::stream).collect(Collectors.toList());
         var users = vopersonIds.stream().map(person -> userRepository.findByIdOptional(person)).filter(Optional::isPresent).collect(Collectors.toList());
         return users.stream().map(user -> user.get().getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
     }
