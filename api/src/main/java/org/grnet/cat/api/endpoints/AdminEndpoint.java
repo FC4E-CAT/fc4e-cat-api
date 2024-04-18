@@ -32,14 +32,18 @@ import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.services.ActorService;
 import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -65,6 +69,11 @@ public class AdminEndpoint {
     @Inject
     UserService userService;
 
+    /**
+     * Injection point for the Actor Service
+     */
+    @Inject
+    ActorService actorService;
 
     /**
      * Injection point for the KeycloakAdminRole Service
@@ -82,7 +91,7 @@ public class AdminEndpoint {
     @Operation(
             summary = "Retrieve all validation requests.",
             description = "Retrieves a list of all validations requests submitted by users." +
-                    "By default, the first page of 10 validation requests will be returned. You can tune the default values by using the query parameters page and size.")
+                    "By default, the first page of 10 validation requests will be returned ordered by the date created. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
             description = "Successful response with the list of validation requests.",
@@ -116,10 +125,52 @@ public class AdminEndpoint {
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Parameter(name = "search", in = QUERY,
+                                        description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in Validation entity. The search will be conducted in the following fields : id, organization's name, user's name.") @QueryParam("search") String search,
+                                @Parameter(name = "sort", in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "createdOn"),
+                                        examples = {@ExampleObject(name = "Organization name", value = "organisationName"), @ExampleObject(name = "Created On", value = "createdOn")},
+                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("createdOn") @QueryParam("sort") String sort,
+                                @Parameter(name = "order",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                                        examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
+                                        description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("DESC") @QueryParam("order") String order,
+                                @Parameter(name = "status",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Approved", value = "APPROVED"), @ExampleObject(name = "Pending", value = "PENDING"),  @ExampleObject(name = "Review", value = "REVIEW")},
+                                        description = "The \"status\" parameter allows clients to filter the results based on the status of the validation.") @QueryParam("status") String status,
+                                @Parameter(name = "type",
+                                        in = QUERY,
+                                        description = "The \"type\" parameter allows clients to filter the results based on the type of actor.") @QueryParam("type") String type,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByPage(page - 1, size, status, uriInfo);
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("organisationName", "createdOn");
+
+        if(!orderValues.contains(order)){
+
+            throw new BadRequestException("The available values of order parameter are : " + orderValues);
+        }
+
+        if(!sortValues.contains(sort)){
+
+            throw new BadRequestException("The available values of sort parameter are : " + sortValues);
+        }
+
+        if(status !=null && !Arrays.stream(ValidationStatus.values()).map(Enum::name).collect(Collectors.toList()).contains(status)){
+
+            throw new BadRequestException("The value "+status+" is not a valid status. Valid status values are: "+ Arrays.toString(ValidationStatus.values()));
+        }
+
+        if(type != null){
+
+            actorService.doesActorWithGivenNameExist(type);
+        }
+
+        var validations = validationService.getValidationsByPage(search, sort, order, type, status, page - 1, size, uriInfo);
 
         return Response.ok().entity(validations).build();
     }

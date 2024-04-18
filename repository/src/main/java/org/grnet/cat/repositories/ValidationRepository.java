@@ -3,7 +3,10 @@ package org.grnet.cat.repositories;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.entities.Actor;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -11,14 +14,21 @@ import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * The ValidationRepository interface provides data access methods for the Validation entity.
  */
 @ApplicationScoped
 public class ValidationRepository implements Repository<Validation, Long> {
+
+    @Inject
+    ActorRepository actorRepository;
 
     /**
      * It executes a query in database to check if there is a promotion request for a specific user and organisation.
@@ -85,13 +95,56 @@ public class ValidationRepository implements Repository<Validation, Long> {
     /**
      * Retrieves a page of validation requests submitted by users.
      *
+     * @param search  Enables clients to specify a text string for searching specific fields within Validation entity.
+     * @param sort Specifies the field by which the results to be sorted.
+     * @param order Specifies the order in which the sorted results should be returned.
+     * @param type Filters the results based on the type of Actor.
+     * @param status  Validation status to search for.
      * @param page The index of the page to retrieve (starting from 0).
      * @param size The maximum number of validation requests to include in a page.
      * @return A list of Validation objects representing the validation requests in the requested page.
      */
-    public PageQuery<Validation> fetchValidationsByPage(int page, int size) {
+    public PageQuery<Validation> fetchValidationsByPage(String search, String sort, String order, String type, String status, int page, int size) {
 
-        var panache = findAll(Sort.by("status").and("createdOn", Sort.Direction.Descending)).page(page, size);
+        var joiner = new StringJoiner(StringUtils.SPACE);
+        joiner.add("from Validation validation");
+
+        var map = new HashMap<String, Object>();
+
+        if(StringUtils.isNotEmpty(status)){
+
+            joiner.add("where validation.status = :status");
+            map.put("status", ValidationStatus.valueOf(status));
+        } else {
+
+            var list = new ArrayList<>();
+
+            list.add(ValidationStatus.REVIEW);
+            list.add(ValidationStatus.PENDING);
+            list.add(ValidationStatus.APPROVED);
+
+            joiner.add("where validation.status in (:status)");
+            map.put("status", list);
+        }
+
+        if(!Objects.isNull(type)){
+
+            var actor = actorRepository.fetchActorByName(type);
+            joiner.add("and validation.actor.id = :id");
+            map.put("id", actor.get().getId());
+        }
+
+        if (StringUtils.isNotEmpty(search)) {
+
+            joiner.add("and validation.organisationName like :search or validation.user.name like :search or validation.user.surname like :search");
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by");
+        joiner.add("validation."+sort);
+        joiner.add(order);
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Validation>();
         pageable.list = panache.list();
@@ -141,6 +194,4 @@ public class ValidationRepository implements Repository<Validation, Long> {
 
         return optional.orElseThrow(() -> new NotFoundException("There is no approved validation request."));
     }
-
-
 }
