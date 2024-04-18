@@ -47,8 +47,8 @@ public class ValidationService {
     @Named("keycloak-service")
     RoleService roleService;
 
-    @ConfigProperty(name = "api.ui.url")
-    String uiBaseUrl;
+    @Inject
+    ActorService actorService;
     private static final Logger LOG = Logger.getLogger(ValidationService.class);
 
     BiConsumer<String, ValidationStatus> handleValidationStatus = (userId, status) -> {
@@ -99,7 +99,6 @@ public class ValidationService {
      * @param size    The maximum number of validation requests to include in a page.
      * @param uriInfo The Uri Info.
      * @param userID  The ID of the user.
-     * @param status  Validation status to search for.
      * @return A list of ValidationResponse objects representing the submitted promotion requests in the requested page.
      */
     public PageResource<ValidationResponse> getValidationsByUserAndPage(int page, int size, String status, UriInfo uriInfo, String userID) {
@@ -120,23 +119,19 @@ public class ValidationService {
     /**
      * Retrieves a page of validation requests submitted by users.
      *
+     * @param search  Enables clients to specify a text string for searching specific fields within Validation entity.
+     * @param sort Specifies the field by which the results to be sorted.
+     * @param order Specifies the order in which the sorted results should be returned.
+     * @param type Filters the results based on the type of actor.
+     * @param status  Validation status to search for.
      * @param page    The index of the page to retrieve (starting from 0).
      * @param size    The maximum number of validation requests to include in a page.
      * @param uriInfo The Uri Info.
-     * @param status  Validation status to search for.
      * @return A list of ValidationResponse objects representing the submitted promotion requests in the requested page.
      */
-    public PageResource<ValidationResponse> getValidationsByPage(int page, int size, String status, UriInfo uriInfo) {
+    public PageResource<ValidationResponse> getValidationsByPage(String search, String sort, String order, String type, String status, int page, int size, UriInfo uriInfo) {
 
-        PageQuery<Validation> validations = null;
-
-        if (StringUtils.isNotEmpty(status)) {
-
-            validations = validationRepository.fetchValidationsByStatusAndPage(ValidationStatus.valueOf(status), page, size);
-        } else {
-
-            validations = validationRepository.fetchValidationsByPage(page, size);
-        }
+        var validations = validationRepository.fetchValidationsByPage(search, sort, order, type, status, page, size);
 
         return new PageResource<>(validations, ValidationMapper.INSTANCE.validationsToDto(validations.list()), uriInfo);
     }

@@ -24,9 +24,6 @@ public class StatusAttributeConverter implements AttributeConverter<ValidationSt
             case APPROVED:
                 return 3;
 
-            case REJECTED:
-                return 4;
-
             default:
                 throw new InternalServerErrorException(status + " not supported.", 501);
         }
@@ -47,9 +44,6 @@ public class StatusAttributeConverter implements AttributeConverter<ValidationSt
 
             case 3:
                 return ValidationStatus.APPROVED;
-
-            case 4:
-                return ValidationStatus.REJECTED;
 
             default:
                 throw new InternalServerErrorException(dbData + " not supported.", 501);
