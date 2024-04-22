@@ -4,5 +4,6 @@ public enum ValidationStatus {
 
     PENDING,
     REVIEW,
-    APPROVED
+    APPROVED,
+    REJECTED
 }
