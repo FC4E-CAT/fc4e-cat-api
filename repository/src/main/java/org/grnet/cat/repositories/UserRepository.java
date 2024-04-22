@@ -106,7 +106,7 @@ public class UserRepository implements UserRepositoryI<User, String> {
 
         if (StringUtils.isNotEmpty(search)) {
 
-            joiner.add("and user.id like :search or user.surname like :search or user.name like :search or user.email like :search or user.orcidId like :search");
+            joiner.add("and (user.id like :search or user.surname like :search or user.name like :search or user.email like :search or user.orcidId like :search)");
             map.put("search", "%" + search + "%");
         }
 

@@ -140,7 +140,7 @@ public class AdminEndpoint {
                                 @Parameter(name = "status",
                                         in = QUERY,
                                         schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
-                                        examples = {@ExampleObject(name = "Approved", value = "APPROVED"), @ExampleObject(name = "Pending", value = "PENDING"),  @ExampleObject(name = "Review", value = "REVIEW")},
+                                        examples = {@ExampleObject(name = "Approved", value = "APPROVED"), @ExampleObject(name = "Pending", value = "PENDING"),  @ExampleObject(name = "Review", value = "REVIEW"),@ExampleObject(name = "Rejected", value = "REJECTED")},
                                         description = "The \"status\" parameter allows clients to filter the results based on the status of the validation.") @QueryParam("status") String status,
                                 @Parameter(name = "type",
                                         in = QUERY,
