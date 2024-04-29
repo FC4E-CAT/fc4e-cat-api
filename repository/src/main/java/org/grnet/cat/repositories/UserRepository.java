@@ -1,16 +1,22 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +28,10 @@ public class UserRepository implements UserRepositoryI<User, String> {
     @Inject
     @Named("keycloak-repository")
     RoleRepository roleRepository;
+
+    @ConfigProperty(name = "api.keycloak.user.id")
+    String attribute;
+
 
     /**
      * It executes a query in database to retrieve user's profile.
@@ -43,21 +53,74 @@ public class UserRepository implements UserRepositoryI<User, String> {
     /**
      * Retrieves a page of users from the database.
      *
+     * @param search  Enables clients to specify a text string for searching specific fields within User entity.
+     * @param sort Specifies the field by which the results to be sorted.
+     * @param order Specifies the order in which the sorted results should be returned.
+     * @param status Indicates whether the user is active or deleted.
+     * @param type Filters the results based on the type of user.
      * @param page The index of the page to retrieve (starting from 0).
      * @param size The maximum number of users to include in a page.
      * @return A list of UserProfile objects representing the users in the
      * requested page.
      */
-    public PageQuery<User> fetchUsersByPage(int page, int size) {
+    public PageQuery<User> fetchUsersByPage(String search, String sort, String order, String status, String type, int page, int size) {
 
-        var panache = find("from User user").page(page, size);
+        var joiner = new StringJoiner(StringUtils.SPACE);
+        joiner.add("from User user");
+
+        var map = new HashMap<String, Object>();
+
+        if(StringUtils.isNotEmpty(status)){
+
+            joiner.add("where user.banned = :banned");
+            map.put("banned", status.equals("active") ? Boolean.FALSE : Boolean.TRUE);
+        } else {
+
+            var list = new ArrayList<>();
+
+            list.add(Boolean.TRUE);
+            list.add(Boolean.FALSE);
+
+            joiner.add("where user.banned in (:banned)");
+            map.put("banned", list);
+        }
+
+        if(StringUtils.isNotEmpty(type)){
+
+            var usersForSearching = roleRepository.fetchRolesMembers(UserType.getRoleByType(UserType.valueOf(type)));
+
+            var vopersonIds = usersForSearching
+                    .stream()
+                    .filter(user->{
+                        var roles = roleRepository.fetchUserRoles(user.getAttributes().get(attribute).get(0));
+                        var userType = findUserType(roles);
+
+                        return UserType.valueOf(type).equals(userType);})
+                    .map(users -> users.getAttributes().get(attribute))
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+
+            joiner.add("and user.id in (:vopersonIds)");
+            map.put("vopersonIds", vopersonIds);
+        }
+
+        if (StringUtils.isNotEmpty(search)) {
+
+            joiner.add("and (user.id like :search or user.surname like :search or user.name like :search or user.email like :search or user.orcidId like :search)");
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by");
+        joiner.add("user."+sort);
+        joiner.add(order);
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var users =  panache.list();
 
         var addedRolesAndUserType = users
                 .stream()
                 .map(user->{
-
                     var roles = roleRepository.fetchUserRoles(user.getId());
                     user.setRoles(roles);
                     user.setType(findUserType(roles));

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 @ApplicationScoped
 @Named("keycloak-repository")
-public class KeycloakAdminRepository implements RoleRepository{
+public class KeycloakAdminRepository implements RoleRepository {
 
     @ConfigProperty(name = "quarkus.oidc.client-id")
     String clientId;
@@ -35,16 +35,16 @@ public class KeycloakAdminRepository implements RoleRepository{
     @ConfigProperty(name = "quarkus.keycloak.admin-client.realm")
     String realm;
 
-    @ConfigProperty(name = "keycloak.admin-client.search.user.by.attribute")
+    @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
 
     /**
      * This method retrieves all the available roles for a specific realm and client ID.
+     *
      * @return A list of Role objects representing the available roles.
      */
     @Override
     public List<Role> fetchRoles() {
-
         var realmResource = keycloak.realm(realm);
 
         var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
@@ -90,13 +90,13 @@ public class KeycloakAdminRepository implements RoleRepository{
     /**
      * Assigns roles to a user.
      *
-     * @param userId  The unique identifier of the user. to assign roles to.
-     * @param roles The roles to be assigned to the user.
+     * @param userId The unique identifier of the user. to assign roles to.
+     * @param roles  The roles to be assigned to the user.
      */
     @Override
     public void assignRoles(String userId, List<String> roles) {
 
-        try{
+        try {
 
             var realmResource = keycloak.realm(realm);
 
@@ -113,13 +113,13 @@ public class KeycloakAdminRepository implements RoleRepository{
             // Get client level roles
             var rolesRepresentations = roles
                     .stream()
-                    .map(role->clientResource.roles().get(role).toRepresentation())
+                    .map(role -> clientResource.roles().get(role).toRepresentation())
                     .collect(Collectors.toList());
 
             // Assign client level role to user
             userResource.roles().clientLevel(clientRepresentation.getId()).add(rolesRepresentations);
 
-        } catch (Exception e){
+        } catch (Exception e) {
 
             throw new RuntimeException("Cannot communicate with keycloak.");
         }
@@ -128,7 +128,7 @@ public class KeycloakAdminRepository implements RoleRepository{
     @Override
     public void removeRoles(String userId, List<String> roles) {
 
-        try{
+        try {
 
             var realmResource = keycloak.realm(realm);
 
@@ -145,13 +145,13 @@ public class KeycloakAdminRepository implements RoleRepository{
             // Get client level roles
             var rolesRepresentations = roles
                     .stream()
-                    .map(role->clientResource.roles().get(role).toRepresentation())
+                    .map(role -> clientResource.roles().get(role).toRepresentation())
                     .collect(Collectors.toList());
 
             // Remove client level role from user
             userResource.roles().clientLevel(clientRepresentation.getId()).remove(rolesRepresentations);
 
-        } catch (Exception e){
+        } catch (Exception e) {
 
             throw new RuntimeException("Cannot communicate with keycloak.");
         }
@@ -170,10 +170,10 @@ public class KeycloakAdminRepository implements RoleRepository{
 
         var notExist = names
                 .stream()
-                .filter(name->!roles.contains(name))
+                .filter(name -> !roles.contains(name))
                 .collect(Collectors.toList());
 
-        if(!notExist.isEmpty()){
+        if (!notExist.isEmpty()) {
             throw new EntityNotFoundException(String.format("The following roles %s do not exist.", notExist.toString()));
         }
     }
@@ -185,7 +185,7 @@ public class KeycloakAdminRepository implements RoleRepository{
      * @return The user's roles.
      */
     @Override
-    public List<Role> fetchUserRoles(String vopersonId){
+    public List<Role> fetchUserRoles(String vopersonId) {
 
         var realmResource = keycloak.realm(realm);
 
@@ -205,4 +205,13 @@ public class KeycloakAdminRepository implements RoleRepository{
                 .collect(Collectors.toList());
     }
 
+    public List<UserRepresentation> fetchRolesMembers(String role) {
+
+        var realmResource = keycloak.realm(realm);
+        var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
+
+        var clientResource = realmResource.clients().get(clientRepresentation.getId());
+
+        return clientResource.roles().get(role).getRoleUserMembers().stream().collect(Collectors.toList());
+    }
 }

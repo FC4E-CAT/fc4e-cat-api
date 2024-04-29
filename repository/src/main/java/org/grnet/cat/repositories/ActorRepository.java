@@ -6,6 +6,8 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
+import java.util.Optional;
+
 
 /**
  * The ActorRepository interface provides data access methods for the Actor entity.
@@ -32,5 +34,9 @@ public class ActorRepository implements Repository<Actor, Long> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+    public Optional<Actor> fetchActorByName(String name) {
+
+        return find("from Actor actor where name = ?1", name).stream().findFirst();
     }
 }

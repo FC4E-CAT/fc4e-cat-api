@@ -2,11 +2,15 @@ package org.grnet.cat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.ActorDto;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.Actor;
 import org.grnet.cat.mappers.ActorMapper;
 import org.grnet.cat.repositories.ActorRepository;
+
+import java.util.Optional;
 
 /**
  * The ActorService provides operations for managing Actor entities.
@@ -35,5 +39,10 @@ public class ActorService {
         var actors = actorRepository.fetchActorsByPage(page, size);
 
         return new PageResource<>(actors, ActorMapper.INSTANCE.actorsToDto(actors.list()), uriInfo);
+    }
+
+    public void doesActorWithGivenNameExist(String name) {
+
+        actorRepository.fetchActorByName(name).orElseThrow(()-> new NotFoundException("There is no Actor : "+name));
     }
 }

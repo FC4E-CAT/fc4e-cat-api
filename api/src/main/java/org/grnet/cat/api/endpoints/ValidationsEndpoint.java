@@ -6,14 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -69,14 +62,13 @@ public class ValidationsEndpoint {
     @Inject
     ValidationService validationService;
 
-    @ConfigProperty(name = "server.url")
+    @ConfigProperty(name = "api.server.url")
     String serverUrl;
-
 
     @Tag(name = "Validation")
     @Operation(
             summary = "Request promotion to validated user.",
-            description = "This endpoint allows an identified user to request promotion to become a validated user."+
+            description = "This endpoint allows an identified user to request promotion to become a validated user." +
                     " The identified user should provide the necessary information to support their promotion request, which will be reviewed by the administrators.")
     @APIResponse(
             responseCode = "201",
@@ -134,14 +126,12 @@ public class ValidationsEndpoint {
 
         var userProfile = userService.getUserProfile(utility.getUserUniqueIdentifier());
 
-        if(StringUtils.isEmpty(userProfile.name) || StringUtils.isEmpty(userProfile.surname) || StringUtils.isEmpty(userProfile.email) ){
+        if (StringUtils.isEmpty(userProfile.name) || StringUtils.isEmpty(userProfile.surname) || StringUtils.isEmpty(userProfile.email)) {
             throw new ForbiddenException("You have to update your profile before requesting a validation.");
         }
-
         Source.valueOf(request.organisationSource).execute(request.organisationId);
 
-        var response = userService.validate(utility.getUserUniqueIdentifier(), request);
-
+        var response = userService.validate( utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
@@ -188,7 +178,7 @@ public class ValidationsEndpoint {
             description = "The validation status to filter.") @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByUserAndPage(page-1, size, status, uriInfo, utility.getUserUniqueIdentifier());
+        var validations = validationService.getValidationsByUserAndPage(page - 1, size, status, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(validations).build();
     }
@@ -231,7 +221,7 @@ public class ValidationsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                             @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id) {
+                                         @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id) {
 
         var validations = validationService.getValidationRequest(utility.getUserUniqueIdentifier(), id);
 

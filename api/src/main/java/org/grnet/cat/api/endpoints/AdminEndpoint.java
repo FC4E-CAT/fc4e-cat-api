@@ -6,14 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -21,6 +14,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -36,17 +30,20 @@ import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
-import org.grnet.cat.dtos.statistics.AssessmentStatisticsResponse;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
-import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
-import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.services.ActorService;
 import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -72,6 +69,11 @@ public class AdminEndpoint {
     @Inject
     UserService userService;
 
+    /**
+     * Injection point for the Actor Service
+     */
+    @Inject
+    ActorService actorService;
 
     /**
      * Injection point for the KeycloakAdminRole Service
@@ -89,7 +91,7 @@ public class AdminEndpoint {
     @Operation(
             summary = "Retrieve all validation requests.",
             description = "Retrieves a list of all validations requests submitted by users." +
-                    "By default, the first page of 10 validation requests will be returned. You can tune the default values by using the query parameters page and size.")
+                    "By default, the first page of 10 validation requests will be returned ordered by the date created. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
             description = "Successful response with the list of validation requests.",
@@ -123,10 +125,52 @@ public class AdminEndpoint {
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size, @Valid @StringEnumeration(enumClass = ValidationStatus.class, message = "status") @QueryParam("status") @DefaultValue("") String status,
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Parameter(name = "search", in = QUERY,
+                                        description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in Validation entity. The search will be conducted in the following fields : id, organization's name, user's name.") @QueryParam("search") String search,
+                                @Parameter(name = "sort", in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "createdOn"),
+                                        examples = {@ExampleObject(name = "Organization name", value = "organisationName"), @ExampleObject(name = "Created On", value = "createdOn")},
+                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("createdOn") @QueryParam("sort") String sort,
+                                @Parameter(name = "order",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                                        examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
+                                        description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("DESC") @QueryParam("order") String order,
+                                @Parameter(name = "status",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Approved", value = "APPROVED"), @ExampleObject(name = "Pending", value = "PENDING"),  @ExampleObject(name = "Review", value = "REVIEW"),@ExampleObject(name = "Rejected", value = "REJECTED")},
+                                        description = "The \"status\" parameter allows clients to filter the results based on the status of the validation.") @QueryParam("status") String status,
+                                @Parameter(name = "type",
+                                        in = QUERY,
+                                        description = "The \"type\" parameter allows clients to filter the results based on the type of actor.") @QueryParam("type") String type,
                                 @Context UriInfo uriInfo) {
 
-        var validations = validationService.getValidationsByPage(page-1, size, status, uriInfo);
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("organisationName", "createdOn");
+
+        if(!orderValues.contains(order)){
+
+            throw new BadRequestException("The available values of order parameter are : " + orderValues);
+        }
+
+        if(!sortValues.contains(sort)){
+
+            throw new BadRequestException("The available values of sort parameter are : " + sortValues);
+        }
+
+        if(status !=null && !Arrays.stream(ValidationStatus.values()).map(Enum::name).collect(Collectors.toList()).contains(status)){
+
+            throw new BadRequestException("The value "+status+" is not a valid status. Valid status values are: "+ Arrays.toString(ValidationStatus.values()));
+        }
+
+        if(type != null){
+
+            actorService.doesActorWithGivenNameExist(type);
+        }
+
+        var validations = validationService.getValidationsByPage(search, sort, order, type, status, page - 1, size, uriInfo);
 
         return Response.ok().entity(validations).build();
     }
@@ -181,8 +225,8 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                         @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
-                                     @Valid @NotNull(message = "The request body is empty.")ValidationRequest validationRequest) {
+                                     @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
+                                     @Valid @NotNull(message = "The request body is empty.") ValidationRequest validationRequest) {
 
         var response = validationService.updateValidationRequest(id, validationRequest);
 
@@ -239,10 +283,10 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                     @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
-                                     @Valid @NotNull(message = "The request body is empty.") UpdateValidationStatus updateValidationStatus) {
+                                                @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
+                                                @Valid @NotNull(message = "The request body is empty.") UpdateValidationStatus updateValidationStatus) {
 
-        var response  = validationService.updateValidationRequestStatus(id, ValidationStatus.valueOf(updateValidationStatus.status), utility.getUserUniqueIdentifier());
+        var response = validationService.updateValidationRequestStatus(id, ValidationStatus.valueOf(updateValidationStatus.status), utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(response).build();
     }
@@ -386,9 +430,56 @@ public class AdminEndpoint {
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
                                 @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size,
+                                @Parameter(name = "search", in = QUERY,
+                                        description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in User entity. The search will be conducted in the following fields : id, name, surname, email, orcid_id.") @QueryParam("search") String search,
+                                @Parameter(name = "sort", in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "id"),
+                                        examples = {@ExampleObject(name = "id", value = "id"), @ExampleObject(name = "name", value = "name"), @ExampleObject(name = "surname", value = "surname"), @ExampleObject(name = "email", value = "email"), @ExampleObject(name = "orcid id", value = "orcidId")},
+                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("id") @QueryParam("sort") String sort,
+                                @Parameter(name = "order",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "ASC"),
+                                        examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
+                                        description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("ASC") @QueryParam("order") String order,
+                                @Parameter(name = "status",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Active", value = "active"), @ExampleObject(name = "Deleted", value = "deleted")},
+                                        description = "The \"status\" parameter allows clients to filter the results based on the status of the user, indicating whether the user is active or deleted.") @QueryParam("status") String status,
+                                @Parameter(name = "type",
+                                        in = QUERY,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Admin", value = "Admin"), @ExampleObject(name = "Identified", value = "Identified"), @ExampleObject(name = "Validated", value = "Validated")},
+                                        description = "The \"type\" parameter allows clients to filter the results based on the type of user.") @QueryParam("type") String type,
                                 @Context UriInfo uriInfo) {
 
-        var userProfile = userService.getUsersByPage(page-1, size, uriInfo);
+
+        var statusValues = List.of("active", "deleted");
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("id", "name", "surname", "email", "orcidId");
+        var typeValues = List.of("Admin", "Identified", "Validated");
+
+        if(!orderValues.contains(order)){
+
+            throw new BadRequestException("The available values of order parameter are : " + orderValues);
+        }
+
+        if(!sortValues.contains(sort)){
+
+            throw new BadRequestException("The available values of sort parameter are : " + sortValues);
+        }
+
+        if(status!=null && !statusValues.contains(status)){
+
+            throw new BadRequestException("The available values of status parameter are : " + statusValues);
+        }
+
+        if(type!=null && !typeValues.contains(type)){
+
+            throw new BadRequestException("The available values of type parameter are : " + typeValues);
+        }
+
+        var userProfile = userService.getUsersByPage(search, sort, order, status, type, page - 1, size, uriInfo);
 
         return Response.ok().entity(userProfile).build();
     }
@@ -426,7 +517,7 @@ public class AdminEndpoint {
     @Path("/users/deny-access")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response denyAccess( @Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
+    public Response denyAccess(@Valid @NotNull(message = "The request body is empty.") DenyAccess denyAccess) {
 
         userService.addDenyAccessRole(utility.getUserUniqueIdentifier(), denyAccess.userId, denyAccess.reason);
 
@@ -470,7 +561,7 @@ public class AdminEndpoint {
     @Path("/users/permit-access")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response permitAccess( @Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
+    public Response permitAccess(@Valid @NotNull(message = "The request body is empty.") PermitAccess permitAccess) {
 
         userService.removeDenyAccessRole(utility.getUserUniqueIdentifier(), permitAccess.userId, permitAccess.reason);
 

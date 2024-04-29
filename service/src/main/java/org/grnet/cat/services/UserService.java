@@ -13,6 +13,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.entities.history.History;
+import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
@@ -22,10 +23,13 @@ import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.HistoryRepository;
 import org.grnet.cat.repositories.RoleRepository;
 import org.grnet.cat.repositories.UserRepository;
+import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The UserService provides operations for managing User entities.
@@ -33,7 +37,8 @@ import java.util.List;
 
 @ApplicationScoped
 public class UserService {
-
+    @Inject
+    MailerService mailerService;
     /**
      * Injection point for the User Repository
      */
@@ -69,8 +74,10 @@ public class UserService {
     @Named("keycloak-service")
     RoleService roleService;
 
-    @ConfigProperty(name = "cat.validations.approve.auto")
+    @ConfigProperty(name = "api.cat.validations.approve.auto")
     boolean autoApprove;
+
+    private static final Logger LOG = Logger.getLogger(UserService.class);
 
     /**
      * Get User's profile.
@@ -88,14 +95,19 @@ public class UserService {
     /**
      * Retrieves a page of users from the database.
      *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of users to include in a page.
+     * @param search  Enables clients to specify a text string for searching specific fields within User entity.
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of users to include in a page.
+     * @param sort Specifies the field by which the results to be sorted.
+     * @param order Specifies the order in which the sorted results should be returned.
+     * @param status Indicates whether the user is active or deleted.
+     * @param type Filters the results based on the type of user.
      * @param uriInfo The Uri Info.
      * @return A list of UserProfileDto objects representing the users in the requested page.
      */
-    public PageResource<UserProfileDto> getUsersByPage(int page, int size, UriInfo uriInfo) {
+    public PageResource<UserProfileDto> getUsersByPage(String search, String sort, String order, String status, String type, int page, int size, UriInfo uriInfo) {
 
-        var users = userRepository.fetchUsersByPage(page, size);
+        var users = userRepository.fetchUsersByPage(search, sort, order, status, type, page, size);
 
         return new PageResource<>(users, UserMapper.INSTANCE.usersProfileToDto(users.list()), uriInfo);
     }
@@ -137,6 +149,7 @@ public class UserService {
         var identified = new User();
         identified.setId(id);
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
+        identified.setBanned(Boolean.FALSE);
 
         userRepository.persist(identified);
 
@@ -151,6 +164,7 @@ public class UserService {
      * @return The submitted validation requesgt.
      */
     @Transactional
+
     public ValidationResponse validate(String id, ValidationRequest validationRequest) {
         ValidationStatus status = ValidationStatus.REVIEW;
 
@@ -163,7 +177,6 @@ public class UserService {
         var validation = new Validation();
 
         if (autoApprove) {
-
             status = ValidationStatus.APPROVED;
             roleService.assignRolesToUser(id, List.of("validated"));
             validation.setValidatedBy(id);
@@ -180,8 +193,16 @@ public class UserService {
         validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
         validation.setOrganisationWebsite(validationRequest.organisationWebsite);
         validation.setOrganisationRole(validationRequest.organisationRole);
-
         validationService.store(validation);
+
+        CompletableFuture.supplyAsync(() ->
+                mailerService.retrieveAdminEmails()
+        ).thenAccept(addrs -> {
+            mailerService.sendMails(validation, MailType.ADMIN_ALERT_NEW_VALIDATION, addrs);
+            if (!addrs.contains(validation.getUser().getEmail())) {
+                mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CREATE_VALIDATION, Arrays.asList(validation.getUser().getEmail()));
+            }
+        });
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
@@ -225,7 +246,6 @@ public class UserService {
      */
     @Transactional
     public void removeDenyAccessRole(String adminId, String userId, String reason) {
-
         var history = new History();
         history.setAction(reason);
         history.setUserId(adminId);
@@ -236,4 +256,5 @@ public class UserService {
         historyRepository.persist(history);
         roleRepository.removeRoles(userId, List.of("deny_access"));
     }
+
 }

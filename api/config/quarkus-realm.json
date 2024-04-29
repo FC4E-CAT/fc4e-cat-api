@@ -567,7 +567,9 @@
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
-      "authenticationFlowBindingOverrides": {},
+      "authenticationFlowBindingOverrides": {
+        "browser": "287b288a-1cf1-4974-bbed-747b0ee5c1f8"
+      },
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
       "defaultClientScopes": [
@@ -922,7 +924,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -938,13 +940,13 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.create"
               },
               {
-                "name": "update"
+                "name": "cat.update"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -960,7 +962,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.assessment.object.by.actor.read"
               }
             ],
             "icon_uri": ""
@@ -976,7 +978,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -992,16 +994,16 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.delete"
               },
               {
-                "name": "update"
+                "name": "cat.create"
               },
               {
-                "name": "delete"
+                "name": "cat.update"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1017,10 +1019,10 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.create"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1036,7 +1038,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.template.by.type.actor.read"
               }
             ],
             "icon_uri": ""
@@ -1063,16 +1065,16 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.delete"
               },
               {
-                "name": "update"
+                "name": "cat.create"
               },
               {
-                "name": "delete"
+                "name": "cat.update"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1088,7 +1090,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.template.by.actor.read"
               }
             ],
             "icon_uri": ""
@@ -1104,10 +1106,10 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.create"
               },
               {
-                "name": "create"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1123,7 +1125,7 @@
             ],
             "scopes": [
               {
-                "name": "read"
+                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1153,15 +1155,28 @@
             }
           },
           {
-            "id": "693ca2aa-92a1-4caa-a751-451d5ac848ae",
+            "id": "839406ad-46c6-40ad-9423-305acaaeb8b7",
             "name": "Read Template By Type and Actor",
-            "description": "",
+            "description": "Read Template By Type and Actor",
             "type": "scope",
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Read Template By Type and Actor\"]",
-              "scopes": "[\"read\"]",
+              "scopes": "[\"cat.template.by.type.actor.read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "a75a135b-661c-4f74-8372-2e244d535a15",
+            "name": "Read Template By Actor",
+            "description": "Read Template By Actor",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Template By Actor\"]",
+              "scopes": "[\"cat.template.by.actor.read\"]",
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
@@ -1178,19 +1193,6 @@
             }
           },
           {
-            "id": "3c5edc94-ef82-4a25-9162-b71fe0b8fce2",
-            "name": "Read Template By Actor",
-            "description": "",
-            "type": "scope",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"Read Template By Actor\"]",
-              "scopes": "[\"read\"]",
-              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
-            }
-          },
-          {
             "id": "7f398fa1-6508-44c0-a3fa-84f77fe301e5",
             "name": "Validated Permission",
             "description": "The permissions for the validated user",
@@ -1203,7 +1205,7 @@
             }
           },
           {
-            "id": "4d0e3e78-2296-410f-a7b6-40f6cc2c806d",
+            "id": "7068638d-5502-404c-821b-660f895fc29e",
             "name": "Read Assessment Objects by Actor",
             "description": "Read Assessment Objects by Actor",
             "type": "scope",
@@ -1211,7 +1213,7 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Read Assessment Objects by Actor\"]",
-              "scopes": "[\"read\"]",
+              "scopes": "[\"cat.assessment.object.by.actor.read\"]",
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           }
@@ -1219,25 +1221,43 @@
         "scopes": [
           {
             "id": "4afca033-df0f-4deb-8d29-eeefcdb96bd4",
-            "name": "read",
+            "name": "cat.read",
             "iconUri": "",
             "displayName": "read"
           },
           {
             "id": "eff83577-2a19-4ab6-81d0-38dc30ff9084",
-            "name": "update",
+            "name": "cat.update",
             "iconUri": "",
             "displayName": "update"
           },
           {
+            "id": "518cfa46-4d48-41cf-9748-3985169850d3",
+            "name": "cat.template.by.type.actor.read",
+            "iconUri": "",
+            "displayName": "Read Template By Type and Actor"
+          },
+          {
+            "id": "313b1743-55bd-4b9a-9bd0-ea32d5738672",
+            "name": "cat.template.by.actor.read",
+            "iconUri": "",
+            "displayName": "Read Template By Actor"
+          },
+          {
+            "id": "c8aec437-90da-4f7e-9c8d-97431ef8a106",
+            "name": "cat.assessment.object.by.actor.read",
+            "iconUri": "",
+            "displayName": "Read Assessment Objects by Actor"
+          },
+          {
             "id": "7b44be40-8316-4054-beb1-d80e02f879fe",
-            "name": "create",
+            "name": "cat.create",
             "iconUri": "",
             "displayName": "create"
           },
           {
             "id": "40613513-b0c3-4173-aa7c-a92a34e2fc89",
-            "name": "delete",
+            "name": "cat.delete",
             "iconUri": "",
             "displayName": "delete"
           }
@@ -2330,6 +2350,56 @@
       ]
     },
     {
+      "id": "ced7521e-4732-4959-84f8-cff994343b90",
+      "alias": "CAT Service - Browser with deny access login-flow",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 25,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 35,
+          "autheticatorFlow": true,
+          "flowAlias": "CAT Service - Browser With Deny Access Keycloak Form2",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "cal2525e-4732-4959-84f8-cff994343b90",
+      "alias": "CAT Service - Browser With Deny Access Keycloak Form2",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
       "id": "e7013c43-177c-48ce-bcc8-b1d3e6f57280",
       "alias": "Verify Existing Account by Re-authentication",
       "description": "Reauthentication of existing account",
@@ -2393,6 +2463,59 @@
           "priority": 30,
           "autheticatorFlow": true,
           "flowAlias": "forms",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "287b288a-1cf1-4974-bbed-747b0ee5c1f8",
+      "alias": "CAT Service - Browser with deny access",
+      "description": "browser based authentication",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorFlow": true,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": true,
+          "flowAlias": "CAT Service - Browser with deny access login-flow",
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "CONDITIONAL",
+          "priority": 25,
+          "autheticatorFlow": true,
+          "flowAlias": "CAT Service - Browser with deny access Checking User Access",
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "id": "dfd9261e-6132-4959-84f8-bdd994343b90",
+      "alias": "CAT Service - Browser with deny access Checking User Access",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorConfig": "CAT Service - Browser with deny access check-realm-admin",
+          "authenticator": "conditional-user-role",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorConfig": "CAT Service - Browser with deny access deny-access",
+          "authenticator": "deny-access-authenticator",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 25,
+          "autheticatorFlow": false,
           "userSetupAllowed": false
         }
       ]
@@ -2698,6 +2821,21 @@
       "alias": "create unique user config",
       "config": {
         "require.password.update.after.registration": "false"
+      }
+    },
+    {
+      "id": "a33ba77d-00ff-4912-80e7-84aa35d3bacc",
+      "alias": "CAT Service - Browser with deny access check-realm-admin",
+      "config": {
+        "negate": "false",
+        "condUserRole": "backend-service.deny_access"
+      }
+    },
+    {
+      "id": "342a7304-bc7f-4502-a05b-8bfe12f1465f",
+      "alias": "CAT Service - Browser with deny access deny-access",
+      "config": {
+        "denyErrorMessage": "<!DOCTYPE html> <html lang=\"en\"> <head>     <meta charset=\"UTF-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">     <title>Access Denied</title>     <style>         body {             font-family: 'Arial', sans-serif;             text-align: center;             margin: 50px;         }          .error-message {             color: #d9534f;             font-size: 18px;             margin-bottom: 20px;         }          .contact-support {             font-size: 16px;             margin-bottom: 20px;         }          .sophisticated-message {             font-size: 20px;             margin-bottom: 20px;             color: #5bc0de;         }          .redirect-button {             padding: 10px 20px;             font-size: 16px;             text-decoration: none;             background-color: #5bc0de;             color: #fff;             border-radius: 5px;         }     </style> </head> <body>     <div class=\"error-message\">         <p><strong>Access Denied:</strong> You do not have permission to log in to CAT service.</p>     </div>      <div class=\"contact-support\">         <p>If you believe this is an error, please <a href=\"mailto:cat-support@einfra.grnet.gr\">contact our support team</a>.</p>     </div>      <div class=\"sophisticated-message\">         <p> Explore more about our services and features by visiting our application, CAT Service.</p>     </div>      <a class=\"redirect-button\" href=\"http://localhost:8080\">Discover CAT Service</a> </body> </html>"
       }
     },
     {

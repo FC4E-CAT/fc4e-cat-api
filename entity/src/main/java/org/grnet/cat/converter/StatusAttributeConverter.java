@@ -23,7 +23,6 @@ public class StatusAttributeConverter implements AttributeConverter<ValidationSt
 
             case APPROVED:
                 return 3;
-
             case REJECTED:
                 return 4;
 

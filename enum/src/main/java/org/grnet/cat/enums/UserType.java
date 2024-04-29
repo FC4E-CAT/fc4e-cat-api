@@ -26,8 +26,24 @@ public enum UserType {
                 return UserType.Validated;
             case "admin":
                 return UserType.Admin;
+            case "deny_access":
+                return UserType.Deny_Access;
             default:
                 return UserType.Identified;
+        }
+    }
+
+    public static String getRoleByType(UserType type) {
+
+        switch (type) {
+            case Validated:
+                return "validated";
+            case Admin:
+                return "admin";
+            case Deny_Access:
+                return "deny_access";
+            default:
+                return "identified";
         }
     }
 
