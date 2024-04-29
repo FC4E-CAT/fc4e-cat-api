@@ -24,10 +24,16 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.3.0 - 2024-04-29
+
+---
+
 ### Added
 
 - [#188](https://github.com/FC4E-CAT/fc4e-cat-api/pull/188) CAT-350 Search Users as an admin.
 - [#189](https://github.com/FC4E-CAT/fc4e-cat-api/pull/189) CAT-351 Search Validations as an admin.
+- [#190](https://github.com/FC4E-CAT/fc4e-cat-api/pull/190) CAT-362 Wrong Results return when searching Users combining actor value and search box value.
+- [#190](https://github.com/FC4E-CAT/fc4e-cat-api/pull/190) CAT-363 Handle REJECT status in search of validations.
 
 ### Changed
 
