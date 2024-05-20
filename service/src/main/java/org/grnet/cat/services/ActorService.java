@@ -6,11 +6,8 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.ActorDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.entities.Actor;
 import org.grnet.cat.mappers.ActorMapper;
 import org.grnet.cat.repositories.ActorRepository;
-
-import java.util.Optional;
 
 /**
  * The ActorService provides operations for managing Actor entities.

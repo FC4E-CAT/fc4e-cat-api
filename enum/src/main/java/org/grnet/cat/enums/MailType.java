@@ -33,7 +33,7 @@ public enum MailType {
 
                     .render();
 
-            return new MailTemplate("[CAT] - Validation Request Created with id: "+templateParams.get("valId"), body);
+            return new MailTemplate("["+templateParams.get("title")+"] - Validation Request Created with id: "+templateParams.get("valId"), body);
         }
     },
 
@@ -58,7 +58,7 @@ public enum MailType {
                     .data("userrole", templateParams.get("userrole"))
                     .data("contactMail", templateParams.get("contactMail"))
                     .data("status", templateParams.get("status")).render();
-            return new MailTemplate("[CAT] - Validation Request updated status with id: "+templateParams.get("valId"), body);
+            return new MailTemplate("["+templateParams.get("title")+"] - Validation Request updated status with id: "+templateParams.get("valId"), body);
         }
 
     },
@@ -84,7 +84,7 @@ public enum MailType {
                     .data("contactMail", templateParams.get("contactMail"))
                     .data("valId", templateParams.get("valId"))
                     .render();
-            return new MailTemplate("[CAT] - Validation Request Created with id: "+templateParams.get("valId"), body);
+            return new MailTemplate("["+templateParams.get("title")+"] - Validation Request Created with id: "+templateParams.get("valId"), body);
         }
 
     };
