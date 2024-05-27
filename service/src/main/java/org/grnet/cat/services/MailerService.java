@@ -166,10 +166,13 @@ public class MailerService {
     }
 
     private String mapMailTitleByInstance() {
-        String replacement = serviceUrl.replace("https://", "").replace("http://", "").replace("argo.grnet.gr", "").replace(".", "-").replace(":8080","");
+        String replacement = serviceUrl.replace("https://", "").replace("http://", "").replace("argo.grnet.gr", "").replace(".", " ").replace(":8080","").replace("/","").replace("api","").toUpperCase();
+
+        System.out.println("replacement --- "+replacement);
         if(!replacement.contains("CAT")){
-            replacement="CAT ".concat(replacement.toUpperCase());
+            replacement="CAT ".concat(replacement);
         }
+        System.out.println("replacement after concat--- "+replacement);
         return replacement.toUpperCase();
     }
 
