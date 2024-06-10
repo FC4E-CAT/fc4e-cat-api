@@ -24,6 +24,16 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.4.0 - 2024-06-10
+
+---
+
+### Changed
+
+- [#198](https://github.com/FC4E-CAT/fc4e-cat-api/pull/198) CAT-376 Swagger correct example.
+- [#200](https://github.com/FC4E-CAT/fc4e-cat-api/pull/200) CAT-384 Enable Utf-8 character set in cat db.
+
+
 ## 1.3.0 - 2024-04-29
 
 ---
@@ -39,6 +49,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 - [#175](https://github.com/FC4E-CAT/fc4e-cat-api/pull/175) CAT-331 Naming convention to Keycloak.
 - [#187](https://github.com/FC4E-CAT/fc4e-cat-api/pull/187) CAT-340 Update Environment Variable Naming Convention for CAT API.
+- [#196](https://github.com/FC4E-CAT/fc4e-cat-api/pull/187) CAT-378 Change Subject Fields length.
 
 
 ## 1.2.5 - 2024-02-19

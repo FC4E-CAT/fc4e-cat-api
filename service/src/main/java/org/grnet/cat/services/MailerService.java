@@ -58,6 +58,9 @@ public class MailerService {
     @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
 
+    @ConfigProperty(name = "api.name")
+    String apiName;
+
     public List<String> retrieveAdminEmails() {
 
         var admins = keycloakAdminRepository.fetchRolesMembers("admin");
@@ -65,18 +68,20 @@ public class MailerService {
         var users = vopersonIds.stream().map(person -> userRepository.findByIdOptional(person)).filter(Optional::isPresent).collect(Collectors.toList());
         return users.stream().map(user -> user.get().getEmail()).filter(Objects::nonNull).collect(Collectors.toList());
     }
+
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
 
         HashMap<String, String> templateParams = new HashMap();
-        templateParams.put("contactMail",contactMail);
+        templateParams.put("contactMail", contactMail);
         templateParams.put("status", val.getStatus().name());
-        templateParams.put("image",serviceUrl+"/v1/images/logo.png");
-        templateParams.put("image1",serviceUrl+"/v1/images/logo-dans.png");
-        templateParams.put("image2",serviceUrl+"/v1/images/logo-grnet.png");
-        templateParams.put("image3",serviceUrl+"/v1/images/logo-datacite.png");
-        templateParams.put("image4",serviceUrl+"/v1/images/logo-gwdg.png");
-        templateParams.put("cat",uiBaseUrl);
+        templateParams.put("image", serviceUrl + "/v1/images/logo.png");
+        templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
+        templateParams.put("image2", serviceUrl + "/v1/images/logo-grnet.png");
+        templateParams.put("image3", serviceUrl + "/v1/images/logo-datacite.png");
+        templateParams.put("image4", serviceUrl + "/v1/images/logo-gwdg.png");
+        templateParams.put("cat", uiBaseUrl);
         templateParams.put("valId", String.valueOf(val.getId()));
+        templateParams.put("title", apiName.toUpperCase());
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
@@ -86,12 +91,12 @@ public class MailerService {
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
-                templateParams.put("userrole","User");
+                templateParams.put("userrole", "User");
                 notifyUser(validationStatusUpdateTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             case VALIDATED_ALERT_CREATE_VALIDATION:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
-                templateParams.put("userrole","User");
+                templateParams.put("userrole", "User");
                 notifyUser(userCreatedValitionTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             default:
@@ -107,6 +112,7 @@ public class MailerService {
         mail.setSubject(mailTemplate.getSubject());
         return mail;
     }
+
     private void notifyUser(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs, MailType mailType) {
 
 
@@ -161,6 +167,15 @@ public class MailerService {
             return new CompletableFuture<U>().completeAsync(supplier);
         }
     }
+
+//    private String mapMailTitleByInstance() {
+//        String replacement = serviceUrl.replace("https://", "").replace("http://", "").replace("argo.grnet.gr", "").replace(".", " ").replace(":8080","").replace("/","").replace("api","").toUpperCase();
+//
+//        if(!replacement.contains("CAT")){
+//            replacement="CAT ".concat(replacement);
+//        }
+//        return replacement.toUpperCase();
+//    }
 
 }
 
