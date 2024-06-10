@@ -24,11 +24,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.4.0 - 2024-06-10
+
+---
+
 ### Changed
 
 - [#198](https://github.com/FC4E-CAT/fc4e-cat-api/pull/198) CAT-376 Swagger correct example.
-- [#200](https://github.com/FC4E-CAT/fc4e-cat-api/pull/200) CAT-384 Enable Utf-8 character set in cat db
-
+- [#200](https://github.com/FC4E-CAT/fc4e-cat-api/pull/200) CAT-384 Enable Utf-8 character set in cat db.
 
 
 ## 1.3.0 - 2024-04-29
