@@ -676,8 +676,6 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         var request = new ValidationRequest();
         request.organisationRole = "Προϊστάμενος";
-       // request.organisationRole = "Manager";
-
         request.organisationId = "00tjv0s33";
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
@@ -702,5 +700,37 @@ public class ValidationsEndpointTest extends KeycloakTest {
         assertEquals(1L, response.actorId);
         assertEquals("ROR", response.organisationSource);
         assertEquals("00tjv0s33", response.organisationId);
+    }
+    @Test
+    public void createValidationInPolish() {
+
+        register("alice");
+
+        var request = new ValidationRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "05884rv02";
+        request.organisationName = "Gdańskie Seminarium Duchowne";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 1L;
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ValidationResponse.class);
+
+
+        assertEquals("Manager", response.organisationRole);
+        assertEquals("Gdańskie Seminarium Duchowne", response.organisationName);
+        assertEquals(1L, response.actorId);
+        assertEquals("ROR", response.organisationSource);
+        assertEquals("05884rv02", response.organisationId);
     }
 }
