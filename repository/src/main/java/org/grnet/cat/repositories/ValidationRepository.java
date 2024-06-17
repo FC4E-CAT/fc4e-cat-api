@@ -6,7 +6,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.entities.Actor;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
