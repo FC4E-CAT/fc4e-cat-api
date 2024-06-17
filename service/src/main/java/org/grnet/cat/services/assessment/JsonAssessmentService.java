@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.pivovarit.function.ThrowingFunction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,6 +38,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -141,24 +144,26 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         boolean isValid;
 
+        var listOfMismatchedFields = new ArrayList<String>();
+
         try {
             var cmp = new JsonFieldComparator();
 
             var expected = (ObjectNode) objectMapper.readTree(template);
             var actual = (ObjectNode) objectMapper.readTree(request);
 
-            isValid = equals(cmp, actual, expected);
+            isValid = equals(cmp, actual, expected, listOfMismatchedFields);
         } catch (JsonProcessingException e) {
             throw new InternalServerErrorException("Server Error.", 500);
         }
 
         if (!isValid) {
 
-            throw new BadRequestException("A field in Assessment Request mismatches a field in Template.");
+            throw new BadRequestException("A field in Assessment Request mismatches a field in Template. Mismatches : "+listOfMismatchedFields);
         }
     }
 
-    private boolean equals(Comparator<JsonNode> comparator, ObjectNode actual, ObjectNode expected) {
+    private boolean equals(Comparator<JsonNode> comparator, ObjectNode actual, ObjectNode expected, List<String> fields) {
 
         var actualMap = actual.properties().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         var expectedMap = expected.properties().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -181,19 +186,23 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
                 if (expected != null && expectedKey.isObject()) {
 
-                    if (!equals(comparator, (ObjectNode) actualEntry.getValue(), (ObjectNode) expectedKey)) {
+                    if (!equals(comparator, (ObjectNode) actualEntry.getValue(), (ObjectNode) expectedKey, fields)) {
                         continueTheIteration = false;
                     }
                 } else if (expectedKey != null && expectedKey.isArray()) {
 
-                    if (!equals(comparator, (ArrayNode) actualEntry.getValue(), (ArrayNode) expectedKey)) {
+                    if (!equals(comparator, (ArrayNode) actualEntry.getValue(), (ArrayNode) expectedKey, fields)) {
                         continueTheIteration = false;
                     }
                 } else {
 
                     if (!(expectedKey != null && ((JsonNode) actualEntry.getValue()).equals(comparator, expectedKey))) {
 
-                        continueTheIteration = false;
+                        if(!actualEntry.getKey().equals("description")){
+
+                            fields.add(String.format("FIELD : %s | EXPECTED VALUE : %s | ACTUAL VALUE : %s", actualEntry.getKey(), expectedKey.asText(), ((JsonNode) actualEntry.getValue()).asText()));
+                            continueTheIteration = false;
+                        }
                     }
                 }
 
@@ -203,7 +212,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         }
     }
 
-    private boolean equals(Comparator<JsonNode> comparator, ArrayNode actual, ArrayNode expected) {
+    private boolean equals(Comparator<JsonNode> comparator, ArrayNode actual, ArrayNode expected, List<String> fields) {
 
         if (expected.size() == 0) {
 
@@ -235,12 +244,12 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
                 if (actualList.get(i).isObject()) {
 
-                    if (!equals(comparator, (ObjectNode) actualList.get(i), (ObjectNode) expectedList.get(i))) {
+                    if (!equals(comparator, (ObjectNode) actualList.get(i), (ObjectNode) expectedList.get(i), fields)) {
                         return false;
                     }
                 } else if (actualList.get(i).isArray()) {
 
-                    if (!equals(comparator, (ArrayNode) actualList.get(i), (ArrayNode) expectedList.get(i))) {
+                    if (!equals(comparator, (ArrayNode) actualList.get(i), (ArrayNode) expectedList.get(i), fields)) {
                         return false;
                     }
                 } else {
