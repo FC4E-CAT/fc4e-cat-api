@@ -24,6 +24,16 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.5.0 - 2024-06-17
+
+---
+
+- [#206](https://github.com/FC4E-CAT/fc4e-cat-api/pull/206) Update the JSON schema, which validates new assessments.
+
+
+### Added
+
+
 ## 1.4.0 - 2024-06-10
 
 ---
