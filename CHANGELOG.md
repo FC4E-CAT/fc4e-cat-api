@@ -24,6 +24,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+### Changed
+
+- [#207](https://github.com/FC4E-CAT/fc4e-cat-api/pull/207) CAT-395 Public assessment not updated.
+
+
 ## 1.5.0 - 2024-06-17
 
 ---

@@ -421,9 +421,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Override
     public void forbidActionsToPublicAssessment(Assessment assessment) {
 
-        if (AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published) {
-            throw new ForbiddenException("It is not allowed to manage a published assessment.");
-        }
+        //        if (AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published) {
+//            throw new ForbiddenException("It is not allowed to manage a published assessment.");
+//        }
     }
 
     /**
