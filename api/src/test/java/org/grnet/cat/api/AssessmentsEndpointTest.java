@@ -552,18 +552,18 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(JsonAssessmentResponse.class);
 
-        var informativeResponse = given()
+       var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
                 .contentType(ContentType.JSON)
                 .delete("/{id}", assessment.id)
                 .then()
                 .assertThat()
-                .statusCode(403)
+                .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("It is not allowed to manage a published assessment.", informativeResponse.message);
+        assertEquals("Assessment has been successfully deleted.", informativeResponse.message);
     }
 
     @Test
