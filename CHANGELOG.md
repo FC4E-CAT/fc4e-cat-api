@@ -24,10 +24,13 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
+## 1.5.0 - 2024-06-18
+
+---
+
 ### Changed
 
-- [#207](https://github.com/FC4E-CAT/fc4e-cat-api/pull/207) CAT-395 Public assessment not updated.
-
+- [#208](https://github.com/FC4E-CAT/fc4e-cat-api/pull/208) CAT-395 Public assessment not updated.
 - [#209](https://github.com/FC4E-CAT/fc4e-cat-api/pull/209) CAT-398 Update PID Service Provider template to remove default thresholds.
 
 ## 1.5.0 - 2024-06-17
