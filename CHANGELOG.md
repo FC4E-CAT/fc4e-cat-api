@@ -32,6 +32,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 - [#208](https://github.com/FC4E-CAT/fc4e-cat-api/pull/208) CAT-395 Public assessment not updated.
 - [#209](https://github.com/FC4E-CAT/fc4e-cat-api/pull/209) CAT-398 Update PID Service Provider template to remove default thresholds.
+- [#212](https://github.com/FC4E-CAT/fc4e-cat-api/pull/212) CAT-402 Duplicate test in assessment template.
+
 
 ## 1.5.0 - 2024-06-17
 
