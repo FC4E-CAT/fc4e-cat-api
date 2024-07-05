@@ -20,21 +20,25 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   `Security` in case of vulnerabilities.
 -   `Deprecated` for soon-to-be removed features.
 
-## Unreleased
+
+## 1.5.1 - 2024-07-05
 
 ---
 
-## 1.5.0 - 2024-06-18
+## Changed
+- [#212](https://github.com/FC4E-CAT/fc4e-cat-api/pull/212) CAT-402 Duplicate test in assessment template.
+- [#213](https://github.com/FC4E-CAT/fc4e-cat-api/pull/213) CAT-418 Fix Service Provider template to support thresholds in tests
+- [#214](https://github.com/FC4E-CAT/fc4e-cat-api/pull/214) CAT-419 Flag thresholds as locked when having a required default value.
+
+
+
+## 1.5.1 - 2024-06-18
 
 ---
 
 ### Changed
-
 - [#208](https://github.com/FC4E-CAT/fc4e-cat-api/pull/208) CAT-395 Public assessment not updated.
 - [#209](https://github.com/FC4E-CAT/fc4e-cat-api/pull/209) CAT-398 Update PID Service Provider template to remove default thresholds.
-- [#212](https://github.com/FC4E-CAT/fc4e-cat-api/pull/212) CAT-402 Duplicate test in assessment template.
-- [#213](https://github.com/FC4E-CAT/fc4e-cat-api/pull/213) CAT-418 Fix Service Provider template to support thresholds in tests
-- [#214](https://github.com/FC4E-CAT/fc4e-cat-api/pull/214) CAT-419 Flag thresholds as locked when having a required default value.
 
 ## 1.5.0 - 2024-06-17
 
