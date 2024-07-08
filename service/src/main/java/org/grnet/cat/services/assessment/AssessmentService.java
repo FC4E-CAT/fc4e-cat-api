@@ -8,7 +8,7 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     Response createAssessment(String userId, Request request);
 
-    Response getDtoAssessment(String userId, String id);
+    Response getDtoAssessment(String id);
 
     Response getPublicDtoAssessment(String id);
 
@@ -29,4 +29,7 @@ public interface AssessmentService <Request, Update, Response extends Assessment
     void forbidActionsToPublicAssessment(Entity assessment);
 
     void delete(String id);
+
+    PageResource<? extends Response> getAllAssessmentsByPage(int page, int size, UriInfo uriInfo);
+
 }

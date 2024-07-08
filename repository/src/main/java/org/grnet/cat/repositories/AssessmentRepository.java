@@ -2,6 +2,7 @@ package org.grnet.cat.repositories;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -59,6 +60,27 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         joiner.add("order by a.createdOn desc");
 
         var panache = find(joiner.toString(), map).page(page, size);
+
+        var pageable = new PageQueryImpl<Assessment>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
+     * Retrieves a page of assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of assessments to include in a page.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<Assessment> fetchAllAssessmentsByPage(int page, int size) {
+
+        var panache = find("from Assessment", Sort.by("createdOn", Sort.Direction.Descending)).page(page, size);
 
         var pageable = new PageQueryImpl<Assessment>();
         pageable.list = panache.list();

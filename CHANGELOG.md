@@ -20,6 +20,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   `Security` in case of vulnerabilities.
 -   `Deprecated` for soon-to-be removed features.
 
+## Unreleased
+
+---
+### Added
+
+- [#218](https://github.com/FC4E-CAT/fc4e-cat-api/pull/218) CAT-421 Create a new endpoint allowing an admin to update an existing assessment.
+- [#219](https://github.com/FC4E-CAT/fc4e-cat-api/pull/219) CAT-422 Create endpoint to retrieve all generated assessments.
+
 
 ## 1.5.1 - 2024-07-05
 
@@ -44,10 +52,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ---
 
-- [#206](https://github.com/FC4E-CAT/fc4e-cat-api/pull/206) Update the JSON schema, which validates new assessments.
-
-
 ### Added
+
+- [#206](https://github.com/FC4E-CAT/fc4e-cat-api/pull/206) Update the JSON schema, which validates new assessments.
 
 
 ## 1.4.0 - 2024-06-10
