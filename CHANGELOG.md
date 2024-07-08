@@ -23,13 +23,17 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 
 ---
+
+## 1.6.0 - 2024-07-08
+
+---
 ### Added
 
 - [#218](https://github.com/FC4E-CAT/fc4e-cat-api/pull/218) CAT-421 Create a new endpoint allowing an admin to update an existing assessment.
 - [#219](https://github.com/FC4E-CAT/fc4e-cat-api/pull/219) CAT-422 Create endpoint to retrieve all generated assessments.
 
 
-## 1.5.1 - 2024-07-05
+## 1.5.2 - 2024-07-05
 
 ---
 
