@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import com.pivovarit.function.ThrowingFunction;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -21,11 +19,9 @@ import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.statistics.AssessmentStatisticsResponse;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
-import org.grnet.cat.services.StatisticsEnum;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
@@ -267,13 +263,28 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     /**
      * Retrieves a specific assessment if it belongs to the user.
      *
+     * @param assessmentId The ID of the assessment to retrieve.
+     * @return The assessment.
+     */
+    @Override
+    public JsonAssessmentResponse getDtoAssessment(String assessmentId) {
+
+        var assessment = assessmentRepository.findById(assessmentId);
+
+        var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+
+        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+    }
+
+    /**
+     * Retrieves a specific assessment if it belongs to the user.
+     *
      * @param userId       The ID of the user who requests a specific assessment.
      * @param assessmentId The ID of the assessment to retrieve.
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    @Override
-    public JsonAssessmentResponse getDtoAssessment(String userId, String assessmentId) {
+    public JsonAssessmentResponse getDtoAssessmentIfBelongsToUser(String userId, String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
@@ -449,6 +460,21 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     public void delete(String assessmentId) {
 
         assessmentRepository.deleteAssessmentById(assessmentId);
+    }
+
+    /**
+     * Retrieve all assessments.
+     *
+     * @return List of all assessments
+     */
+    @Override
+    public PageResource<PartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, UriInfo uriInfo) {
+
+        var assessments = assessmentRepository.fetchAllAssessmentsByPage(page, size);
+
+        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
     /**

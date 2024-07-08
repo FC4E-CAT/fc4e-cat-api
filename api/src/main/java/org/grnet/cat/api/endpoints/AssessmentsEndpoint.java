@@ -179,7 +179,7 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        var validations = assessmentService.getDtoAssessment(utility.getUserUniqueIdentifier(), id);
+        var validations = assessmentService.getDtoAssessmentIfBelongsToUser(utility.getUserUniqueIdentifier(), id);
 
         return Response.ok().entity(validations).build();
     }
