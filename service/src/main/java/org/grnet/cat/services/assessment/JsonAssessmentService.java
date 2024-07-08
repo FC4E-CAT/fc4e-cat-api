@@ -326,6 +326,20 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         handleSubjectDatabaseId(userId, request);
 
+        return update(id, request);
+    }
+
+    /**
+     * Updates the Assessment's json document. This method also handles the subjects that were inserted in the assessment document.
+     *
+     * @param id      The ID of the assessment whose json doc is being updated.
+     * @param request The update request.
+     * @return The updated assessment
+     */
+    @Override
+    @SneakyThrows
+    public JsonAssessmentResponse update(String id, JsonAssessmentRequest request) {
+
         var assessmentDoc = AssessmentMapper.INSTANCE.templateDocToAssessmentDoc(request.assessmentDoc);
 
         assessmentDoc.id = id;
