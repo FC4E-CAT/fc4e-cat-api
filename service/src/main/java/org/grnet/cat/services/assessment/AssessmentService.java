@@ -16,6 +16,8 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     Response update(String id, String userId, Update request);
 
+    Response update(String id, Update request);
+
     PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId);
 
     PageResource<? extends Response> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType);

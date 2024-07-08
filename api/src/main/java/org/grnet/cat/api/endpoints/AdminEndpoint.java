@@ -30,6 +30,7 @@ import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
+import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.ActorRepository;
@@ -610,5 +611,63 @@ public class AdminEndpoint {
         var statistics = adminService.getStatistics();
 
         return Response.ok().entity(statistics).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Update an existing assessment.",
+            description = "Allows an admin to update the details of an existing assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ValidationResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/assessments/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response updateAssessment(@Parameter(
+            description = "The ID of the assessment to be updated.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                         @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") String id,
+                                     @Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest updateJsonAssessmentRequest) {
+
+        var response = assessmentService.update(id, updateJsonAssessmentRequest);
+
+        return Response.ok().entity(response).build();
     }
 }
