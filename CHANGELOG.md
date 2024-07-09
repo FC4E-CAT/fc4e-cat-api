@@ -23,6 +23,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 
 ---
+### Added
+
+- [#222](https://github.com/FC4E-CAT/fc4e-cat-api/pull/222) CAT-425 Register a New Assessment Type in CAT Database.
 
 ## 1.6.0 - 2024-07-08
 
