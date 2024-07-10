@@ -22,6 +22,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
+import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
@@ -68,9 +69,20 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         handleSubjectDatabaseId(userId, request);
         var validation = validationRepository.fetchValidationByUserAndActorAndOrganisation(userId, request.assessmentDoc.actor.id, request.assessmentDoc.organisation.id);
-        var template = templateRepository.fetchTemplateByActor(request.assessmentDoc.actor.id);
 
-        validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template).templateDoc));
+        if(!validation.getStatus().equals(ValidationStatus.APPROVED)){
+
+            throw new ForbiddenException("The validation request hasn't been approved yet!");
+        }
+
+        var template = templateRepository.fetchTemplateByActorAndType(request.assessmentDoc.actor.id, request.assessmentDoc.assessmentType.id);
+
+        if(template.isEmpty()){
+
+            throw new BadRequestException(String.format("Not Found Template for Actor [%s] and Assessment Type [%s].", request.assessmentDoc.actor.name, request.assessmentDoc.assessmentType.name));
+        }
+
+        validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template.get()).templateDoc));
 
         var timestamp = Timestamp.from(Instant.now());
         request.assessmentDoc.timestamp = timestamp.toString();
@@ -79,7 +91,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         Assessment assessment = new Assessment();
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
         assessment.setCreatedOn(timestamp);
-        assessment.setTemplate(template);
+        assessment.setTemplate(template.get());
         assessment.setValidation(validation);
         assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
 

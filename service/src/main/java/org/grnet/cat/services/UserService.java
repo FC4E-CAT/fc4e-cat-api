@@ -6,6 +6,7 @@ import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.cat.dtos.UserAssessmentEligibilityResponse;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
@@ -255,6 +256,13 @@ public class UserService {
         userToBeBanned.setBanned(Boolean.FALSE);
         historyRepository.persist(history);
         roleRepository.removeRoles(userId, List.of("deny_access"));
+    }
+
+    public PageResource<UserAssessmentEligibilityResponse> getUserAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo){
+
+        var list = validationService.getUserAssessmentEligibility(page, size, userID);
+
+        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserAssessmentEligibilityToDto(list.list()), uriInfo);
     }
 
 }
