@@ -1,5 +1,7 @@
 package org.grnet.cat.services;
 
+import io.quarkus.panache.common.Parameters;
+import io.quarkus.panache.common.Sort;
 import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -12,8 +14,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
+import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.projections.UserAssessmentEligibility;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
@@ -210,6 +215,19 @@ public class ValidationService {
         var validation = validationRepository.findById(validationId);
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
+    }
+
+    /**
+     * Retrieves the list of assessment types and actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and actors
+     */
+    public PageQuery<UserAssessmentEligibility> getUserAssessmentEligibility(int page, int size, String userID){
+
+        return validationRepository.fetchUserAssessmentEligibility(page, size, userID);
     }
 
     @Transactional

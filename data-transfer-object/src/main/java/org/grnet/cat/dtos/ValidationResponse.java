@@ -103,7 +103,6 @@ public class ValidationResponse {
     @Schema(
             type = SchemaType.NUMBER,
             implementation = Long.class,
-            required = true,
             description = "The ID of Actor.",
             example = "5"
     )
@@ -113,7 +112,6 @@ public class ValidationResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            required = true,
             description = "The Name of Actor.",
             example = "End User"
     )
