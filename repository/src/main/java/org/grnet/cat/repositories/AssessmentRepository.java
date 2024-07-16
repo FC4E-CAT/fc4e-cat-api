@@ -6,15 +6,14 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import net.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.*;
+import org.grnet.cat.enums.ValidationStatus;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -22,6 +21,9 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    UserRepository userRepository;
 
     /**
      * Retrieves a page of assessments submitted by the specified user.
@@ -78,9 +80,20 @@ public class AssessmentRepository implements Repository<Assessment, String> {
      * @param size   The maximum number of assessments to include in a page.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
-    public PageQuery<Assessment> fetchAllAssessmentsByPage(int page, int size) {
+    public PageQuery<Assessment> fetchAllAssessmentsByPage(int page, int size, String search) {
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Assessment a");
 
-        var panache = find("from Assessment", Sort.by("createdOn", Sort.Direction.Descending)).page(page, size);
+        var params = new HashMap<String, Object>();
+
+        if (search != null && !search.isEmpty()) {
+            joiner.add("WHERE (FUNCTION('JSON_EXTRACT', a.assessmentDoc, '$.name') LIKE :search OR a.validation.user.email LIKE :search OR a.validation.user.name LIKE :search OR a.validation.user.surname LIKE :search)");
+            params.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by a.createdOn desc");
+
+        var panache = find(joiner.toString(), params).page(page, size);
 
         var pageable = new PageQueryImpl<Assessment>();
         pageable.list = panache.list();
