@@ -65,6 +65,7 @@ public class AdminEndpoint {
     @Inject
     JsonAssessmentService assessmentService;
 
+
     /**
      * Injection point for the User Service
      */
@@ -706,17 +707,15 @@ public class AdminEndpoint {
     @Path("/assessments")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response assessments(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                @Parameter(name = "size", in = QUERY,
-                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                    @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+    public Response assessments(@Parameter(name = "page", in = QUERY, description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                @Parameter(name = "size", in = QUERY, description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.") @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Parameter(name = "search", in = QUERY, description = "Search term for user's email or user's name or assessment ID") @QueryParam("search") String search,
                                 @Context UriInfo uriInfo) {
 
-        var assessments = assessmentService.getAllAssessmentsByPage(page - 1, size, uriInfo);
+        var assessments = assessmentService.getAllAssessmentsByPage(page - 1, size, search, uriInfo);
 
         return Response.ok().entity(assessments).build();
-    }
+  }
 
     @Tag(name = "Admin")
     @Operation(
@@ -765,8 +764,8 @@ public class AdminEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        var validations = assessmentService.getDtoAssessment(id);
+        var assessment = assessmentService.getDtoAssessment(id);
 
-        return Response.ok().entity(validations).build();
+        return Response.ok().entity(assessment).build();
     }
 }

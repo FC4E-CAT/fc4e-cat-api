@@ -30,6 +30,6 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     void delete(String id);
 
-    PageResource<? extends Response> getAllAssessmentsByPage(int page, int size, UriInfo uriInfo);
+    PageResource<? extends Response> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo);
 
 }

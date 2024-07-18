@@ -14,6 +14,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
+import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
@@ -23,9 +24,11 @@ import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
+import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.ValidationRepository;
@@ -480,13 +483,13 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return List of all assessments
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, UriInfo uriInfo) {
+    public PageResource<PartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo) {
 
-        var assessments = assessmentRepository.fetchAllAssessmentsByPage(page, size);
-
+        var assessments = assessmentRepository.fetchAllAssessmentsByPage(page, size, search);
         var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+        var partialAssessments  = AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments);
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        return new PageResource<>(assessments, partialAssessments, uriInfo);
     }
 
     /**
