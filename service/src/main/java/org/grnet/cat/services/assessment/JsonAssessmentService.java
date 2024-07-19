@@ -493,6 +493,22 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     }
 
     /**
+     * Retrieve all of user's assessments .
+     *
+     * @return List of all user's assessments
+     */
+    public PageResource<PartialJsonAssessmentResponse> getAllAssessmentsByUserAndPage(int page, int size, String userID, UriInfo uriInfo) {
+
+        var assessments = assessmentRepository.fetchAllAssessmentsByUserAndPage(page, size, userID);
+        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+        var partialAssessments  = AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments);
+
+        return new PageResource<>(assessments, partialAssessments, uriInfo);
+    }
+
+
+
+    /**
      * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
      *
      * @param page    The index of the page to retrieve (starting from 0).

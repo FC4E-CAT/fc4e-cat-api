@@ -24,10 +24,7 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.constraints.StringEnumeration;
-import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.UpdateValidationStatus;
-import org.grnet.cat.dtos.ValidationRequest;
-import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
@@ -36,6 +33,7 @@ import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
+import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.ActorService;
 import org.grnet.cat.services.KeycloakAdminRoleService;
@@ -463,22 +461,18 @@ public class AdminEndpoint {
         var typeValues = List.of("Admin", "Identified", "Validated");
 
         if(!orderValues.contains(order)){
-
             throw new BadRequestException("The available values of order parameter are : " + orderValues);
         }
 
         if(!sortValues.contains(sort)){
-
             throw new BadRequestException("The available values of sort parameter are : " + sortValues);
         }
 
         if(status!=null && !statusValues.contains(status)){
-
             throw new BadRequestException("The available values of status parameter are : " + statusValues);
         }
 
         if(type!=null && !typeValues.contains(type)){
-
             throw new BadRequestException("The available values of type parameter are : " + typeValues);
         }
 
@@ -488,6 +482,145 @@ public class AdminEndpoint {
     }
 
     @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a user's profile.",
+            description = "This endpoint returns the profile of a registered user in the service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "User's profile",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = UserProfileDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserById(@Parameter(description = "The ID of the user to retrieve his validation requests.", required = true, schema = @Schema(name = "UserProfile"))
+                                @PathParam("id") @Valid @NotFoundEntity(repository = UserRepository.class, message = "There is no User with the following id:") String id){
+
+        var userProfile = userService.getUserProfile(id);
+
+        return Response.ok().entity(userProfile).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a user's validation requests.",
+            description = "This endpoint returns the validation requests of a registered user in the service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "User's validation requests.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ValidationsEndpoint.PageableValidationResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users/{id}/validations")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserValidations(@Parameter(description = "The ID of the user to retrieve his validation requests.", required = true, schema = @Schema(name = "ValisationResponse"))
+                                       @PathParam("id") @Valid @NotFoundEntity(repository = UserRepository.class, message = "There is no User with the following id:") String id,
+                                       @Valid @NotNull(message = "The request body is empty.")
+                                       @Parameter(name = "page", in = QUERY, description = "Indicates the page number. Page number must be >= 1.")
+                                       @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+                                       @QueryParam("page") int page,
+                                       @Parameter(name = "size", in = QUERY, description = "The page size.")
+                                       @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.") @Max(value = 100, message = "Page size must be between 1 and 100.")
+                                       @QueryParam("size") int size,
+                                       @DefaultValue("") String status,
+                                       @Context UriInfo uriInfo) {
+
+        var userValidations = validationService.getValidationsByUserAndPage(page - 1, size, null, uriInfo, id);
+
+        return Response.ok().entity(userValidations).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a user's assessments.",
+            description = "This endpoint returns a list of user's assessments of a registered user in the service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "User's assessments.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AssessmentsEndpoint.PageablePartialAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users/{id}/assessments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserAssessments(@Parameter(description = "The ID of the user to retrieve his validation requests.", required = true, schema = @Schema(name = "AssessmentResponse"))
+                                       @PathParam("id") @Valid @NotFoundEntity(repository = UserRepository.class, message = "There is no User with the following id:") String id,
+                                       @Valid @NotNull(message = "The request body is empty.")
+                                       @Parameter(name = "page", in = QUERY, description = "Indicates the page number. Page number must be >= 1.")
+                                       @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+                                       @QueryParam("page") int page,
+                                       @Parameter(name = "size", in = QUERY, description = "The page size.")
+                                       @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.") @Max(value = 100, message = "Page size must be between 1 and 100.")
+                                       @QueryParam("size") int size,
+                                       @Context UriInfo uriInfo) {
+
+        var userValidations = assessmentService.getAllAssessmentsByUserAndPage(page - 1, size, id, uriInfo);
+
+        return Response.ok().entity(userValidations).build();
+    }
+
+
+    @Tag(name = "Admin")
+    @SecurityRequirement(name = "Authentication")
     @Operation(
             summary = "Restrict a user's access.",
             description = "Calling this endpoint results in the specified user being denied access to the API.")

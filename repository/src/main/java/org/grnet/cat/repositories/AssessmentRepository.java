@@ -106,6 +106,39 @@ public class AssessmentRepository implements Repository<Assessment, String> {
     }
 
     /**
+     * Retrieves a page of user's assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of assessments to include in a page.
+     * @param userId The vopersonId of a user.
+     * @return A list of Assessment objects representing the user's assessments in the requested page.
+     */
+    public PageQuery<Assessment> fetchAllAssessmentsByUserAndPage(int page, int size, String userId) {
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Assessment a");
+
+        var params = new HashMap<String, Object>();
+
+        if (userId != null && !userId.isEmpty()) {
+            joiner.add("WHERE a.validation.user.id LIKE :userId");
+            params.put("userId", "%" + userId + "%");
+        }
+
+        joiner.add("order by a.createdOn desc");
+
+        var panache = find(joiner.toString(), params).page(page, size);
+
+        var pageable = new PageQueryImpl<Assessment>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
      * Retrieves a page of published assessments categorized by type and actor, created by all users.
      *
      * @param page        The index of the page to retrieve (starting from 0).
