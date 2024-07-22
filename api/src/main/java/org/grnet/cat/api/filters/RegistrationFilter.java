@@ -5,7 +5,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.ext.Provider;
-import org.grnet.cat.api.utils.Utility;
+import org.grnet.cat.services.utils.Utility;
 import org.grnet.cat.repositories.UserRepository;
 
 /**

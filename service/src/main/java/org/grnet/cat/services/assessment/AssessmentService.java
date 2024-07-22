@@ -14,8 +14,6 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     void deleteAll();
 
-    Response update(String id, String userId, Update request);
-
     Response update(String id, Update request);
 
     PageResource<? extends Response> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId);

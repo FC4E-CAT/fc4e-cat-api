@@ -2951,7 +2951,7 @@
       "enabled": true,
       "serviceAccountClientId": "admin-cli",
       "clientRoles": {
-        "realm-management": ["manage-users", "manage-clients"]
+        "realm-management": ["manage-users", "manage-clients", "manage-authorization", "view-authorization"]
       }
     },
     {
