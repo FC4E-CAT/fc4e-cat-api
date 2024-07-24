@@ -55,10 +55,21 @@ public interface AssessmentMapper {
     @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
     @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
+    @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
     JsonAssessmentResponse assessmentToJsonAssessment(Assessment assessment);
 
     @Mapping(target = "id", ignore = true)
     AssessmentDoc templateDocToAssessmentDoc(TemplateDto template);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "assessmentType", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "timestamp", ignore = true)
+    @Mapping(target = "actor", ignore = true)
+    @Mapping(target = "organisation", ignore = true)
+    @Mapping(target = "subject", ignore = true)
+    AssessmentDoc updateAssessmentDocFromTemplateDoc(TemplateDto template);
 
     @SneakyThrows
     default AssessmentDoc stringJsonToDto(String doc) {

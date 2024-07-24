@@ -602,7 +602,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("User not authorized to manage assessment with ID "+assessment.id, informativeResponse.message);
+        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
     }
 
     private ValidationResponse makeValidation(String username, Long actorId) {

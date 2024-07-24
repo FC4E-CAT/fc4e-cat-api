@@ -26,8 +26,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Added
 
 - [#222](https://github.com/FC4E-CAT/fc4e-cat-api/pull/222) CAT-425 Register a New Assessment Type in CAT Database.
-- [#223](https://github.com/FC4E-CAT/fc4e-cat-api/pull/223) CAT-426 Register a new template for PID Manager for PID NL National Policy
-- [#225](https://github.com/FC4E-CAT/fc4e-cat-api/pull/225) CAT-429 Update Manager Template for National PID policy- 
+- [#223](https://github.com/FC4E-CAT/fc4e-cat-api/pull/223) CAT-426 Register a new template for PID Manager for PID NL National Policy.
+- [#225](https://github.com/FC4E-CAT/fc4e-cat-api/pull/225) CAT-429 Update Manager Template for National PID policy.
+- [#228](https://github.com/FC4E-CAT/fc4e-cat-api/pull/228) CAT-439 Enable Sharing of Assessments Among Users via Keycloak Attributes.
+
 ## 1.6.0 - 2024-07-08
 
 ---

@@ -10,12 +10,14 @@ import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -41,6 +43,12 @@ public class KeycloakTest {
     @BeforeEach
     public void setup() {
 
+        var mock = Mockito.mock(KeycloakAdminService.class);
+
+        Mockito.doNothing().when(mock).addEntitlementsToUser(any(), any());
+        Mockito.when(mock.getUserEntitlements(any())).thenReturn(Collections.emptyList());
+        QuarkusMock.installMockForType(mock, KeycloakAdminService.class);
+
         jsonAssessmentService.deleteAll();
         validationService.deleteAll();
         userService.deleteAll();
@@ -50,7 +58,7 @@ public class KeycloakTest {
 
         var role = new Role("identidied_id", "identified", "The identified role");
 
-        KeycloakAdminRepository mock = Mockito.mock(KeycloakAdminRepository.class);
+        var mock = Mockito.mock(KeycloakAdminRepository.class);
         Mockito.when(mock.fetchUserRoles(any())).thenReturn(List.of(role));
         QuarkusMock.installMockForType(mock, KeycloakAdminRepository.class);
 
@@ -86,7 +94,6 @@ public class KeycloakTest {
 
         return profile;
     }
-
 
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);

@@ -1,4 +1,4 @@
-package org.grnet.cat.api.utils;
+package org.grnet.cat.services.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
@@ -12,7 +12,6 @@ import lombok.SneakyThrows;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.template.TemplateDto;
 
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @ApplicationScoped

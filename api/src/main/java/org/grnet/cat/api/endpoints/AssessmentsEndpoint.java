@@ -31,13 +31,12 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
-import org.grnet.cat.api.utils.Utility;
+import org.grnet.cat.services.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.JsonSchema;
@@ -124,8 +123,6 @@ public class AssessmentsEndpoint {
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest request, @Context UriInfo uriInfo) {
 
-        utility.validateTemplateJson(JsonSchema.fetchById("assessment_json_schema").getJsonSchema(), request.assessmentDoc, SpecVersion.VersionFlag.V7);
-
         var response = assessmentService.createAssessment(utility.getUserUniqueIdentifier(), request);
 
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
@@ -135,7 +132,7 @@ public class AssessmentsEndpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get Assessment.",
-            description = "Returns a specific assessment if it belongs to the user. The published assessment is returned as well.")
+            description = "Returns a specific assessment if it belongs or shared to the user.")
     @APIResponse(
             responseCode = "200",
             description = "The corresponding assessment.",
@@ -179,7 +176,7 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        var validations = assessmentService.getDtoAssessmentIfBelongsToUser(utility.getUserUniqueIdentifier(), id);
+        var validations = assessmentService.getDtoAssessmentIfBelongsOrSharedToUser(id);
 
         return Response.ok().entity(validations).build();
     }
@@ -187,7 +184,7 @@ public class AssessmentsEndpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Update Assessment Json Document.",
-            description = "Updates the json document for an assessment.")
+            description = "Updates the assessment json document if it belongs or shared to the authenticated user.")
     @APIResponse(
             responseCode = "200",
             description = "Assessment's json document updated successfully.",
@@ -239,7 +236,7 @@ public class AssessmentsEndpoint {
                                      @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") String id,
                                      @Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest updateJsonAssessmentRequest) {
 
-        var assessment = assessmentService.updatePrivateAssessmentBelongsToUser(id, utility.getUserUniqueIdentifier(), updateJsonAssessmentRequest);
+        var assessment = assessmentService.updatePrivateAssessmentBelongsToUser(id, updateJsonAssessmentRequest);
 
         return Response.ok().entity(assessment).build();
     }
@@ -247,7 +244,7 @@ public class AssessmentsEndpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Retrieve assessments for a specific user.",
-            description = "This endpoint retrieves the assessments submitted by the specified user." +
+            description = "This endpoint retrieves both the assessments submitted by the specified user and the assessments shared with the specified user." +
                     "By default, the first page of 10 assessments will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
@@ -413,7 +410,7 @@ public class AssessmentsEndpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Delete private Assessment.",
-            description = "Deletes a private assessment if it is not published and belongs to the authenticated user.")
+            description = "Deletes a private assessment if it belongs or shared to the authenticated user.")
     @APIResponse(
             responseCode = "200",
             description = "Deletion completed.",
@@ -457,7 +454,7 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        assessmentService.deletePrivateAssessmentBelongsToUser(utility.getUserUniqueIdentifier(), id);
+        assessmentService.deletePrivateAssessmentBelongsToUser(id);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
