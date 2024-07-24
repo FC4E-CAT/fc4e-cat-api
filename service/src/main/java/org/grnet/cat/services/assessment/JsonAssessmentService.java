@@ -14,10 +14,12 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
+import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
@@ -33,7 +35,7 @@ import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.SubjectService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
-import org.grnet.cat.services.utils.Utility;
+import org.grnet.cat.utils.Utility;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -75,7 +77,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Transactional
     @SneakyThrows
     @Override
-    public JsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
+    public UserJsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
 
         var validation = validationRepository.fetchValidationByUserAndActorAndOrganisation(userId, request.assessmentDoc.actor.id, request.assessmentDoc.organisation.id);
 
@@ -119,7 +121,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(KeycloakAdminService.ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
 
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(storedAssessment);
+        return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(storedAssessment);
     }
 
     /**
@@ -297,11 +299,11 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return The assessment.
      */
     @Override
-    public JsonAssessmentResponse getDtoAssessment(String assessmentId) {
+    public AdminJsonAssessmentResponse getDtoAssessment(String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+        return AssessmentMapper.INSTANCE.adminAssessmentToJsonAssessment(assessment);
     }
 
     /**
@@ -312,11 +314,11 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
     @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
-    public JsonAssessmentResponse getDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
+    public UserJsonAssessmentResponse getDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+        return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessment);
     }
 
     /**
@@ -326,17 +328,17 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return The assessment if it's public.
      */
     @Override
-    public JsonAssessmentResponse getPublicDtoAssessment(String assessmentId) {
+    public AdminJsonAssessmentResponse getPublicDtoAssessment(String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
 
-        var assessmentDto = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+        var assessmentDto = AssessmentMapper.INSTANCE.adminAssessmentToJsonAssessment(assessment);
 
         if (!assessmentDto.assessmentDoc.published) {
             throw new ForbiddenException("Not Permitted.");
         }
 
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+        return assessmentDto;
     }
 
     @Override
@@ -354,7 +356,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      */
     @Override
     @SneakyThrows
-    public JsonAssessmentResponse update(String id, JsonAssessmentRequest request) {
+    public UserJsonAssessmentResponse update(String id, JsonAssessmentRequest request) {
 
         validateTemplateJson(request.assessmentDoc);
 
@@ -362,7 +364,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template.get()).templateDoc));
 
-        var dbAssessmentToJson = AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessmentRepository.findById(id));
+        var dbAssessmentToJson = AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessmentRepository.findById(id));
 
         var assessmentDoc = AssessmentMapper.INSTANCE.updateAssessmentDocFromTemplateDoc(request.assessmentDoc);
 
@@ -377,7 +379,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var assessment = assessmentRepository.updateAssessmentDocById(id, utility.getUserUniqueIdentifier(), objectMapper.writeValueAsString(assessmentDoc));
 
-        return AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment);
+        return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessment);
     }
 
     /**
@@ -393,7 +395,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId) {
+    public PageResource<UserPartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId) {
 
         var sharableIds = keycloakAdminService
                 .getUserEntitlements(userID)
@@ -403,9 +405,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId, sharableIds);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+        var fullAssessments = AssessmentMapper.INSTANCE.userAssessmentsToJsonAssessments(assessments.list());
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.userAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
     /**
@@ -421,13 +423,13 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType) {
+    public PageResource<AdminPartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType) {
 
         var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId, subjectName, subjectType);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+        var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
     /**
@@ -494,11 +496,11 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return List of all assessments
      */
     @Override
-    public PageResource<PartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo) {
+    public PageResource<AdminPartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo) {
 
         var assessments = assessmentRepository.fetchAllAssessmentsByPage(page, size, search);
-        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
-        var partialAssessments  = AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments);
+        var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
+        var partialAssessments  = AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments);
 
         return new PageResource<>(assessments, partialAssessments, uriInfo);
     }

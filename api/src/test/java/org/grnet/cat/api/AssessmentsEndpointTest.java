@@ -5,9 +5,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
 import org.grnet.cat.dtos.*;
+import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
+import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.dtos.template.TemplateResponse;
@@ -43,7 +44,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         assertEquals(validation.id, response.validationId);
     }
@@ -200,7 +201,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var response = given()
                 .auth()
@@ -210,7 +211,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         assertEquals(assessment.id, response.id);
 
@@ -249,7 +250,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var pageResource = given()
                 .auth()
@@ -285,7 +286,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc = makeJsonDocUpdated();
@@ -300,7 +301,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var json = makeJsonDocUpdated();
         assertEquals(json.status , updatedResponse.assessmentDoc.status);
@@ -352,7 +353,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc =makeJsonDocUpdated();
@@ -473,7 +474,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var response = given()
                 .auth()
@@ -512,7 +513,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var informativeResponse = given()
                 .auth()
@@ -550,7 +551,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
        var informativeResponse = given()
                 .auth()
@@ -589,7 +590,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var informativeResponse = given()
                 .auth()

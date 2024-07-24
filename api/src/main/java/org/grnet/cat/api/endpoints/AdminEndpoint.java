@@ -21,7 +21,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
-import org.grnet.cat.services.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateValidationStatus;
@@ -29,8 +28,10 @@ import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
+import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
+import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
@@ -40,6 +41,7 @@ import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.utils.Utility;
 
 import java.util.Arrays;
 import java.util.List;
@@ -622,7 +624,7 @@ public class AdminEndpoint {
             description = "Assessment updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
+                    implementation = AdminJsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -681,7 +683,7 @@ public class AdminEndpoint {
             description = "Successful response with the list of assessments.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AssessmentsEndpoint.PageablePartialAssessmentResponse.class)))
+                    implementation = PageablePartialAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -724,7 +726,7 @@ public class AdminEndpoint {
             description = "The corresponding assessment.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
+                    implementation = AdminJsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -765,5 +767,20 @@ public class AdminEndpoint {
         var assessment = assessmentService.getDtoAssessment(id);
 
         return Response.ok().entity(assessment).build();
+    }
+
+    public static class PageablePartialAssessmentResponse extends PageResource<AdminPartialJsonAssessmentResponse> {
+
+        private List<AdminPartialJsonAssessmentResponse> content;
+
+        @Override
+        public List<AdminPartialJsonAssessmentResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<AdminPartialJsonAssessmentResponse> content) {
+            this.content = content;
+        }
     }
 }

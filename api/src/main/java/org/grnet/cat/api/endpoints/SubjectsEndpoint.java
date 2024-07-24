@@ -30,7 +30,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
-import org.grnet.cat.services.utils.Utility;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
@@ -41,6 +40,7 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.repositories.SubjectRepository;
 import org.grnet.cat.services.SubjectService;
+import org.grnet.cat.utils.Utility;
 import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.List;
@@ -353,7 +353,7 @@ public class SubjectsEndpoint {
             description = "The list of Assessments for a Subject.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AssessmentsEndpoint.PageablePartialAssessmentResponse.class)))
+                    implementation = AdminEndpoint.PageablePartialAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",

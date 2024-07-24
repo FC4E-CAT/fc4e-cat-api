@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "JsonAssessmentResponse", description = "This object represents the Json Assessment.")
-public class JsonAssessmentResponse extends AssessmentResponse {
+@Schema(name = "AdminJsonAssessmentResponse", description = "This object represents the Admin Json Assessment.")
+public class AdminJsonAssessmentResponse extends AssessmentResponse {
 
     @Schema(
             type = SchemaType.NUMBER,

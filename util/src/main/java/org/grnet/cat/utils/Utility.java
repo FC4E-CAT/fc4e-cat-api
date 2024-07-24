@@ -1,4 +1,4 @@
-package org.grnet.cat.services.utils;
+package org.grnet.cat.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
