@@ -6,16 +6,11 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.assessment.AssessmentDoc;
-import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.statistics.StatisticsResponse;
-import org.grnet.cat.dtos.statistics.UserStatisticsResponse;
-import org.grnet.cat.dtos.statistics.ValidationStatisticsResponse;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.subject.SubjectResponse;
 import org.grnet.cat.dtos.subject.UpdateSubjectRequestDto;
-import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Subject;
 import org.grnet.cat.exceptions.ConflictException;
@@ -24,7 +19,6 @@ import org.grnet.cat.mappers.SubjectMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.SubjectRepository;
 
-import java.awt.print.Pageable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
@@ -163,14 +157,14 @@ public class SubjectService {
         return SubjectMapper.INSTANCE.subjectToDto(subject);
     }
 
-    public PageResource<PartialJsonAssessmentResponse> getAssessmentsPerSubject(int page , int size,Long id,UriInfo uriInfo){
+    public PageResource<AdminPartialJsonAssessmentResponse> getAssessmentsPerSubject(int page , int size, Long id, UriInfo uriInfo){
 
 
         var assessments = assessmentRepository.fetchAssessmentsPerSubjectAndPage(page, size, id);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.assessmentsToJsonAssessments(assessments.list());
+        var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.assessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
 
     }
 }

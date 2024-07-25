@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "PartialJsonAssessmentResponse", description = "This object represents a partial form of the Json Assessment.")
-public class PartialJsonAssessmentResponse extends AssessmentResponse {
+@Schema(name = "AdminPartialJsonAssessmentResponse", description = "This object represents an admin partial form of the Json Assessment.")
+public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
 
     @Schema(
             type = SchemaType.STRING,

@@ -23,7 +23,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
-import org.grnet.cat.services.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.dtos.InformativeResponse;
@@ -35,6 +34,7 @@ import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
+import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 

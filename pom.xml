@@ -19,6 +19,7 @@
     <module>mapper</module>
     <module>enum</module>
     <module>validator</module>
+    <module>util</module>
   </modules>
 
   <properties>
@@ -99,6 +100,11 @@
       <dependency>
         <groupId>org.grnet</groupId>
         <artifactId>cat-validators</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.grnet</groupId>
+        <artifactId>cat-utils</artifactId>
         <version>${revision}</version>
       </dependency>
       <dependency>

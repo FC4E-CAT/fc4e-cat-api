@@ -9,7 +9,7 @@ import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.entities.JsonSchema;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.services.interceptors.ShareableEntity;
-import org.grnet.cat.services.utils.Utility;
+import org.grnet.cat.utils.Utility;
 
 public abstract class JsonAbstractAssessmentService<Request extends JsonAssessmentRequest, Update, Response extends AssessmentResponse, Entity> implements AssessmentService<Request , Update, Response, Entity> {
 

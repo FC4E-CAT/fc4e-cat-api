@@ -1,6 +1,5 @@
 package org.grnet.cat.api.endpoints;
 
-import com.networknt.schema.SpecVersion;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -31,19 +30,19 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
-import org.grnet.cat.services.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.PartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
-import org.grnet.cat.entities.JsonSchema;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
@@ -73,7 +72,7 @@ public class AssessmentsEndpoint {
             description = "Assessment creation successful.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
+                    implementation = UserJsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -138,7 +137,7 @@ public class AssessmentsEndpoint {
             description = "The corresponding assessment.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
+                    implementation = UserJsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -190,7 +189,7 @@ public class AssessmentsEndpoint {
             description = "Assessment's json document updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
+                    implementation = UserJsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -303,7 +302,7 @@ public class AssessmentsEndpoint {
             description = "List of assessments.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageablePartialAssessmentResponse.class)))
+                    implementation = AdminEndpoint.PageablePartialAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Bad Request",
@@ -596,7 +595,7 @@ public class AssessmentsEndpoint {
             description = "The corresponding public assessment.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = JsonAssessmentResponse.class)))
+                    implementation = AdminJsonAssessmentResponse.class)))
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
@@ -631,17 +630,17 @@ public class AssessmentsEndpoint {
         return Response.ok().entity(validations).build();
     }
 
-    public static class PageablePartialAssessmentResponse extends PageResource<PartialJsonAssessmentResponse> {
+    public static class PageablePartialAssessmentResponse extends PageResource<UserPartialJsonAssessmentResponse> {
 
-        private List<PartialJsonAssessmentResponse> content;
+        private List<UserPartialJsonAssessmentResponse> content;
 
         @Override
-        public List<PartialJsonAssessmentResponse> getContent() {
+        public List<UserPartialJsonAssessmentResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<PartialJsonAssessmentResponse> content) {
+        public void setContent(List<UserPartialJsonAssessmentResponse> content) {
             this.content = content;
         }
     }

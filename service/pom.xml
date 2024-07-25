@@ -26,16 +26,16 @@
             <artifactId>cat-mappers</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.grnet</groupId>
+            <artifactId>cat-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.pivovarit</groupId>
             <artifactId>throwing-function</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.networknt</groupId>
-            <artifactId>json-schema-validator</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -46,18 +46,6 @@
             <groupId>io.quarkiverse.mailpit</groupId>
             <artifactId>quarkus-mailpit</artifactId>
             <version>0.0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-keycloak-authorization</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.grnet</groupId>
-            <artifactId>cat-exceptions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.grnet</groupId>
-            <artifactId>cat-data-transfer-objects</artifactId>
         </dependency>
     </dependencies>
 

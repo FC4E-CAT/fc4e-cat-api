@@ -13,7 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.services.KeycloakAdminService;
-import org.grnet.cat.services.utils.Utility;
+import org.grnet.cat.utils.Utility;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
