@@ -31,15 +31,17 @@ import org.grnet.cat.dtos.access.PermitAccess;
 import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
+import org.grnet.cat.dtos.guidance.GuidanceUpdateDto;
+import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.guidance.GuidanceRequestDto;
+import org.grnet.cat.dtos.guidance.GuidanceResponseDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.AssessmentRepository;
+import org.grnet.cat.repositories.GuidanceRepository;
 import org.grnet.cat.repositories.ValidationRepository;
-import org.grnet.cat.services.ActorService;
-import org.grnet.cat.services.KeycloakAdminRoleService;
-import org.grnet.cat.services.UserService;
-import org.grnet.cat.services.ValidationService;
+import org.grnet.cat.services.*;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
 
@@ -89,6 +91,9 @@ public class AdminEndpoint {
      */
     @Inject
     Utility utility;
+
+    @Inject
+    GuidanceService guidanceService;
 
     @Tag(name = "Admin")
     @Operation(
@@ -767,6 +772,294 @@ public class AdminEndpoint {
         var assessment = assessmentService.getDtoAssessment(id);
 
         return Response.ok().entity(assessment).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "List all guidance items.",
+            description = "Retrieves a paginated list of all guidance items.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of guidance items.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableGuidanceResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/guidances")
+    @Registration
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listAll(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                            @Parameter(name = "size", in = QUERY,
+                                    description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                            @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                            @Context UriInfo uriInfo) {
+
+        var guidances = guidanceService.listAll(page - 1, size, uriInfo);
+        return Response.ok(guidances).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get Guidance by ID.",
+            description = "Retrieves a specific guidance item by ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding guidance item.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = GuidanceResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid UUID: must be a string of letters and numbers",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = GuidanceResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/guidances/{id}")
+    @Registration
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findById(@Parameter(
+            description = "The ID of the guidance item to retrieve.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                             @NotNull(message = "The ID cannot be null.") Long id) {
+
+        var guidance = guidanceService.findById(id);
+        if (guidance == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(guidance).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Create New Guidance Item.",
+            description = "Creates a new guidance item.")
+    @APIResponse(
+            responseCode = "201",
+            description = "Guidance item created.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = GuidanceResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/guidances")
+    @Registration
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response create(@Valid @NotNull(message = "The request body is empty.") GuidanceRequestDto guidanceRequestDto, @Context UriInfo uriInfo) {
+
+        var guidance = guidanceService.create(guidanceRequestDto, utility.getUserUniqueIdentifier());
+
+        return Response.status(Response.Status.CREATED).entity(guidance).type(MediaType.APPLICATION_JSON).build();
+    }
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Update Guidance Item.",
+            description = "Updates an existing guidance item.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Guidance item updated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = GuidanceResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/guidances/{id}")
+    @Registration
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response update(@Parameter(
+            description = "The ID of the guidance item to update.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                           @Valid @NotFoundEntity(repository = GuidanceRepository.class, message = "There is no Guidance with the following id:") Long id,
+                           @Valid @NotNull(message = "The request body is empty.") GuidanceUpdateDto guidanceUpdateDto) {
+
+        var guidance = guidanceService.update(id, guidanceUpdateDto, utility.getUserUniqueIdentifier());
+        return Response.ok(guidance).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Delete Guidance Item.",
+            description = "Deletes a specific guidance item by ID.")
+    @APIResponse(
+            responseCode = "204",
+            description = "Guidance item deleted.")
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/guidances/{id}")
+    @Registration
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(@Parameter(
+            description = "The ID of the guidance item to delete.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
+                           @NotNull(message = "The ID cannot be null.") Long id) {
+
+        boolean deleted = guidanceService.delete(id);
+        if (!deleted) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.noContent().build();
+    }
+
+    public static class PageableGuidanceResponse extends PageResource<GuidanceResponseDto> {
+
+        private List<GuidanceResponseDto> content;
+
+        @Override
+        public List<GuidanceResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<GuidanceResponseDto> content) {
+            this.content = content;
+        }
     }
 
     public static class PageablePartialAssessmentResponse extends PageResource<AdminPartialJsonAssessmentResponse> {
