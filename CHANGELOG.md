@@ -29,6 +29,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#223](https://github.com/FC4E-CAT/fc4e-cat-api/pull/223) CAT-426 Register a new template for PID Manager for PID NL National Policy.
 - [#225](https://github.com/FC4E-CAT/fc4e-cat-api/pull/225) CAT-429 Update Manager Template for National PID policy.
 - [#228](https://github.com/FC4E-CAT/fc4e-cat-api/pull/228) CAT-439 Enable Sharing of Assessments Among Users via Keycloak Attributes.
+- [#231](https://github.com/FC4E-CAT/fc4e-cat-api/pull/231) CAT-443 CRUD actions on Principles
+
 
 ## 1.6.0 - 2024-07-08
 

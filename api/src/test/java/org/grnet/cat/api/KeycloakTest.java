@@ -11,6 +11,7 @@ import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.services.KeycloakAdminService;
+import org.grnet.cat.services.PrincipleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
@@ -39,6 +40,8 @@ public class KeycloakTest {
 
     @Inject
     ObjectMapper objectMapper;
+    @Inject
+    PrincipleService principleService;
 
     @BeforeEach
     public void setup() {
@@ -51,6 +54,7 @@ public class KeycloakTest {
 
         jsonAssessmentService.deleteAll();
         validationService.deleteAll();
+        principleService.deleteAll();
         userService.deleteAll();
     }
 

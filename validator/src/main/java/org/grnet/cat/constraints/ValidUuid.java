@@ -1,5 +1,4 @@
 package org.grnet.cat.constraints;
-
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import org.grnet.cat.validators.UuidValidator;
