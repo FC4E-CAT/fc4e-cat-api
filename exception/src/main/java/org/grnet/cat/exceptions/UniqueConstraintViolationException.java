@@ -1,5 +1,4 @@
 package org.grnet.cat.exceptions;
-
 /**
  * Exception for handling uniqueness constraint violations.
  * This exception is thrown when a unique constraint is violated,
@@ -10,7 +9,8 @@ public class UniqueConstraintViolationException extends RuntimeException {
 
     /**
      * Constructs a new UniqueConstraintViolationException with the specified field name and value.
-     * @param fieldName the name of the field that caused the exception.
+     *
+     * @param fieldName  the name of the field that caused the exception.
      * @param fieldValue the value of the field that caused the exception.
      */
     public UniqueConstraintViolationException(String fieldName, String fieldValue) {
