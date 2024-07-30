@@ -4,7 +4,6 @@
 -- Description: Migration that introduces the Principles table
 -- -------------------------------------------------
 
--- guidance table
 CREATE TABLE Principle (
     id BIGINT AUTO_INCREMENT,
     uuid CHAR(36) NOT NULL UNIQUE,
