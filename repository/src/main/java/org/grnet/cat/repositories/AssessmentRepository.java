@@ -75,6 +75,10 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         return pageable;
     }
 
+    public long countAssessmentsByUserId(String userId) {
+        return count("userId", userId);
+    }
+
     /**
      * Retrieves a page of assessments.
      *
@@ -105,6 +109,24 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    public Long countAllAssessmentsByUser(String userId) {
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Assessment a");
+
+        var params = new HashMap<String, Object>();
+
+        if ( userId!= null && !userId.isEmpty()) {
+            joiner.add("WHERE (FUNCTION('JSON_EXTRACT', a.assessmentDoc, '$.name') LIKE :search OR a.validation.user.email LIKE :search OR a.validation.user.name LIKE :search OR a.validation.user.surname LIKE :search)");
+            params.put("search", "%" + userId + "%");
+        }
+
+        joiner.add("order by a.createdOn desc");
+
+        var panache = find(joiner.toString(), params);
+
+        return panache.count();
     }
 
     /**

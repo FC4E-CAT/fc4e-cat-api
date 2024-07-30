@@ -42,10 +42,7 @@ import org.grnet.cat.dtos.criteria.CriteriaRequestDto;
 import org.grnet.cat.dtos.criteria.CriteriaResponseDto;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
-import org.grnet.cat.repositories.AssessmentRepository;
-import org.grnet.cat.repositories.CriteriaRepository;
-import org.grnet.cat.repositories.GuidanceRepository;
-import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.repositories.*;
 import org.grnet.cat.services.*;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
@@ -505,6 +502,47 @@ public class AdminEndpoint {
 
         return Response.ok().entity(userProfile).build();
     }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a user's information .",
+            description = "This endpoint returns the profile of a registered user in the service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "User's information",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = UserInfoDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/users/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserInfo(@Parameter(description = "The ID of the user to retrieve his validation requests.", required = true, schema = @Schema(name = "UserProfile"))
+                                @PathParam("id") @Valid @NotFoundEntity(repository = UserRepository.class, message = "There is no User with the following id:") String id){
+
+        var userInfo = userService.getUserStatsById(id);
+
+        return Response.ok(userInfo).build();
+    }
+
 
     @Tag(name = "Admin")
     @Operation(

@@ -6,10 +6,7 @@ import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.cat.dtos.UserAssessmentEligibilityResponse;
-import org.grnet.cat.dtos.UserProfileDto;
-import org.grnet.cat.dtos.ValidationRequest;
-import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.Validation;
@@ -20,10 +17,7 @@ import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
-import org.grnet.cat.repositories.ActorRepository;
-import org.grnet.cat.repositories.HistoryRepository;
-import org.grnet.cat.repositories.RoleRepository;
-import org.grnet.cat.repositories.UserRepository;
+import org.grnet.cat.repositories.*;
 import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
@@ -45,6 +39,13 @@ public class UserService {
      */
     @Inject
     UserRepository userRepository;
+
+    @Inject
+    ValidationRepository validationRepository;
+
+    @Inject
+    AssessmentRepository assessmentRepository;
+    /**
 
     /**
      * Injection point for the Validation Service
@@ -91,6 +92,21 @@ public class UserService {
         var userProfile = userRepository.fetchUser(id);
 
         return UserMapper.INSTANCE.userToProfileDto(userProfile);
+    }
+
+    public UserInfoDto getUserStatsById(String userId) {
+
+        var userProfile = getUserProfile(userId);
+
+        var info = new UserInfoDto();
+        info.id = userProfile.id;
+        info.name = userProfile.name;
+        info.surname = userProfile.surname;
+        info.email = userProfile.email;
+        info.totalValidationsCount = String.valueOf(validationRepository.countValidationsByUserId(info.id));
+        info.totalAssessmentsCount = String.valueOf(assessmentRepository.countAllAssessmentsByUser(info.email));
+
+        return info;
     }
 
     /**
