@@ -15,7 +15,5 @@ CREATE TABLE Principle (
     modified_on TIMESTAMP  NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     created_by VARCHAR(255) NOT NULL,
     modified_by VARCHAR(255)  NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES User(id),
-    FOREIGN KEY (modified_by) REFERENCES User(id)
+    PRIMARY KEY (id)
 )

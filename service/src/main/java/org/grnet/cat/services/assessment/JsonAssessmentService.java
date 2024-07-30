@@ -31,6 +31,7 @@ import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
+import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.SubjectService;
@@ -44,6 +45,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +75,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
     @Inject
     Utility utility;
+
+    @Inject
+    UserRepository userRepository;
 
     @Transactional
     @SneakyThrows
@@ -548,5 +553,33 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
                 .collect(Collectors.toList());
 
         return new PageResource<>(objects, jsonToObjects, uriInfo);
+    }
+
+    /**
+     * Shares an assessment with specified users.
+     *
+     * @param assessmentId The ID of the assessment to be shared.
+     * @param sharedWithUsers A list of user IDs with whom the assessment will be shared.
+     */
+    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
+    public void shareAssessment(String assessmentId, Set<String> sharedWithUsers){
+
+
+        sharedWithUsers
+                .stream()
+                .filter(user-> userRepository.findByIdOptional(user).isPresent())
+                .forEach(user->{
+
+                    var listOfEntitlements = keycloakAdminService.getUserEntitlements(user);
+
+                    var entitlementToBeAdded = ShareableEntityType.ASSESSMENT.getValue().concat(KeycloakAdminService.ENTITLEMENTS_DELIMITER).concat(assessmentId);
+
+                    //ignore the entitlement that has already been assigned
+
+                    if(!listOfEntitlements.contains(entitlementToBeAdded)){
+
+                        keycloakAdminService.addEntitlementsToUser(user, ShareableEntityType.ASSESSMENT.getValue().concat(KeycloakAdminService.ENTITLEMENTS_DELIMITER).concat(assessmentId));
+                    }
+                });
     }
 }
