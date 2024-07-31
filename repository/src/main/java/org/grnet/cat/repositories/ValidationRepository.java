@@ -46,6 +46,12 @@ public class ValidationRepository implements Repository<Validation, Long> {
         return find("from Validation v where v.user.id = ?1 and v.organisationId = ?2 and v.organisationSource = ?3 and v.status IN (?4) and v.actor.id = ?5", id, organisationId, Source.valueOf(organisationSource), statuses, actorId).stream().findAny().isPresent();
     }
 
+    /**
+     * Retrieves the total number of validation requests submitted by the specified user.
+     *
+     * @param userId The ID of the user.
+     * @return the number of counts of validation requests for a specified user
+     */
     public long countValidationsByUserId(String userId) {
 
         return count("from Validation v where v.user.id = ?1", userId);

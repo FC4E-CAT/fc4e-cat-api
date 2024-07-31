@@ -108,25 +108,38 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         pageable.count = panache.count();
         pageable.page = Page.of(page, size);
 
+        System.out.println("COUNT  " + pageable.count);
+
         return pageable;
     }
+    /**
+     * Retrieves the total number of assessments submitted by the specified user.
+     *
+     * @param search The email of the user.
+     * @return the number of counts of assessments requests for a specified user
+     */
+    public Long countAllAssessmentsByUser(String search) {
 
-    public Long countAllAssessmentsByUser(String userId) {
         var joiner = new StringJoiner(" ");
         joiner.add("from Assessment a");
 
         var params = new HashMap<String, Object>();
 
-        if ( userId!= null && !userId.isEmpty()) {
+        if (search != null && !search.isEmpty()) {
             joiner.add("WHERE (FUNCTION('JSON_EXTRACT', a.assessmentDoc, '$.name') LIKE :search OR a.validation.user.email LIKE :search OR a.validation.user.name LIKE :search OR a.validation.user.surname LIKE :search)");
-            params.put("search", "%" + userId + "%");
+            params.put("search", "%" + search + "%");
         }
 
         joiner.add("order by a.createdOn desc");
 
         var panache = find(joiner.toString(), params);
 
-        return panache.count();
+        var pageable = new PageQueryImpl<Assessment>();
+        pageable.list = panache.list();
+        pageable.count = panache.count();
+
+        return pageable.count;
+
     }
 
     /**
