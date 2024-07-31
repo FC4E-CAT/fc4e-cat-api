@@ -29,9 +29,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#223](https://github.com/FC4E-CAT/fc4e-cat-api/pull/223) CAT-426 Register a new template for PID Manager for PID NL National Policy.
 - [#225](https://github.com/FC4E-CAT/fc4e-cat-api/pull/225) CAT-429 Update Manager Template for National PID policy.
 - [#228](https://github.com/FC4E-CAT/fc4e-cat-api/pull/228) CAT-439 Enable Sharing of Assessments Among Users via Keycloak Attributes.
-- [#230](https://github.com/FC4E-CAT/fc4e-cat-api/pull/230) CAT-441: Guidance in db.
+- [#230](https://github.com/FC4E-CAT/fc4e-cat-api/pull/230) CAT-441 Guidance in db.
 - [#231](https://github.com/FC4E-CAT/fc4e-cat-api/pull/231) CAT-443 CRUD actions on Principles.
 - [#232](https://github.com/FC4E-CAT/fc4e-cat-api/pull/232) CAT-444 Create Endpoint for Sharing Assessments Among Users.
+- [#235](https://github.com/FC4E-CAT/fc4e-cat-api/pull/235) CAT-442 Create CRUD Operations for Criteria under Admin User.
+- [#236](https://github.com/FC4E-CAT/fc4e-cat-api/pull/236) CAT-386 wrong question -update text in templates.
 
 
 ## 1.6.0 - 2024-07-08
