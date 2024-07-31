@@ -2,9 +2,11 @@ package org.grnet.cat.repositories;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import net.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +75,11 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    public Long countAllAssessmentsByUser(String userId) {
+
+        return count("from Assessment a where a.validation.user.id = ?1", userId);
     }
 
     /**
