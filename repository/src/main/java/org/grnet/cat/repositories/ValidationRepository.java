@@ -47,6 +47,17 @@ public class ValidationRepository implements Repository<Validation, Long> {
     }
 
     /**
+     * Retrieves the total number of validation requests submitted by the specified user.
+     *
+     * @param userId The ID of the user.
+     * @return the number of counts of validation requests for a specified user
+     */
+    public Long countValidationsByUserId(String userId) {
+
+        return count("from Validation v where v.user.id = ?1", userId);
+    }
+
+    /**
      * Retrieves a page of validation requests submitted by the specified user.
      *
      * @param page   The index of the page to retrieve (starting from 0).
