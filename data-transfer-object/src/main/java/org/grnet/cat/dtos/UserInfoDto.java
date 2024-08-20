@@ -4,8 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.assessment.AssessmentResponse;
+import org.grnet.cat.dtos.template.TemplateSubjectDto;
+
+import java.util.List;
+
 @Schema(name = "UserInfoDto", description = "This object represents an extend of the User Profile.")
 public class UserInfoDto extends UserProfileDto{
+
     @Schema(
             name = "count_of_validations",
             type = SchemaType.NUMBER,
@@ -24,4 +30,5 @@ public class UserInfoDto extends UserProfileDto{
     )
     @JsonProperty("count_of_assessments")
     public Long totalAssessmentsCount;
+
 }
