@@ -18,6 +18,8 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.*;
+import org.grnet.cat.services.assessment.JsonAbstractAssessmentService;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
@@ -51,6 +53,9 @@ public class UserService {
 
     @Inject
     AssessmentRepository assessmentRepository;
+
+    @Inject
+    JsonAssessmentService jsonAssessmentService;
 
     /**
      * Injection point for the Actor repository
@@ -93,15 +98,28 @@ public class UserService {
         return UserMapper.INSTANCE.userToProfileDto(userProfile);
     }
 
+    /**
+     * Get User's profile.
+     *
+     * @param userId User's voperson_id
+     * @return User's profile information and validation and assessment counting.
+     */
     public UserInfoDto getUserStatsById(String userId) {
 
         var userProfile = getUserProfile(userId);
 
         var info = new UserInfoDto();
-        info.id = userProfile.id;
-        info.name = userProfile.name;
-        info.surname = userProfile.surname;
-        info.email = userProfile.email;
+        info.id             = userProfile.id;
+        info.name           = userProfile.name;
+        info.surname        = userProfile.surname;
+        info.email          = userProfile.email;
+        info.banned         = userProfile.banned;
+        info.orcidId        = userProfile.orcidId;
+        info.roles          = userProfile.roles;
+        info.registeredOn   = userProfile.registeredOn;
+        info.type           = userProfile.type;
+        info.validatedOn    = userProfile.validatedOn;
+        info.updatedOn      = userProfile.updatedOn;
         info.totalValidationsCount = validationRepository.countValidationsByUserId(info.id);
         info.totalAssessmentsCount = assessmentRepository.countAllAssessmentsByUser(info.id);
 
