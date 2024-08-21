@@ -155,4 +155,13 @@ public class ValidationResponse {
     @JsonProperty("validated_by")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String validatedBy;
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The reason for rejection, if the status is REJECTED.",
+            example = "Invalid organisation ID"
+    )
+    @JsonProperty("rejection_reason")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  // Exclude from JSON if null
+    public String rejectionReason;
 }

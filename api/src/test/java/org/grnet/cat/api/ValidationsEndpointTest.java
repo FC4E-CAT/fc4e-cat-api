@@ -16,6 +16,8 @@ import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static io.smallrye.common.constraint.Assert.assertNotNull;
+import static io.smallrye.common.constraint.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -666,6 +668,55 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         assertEquals(2, response.getTotalElements());
         assertEquals(2, response.getSizeOfPage());
+    }
+
+    @Test
+    public void updateValidationRequestStatusToRejectedByAdmin() {
+
+        doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any());
+
+        register("alice");
+        register("admin");
+
+        var request = new ValidationRequest();
+        request.organisationRole = "Manager";
+        request.organisationId = "00tjv0s33";
+        request.organisationName = "Keimyung University";
+        request.organisationSource = "ROR";
+        request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
+        request.actorId = 2L;
+
+        var validation = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(ValidationResponse.class);
+
+        var updateRequest = new UpdateValidationStatus();
+        updateRequest.status = "REJECTED";
+        updateRequest.rejectionReason = "rejection reason";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/admin/validations")
+                .body(updateRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}/update-status", validation.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ValidationResponse.class);
+
+        assertEquals("REJECTED", response.status);
+        assertEquals("rejection reason", response.rejectionReason);
     }
 
 

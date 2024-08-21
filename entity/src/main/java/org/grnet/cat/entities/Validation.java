@@ -75,6 +75,9 @@ public class Validation {
     @Column(name = "validated_by")
     private String validatedBy;
 
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
     public Long getId() {
         return id;
     }
@@ -171,4 +174,7 @@ public class Validation {
         this.validatedBy = validatedBy;
     }
 
+    public String getRejectionReason() { return rejectionReason; }
+
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 }
