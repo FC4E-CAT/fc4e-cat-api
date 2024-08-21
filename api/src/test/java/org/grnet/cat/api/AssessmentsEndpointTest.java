@@ -674,7 +674,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
                 "                  },\n" +
                 "                  \"evidence_url\": [\n" +
-                "                    \"https://www.in.gr\"\n" +
+                "                 {\"url\": \"https://www.in.gr\"}\n" +
                 "                  ]\n" +
                 "                }\n" +
                 "              ]\n" +
@@ -684,7 +684,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "      }\n" +
                 "    ]\n" +
                 "  }";
-
         return objectMapper.readValue(doc, TemplateDto.class);
     }
 
@@ -749,7 +748,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
                 "                  },\n" +
                 "                  \"evidence_url\": [\n" +
-                "                    \"https://www.in.gr\"\n" +
+                "                   {\"url\": \"https://www.in.gr\"}\n" +
                 "                  ]\n" +
                 "                }\n" +
                 "              ]\n" +
