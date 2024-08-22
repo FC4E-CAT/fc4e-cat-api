@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,29 @@ public class UserRepository implements UserRepositoryI<User, String> {
         user.setType(findUserType(roles));
 
         return user;
+    }
+
+    /**
+     * It executes a query in database to retrieve an active user by email.
+     *
+     * @param email User's email.
+     * @return User's Profile.
+     */
+    @Override
+    public Optional<User> fetchActiveUserByEmail(String email) {
+
+        return find("from User user where user.email = ?1 and user.banned = ?2", email, Boolean.FALSE).stream().findAny();
+    }
+
+    /**
+     * It executes a query in database to retrieve a user by email.
+     *
+     * @param email User's email.
+     * @return User's Profile.
+     */
+    @Override
+    public Optional<User> fetchUserByEmail(String email) {
+        return find("from User user where user.email = ?1", email).stream().findAny();
     }
 
     /**
@@ -175,5 +199,12 @@ public class UserRepository implements UserRepositoryI<User, String> {
                 .collect(Collectors.toSet());
 
         return UserType.mostSeverity(set);
+    }
+
+    public UserType findUserTypeById(String id){
+
+        var roles = roleRepository.fetchUserRoles(id);
+
+        return findUserType(roles);
     }
 }

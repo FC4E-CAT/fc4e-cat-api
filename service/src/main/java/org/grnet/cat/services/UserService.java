@@ -158,6 +158,10 @@ public class UserService {
      */
     public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId) {
 
+        userRepository.fetchUserByEmail(email).ifPresent(user -> {
+            throw new ConflictException("There is a User with email : "+email);
+        });
+
         var user = userRepository.updateUserMetadata(id, name, surname, email, orcidId);
 
         return UserMapper.INSTANCE.userToProfileDto(user);

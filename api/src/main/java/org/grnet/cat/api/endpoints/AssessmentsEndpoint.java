@@ -685,7 +685,7 @@ public class AssessmentsEndpoint {
                               @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id,
                           @Valid @NotNull(message = "The request body is empty.") ShareAssessmentRequest request) {
 
-        assessmentService.shareAssessment(id, request.sharedWithUsers);
+        assessmentService.shareAssessment(id, request.sharedWithUser);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
