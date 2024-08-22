@@ -20,8 +20,6 @@ public interface AssessmentService <Request, Update, Response extends Assessment
 
     PageResource<? extends Response> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType);
 
-    void assessmentBelongsToUser(String userID, String id);
-
     Entity getAssessment(String id);
 
     void forbidActionsToPublicAssessment(Entity assessment);

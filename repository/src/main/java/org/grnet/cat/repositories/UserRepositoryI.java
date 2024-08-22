@@ -2,6 +2,8 @@ package org.grnet.cat.repositories;
 
 import org.grnet.cat.entities.PageQuery;
 
+import java.util.Optional;
+
 
 public interface UserRepositoryI<E, ID> extends Repository<E, ID>{
 
@@ -12,6 +14,22 @@ public interface UserRepositoryI<E, ID> extends Repository<E, ID>{
      * @return User's Profile.
      */
     E fetchUser(ID id);
+
+    /**
+     * Returns an active user by email.
+     *
+     * @param email User's email.
+     * @return User.
+     */
+    Optional<E> fetchActiveUserByEmail(String email);
+
+    /**
+     * Returns a user by email.
+     *
+     * @param email User's email.
+     * @return User.
+     */
+    Optional<E> fetchUserByEmail(String email);
 
     /**
      * Updates the metadata for a user's profile.

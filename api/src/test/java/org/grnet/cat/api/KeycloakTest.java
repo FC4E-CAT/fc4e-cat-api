@@ -80,8 +80,7 @@ public class KeycloakTest {
         var update = new UpdateUserProfileDto();
         update.name = "foo";
         update.surname = "foo";
-        update.email = "foo@admin.grnet.gr";
-
+        update.email = username.concat("@admin.grnet.gr");
 
         var profile = given()
                 .auth()

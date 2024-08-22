@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.grnet.cat.services.KeycloakAdminService.ENTITLEMENTS_DELIMITER;
+
 @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
 @Interceptor
 @Priority(3000)
@@ -76,7 +78,7 @@ public class ShareableEntityInterceptor {
                 keycloakAdminService
                         .getUserEntitlements(utility.getUserUniqueIdentifier())
                         .stream()
-                        .filter(entitlement->entitlement.equals(shareableEntity.type().getValue().concat(":").concat(id)))
+                        .filter(entitlement->entitlement.equals(shareableEntity.type().getValue().concat(ENTITLEMENTS_DELIMITER).concat(id)))
                         .findAny()
                         .orElseThrow(()->new ForbiddenException("You do not have permission to access this resource."));
 

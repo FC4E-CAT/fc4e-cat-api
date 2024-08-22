@@ -37,7 +37,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#239](https://github.com/FC4E-CAT/fc4e-cat-api/pull/239) CAT-370: [UI][ΑPI] - Admin - View User
 - [#240](https://github.com/FC4E-CAT/fc4e-cat-api/pull/239) [UI][ΑPI] - Admin - View User
 - [#242](https://github.com/FC4E-CAT/fc4e-cat-api/pull/242) CAT-450 Input type in the evidence
-
+- [#243](https://github.com/FC4E-CAT/fc4e-cat-api/pull/243) CAT-460 Share an assessment.
 
 ## 1.6.0 - 2024-07-08
 

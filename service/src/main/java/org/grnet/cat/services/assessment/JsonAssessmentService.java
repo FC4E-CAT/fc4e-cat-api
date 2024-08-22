@@ -12,6 +12,7 @@ import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
@@ -25,7 +26,9 @@ import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.enums.ShareableEntityType;
+import org.grnet.cat.enums.UserType;
 import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
@@ -45,8 +48,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.grnet.cat.services.KeycloakAdminService.ENTITLEMENTS_DELIMITER;
 
 /**
  * The AssessmentService provides operations for managing assessments expressed by a JSON object.
@@ -124,7 +128,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         assessmentDoc.id = assessment.getId();
         storedAssessment.setAssessmentDoc(objectMapper.writeValueAsString(assessmentDoc));
 
-        keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(KeycloakAdminService.ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
+        keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
 
         return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(storedAssessment);
     }
@@ -405,7 +409,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var sharableIds = keycloakAdminService
                 .getUserEntitlements(userID)
                 .stream()
-                .map(entitlement->keycloakAdminService.getLastPartOfEntitlement(entitlement, KeycloakAdminService.ENTITLEMENTS_DELIMITER))
+                .map(entitlement->keycloakAdminService.getLastPartOfEntitlement(entitlement, ENTITLEMENTS_DELIMITER))
                 .collect(Collectors.toList());
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId, sharableIds);
@@ -458,16 +462,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
                 .collect(Collectors.toList());
 
         return new PageResource<>(objects, jsonToObjects, uriInfo);
-    }
-
-    @Override
-    public void assessmentBelongsToUser(String userID, String assessmentId) {
-
-        var assessment = assessmentRepository.findById(assessmentId);
-
-        if (!assessment.getValidation().getUser().getId().equals(userID)) {
-            throw new ForbiddenException("User not authorized to manage assessment with ID " + assessmentId);
-        }
     }
 
     @Override
@@ -559,27 +553,29 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * Shares an assessment with specified users.
      *
      * @param assessmentId The ID of the assessment to be shared.
-     * @param sharedWithUsers A list of user IDs with whom the assessment will be shared.
+     * @param email A user's email with whom the assessment will be shared.
      */
     @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
-    public void shareAssessment(String assessmentId, Set<String> sharedWithUsers){
+    public void shareAssessment(String assessmentId, String email){
 
+        var user = userRepository.fetchActiveUserByEmail(email).orElseThrow(()-> new NotFoundException("There is no user with email : "+email));
 
-        sharedWithUsers
-                .stream()
-                .filter(user-> userRepository.findByIdOptional(user).isPresent())
-                .forEach(user->{
+        var type = userRepository.findUserTypeById(user.getId());
 
-                    var listOfEntitlements = keycloakAdminService.getUserEntitlements(user);
+        if(!type.equals(UserType.Validated)){
 
-                    var entitlementToBeAdded = ShareableEntityType.ASSESSMENT.getValue().concat(KeycloakAdminService.ENTITLEMENTS_DELIMITER).concat(assessmentId);
+            throw new ForbiddenException("You cannot share an assessment with a user who has not been validated.");
+        }
 
-                    //ignore the entitlement that has already been assigned
+        var entitlementToBeAdded = ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId);
 
-                    if(!listOfEntitlements.contains(entitlementToBeAdded)){
+        var listOfEntitlements = keycloakAdminService.getUserEntitlements(user.getId());
 
-                        keycloakAdminService.addEntitlementsToUser(user, ShareableEntityType.ASSESSMENT.getValue().concat(KeycloakAdminService.ENTITLEMENTS_DELIMITER).concat(assessmentId));
-                    }
-                });
+        if(listOfEntitlements.contains(entitlementToBeAdded)){
+
+            throw new ConflictException("The assessment has already been shared with the user.");
+        }
+
+        keycloakAdminService.addEntitlementsToUser(user.getId(), ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
     }
 }
