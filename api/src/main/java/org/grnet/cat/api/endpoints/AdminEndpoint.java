@@ -302,10 +302,10 @@ public class AdminEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                                @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
-                                                @Valid @NotNull(message = "The request body is empty.") UpdateValidationStatus updateValidationStatus) {
+                                                    @PathParam("id") @Valid @NotFoundEntity(repository = ValidationRepository.class, message = "There is no Validation with the following id:") Long id,
+                                                    @Valid @NotNull(message = "The request body is empty.") UpdateValidationStatus updateValidationStatus) {
 
-        var response = validationService.updateValidationRequestStatus(id, ValidationStatus.valueOf(updateValidationStatus.status), utility.getUserUniqueIdentifier());
+        var response = validationService.updateValidationRequestStatus(id, ValidationStatus.valueOf(updateValidationStatus.status), utility.getUserUniqueIdentifier(), updateValidationStatus.rejectionReason);
 
         return Response.ok().entity(response).build();
     }
