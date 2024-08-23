@@ -15,6 +15,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
+import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
@@ -32,6 +33,7 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
+import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.UserRepository;
@@ -44,6 +46,7 @@ import org.grnet.cat.utils.Utility;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -577,5 +580,19 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         }
 
         keycloakAdminService.addEntitlementsToUser(user.getId(), ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
+    }
+
+    /**
+     * Retrieves a list of users to whom the specified assessment has been shared by the current user.
+     *
+     * @param assessmentId The unique identifier of the assessment.
+     * @return A list of {@code UserProfileDto} objects representing the users who have been granted access to the shared assessment.
+     **/
+    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
+    public List<UserProfileDto> getSharedUsers(String assessmentId) {
+
+        var ids = keycloakAdminService.getIdsOfSharedUsers(ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
+        var dbUsers = userRepository.fetchUsers(ids);
+        return UserMapper.INSTANCE.usersProfileToDto(dbUsers);
     }
 }

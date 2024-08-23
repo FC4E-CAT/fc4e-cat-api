@@ -6,11 +6,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.jboss.logging.Logger;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The KeycloakAdminService class provides methods to connect and interact with the Keycloak admin API.
@@ -72,8 +75,23 @@ public class KeycloakAdminService {
 
         } catch (Exception e) {
 
-            LOG.error("A communication error occurred while adding attribute to the user.", e);
-            throw new RuntimeException("A communication error occurred while adding attribute to the user.");
+            LOG.error("A communication error occurred while retrieving user's entitlements.", e);
+            throw new RuntimeException("A communication error occurred while retrieving user's entitlements.");
+        }
+    }
+
+    public List<String> getIdsOfSharedUsers(String entitlement){
+
+        try {
+
+            var realmResource = keycloak.realm(realm);
+
+            var keycloakUsers = realmResource.users().searchByAttributes(String.format("%s:%s", CAT_ENTITLEMENTS, entitlement));
+            return keycloakUsers.stream().map(admin -> admin.getAttributes().get(attribute)).flatMap(Collection::stream).collect(Collectors.toList());
+        } catch (Exception e) {
+
+            LOG.error("A communication error occurred while retrieving shared users.", e);
+            throw new RuntimeException("A communication error occurred while retrieving shared users.");
         }
     }
 

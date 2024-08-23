@@ -207,4 +207,9 @@ public class UserRepository implements UserRepositoryI<User, String> {
 
         return findUserType(roles);
     }
+
+    public List<User> fetchUsers(List<String> ids) {
+
+        return find("from User user where user.id in ?1", ids).list();
+    }
 }

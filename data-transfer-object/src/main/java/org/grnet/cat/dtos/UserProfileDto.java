@@ -35,6 +35,7 @@ public class UserProfileDto {
             example = "Identified"
     )
     @JsonProperty("user_type")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String type;
 
     @Schema(
@@ -114,5 +115,6 @@ public class UserProfileDto {
             example = "false"
     )
     @JsonProperty("banned")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean banned;
 }
