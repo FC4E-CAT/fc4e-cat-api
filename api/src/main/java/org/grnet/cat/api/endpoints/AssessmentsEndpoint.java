@@ -35,6 +35,7 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.ShareAssessmentRequest;
+import org.grnet.cat.dtos.assessment.SharedUsersResponse;
 import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -661,7 +662,13 @@ public class AssessmentsEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "404",
-            description = "Entity Not Found.",
+            description = "Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -692,6 +699,61 @@ public class AssessmentsEndpoint {
         informativeResponse.message = "Assessment shared successfully";
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get all users with whom an assessment has been shared.",
+            description = "Returns a list of users to whom a specific assessment has been shared by the current user.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of users to whom the assessment has been shared.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = SharedUsersResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/shared-users")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response getSharedUsers(@Parameter(
+            description = "The ID of the assessment.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+
+        var sharedUsers = assessmentService.getSharedUsers(id);
+
+        var response = new SharedUsersResponse();
+        response.sharedUsers = sharedUsers;
+
+        return Response.ok().entity(response).build();
     }
 
     public static class PageablePartialAssessmentResponse extends PageResource<UserPartialJsonAssessmentResponse> {

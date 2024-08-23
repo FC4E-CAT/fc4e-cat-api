@@ -34,11 +34,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#232](https://github.com/FC4E-CAT/fc4e-cat-api/pull/232) CAT-444 Create Endpoint for Sharing Assessments Among Users.
 - [#235](https://github.com/FC4E-CAT/fc4e-cat-api/pull/235) CAT-442 Create CRUD Operations for Criteria under Admin User.
 - [#236](https://github.com/FC4E-CAT/fc4e-cat-api/pull/236) CAT-386 wrong question -update text in templates.
-- [#239](https://github.com/FC4E-CAT/fc4e-cat-api/pull/239) CAT-370: [UI][ΑPI] - Admin - View User
-- [#240](https://github.com/FC4E-CAT/fc4e-cat-api/pull/239) [UI][ΑPI] - Admin - View User
-- [#241](https://github.com/FC4E-CAT/fc4e-cat-api/pull/241) CAT-448: [API] - Reason for rejection of a validation
-- [#242](https://github.com/FC4E-CAT/fc4e-cat-api/pull/242) CAT-450 Input type in the evidence
+- [#239](https://github.com/FC4E-CAT/fc4e-cat-api/pull/239) CAT-370 Admin - View User.
+- [#241](https://github.com/FC4E-CAT/fc4e-cat-api/pull/241) CAT-448 Reason for rejection of a validation.
+- [#242](https://github.com/FC4E-CAT/fc4e-cat-api/pull/242) CAT-450 Input type in the evidence.
 - [#243](https://github.com/FC4E-CAT/fc4e-cat-api/pull/243) CAT-460 Share an assessment.
+- [#244](https://github.com/FC4E-CAT/fc4e-cat-api/pull/244) CAT-458 As a user i want to know to whom i shared an assessment.
 
 ## 1.6.0 - 2024-07-08
 
