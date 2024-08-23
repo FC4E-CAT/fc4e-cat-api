@@ -39,6 +39,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#242](https://github.com/FC4E-CAT/fc4e-cat-api/pull/242) CAT-450 Input type in the evidence.
 - [#243](https://github.com/FC4E-CAT/fc4e-cat-api/pull/243) CAT-460 Share an assessment.
 - [#244](https://github.com/FC4E-CAT/fc4e-cat-api/pull/244) CAT-458 As a user i want to know to whom i shared an assessment.
+- [#245](https://github.com/FC4E-CAT/fc4e-cat-api/pull/245) CAT-452: Comments in an assessment
 
 ## 1.6.0 - 2024-07-08
 

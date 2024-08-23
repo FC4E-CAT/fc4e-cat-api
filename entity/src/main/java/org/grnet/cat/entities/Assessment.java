@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This entity represents the Assessment table in database.
@@ -50,4 +52,10 @@ public class Assessment {
 
     @Column(name = "updated_by")
     private String updatedBy;
+
+    @OneToMany(mappedBy = "assessment",
+                cascade = CascadeType.ALL,
+                orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
 }

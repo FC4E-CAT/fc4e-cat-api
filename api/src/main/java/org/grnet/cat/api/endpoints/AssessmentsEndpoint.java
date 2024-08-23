@@ -6,15 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -32,17 +24,14 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.assessment.ShareAssessmentRequest;
-import org.grnet.cat.dtos.assessment.SharedUsersResponse;
-import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.*;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
+import org.grnet.cat.repositories.CommentRepository;
+import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
 
@@ -61,6 +50,9 @@ public class AssessmentsEndpoint {
 
     @Inject
     JsonAssessmentService assessmentService;
+
+    @Inject
+    CommentService commentService;
 
     @Tag(name = "Assessment")
     @Operation(
@@ -754,6 +746,234 @@ public class AssessmentsEndpoint {
         response.sharedUsers = sharedUsers;
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Create a comment for a specific assessment",
+            description = "A validated user can create a comment for a specified assessment."
+    )
+    @APIResponse(
+            responseCode = "201",
+            description = "Assessment comment created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = CommentResponseDto.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/comments")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response createComment(
+            @Parameter(
+                    description = "The unique identifier of the assessment to create a comment.",
+                    required = true,
+                    example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(
+                    repository = AssessmentRepository.class,
+                    message = "There is no Assessment with the following id:")
+                    String id,
+            @Valid @NotNull(
+                    message = "The request body is empty.")
+                    CommentRequestDto request, @Context UriInfo uriInfo) {
+
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
+        var response = commentService.addCommentToAssessment(id, utility.getUserUniqueIdentifier(), request);
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
+
+
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Retrieve all comments for a specific assessment",
+            description = "A validated user can retrieve a list of comments associated with a specific assessment."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "List of comments.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = CommentResponseDto.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/comments")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response getAllCommentsForAssessment(
+            @Parameter(
+                    description = "The unique identifier of the assessment to create a comment.",
+                    required = true,
+                    example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(
+                    repository = AssessmentRepository.class,
+                    message = "There is no Assessment with the following id:")
+                    String id,
+            @QueryParam("page") @DefaultValue("1") int page,
+            @QueryParam("size") @DefaultValue("10") int size,
+            @Context UriInfo uriInfo) {
+
+        var comments = commentService.listComments(id, page - 1, size, uriInfo);
+
+        return Response.ok(comments).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Update a comment for a specific assessment",
+            description = "A validated user can update a comment associated with a specific assessment."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Comment updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = CommentResponseDto.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/comments/{comment-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response updateComment(
+            @PathParam("id") @Valid @NotFoundEntity(
+                    repository = AssessmentRepository.class,
+                    message = "Assessment with the given ID not found.")
+            String assessmentId,
+            @PathParam("comment-id") @Valid @NotFoundEntity(
+                    repository = CommentRepository.class,
+                    message = "Comment with the given ID not found.")
+            Long commentId,
+            @Valid @NotNull CommentRequestDto commentRequestDto) {
+
+        var updatedComment = commentService.updateComment(commentId, commentRequestDto);
+
+        return Response.ok().entity(updatedComment).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Delete a comment for a specific assessment",
+            description = "A validated user can delete a comment associated with a specific assessment."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "List of comments.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/{id}/comments/{comment-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response deleteComment(
+            @Parameter(
+                    description = "The ID of the assessment.",
+                    required = true,
+                    example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid
+            @NotFoundEntity(
+                    repository = AssessmentRepository.class,
+                    message = "There is no Assessment with the following id:")
+                    String id,
+            @Parameter(
+                    description = "The ID of the comment to be deleted.",
+                    required = true,
+                    example = "22",
+                    schema = @Schema(type = SchemaType.NUMBER))
+            @PathParam("comment-id") @Valid @NotFoundEntity(
+                    repository = CommentRepository.class,
+                    message = "There is no Comment with the following id:")
+                    Long commentId) {
+
+        commentService.deleteComment(commentId);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "Comment has been successfully deleted.";
+
+        return Response.ok().entity(informativeResponse).build();
     }
 
     public static class PageablePartialAssessmentResponse extends PageResource<UserPartialJsonAssessmentResponse> {
