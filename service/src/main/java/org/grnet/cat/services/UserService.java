@@ -18,7 +18,6 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.*;
-import org.grnet.cat.services.assessment.JsonAbstractAssessmentService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.jboss.logging.Logger;
 

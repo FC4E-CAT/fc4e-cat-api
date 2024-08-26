@@ -890,23 +890,19 @@ public class AssessmentsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/{id}/comments/{comment-id}")
+    @Path("/comments/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
     public Response updateComment(
             @PathParam("id") @Valid @NotFoundEntity(
-                    repository = AssessmentRepository.class,
-                    message = "Assessment with the given ID not found.")
-            String assessmentId,
-            @PathParam("comment-id") @Valid @NotFoundEntity(
                     repository = CommentRepository.class,
                     message = "Comment with the given ID not found.")
-            Long commentId,
+            Long id,
             @Valid @NotNull CommentRequestDto commentRequestDto) {
 
-        var updatedComment = commentService.updateComment(commentId, commentRequestDto);
+        var updatedComment = commentService.updateComment(id, commentRequestDto);
 
         return Response.ok().entity(updatedComment).build();
     }
@@ -942,32 +938,21 @@ public class AssessmentsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @DELETE
-    @Path("/{id}/comments/{comment-id}")
+    @Path("/comments/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
-    public Response deleteComment(
-            @Parameter(
-                    description = "The ID of the assessment.",
-                    required = true,
-                    example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") @Valid
-            @NotFoundEntity(
-                    repository = AssessmentRepository.class,
-                    message = "There is no Assessment with the following id:")
-                    String id,
-            @Parameter(
+    public Response deleteComment(@Parameter(
                     description = "The ID of the comment to be deleted.",
                     required = true,
                     example = "22",
                     schema = @Schema(type = SchemaType.NUMBER))
-            @PathParam("comment-id") @Valid @NotFoundEntity(
+            @PathParam("id") @Valid @NotFoundEntity(
                     repository = CommentRepository.class,
                     message = "There is no Comment with the following id:")
-                    Long commentId) {
+                    Long id) {
 
-        commentService.deleteComment(commentId);
+        commentService.deleteComment(id);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
