@@ -9,7 +9,9 @@ import jakarta.inject.Inject;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
+import org.grnet.cat.repositories.CommentRepository;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.PrincipleService;
 import org.grnet.cat.services.UserService;
@@ -43,6 +45,9 @@ public class KeycloakTest {
     @Inject
     PrincipleService principleService;
 
+    @Inject
+    CommentService commentService;
+
     @BeforeEach
     public void setup() {
 
@@ -52,6 +57,7 @@ public class KeycloakTest {
         Mockito.when(mock.getUserEntitlements(any())).thenReturn(Collections.emptyList());
         QuarkusMock.installMockForType(mock, KeycloakAdminService.class);
 
+        commentService.deleteAll();
         jsonAssessmentService.deleteAll();
         validationService.deleteAll();
         principleService.deleteAll();

@@ -11,6 +11,6 @@ CREATE TABLE Comment (
     user_id VARCHAR(255) NOT NULL,
     text TEXT NOT NULL,
     created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (assessment_id) REFERENCES Assessment(id) ON DELETE CASCADE,
-    FOREIGN KEY(user_id) REFERENCES User(id) ON DELETE CASCADE
+    FOREIGN KEY (assessment_id) REFERENCES Assessment(id),
+    FOREIGN KEY(user_id) REFERENCES User(id)
 );

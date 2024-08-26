@@ -1,17 +1,10 @@
 package org.grnet.cat.repositories;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
-import io.quarkus.panache.common.Parameters;
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
-import net.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.*;
-import org.grnet.cat.enums.ValidationStatus;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -20,12 +13,6 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class AssessmentRepository implements Repository<Assessment, String> {
-
-    @Inject
-    ObjectMapper objectMapper;
-
-    @Inject
-    UserRepository userRepository;
 
     /**
      * Retrieves a page of assessments submitted by the specified user.

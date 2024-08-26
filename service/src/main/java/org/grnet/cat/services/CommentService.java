@@ -66,6 +66,11 @@ public class CommentService {
     }
 
     @Transactional
+    public void deleteAll() {
+        commentRepository.deleteAll();
+    }
+
+    @Transactional
     public PageResource<CommentResponseDto> listComments(String assessmentId, int page, int size, UriInfo uriInfo) {
 
         var commentsPage = commentRepository.fetchCommentsByAssessmentId(assessmentId, page, size);
