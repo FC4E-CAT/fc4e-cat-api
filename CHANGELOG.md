@@ -41,6 +41,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#244](https://github.com/FC4E-CAT/fc4e-cat-api/pull/244) CAT-458 As a user i want to know to whom i shared an assessment.
 - [#245](https://github.com/FC4E-CAT/fc4e-cat-api/pull/245) CAT-452: Comments in an assessment
 
+### Changed
+
+- [#249](https://github.com/FC4E-CAT/fc4e-cat-api/pull/249) CAT-464 Issue when updating the user details in profile.
+
+
 ## 1.6.0 - 2024-07-08
 
 ---

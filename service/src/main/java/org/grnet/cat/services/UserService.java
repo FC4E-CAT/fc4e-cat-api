@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -108,17 +109,17 @@ public class UserService {
         var userProfile = getUserProfile(userId);
 
         var info = new UserInfoDto();
-        info.id             = userProfile.id;
-        info.name           = userProfile.name;
-        info.surname        = userProfile.surname;
-        info.email          = userProfile.email;
-        info.banned         = userProfile.banned;
-        info.orcidId        = userProfile.orcidId;
-        info.roles          = userProfile.roles;
-        info.registeredOn   = userProfile.registeredOn;
-        info.type           = userProfile.type;
-        info.validatedOn    = userProfile.validatedOn;
-        info.updatedOn      = userProfile.updatedOn;
+        info.id = userProfile.id;
+        info.name = userProfile.name;
+        info.surname = userProfile.surname;
+        info.email = userProfile.email;
+        info.banned = userProfile.banned;
+        info.orcidId = userProfile.orcidId;
+        info.roles = userProfile.roles;
+        info.registeredOn = userProfile.registeredOn;
+        info.type = userProfile.type;
+        info.validatedOn = userProfile.validatedOn;
+        info.updatedOn = userProfile.updatedOn;
         info.totalValidationsCount = validationRepository.countValidationsByUserId(info.id);
         info.totalAssessmentsCount = assessmentRepository.countAllAssessmentsByUser(info.id);
 
@@ -129,12 +130,12 @@ public class UserService {
      * Retrieves a page of users from the database.
      *
      * @param search  Enables clients to specify a text string for searching specific fields within User entity.
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of users to include in a page.
-     * @param sort Specifies the field by which the results to be sorted.
-     * @param order Specifies the order in which the sorted results should be returned.
-     * @param status Indicates whether the user is active or deleted.
-     * @param type Filters the results based on the type of user.
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of users to include in a page.
+     * @param sort    Specifies the field by which the results to be sorted.
+     * @param order   Specifies the order in which the sorted results should be returned.
+     * @param status  Indicates whether the user is active or deleted.
+     * @param type    Filters the results based on the type of user.
      * @param uriInfo The Uri Info.
      * @return A list of UserProfileDto objects representing the users in the requested page.
      */
@@ -157,10 +158,10 @@ public class UserService {
      */
     public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId) {
 
-        userRepository.fetchUserByEmail(email).ifPresent(user -> {
-            throw new ConflictException("There is a User with email : "+email);
-        });
-
+       Optional<User> optionalUser=userRepository.fetchUserByEmail(email);
+        if (optionalUser.isPresent() && !optionalUser.get().getId().equals(id)){
+            throw new ConflictException("There is a User with email : " + email);
+        }
         var user = userRepository.updateUserMetadata(id, name, surname, email, orcidId);
 
         return UserMapper.INSTANCE.userToProfileDto(user);
@@ -294,7 +295,7 @@ public class UserService {
         roleRepository.removeRoles(userId, List.of("deny_access"));
     }
 
-    public PageResource<UserAssessmentEligibilityResponse> getUserAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo){
+    public PageResource<UserAssessmentEligibilityResponse> getUserAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo) {
 
         var list = validationService.getUserAssessmentEligibility(page, size, userID);
 
