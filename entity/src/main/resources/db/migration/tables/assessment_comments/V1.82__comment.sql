@@ -11,5 +11,5 @@ CREATE TABLE Comment (
     text TEXT NOT NULL,
     created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (assessment_id) REFERENCES Assessment(id),
-    FOREIGN KEY(user_id) REFERENCES User(id)
+    FOREIGN KEY (user_id) REFERENCES User(id)
 );
