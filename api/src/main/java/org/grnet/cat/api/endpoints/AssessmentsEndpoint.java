@@ -382,18 +382,18 @@ public class AssessmentsEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
+                                          @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
             description = "The Actor to retrieve assessments.",
             required = true,
             example = "6",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
-                                              @Parameter(name = "page", in = QUERY,
-                                                      description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                              @Parameter(name = "size", in = QUERY,
-                                                      description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                              @Context UriInfo uriInfo) {
+                                          @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
+                                          @Parameter(name = "page", in = QUERY,
+                                                  description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                          @Parameter(name = "size", in = QUERY,
+                                                  description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                          @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                          @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getPublishedDtoAssessmentObjectsByTypeAndActorAndPage(page - 1, size, typeId, actorId, uriInfo);
 
@@ -445,7 +445,7 @@ public class AssessmentsEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
         assessmentService.deletePrivateAssessmentBelongsToUser(id);
 
@@ -508,13 +508,13 @@ public class AssessmentsEndpoint {
             required = true,
             example = "6",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
-                                              @Parameter(name = "page", in = QUERY,
-                                                      description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                              @Parameter(name = "size", in = QUERY,
-                                                      description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                              @Context UriInfo uriInfo) {
+                                                 @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
+                                                 @Parameter(name = "page", in = QUERY,
+                                                         description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                                 @Parameter(name = "size", in = QUERY,
+                                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAssessmentsObjectsByUserAndActor(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), actorId);
 
@@ -569,7 +569,7 @@ public class AssessmentsEndpoint {
     @Registration
     @Deprecated
     public Response getAssessmentsObjects(@Parameter(name = "page", in = QUERY,
-                                                  description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                           @Parameter(name = "size", in = QUERY,
                                                   description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                                           @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
@@ -617,7 +617,7 @@ public class AssessmentsEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+                                        @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
         var validations = assessmentService.getPublicDtoAssessment(id);
 
@@ -681,7 +681,7 @@ public class AssessmentsEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                              @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id,
+                          @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id,
                           @Valid @NotNull(message = "The request body is empty.") ShareAssessmentRequest request) {
 
         assessmentService.shareAssessment(id, request.sharedWithUser);
@@ -738,7 +738,7 @@ public class AssessmentsEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
         var sharedUsers = assessmentService.getSharedUsers(id);
 
@@ -792,13 +792,13 @@ public class AssessmentsEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(
                     repository = AssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
-                    String id,
+            String id,
             @Valid @NotNull(
                     message = "The request body is empty.")
-                    CommentRequestDto request, @Context UriInfo uriInfo) {
+            CommentRequestDto request, @Context UriInfo uriInfo) {
 
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
-        var response = commentService.addCommentToAssessment(id, utility.getUserUniqueIdentifier(), request);
+        var response = commentService.addComment(id, utility.getUserUniqueIdentifier(), request);
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
 
@@ -849,7 +849,7 @@ public class AssessmentsEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(
                     repository = AssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
-                    String id,
+            String id,
             @QueryParam("page") @DefaultValue("1") int page,
             @QueryParam("size") @DefaultValue("10") int size,
             @Context UriInfo uriInfo) {
@@ -890,19 +890,33 @@ public class AssessmentsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/comments/{id}")
+    @Path("{id}/comments/{comment-id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
     public Response updateComment(
+            @Parameter(
+                    description = "The unique identifier of the assessment to create a comment.",
+                    required = true,
+                    example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                    schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(
+                    repository = AssessmentRepository.class,
+                    message = "There is no Assessment with the following id:")
+            String assessmentId,
+            @Parameter(
+                    description = "The unique identifier of the comment.",
+                    required = true,
+                    example = "22",
+                    schema = @Schema(type = SchemaType.NUMBER))
+            @PathParam("comment-id") @Valid @NotFoundEntity(
                     repository = CommentRepository.class,
                     message = "Comment with the given ID not found.")
-            Long id,
+                    Long commentId,
             @Valid @NotNull CommentRequestDto commentRequestDto) {
 
-        var updatedComment = commentService.updateComment(id, commentRequestDto);
+        var updatedComment = commentService.updateComment(assessmentId, commentId,commentRequestDto);
 
         return Response.ok().entity(updatedComment).build();
     }
@@ -938,21 +952,31 @@ public class AssessmentsEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @DELETE
-    @Path("/comments/{id}")
+    @Path("{id}/comments/{comment-id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
-    public Response deleteComment(@Parameter(
-                    description = "The ID of the comment to be deleted.",
+    public Response deleteComment(
+            @Parameter(
+                    description = "The unique identifier of the assessment to create a comment.",
+                    required = true,
+                    example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(
+                    repository = AssessmentRepository.class,
+                    message = "There is no Assessment with the following id:")
+                    String assessmentId,
+            @Parameter(
+                    description = "The unique identifier of the comment.",
                     required = true,
                     example = "22",
                     schema = @Schema(type = SchemaType.NUMBER))
-            @PathParam("id") @Valid @NotFoundEntity(
+            @PathParam("comment-id") @Valid @NotFoundEntity(
                     repository = CommentRepository.class,
-                    message = "There is no Comment with the following id:")
-                    Long id) {
+                    message = "Comment with the given ID not found.")
+                    Long commentId){
 
-        commentService.deleteComment(id);
+        commentService.deleteComment(assessmentId, commentId);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;

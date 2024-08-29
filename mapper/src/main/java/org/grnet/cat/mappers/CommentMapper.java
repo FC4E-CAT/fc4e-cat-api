@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper
+@Mapper(uses = UserMapper.class)
 public interface CommentMapper {
 
     CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
@@ -23,7 +23,7 @@ public interface CommentMapper {
     @Mapping(source = "assessment.id", target = "assessmentId")
     @Mapping(source = "text", target = "text")
     @Mapping(source = "createdOn", target = "createdOn")
-    @Mapping(source = "user.name", target = "userName")
+    @Mapping(source = "user", target = "user")
     CommentResponseDto commentToDto(Comment comment);
 
 
