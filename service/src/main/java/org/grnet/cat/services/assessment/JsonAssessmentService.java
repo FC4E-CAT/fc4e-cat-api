@@ -93,14 +93,14 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var validation = validationRepository.fetchValidationByUserAndActorAndOrganisation(userId, request.assessmentDoc.actor.id, request.assessmentDoc.organisation.id);
 
-        if(!validation.getStatus().equals(ValidationStatus.APPROVED)){
+        if (!validation.getStatus().equals(ValidationStatus.APPROVED)) {
 
             throw new ForbiddenException("The validation request hasn't been approved yet!");
         }
 
         var template = templateRepository.fetchTemplateByActorAndType(request.assessmentDoc.actor.id, request.assessmentDoc.assessmentType.id);
 
-        if(template.isEmpty()){
+        if (template.isEmpty()) {
 
             throw new BadRequestException(String.format("Not Found Template for Actor [%s] and Assessment Type [%s].", request.assessmentDoc.actor.name, request.assessmentDoc.assessmentType.name));
         }
@@ -121,7 +121,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         assessment.setTemplate(template.get());
         assessment.setValidation(validation);
         assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
-
+        assessment.setShared(Boolean.FALSE);
         assessmentRepository.persist(assessment);
 
         //assign assessment id to json
@@ -199,7 +199,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         if (!isValid) {
 
-            throw new BadRequestException("A field in Assessment Request mismatches a field in Template. Mismatches : "+listOfMismatchedFields);
+            throw new BadRequestException("A field in Assessment Request mismatches a field in Template. Mismatches : " + listOfMismatchedFields);
         }
     }
 
@@ -238,7 +238,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
                     if (!(expectedKey != null && ((JsonNode) actualEntry.getValue()).equals(comparator, expectedKey))) {
 
-                        if(!actualEntry.getKey().equals("description")){
+                        if (!actualEntry.getKey().equals("description")) {
 
                             fields.add(String.format("FIELD : %s | EXPECTED VALUE : %s | ACTUAL VALUE : %s", actualEntry.getKey(), expectedKey.asText(), ((JsonNode) actualEntry.getValue()).asText()));
                             continueTheIteration = false;
@@ -325,7 +325,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     public UserJsonAssessmentResponse getDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
@@ -412,7 +412,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var sharableIds = keycloakAdminService
                 .getUserEntitlements(userID)
                 .stream()
-                .map(entitlement->keycloakAdminService.getLastPartOfEntitlement(entitlement, ENTITLEMENTS_DELIMITER))
+                .map(entitlement -> keycloakAdminService.getLastPartOfEntitlement(entitlement, ENTITLEMENTS_DELIMITER))
                 .collect(Collectors.toList());
 
         var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId, sharableIds);
@@ -502,7 +502,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var assessments = assessmentRepository.fetchAllAssessmentsByPage(page, size, search);
         var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
-        var partialAssessments  = AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments);
+        var partialAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments);
 
         return new PageResource<>(assessments, partialAssessments, uriInfo);
     }
@@ -556,16 +556,17 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * Shares an assessment with specified users.
      *
      * @param assessmentId The ID of the assessment to be shared.
-     * @param email A user's email with whom the assessment will be shared.
+     * @param email        A user's email with whom the assessment will be shared.
      */
-    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
-    public void shareAssessment(String assessmentId, String email){
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
+    @Transactional
+    public void shareAssessment(String assessmentId, String email) {
 
-        var user = userRepository.fetchActiveUserByEmail(email).orElseThrow(()-> new NotFoundException("There is no user with email : "+email));
+        var user = userRepository.fetchActiveUserByEmail(email).orElseThrow(() -> new NotFoundException("There is no user with email : " + email));
 
         var type = userRepository.findUserTypeById(user.getId());
 
-        if(!type.equals(UserType.Validated)){
+        if (!type.equals(UserType.Validated)) {
 
             throw new ForbiddenException("You cannot share an assessment with a user who has not been validated.");
         }
@@ -574,13 +575,16 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var listOfEntitlements = keycloakAdminService.getUserEntitlements(user.getId());
 
-        if(listOfEntitlements.contains(entitlementToBeAdded)){
+        if (listOfEntitlements.contains(entitlementToBeAdded)) {
 
             throw new ConflictException("The assessment has already been shared with the user.");
         }
 
         keycloakAdminService.addEntitlementsToUser(user.getId(), ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
-    }
+
+        Assessment assessment = assessmentRepository.findById(assessmentId);
+        assessment.setShared(true);
+      }
 
     /**
      * Retrieves a list of users to whom the specified assessment has been shared by the current user.
@@ -588,7 +592,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @param assessmentId The unique identifier of the assessment.
      * @return A list of {@code UserProfileDto} objects representing the users who have been granted access to the shared assessment.
      **/
-    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     public List<UserProfileDto> getSharedUsers(String assessmentId) {
 
         var ids = keycloakAdminService.getIdsOfSharedUsers(ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));

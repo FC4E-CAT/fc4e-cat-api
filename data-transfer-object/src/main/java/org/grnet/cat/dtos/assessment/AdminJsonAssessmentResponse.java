@@ -20,4 +20,13 @@ public class AdminJsonAssessmentResponse extends AssessmentResponse {
             description = "The assessment doc")
     @JsonProperty("assessment_doc")
     public AssessmentDoc assessmentDoc;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicates that the assessment has been shared",
+            example = "true"
+    )
+    @JsonProperty("shared")
+    public Boolean shared;
 }

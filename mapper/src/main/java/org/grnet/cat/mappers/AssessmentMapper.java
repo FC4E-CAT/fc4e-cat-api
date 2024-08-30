@@ -49,6 +49,7 @@ public interface AssessmentMapper {
     @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
     @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
     @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
+
     UserPartialJsonAssessmentResponse userAssessmentToPartialJsonAssessment(UserJsonAssessmentResponse assessment);
 
     @Named("adminPartialMapWithExpression")
@@ -61,6 +62,8 @@ public interface AssessmentMapper {
     @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
     @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
     @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
+    @Mapping(target = "shared", expression = "java(assessment.shared)")
+
     AdminPartialJsonAssessmentResponse adminAssessmentToPartialJsonAssessment(AdminJsonAssessmentResponse assessment);
 
 
@@ -80,6 +83,7 @@ public interface AssessmentMapper {
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
     @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
     @Mapping(target = "sharedToUser", expression = "java(isSharedToUser(assessment.getValidation().getUser().getId()))")
+    @Mapping(target = "sharedByUser", expression = "java(isSharedByUser(assessment,assessment.getValidation().getUser().getId()))")
     UserJsonAssessmentResponse userAssessmentToJsonAssessment(Assessment assessment);
 
     @Named("adminMapWithExpression")
@@ -90,6 +94,8 @@ public interface AssessmentMapper {
     @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
     @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
+    @Mapping(target = "shared", expression = "java(assessment.getShared())")
+
     AdminJsonAssessmentResponse adminAssessmentToJsonAssessment(Assessment assessment);
 
     @Mapping(target = "id", ignore = true)
@@ -112,7 +118,7 @@ public interface AssessmentMapper {
         return objectMapper.readValue(doc, AssessmentDoc.class);
     }
 
-    default Boolean isSharedToUser(String userId){
+    default Boolean isSharedToUser(String userId) {
 
         var utility = CDI.current().select(Utility.class).get();
 
@@ -123,8 +129,19 @@ public interface AssessmentMapper {
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<AssessmentPerActorDto> assessmentPerActorsToAssessmentPerActorsDto(List<AssessmentPerActor> assessmentPerActors);
+
     @Named("mapWithExpression")
     @Mapping(target = "totalAssessmentNum", expression = "java(assessmentPerActor.getTotal())")
     @Mapping(target = "actor", expression = "java(assessmentPerActor.getActor_name())")
     AssessmentPerActorDto assessmentPerActorToAssessmentPerActorDto(AssessmentPerActor assessmentPerActor);
+
+    default Boolean isSharedByUser(Assessment assessment, String userId) {
+        var utility = CDI.current().select(Utility.class).get();
+        var currentUser = utility.getUserUniqueIdentifier();
+        var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment
+
+        return assessment.getShared() && sameUser; //if the assessment is shared and the user is the owner, the assessment is shared by the user
+
+    }
+
 }
