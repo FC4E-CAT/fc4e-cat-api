@@ -82,4 +82,13 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     )
     @JsonProperty("ranking")
     public Number ranking;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicates that the assessment has been shared",
+            example = "true"
+    )
+    @JsonProperty("shared")
+    public Boolean shared;
 }

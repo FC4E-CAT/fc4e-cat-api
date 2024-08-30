@@ -15,4 +15,14 @@ public class UserPartialJsonAssessmentResponse extends AdminPartialJsonAssessmen
     )
     @JsonProperty("shared_to_user")
     public Boolean sharedToUser;
+
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicates that the entity has been shared by the user.",
+            example = "true"
+    )
+    @JsonProperty("shared_by_user")
+    public Boolean sharedByUser;
 }
