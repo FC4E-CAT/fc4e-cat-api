@@ -50,8 +50,8 @@ public abstract class JsonAbstractAssessmentService<Request extends JsonAssessme
      */
     public void deletePrivateAssessment(String assessmentId){
 
-        var assessment = getAssessment(assessmentId);
-        forbidActionsToPublicAssessment(assessment);
+//        var assessment = getAssessment(assessmentId);
+//        forbidActionsToPublicAssessment(assessment);
         delete(assessmentId);
     }
 
