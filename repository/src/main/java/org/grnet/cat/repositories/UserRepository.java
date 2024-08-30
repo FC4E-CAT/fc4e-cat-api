@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -17,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -201,11 +201,27 @@ public class UserRepository implements UserRepositoryI<User, String> {
         return UserType.mostSeverity(set);
     }
 
+    public Set<UserType> findUserTypes(List<Role> roles){
+
+        return roles
+                .stream()
+                .map(Role::getName)
+                .map(UserType::retrieveByRole)
+                .collect(Collectors.toSet());
+    }
+
     public UserType findUserTypeById(String id){
 
         var roles = roleRepository.fetchUserRoles(id);
 
         return findUserType(roles);
+    }
+
+    public Set<UserType> findUserTypesById(String id){
+
+        var roles = roleRepository.fetchUserRoles(id);
+
+        return findUserTypes(roles);
     }
 
     public List<User> fetchUsers(List<String> ids) {
