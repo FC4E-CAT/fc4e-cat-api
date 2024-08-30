@@ -288,7 +288,9 @@ public class AssessmentRepository implements Repository<Assessment, String> {
     @Transactional
     public void deleteAssessmentById(String assessmentId) {
 
-        delete("from Assessment where id = ?1", assessmentId);
+        var assessment = findById(assessmentId);
+
+        delete(assessment);
     }
 
     @Transactional
