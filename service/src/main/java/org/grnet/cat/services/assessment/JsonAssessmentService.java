@@ -564,9 +564,12 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var user = userRepository.fetchActiveUserByEmail(email).orElseThrow(() -> new NotFoundException("There is no user with email : " + email));
 
-        var type = userRepository.findUserTypeById(user.getId());
+        var types = userRepository.findUserTypesById(user.getId());
 
-        if (!type.equals(UserType.Validated)) {
+        if(types.contains(UserType.Deny_Access)){
+
+            throw new ForbiddenException("You cannot share an assessment with a banned user.");
+        } else if (!types.contains(UserType.Validated)){
 
             throw new ForbiddenException("You cannot share an assessment with a user who has not been validated.");
         }
