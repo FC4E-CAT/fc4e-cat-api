@@ -916,7 +916,7 @@ public class AssessmentsEndpoint {
                     Long commentId,
             @Valid @NotNull CommentRequestDto commentRequestDto) {
 
-        var updatedComment = commentService.updateComment(assessmentId, commentId,commentRequestDto);
+        var updatedComment = commentService.updateComment(assessmentId, commentId,commentRequestDto, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(updatedComment).build();
     }
@@ -976,7 +976,7 @@ public class AssessmentsEndpoint {
                     message = "Comment with the given ID not found.")
                     Long commentId){
 
-        commentService.deleteComment(assessmentId, commentId);
+        commentService.deleteComment(assessmentId, commentId, utility.getUserUniqueIdentifier());
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
