@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,7 +33,10 @@ public class Comment {
 
     @Column(name = "created_on")
     @NotNull
-    private LocalDateTime createdOn;
+    private Timestamp createdOn;
+
+    @Column(name = "modified_on")
+    private Timestamp modifiedOn;
 
     @Column(name = "text")
     @NotNull

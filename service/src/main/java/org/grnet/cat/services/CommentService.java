@@ -3,6 +3,7 @@ package org.grnet.cat.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.assessment.CommentRequestDto;
 import org.grnet.cat.dtos.assessment.CommentResponseDto;
@@ -15,6 +16,9 @@ import org.grnet.cat.repositories.CommentRepository;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.jboss.logging.Logger;
 import io.quarkus.hibernate.orm.panache.Panache;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @ApplicationScoped
@@ -22,6 +26,8 @@ public class CommentService {
 
     @Inject
     CommentRepository commentRepository;
+
+
     private static final Logger LOG = Logger.getLogger(CommentService.class);
 
     /**
@@ -44,7 +50,7 @@ public class CommentService {
         comment.setAssessment(assessment);
         comment.setUser(user);
         comment.setText(commentRequestDto.text);
-        comment.setCreatedOn(LocalDateTime.now());
+        comment.setCreatedOn(Timestamp.from(Instant.now()));
 
         commentRepository.persist(comment);
 
@@ -53,18 +59,29 @@ public class CommentService {
 
     @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public CommentResponseDto updateComment(String assessmentId, Long commentId, CommentRequestDto commentRequestDto) {
+    public CommentResponseDto updateComment(String assessmentId, Long commentId, CommentRequestDto commentRequestDto, String userId) {
 
         var comment = commentRepository.findById(commentId);
 
+        if (comment == null || !comment.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have permission to update this comment.");
+        }
+
         comment.setText(commentRequestDto.text);
+        comment.setModifiedOn(Timestamp.from(Instant.now()));
 
         return CommentMapper.INSTANCE.commentToDto(comment);
     }
 
     @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public void deleteComment(String assessmentId, Long commentId) {
+    public void deleteComment(String assessmentId, Long commentId, String userId ) {
+
+        var comment = commentRepository.findById(commentId);
+
+        if (comment == null || !comment.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have permission to delete this comment.");
+        }
 
         commentRepository.deleteById(commentId);
 
