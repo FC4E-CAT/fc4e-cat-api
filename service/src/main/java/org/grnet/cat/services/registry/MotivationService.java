@@ -55,7 +55,7 @@ public class MotivationService {
      * @param id The ID of the Motivation to retrieve.
      * @return The corresponding Motivation.
      */
-    public MotivationResponse getMotivationById(String id){
+    public MotivationResponse getMotivationById(String id) {
 
         var motivation = motivationRepository.findById(id);
 

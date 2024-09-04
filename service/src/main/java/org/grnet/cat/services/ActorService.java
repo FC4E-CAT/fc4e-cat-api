@@ -22,16 +22,15 @@ public class ActorService {
     @Inject
     ActorRepository actorRepository;
 
-
     /**
      * Retrieves a page of actors from the database.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of actors to include in a page.
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of actors to include in a page.
      * @param uriInfo The Uri Info.
      * @return A list of ActorDto objects representing the actors in the requested page.
      */
-    public PageResource<ActorDto> getActorsByPage(int page, int size, UriInfo uriInfo){
+    public PageResource<ActorDto> getActorsByPage(int page, int size, UriInfo uriInfo) {
 
         var actors = actorRepository.fetchActorsByPage(page, size);
 
@@ -40,6 +39,6 @@ public class ActorService {
 
     public void doesActorWithGivenNameExist(String name) {
 
-        actorRepository.fetchActorByName(name).orElseThrow(()-> new NotFoundException("There is no Actor : "+name));
+        actorRepository.fetchActorByName(name).orElseThrow(() -> new NotFoundException("There is no Actor : " + name));
     }
 }

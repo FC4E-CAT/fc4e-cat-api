@@ -12,10 +12,17 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 public abstract class Registry {
-
     @Column(name = "populatedBy")
     private String populatedBy;
 
     @Column(name = "lastTouch")
     private Timestamp lastTouch;
+
+    public void setPopulatedBy(String populatedBy) {
+        this.populatedBy = populatedBy;
+    }
+
+    public void setLastTouch(Timestamp lastTouch) {
+        this.lastTouch = lastTouch;
+    }
 }
