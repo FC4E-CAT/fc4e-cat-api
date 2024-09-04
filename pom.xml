@@ -157,6 +157,11 @@
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-resteasy-reactive-qute</artifactId>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>3.6.1</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
