@@ -22,6 +22,6 @@ public class RegistryIdGenerator implements BeforeExecutionGenerator {
 
     private String generateSecureRandomHexWithCommonsMathRandomDataGenerator(int len) {
         var randomDataGenerator = new RandomDataGenerator();
-        return randomDataGenerator.nextSecureHexString(len);
+        return randomDataGenerator.nextSecureHexString(len).toUpperCase();
     }
 }

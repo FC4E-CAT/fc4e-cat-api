@@ -150,7 +150,7 @@ public class ValidationResponse {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The user who has validated the validation request.",
-            example = " 2023-06-09 12:19:31.333059"
+            example = "user_id"
     )
     @JsonProperty("validated_by")
     @JsonInclude(JsonInclude.Include.NON_NULL)
