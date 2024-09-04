@@ -22,8 +22,11 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
+import org.grnet.cat.repositories.registry.ImperativeRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
+import org.grnet.cat.services.registry.ImperativeService;
 import org.grnet.cat.services.registry.TypeCriterionService;
 import org.grnet.cat.utils.Utility;
 
@@ -38,6 +41,8 @@ public class RegistryCodelistEndpoint {
 
     @Inject
     TypeCriterionService typeCriterionService;
+    @Inject
+    ImperativeService imperativeService;
 
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
@@ -157,5 +162,115 @@ public class RegistryCodelistEndpoint {
         }
     }
 
+    @Tag(name = "Codelist")
+    @Operation(
+            summary = "Get specific Imperative.",
+            description = "Returns a specific Imperative.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Imperative.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ImperativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/imperative/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getImpertive(@Parameter(
+            description = "The ID of the Type Criterion to retrieve.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                     @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = ImperativeRepository.class, message = "There is no Imperative with the following id:") String id) {
 
+        var imperative = imperativeService.getImperativeById(id);
+        return Response.ok().entity(imperative).build();
+    }
+
+    @Tag(name = "Codelist")
+    @Operation(
+            summary = "Get list of Imperative.",
+            description = "This endpoint retrieves all Imperative." +
+                    "By default, the first page of 10 Imperative will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Imperative.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableImperativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("/imperative")
+    public Response getImperativeList(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                         @Parameter(name = "size", in = QUERY,
+                                                 description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                         @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                         @Context UriInfo uriInfo) {
+
+        var imperativeList = imperativeService.getImperativeListByPage(page - 1, size, uriInfo);
+
+        return Response.ok().entity(imperativeList).build();
+    }
+
+    public static class PageableImperativeResponse extends PageResource<ImperativeResponse> {
+
+        private List<ImperativeResponse> content;
+
+        @Override
+        public List<ImperativeResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<ImperativeResponse> content) {
+            this.content = content;
+        }
+    }
 }

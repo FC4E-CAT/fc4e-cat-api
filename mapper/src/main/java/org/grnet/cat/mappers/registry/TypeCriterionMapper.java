@@ -9,13 +9,12 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 /**
- * The MotivationMapper is responsible for mapping Motivation entities to DTOs and vice versa.
+ * The TypeCriterionMapper is responsible for mapping TypeCriterion entities to DTOs and vice versa.
  */
 @Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
 public interface TypeCriterionMapper {
 
     TypeCriterionMapper INSTANCE = Mappers.getMapper(TypeCriterionMapper.class);
-
     @Named("map")
     TypeCriterionResponse typeCriterionToDto(TypeCriterion typeCriterion);
 
