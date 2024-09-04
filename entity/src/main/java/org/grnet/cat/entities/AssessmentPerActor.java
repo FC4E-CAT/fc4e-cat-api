@@ -3,7 +3,6 @@ package org.grnet.cat.entities;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-
 public class AssessmentPerActor{
 
     public Long total;

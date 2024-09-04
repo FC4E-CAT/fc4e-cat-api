@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "Subject", description = "This object represents the Subject.")
+@Schema(name = "Subject", description = "This object represents a Subject.")
 public class SubjectResponse {
 
     @Schema(
