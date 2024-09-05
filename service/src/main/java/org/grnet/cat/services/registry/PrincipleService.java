@@ -1,25 +1,17 @@
-package org.grnet.cat.services;
+package org.grnet.cat.services.registry;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.PrincipleRequestDto;
-import org.grnet.cat.dtos.PrincipleResponseDto;
-import org.grnet.cat.dtos.PrincipleUpdateDto;
+import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.entities.Principle;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.GuidanceMapper;
 import org.grnet.cat.mappers.PrincipleMapper;
-import org.grnet.cat.repositories.PrincipleRepository;
+import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
-
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @ApplicationScoped
 public class PrincipleService {
@@ -38,9 +30,10 @@ public class PrincipleService {
      * @return A PageResource containing the principle items in the requested page.
      */
     public PageResource<PrincipleResponseDto> listAll(int page, int size, UriInfo uriInfo) {
+
         var principlePage = principleRepository.fetchPrincipleByPage(page, size);
-        var guidanceDTOs = PrincipleMapper.INSTANCE.principleToDtos(principlePage.list());
-        return new PageResource<>(principlePage, guidanceDTOs, uriInfo);
+        var principleDTOs = PrincipleMapper.INSTANCE.principleToDtos(principlePage.list());
+        return new PageResource<>(principlePage, principleDTOs, uriInfo);
     }
 
     /**
@@ -49,11 +42,9 @@ public class PrincipleService {
      * @param id The ID of the principle item to retrieve.
      * @return The requested principle item.
      */
-    public PrincipleResponseDto findById(Long id) {
+    public PrincipleResponseDto findById(String id) {
+
         var principle = principleRepository.findById(id);
-        if (principle == null) {
-            throw new ForbiddenException("Principle not found");
-        }
         return PrincipleMapper.INSTANCE.principleToDto(principle);
     }
 
@@ -67,20 +58,12 @@ public class PrincipleService {
     @Transactional
     public PrincipleResponseDto create(PrincipleRequestDto principleRequestDto, String userId) {
 
-
-        if (principleRepository.notUnique("uuid", principleRequestDto.uuid.toUpperCase())) {
-            throw new UniqueConstraintViolationException("uuid", principleRequestDto.uuid.toUpperCase());
-        }
-
         if (principleRepository.notUnique("pri", principleRequestDto.pri.toUpperCase())) {
             throw new UniqueConstraintViolationException("pri", principleRequestDto.pri.toUpperCase());
         }
 
-
         var principle = PrincipleMapper.INSTANCE.principleToEntity(principleRequestDto);
-
-        principle.setCreatedOn(Timestamp.from(Instant.now()));
-        principle.setCreatedBy(userId);
+        principle.setPopulatedBy(userId);
 
         principleRepository.persist(principle);
 
@@ -91,22 +74,21 @@ public class PrincipleService {
     /**
      * Updates an existing principle item.
      *
-     *  @param id                  The ID of the principle item to update.
+     * @param id                  The ID of the principle item to update.
      * @param principleUpdateDto  The updated principle item.
      * @param userId              The ID of the user updating the principle.
      * @return The updated principle item.
      */
     @Transactional
-    public PrincipleResponseDto update(Long id, PrincipleUpdateDto principleUpdateDto, String userId) {
+    public PrincipleResponseDto update(String id, PrincipleUpdateDto principleUpdateDto, String userId) {
+
         var principle = principleRepository.findById(id);
 
         PrincipleMapper.INSTANCE.updatePrinciple(principleUpdateDto,principle);
 
-        principle.setModifiedOn(Timestamp.from(Instant.now()));
-        principle.setModifiedBy(userId);
-
+        principle.setPopulatedBy(userId);
         return PrincipleMapper.INSTANCE.principleToDto(principle);
-}
+    }
 
 
     /**
@@ -115,7 +97,7 @@ public class PrincipleService {
      * @return True if the principle item was deleted, false otherwise.
      */
     @Transactional
-    public boolean delete(Long id) {
+    public boolean delete(String id) {
         return principleRepository.deleteById(id);
     }
 

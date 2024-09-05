@@ -13,12 +13,15 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.constraints.NotFoundEntity;
@@ -39,7 +42,6 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.guidance.GuidanceRequestDto;
 import org.grnet.cat.dtos.guidance.GuidanceResponseDto;
 import org.grnet.cat.dtos.criteria.CriteriaRequestDto;
-import org.grnet.cat.dtos.criteria.CriteriaResponseDto;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.*;
@@ -55,6 +57,12 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 @Path("/v1/admin")
 @Authenticated
+@SecurityScheme(securitySchemeName = "Authentication",
+        description = "JWT token",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        in = SecuritySchemeIn.HEADER)
 public class AdminEndpoint {
 
     /**
@@ -88,12 +96,6 @@ public class AdminEndpoint {
     @Inject
     KeycloakAdminRoleService adminService;
 
-
-    /**
-     * Injection point for the User Service
-     */
-    @Inject
-    PrincipleService principleService;
     /**
      * Injection point for the Utility service
      */
@@ -1416,299 +1418,6 @@ public class AdminEndpoint {
 
         @Override
         public void setContent(List<CriteriaResponseDto> content) {
-            this.content = content;
-        }
-    }
-
-  @Tag(name = "Admin")
-    @Operation(
-            summary = "List all principle items.",
-            description = "Retrieves a paginated list of all principle items.")
-    @APIResponse(
-            responseCode = "200",
-            description = "List of principle items.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageablePrincipleResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/principles")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response listAllPrinciples(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                      @Parameter(name = "size", in = QUERY,
-                                              description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                      @Context UriInfo uriInfo) {
-
-        var principles = principleService.listAll(page - 1, size, uriInfo);
-        return Response.ok(principles).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Get Principle by ID.",
-            description = "Retrieves a specific principle item by ID.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding principle item.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid UUID: must be a string of letters and numbers",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/principles/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response findPrincipleById(@Parameter(
-            description = "The ID of the principle item to retrieve.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                      @NotNull(message = "The ID cannot be null.") Long id) {
-
-        var principle = principleService.findById(id);
-        if (principle == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(principle).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Create New Principle Item.",
-            description = "Creates a new principle item.")
-    @APIResponse(
-            responseCode = "201",
-            description = "Principle item created.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid request payload.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @POST
-    @Path("/principles")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createPrinciple(@Valid @NotNull(message = "The request body is empty.") PrincipleRequestDto principleRequestDto, @Context UriInfo uriInfo) {
-
-        var principle = principleService.create(principleRequestDto, utility.getUserUniqueIdentifier());
-
-        return Response.status(Response.Status.CREATED).entity(principle).type(MediaType.APPLICATION_JSON).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Update Principle Item.",
-            description = "Updates an existing principle item.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Principle item updated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid request payload.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @PUT
-    @Path("/principles/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updatePrinciple(@Parameter(
-            description = "The ID of the principle item to update.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                    @NotNull(message = "The ID cannot be null.") Long id, @Valid @NotNull(message = "The request body is empty.") PrincipleUpdateDto principleRequestDto) {
-
-        var principle = principleService.update(id, principleRequestDto, utility.getUserUniqueIdentifier());
-        return Response.ok(principle).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Delete Principle Item.",
-            description = "Deletes a specific principle item by ID.")
-    @APIResponse(
-            responseCode = "204",
-            description = "Principle item deleted.")
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @DELETE
-    @Path("/principles/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deletePrinciple(@Parameter(
-            description = "The ID of the principle item to delete.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                    @NotNull(message = "The ID cannot be null.") Long id) {
-
-        boolean deleted = principleService.delete(id);
-        if (!deleted) {
-       //     return Response.status(Response.Status.NOT_FOUND).build();
-            var informativeResponse = new InformativeResponse();
-            informativeResponse.code = Response.Status.NOT_FOUND.getStatusCode();
-            informativeResponse.message = "Principle with id: "+id+" does not exist.";
-            return Response.status(Response.Status.NOT_FOUND).entity(informativeResponse).build();
-
-        }
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.code = 200;
-        informativeResponse.message = "Principle has been successfully deleted.";
-
-        return Response.ok().entity(informativeResponse).build();
-
-    }
-
-    public static class PageablePrincipleResponse extends PageResource<PrincipleResponseDto> {
-
-        private List<PrincipleResponseDto> content;
-
-        @Override
-        public List<PrincipleResponseDto> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<PrincipleResponseDto> content) {
             this.content = content;
         }
     }
