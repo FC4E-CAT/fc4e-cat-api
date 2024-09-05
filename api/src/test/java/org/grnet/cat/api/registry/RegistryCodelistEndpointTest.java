@@ -6,6 +6,7 @@ import io.restassured.http.ContentType;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.RegistryCodelistEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class RegistryCodelistEndpointTest extends KeycloakTest {
 
     @Test
-    public void getCodelistNotPermitted() {
+    public void getTypeCriterionNotPermitted() {
 
         register("alice");
 
@@ -54,4 +55,43 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
 
         assertEquals(response.id, "pid_graph:07CA8184");
     }
+
+    @Test
+    public void getImperativeNotPermitted() {
+
+        register("alice");
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .contentType(ContentType.JSON)
+                .get("/imperative/{id}", "pid_graph:293B1DEE")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
+
+    @Test
+    public void getImperative() {
+
+        register("admin");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/imperative/{id}", "pid_graph:293B1DEE")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ImperativeResponse.class);
+
+        assertEquals(response.id, "pid_graph:293B1DEE");
+    }
+
 }

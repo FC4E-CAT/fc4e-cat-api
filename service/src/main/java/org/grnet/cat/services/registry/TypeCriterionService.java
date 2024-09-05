@@ -9,12 +9,10 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.registry.TypeCriterion;
 import org.grnet.cat.mappers.registry.TypeCriterionMapper;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
-
 @ApplicationScoped
 public class TypeCriterionService {
     @Inject
     TypeCriterionRepository typeCriterionRepository;
-
 
     /**
      * Retrieves a specific Type Criterion.
