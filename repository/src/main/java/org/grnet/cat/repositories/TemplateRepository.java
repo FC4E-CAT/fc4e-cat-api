@@ -14,7 +14,7 @@ public class TemplateRepository implements Repository<Template, Long> {
 
     public Optional<Template> fetchTemplateByActorAndType(Long actorId, Long typeId){
 
-          return find("from Template t where t.actor.id = ?1 and t.type.id= ?2",actorId, typeId)
+          return find("from Template t where t.actor.id = ?1 and t.type.id= ?2", actorId, typeId)
                   .stream()
                   .findFirst();
     }

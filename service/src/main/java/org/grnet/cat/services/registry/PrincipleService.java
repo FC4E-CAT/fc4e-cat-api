@@ -9,7 +9,7 @@ import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.PrincipleMapper;
+import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
 

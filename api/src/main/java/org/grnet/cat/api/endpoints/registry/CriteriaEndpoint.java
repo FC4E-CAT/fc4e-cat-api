@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -31,22 +32,23 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
-import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
-import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
+import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
+import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
+import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.repositories.registry.PrincipleRepository;
-import org.grnet.cat.services.registry.PrincipleService;
+import org.grnet.cat.repositories.registry.CriterionRepository;
+import org.grnet.cat.services.registry.CriterionService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/v1/registry/principles")
+@Path("/v1/registry/criteria")
 @Authenticated
 @SecurityScheme(securitySchemeName = "Authentication",
         description = "JWT token",
@@ -54,13 +56,10 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
-public class PrincipleEndpoint {
+public class CriteriaEndpoint {
 
-    /**
-     * Injection point for the Principle Service
-     */
     @Inject
-    PrincipleService principleService;
+    CriterionService criterionService;
 
     /**
      * Injection point for the Utility service
@@ -71,16 +70,16 @@ public class PrincipleEndpoint {
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
-    @Tag(name = "Principle")
+    @Tag(name = "Criterion")
     @Operation(
-            summary = "Create New Principle Item.",
-            description = "Creates a new principle item.")
+            summary = "Create New Criterion.",
+            description = "Creates a new Criterion.")
     @APIResponse(
             responseCode = "201",
-            description = "Principle item created.",
+            description = "Criterion created.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
+                    implementation = CriterionResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -113,32 +112,29 @@ public class PrincipleEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
+    @Registration
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createPrinciple(@Valid @NotNull(message = "The request body is empty.") PrincipleRequestDto principleRequestDto, @Context UriInfo uriInfo) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createCriterion(@Valid @NotNull(message = "The request body is empty.") CriterionRequest criterionRequest,
+                                   @Context UriInfo uriInfo) {
 
-        var principle = principleService.create(principleRequestDto, utility.getUserUniqueIdentifier());
+        var criteria = criterionService.create(criterionRequest, utility.getUserUniqueIdentifier());
 
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(principle.id)).build()).entity(principle).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(criteria.id)).build()).entity(criteria).build();
     }
 
-    @Tag(name = "Principle")
+    @Tag(name = "Criterion")
     @Operation(
-            summary = "Get Principle by ID.",
-            description = "Retrieves a specific principle item by ID.")
+            summary = "Get Criterion by ID.",
+            description = "Retrieves a specific Criterion by ID.")
     @APIResponse(
             responseCode = "200",
-            description = "The corresponding principle item.",
+            description = "The corresponding Criterion.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid UUID: must be a string of letters and numbers",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
+                    implementation = CriterionResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -166,29 +162,31 @@ public class PrincipleEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Path("/{id}")
+    @Registration
     @Produces(MediaType.APPLICATION_JSON)
-    public Response findPrincipleById(@Parameter(
-            description = "The ID of the principle item to retrieve.",
+    public Response findCriterionById(@Parameter(
+            description = "The ID of the Criterion item to retrieve.",
             required = true,
-            example = "pid_graph:6279AE43",
-            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                          @Valid @NotFoundEntity(repository = PrincipleRepository.class, message = "There is no Principle with the following id:") String id) {
+            example = "1",
+            schema = @Schema(type = SchemaType.STRING))
+                                     @PathParam("id")
+                                         @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String id) {
 
-        var principle = principleService.findById(id);
+        var criteria = criterionService.findById(id);
 
-        return Response.ok(principle).build();
+        return Response.ok(criteria).build();
     }
 
-    @Tag(name = "Principle")
+    @Tag(name = "Criterion")
     @Operation(
-            summary = "List all principle items.",
-            description = "Retrieves a paginated list of all principle items.")
+            summary = "List all criteria items.",
+            description = "Retrieves a paginated list of all criteria items.")
     @APIResponse(
             responseCode = "200",
-            description = "List of principle items.",
+            description = "List of criteria items.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageablePrincipleResponse.class)))
+                    implementation = PageableCriteriaResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -202,6 +200,12 @@ public class PrincipleEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -209,28 +213,29 @@ public class PrincipleEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
+    @Registration
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listAllPrinciples(@Parameter(name = "page", in = QUERY,
+    public Response listAllCriteria(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                      @Parameter(name = "size", in = QUERY,
-                                              description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                      @Context UriInfo uriInfo) {
+                                    @Parameter(name = "size", in = QUERY,
+                                            description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                    @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                    @Context UriInfo uriInfo) {
 
-        var principles = principleService.listAll(page - 1, size, uriInfo);
-        return Response.ok(principles).build();
+        var criterias = criterionService.listAll(page - 1, size, uriInfo);
+        return Response.ok(criterias).build();
     }
 
-    @Tag(name = "Principle")
+    @Tag(name = "Criterion")
     @Operation(
-            summary = "Update Principle Item.",
-            description = "Updates an existing principle item.")
+            summary = "Update Criterion.",
+            description = "Updates an existing Criterion.")
     @APIResponse(
             responseCode = "200",
-            description = "Principle item updated.",
+            description = "Criterion updated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PrincipleResponseDto.class)))
+                    implementation = CriterionResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -270,25 +275,27 @@ public class PrincipleEndpoint {
     @SecurityRequirement(name = "Authentication")
     @PATCH
     @Path("/{id}")
+    @Registration
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updatePrinciple(@Parameter(
-            description = "The ID of the principle item to update.",
+    public Response updateCriteria(@Parameter(
+            description = "The ID of the criteria item to update.",
             required = true,
-            example = "pid_graph:7DE44287",
+            example = "1",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                        @Valid @NotFoundEntity(repository = PrincipleRepository.class, message = "There is no Principle with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") PrincipleUpdateDto principleRequestDto) {
+                                   @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String id,
+                                   @Valid @NotNull(message = "The request body is empty.") CriterionUpdate criteriaUpdateDto) {
 
-        var principle = principleService.update(id, principleRequestDto, utility.getUserUniqueIdentifier());
-        return Response.ok(principle).build();
+        var criteria = criterionService.update(id, criteriaUpdateDto, utility.getUserUniqueIdentifier());
+        return Response.ok(criteria).build();
     }
 
-    @Tag(name = "Principle")
+    @Tag(name = "Criterion")
     @Operation(
-            summary = "Delete Principle Item.",
-            description = "Deletes a specific principle item by ID.")
+            summary = "Delete Criterion.",
+            description = "Deletes a specific Criterion by ID.")
     @APIResponse(
-            responseCode = "200",
-            description = "Principle item deleted.")
+            responseCode = "204",
+            description = "Criterion deleted.")
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -316,42 +323,45 @@ public class PrincipleEndpoint {
     @SecurityRequirement(name = "Authentication")
     @DELETE
     @Path("/{id}")
+    @Registration
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deletePrinciple(@Parameter(
-            description = "The ID of the principle item to delete.",
+    public Response deleteCriteria(@Parameter(
+            description = "The ID of the Criterion to delete.",
             required = true,
-            example = "pid_graph:7DE44287",
-            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                        @Valid @NotFoundEntity(repository = PrincipleRepository.class, message = "There is no Principle with the following id:") String id) {
+            example = "1",
+            schema = @Schema(type = SchemaType.STRING))
+                                   @PathParam("id")
+                                       @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String id) {
 
-        boolean deleted = principleService.delete(id);
+        boolean deleted = criterionService.delete(id);
+
 
         InformativeResponse informativeResponse = new InformativeResponse();
 
         if (!deleted) {
 
             informativeResponse.code =500;
-            informativeResponse.message = "Principle hasn't been deleted. An error occurred.";
+            informativeResponse.message = "Criterion hasn't been deleted. An error occurred.";
         } else {
 
             informativeResponse.code = 200;
-            informativeResponse.message = "Principle has been successfully deleted.";
+            informativeResponse.message = "Criterion has been successfully deleted.";
         }
 
         return Response.ok().entity(informativeResponse).build();
     }
 
-    public static class PageablePrincipleResponse extends PageResource<PrincipleResponseDto> {
+    public static class PageableCriteriaResponse extends PageResource<CriterionResponse> {
 
-        private List<PrincipleResponseDto> content;
+        private List<CriterionResponse> content;
 
         @Override
-        public List<PrincipleResponseDto> getContent() {
+        public List<CriterionResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<PrincipleResponseDto> content) {
+        public void setContent(List<CriterionResponse> content) {
             this.content = content;
         }
     }

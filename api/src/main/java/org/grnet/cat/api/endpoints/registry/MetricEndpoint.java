@@ -244,13 +244,22 @@ public class MetricEndpoint {
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id) {
 
-        metricService.deleteMetric(id);
+       var deleted =  metricService.deleteMetric(id);
 
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.code = 200;
-        informativeResponse.message = "Metric has been successfully deleted.";
+        InformativeResponse informativeResponse = new InformativeResponse();
+
+        if (!deleted) {
+
+            informativeResponse.code =500;
+            informativeResponse.message = "Metric hasn't been deleted. An error occurred.";
+        } else {
+
+            informativeResponse.code = 200;
+            informativeResponse.message = "Metric has been successfully deleted.";
+        }
 
         return Response.ok().entity(informativeResponse).build();
+
     }
 
     @Tag(name = "Metrics")

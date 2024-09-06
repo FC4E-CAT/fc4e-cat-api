@@ -47,7 +47,6 @@ public class MetricEndpointTest extends KeycloakTest {
         request.urlMetric = "http://example.com/metric";
         request.typeAlgorithmId = "pid_graph:7A976659";
         request.typeMetricId = "pid_graph:03615660";
-        request.lodMTV = "vocabulary1";
 
 
         var response = given()
@@ -78,7 +77,6 @@ public class MetricEndpointTest extends KeycloakTest {
         createRequest.urlMetric = "http://example.com/metric";
         createRequest.typeAlgorithmId = "pid_graph:7A976659";
         createRequest.typeMetricId = "pid_graph:03615660";
-        createRequest.lodMTV = "vocabulary1";
 
         var createdMetric = given()
                 .auth()
@@ -137,7 +135,6 @@ public class MetricEndpointTest extends KeycloakTest {
         createRequest.urlMetric = "http://example.com/metric";
         createRequest.typeAlgorithmId = "pid_graph:7A976659";
         createRequest.typeMetricId = "pid_graph:03615660";
-        createRequest.lodMTV = "vocabulary1";
 
         var createdMetric = given()
                 .auth()
@@ -158,7 +155,6 @@ public class MetricEndpointTest extends KeycloakTest {
         updateRequest.urlMetric = "http://example.com/metric-updated";
         updateRequest.typeAlgorithmId = "pid_graph:7A976659";
         updateRequest.typeMetricId = "pid_graph:03615660";
-        updateRequest.lodMTV = "vocabulary1";
 
         var updatedResponse = given()
                 .auth()
@@ -189,7 +185,6 @@ public class MetricEndpointTest extends KeycloakTest {
         createRequest.urlMetric = "http://example.com/metric";
         createRequest.typeAlgorithmId = "pid_graph:7A976659";
         createRequest.typeMetricId = "pid_graph:03615660";
-        createRequest.lodMTV = "vocabulary1";
 
         var createdMetric = given()
                 .auth()

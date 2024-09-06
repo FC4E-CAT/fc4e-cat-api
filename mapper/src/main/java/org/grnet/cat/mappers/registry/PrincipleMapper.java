@@ -1,4 +1,4 @@
-package org.grnet.cat.mappers;
+package org.grnet.cat.mappers.registry;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;

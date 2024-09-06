@@ -2,7 +2,6 @@ package org.grnet.cat.services.registry.metric;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.metric.TypeAlgorithmResponseDto;
@@ -26,10 +25,6 @@ public class TypeAlgorithmService {
     public TypeAlgorithmResponseDto getTypeAlgorithmById(String id) {
 
         var typeAlgorithm = typeAlgorithmRepository.findById(id);
-
-        if (typeAlgorithm == null) {
-            throw new NotFoundException("Type Algorithm not found.");
-        }
 
         return TypeAlgorithmMapper.INSTANCE.typeAlgorithmToDto(typeAlgorithm);
     }

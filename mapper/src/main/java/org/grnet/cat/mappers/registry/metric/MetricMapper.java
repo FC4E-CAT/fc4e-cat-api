@@ -39,7 +39,6 @@ public interface MetricMapper {
     @Mapping(target = "labelMetric", expression = "java(StringUtils.isNotEmpty(request.labelMetric) ? request.labelMetric : metric.getLabelMetric())")
     @Mapping(target = "descrMetric", expression = "java(StringUtils.isNotEmpty(request.descrMetric) ? request.descrMetric : metric.getDescrMetric())")
     @Mapping(target = "urlMetric", expression = "java(StringUtils.isNotEmpty(request.urlMetric) ? request.urlMetric : metric.getUrlMetric())")
-    @Mapping(target = "lodMTV", expression = "java(StringUtils.isNotEmpty(request.lodMTV) ? request.lodMTV : metric.getLodMTV())")
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     @Mapping(target = "typeAlgorithm", ignore = true)
     @Mapping(target = "typeMetric", ignore = true)

@@ -11,7 +11,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.grnet.cat.dtos.InformativeResponse;
 import jakarta.ws.rs.core.UriInfo;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
@@ -25,12 +24,10 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
-import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
@@ -40,7 +37,6 @@ import org.grnet.cat.repositories.registry.TypeBenchmarkRepository;
 import org.grnet.cat.services.registry.RegistryActorService;
 import org.grnet.cat.services.registry.TypeBenchmarkService;
 import org.grnet.cat.services.registry.TypeCriterionService;
-import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
@@ -65,12 +61,6 @@ public class RegistryCodelistEndpoint {
 
     @Inject
     RegistryActorService registryActorService;
-
-    @ConfigProperty(name = "api.server.url")
-    String serverUrl;
-
-    @Inject
-    Utility utility;
 
     @Tag(name = "Registry Codelist")
     @Operation(

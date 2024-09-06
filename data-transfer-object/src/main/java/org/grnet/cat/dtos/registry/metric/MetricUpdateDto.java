@@ -1,11 +1,11 @@
 package org.grnet.cat.dtos.registry.metric;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
+import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 
 @Schema(name = "MetricUpdateDto", description = "This object represents the data required to update a Metric item.")
 public class MetricUpdateDto {
@@ -16,7 +16,6 @@ public class MetricUpdateDto {
             description = "The Metric code.",
             example = "MTR001"
     )
-    @NotBlank(message = "MTR may not be empty.")
     @JsonProperty("MTR")
     public String MTR;
 
@@ -26,8 +25,7 @@ public class MetricUpdateDto {
             description = "The label of the Metric.",
             example = "Metric Label"
     )
-    @JsonProperty("labelMetric")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("label")
     public String labelMetric;
 
     @Schema(
@@ -36,8 +34,7 @@ public class MetricUpdateDto {
             description = "The description of the Metric.",
             example = "This is the description of the metric."
     )
-    @JsonProperty("descrMetric")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("description")
     public String descrMetric;
 
     @Schema(
@@ -46,8 +43,7 @@ public class MetricUpdateDto {
             description = "The URL of the Metric.",
             example = "http://example.com/metric"
     )
-    @JsonProperty("urlMetric")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("url")
     public String urlMetric;
 
     @Schema(
@@ -56,8 +52,8 @@ public class MetricUpdateDto {
             description = "The associated Type Algorithm ID.",
             example = "pid_graph:12345678"
     )
-    @NotNull(message = "typeAlgorithmId may not be null.")
-    @JsonProperty("typeAlgorithmId")
+    @NotFoundEntity(repository = TypeAlgorithmRepository.class, message = "There is no Algorithm Type with the following id:")
+    @JsonProperty("type_algorithm_id")
     public String typeAlgorithmId;
 
     @Schema(
@@ -66,17 +62,7 @@ public class MetricUpdateDto {
             description = "The associated Type Metric ID.",
             example = "pid_graph:87654321"
     )
-    @NotNull(message = "typeMetricId may not be null.")
-    @JsonProperty("typeMetricId")
+    @NotFoundEntity(repository = TypeMetricRepository.class, message = "There is no Metric Type with the following id:")
+    @JsonProperty("type_metric_id")
     public String typeMetricId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Metric version.",
-            example = "v1.0"
-    )
-    @JsonProperty("lodMTV")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String lodMTV;
 }
