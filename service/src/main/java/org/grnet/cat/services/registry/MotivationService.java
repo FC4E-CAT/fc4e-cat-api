@@ -10,8 +10,6 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
-import org.grnet.cat.entities.PageQuery;
-import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.MotivationType;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.repositories.registry.MotivationRepository;
@@ -72,7 +70,7 @@ public class MotivationService {
      */
     public PageResource<MotivationResponse> getMotivationsByPage(int page, int size, UriInfo uriInfo){
 
-        PageQuery<Motivation> motivations = motivationRepository.fetchMotivationsByPage(page, size);
+        var motivations = motivationRepository.fetchMotivationsByPage(page, size);
 
         return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
     }

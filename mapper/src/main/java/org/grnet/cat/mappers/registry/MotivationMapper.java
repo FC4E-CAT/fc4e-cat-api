@@ -38,8 +38,8 @@ public interface MotivationMapper {
     List<MotivationResponse> motivationsToDto(List<Motivation> motivations);
 
     @Mapping(target = "mtv", expression = "java(StringUtils.isNotEmpty(request.mtv) ? request.mtv : motivation.getMtv())")
-    @Mapping(target = "labelMotivation", expression = "java(StringUtils.isNotEmpty(request.labelMotivation) ? request.labelMotivation : motivation.getLabelMotivation())")
-    @Mapping(target = "decMotivation", expression = "java(StringUtils.isNotEmpty(request.decMotivation) ? request.decMotivation : motivation.getDecMotivation())")
+    @Mapping(target = "label", expression = "java(StringUtils.isNotEmpty(request.label) ? request.label : motivation.getLabel())")
+    @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : motivation.getDescription())")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lodMtvP", ignore = true)
     @Mapping(target = "lodMtvV", ignore = true)

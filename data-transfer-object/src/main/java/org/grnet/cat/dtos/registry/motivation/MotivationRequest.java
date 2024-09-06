@@ -29,9 +29,9 @@ public class MotivationRequest {
             required = true,
             example = "EOSC PID Policy"
     )
-    @NotEmpty(message = "label_motivation may not be empty.")
-    @JsonProperty(value = "label_motivation")
-    public String labelMotivation;
+    @NotEmpty(message = "label may not be empty.")
+    @JsonProperty(value = "label")
+    public String label;
 
     @Schema(
             type = SchemaType.STRING,
@@ -40,9 +40,9 @@ public class MotivationRequest {
             required = true,
             example = "A policy developed for PID ecosystem in EOSC..."
     )
-    @NotEmpty(message = "dec_motivation may not be empty.")
-    @JsonProperty(value = "dec_motivation")
-    public String decMotivation;
+    @NotEmpty(message = "description may not be empty.")
+    @JsonProperty(value = "description")
+    public String description;
 
     @Schema(
             type = SchemaType.STRING,

@@ -47,8 +47,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
-        request.labelMotivation = "labelMotivation";
-        request.decMotivation = "decMotivation";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
         request.motivationTypeId = "not found";
 
         var response = given()
@@ -92,8 +92,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
-        request.labelMotivation = "labelMotivation";
-        request.decMotivation = "decMotivation";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
         request.motivationTypeId = "pid_graph:8882700E";
 
         var response = given()
@@ -108,7 +108,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(MotivationResponse.class);
 
-        assertEquals("decMotivation", response.decMotivation);
+        assertEquals("decMotivation", response.description);
         assertEquals("pid_graph:8882700E", response.motivationTypeId);
     }
 
@@ -119,8 +119,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
-        request.labelMotivation = "labelMotivation";
-        request.decMotivation = "decMotivation";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
         request.motivationTypeId = "pid_graph:8882700E";
 
         var response = given()
@@ -138,7 +138,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         assertNull(response.lodMtvP);
 
         var update = new UpdateMotivationRequest();
-        update.decMotivation = "updated_description";
+        update.description = "updated_description";
         update.motivationTypeId = "pid_graph:DFE640B9";
         update.lodMtvP = "pid_graph:BE36CD9E";
 
@@ -154,7 +154,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(MotivationResponse.class);
 
-        assertEquals("updated_description", updated.decMotivation);
+        assertEquals("updated_description", updated.description);
         assertEquals("pid_graph:DFE640B9", updated.motivationTypeId);
         assertEquals("pid_graph:BE36CD9E", updated.lodMtvP);
     }

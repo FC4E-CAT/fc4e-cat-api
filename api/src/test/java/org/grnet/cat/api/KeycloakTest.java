@@ -9,11 +9,10 @@ import jakarta.inject.Inject;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
-import org.grnet.cat.repositories.CommentRepository;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.KeycloakAdminService;
-import org.grnet.cat.services.PrincipleService;
+import org.grnet.cat.services.registry.PrincipleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
@@ -43,10 +42,10 @@ public class KeycloakTest {
     @Inject
     ObjectMapper objectMapper;
     @Inject
-    PrincipleService principleService;
+    CommentService commentService;
 
     @Inject
-    CommentService commentService;
+    PrincipleService principleService;
 
     @BeforeEach
     public void setup() {
@@ -60,8 +59,8 @@ public class KeycloakTest {
         commentService.deleteAll();
         jsonAssessmentService.deleteAll();
         validationService.deleteAll();
-        principleService.deleteAll();
         userService.deleteAll();
+        principleService.deleteAll();
     }
 
     protected UserProfileDto register(String username) {

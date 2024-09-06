@@ -32,8 +32,8 @@ public class MotivationResponse {
             description = "The Motivation label.",
             example = "EOSC PID Policy"
     )
-    @JsonProperty(value = "label_motivation")
-    public String labelMotivation;
+    @JsonProperty(value = "label")
+    public String label;
 
     @Schema(
             type = SchemaType.STRING,
@@ -41,8 +41,8 @@ public class MotivationResponse {
             description = "The Motivation description.",
             example = "A policy developed for PID ecosystem in EOSC..."
     )
-    @JsonProperty(value = "dec_motivation")
-    public String decMotivation;
+    @JsonProperty(value = "description")
+    public String description;
 
     @Schema(
             type = SchemaType.STRING,

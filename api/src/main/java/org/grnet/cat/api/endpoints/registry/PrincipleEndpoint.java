@@ -6,10 +6,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -30,23 +31,22 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
-import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
-import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
-import org.grnet.cat.repositories.registry.MotivationRepository;
-import org.grnet.cat.services.registry.MotivationService;
+import org.grnet.cat.repositories.registry.PrincipleRepository;
+import org.grnet.cat.services.registry.PrincipleService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/v1/registry/motivations")
+@Path("/v1/registry/principles")
 @Authenticated
 @SecurityScheme(securitySchemeName = "Authentication",
         description = "JWT token",
@@ -54,13 +54,16 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         scheme = "bearer",
         bearerFormat = "JWT",
         in = SecuritySchemeIn.HEADER)
-public class MotivationEndpoint {
-
-    @Inject
-    private MotivationService motivationService;
+public class PrincipleEndpoint {
 
     /**
-     * Injection point for the Utility class
+     * Injection point for the Principle Service
+     */
+    @Inject
+    PrincipleService principleService;
+
+    /**
+     * Injection point for the Utility service
      */
     @Inject
     Utility utility;
@@ -68,16 +71,16 @@ public class MotivationEndpoint {
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
-    @Tag(name = "Motivation")
+    @Tag(name = "Principle")
     @Operation(
-            summary = "Create a new Motivation.",
-            description = "Create a new Motivation.")
+            summary = "Create New Principle Item.",
+            description = "Creates a new principle item.")
     @APIResponse(
             responseCode = "201",
-            description = "Motivation created successfully.",
+            description = "Principle item created.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MotivationResponse.class)))
+                    implementation = PrincipleResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -98,7 +101,7 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "409",
-            description = "Motivation already exists.",
+            description = "Unique constraint violation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -110,27 +113,33 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
+    @Path("/principles")
     @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    public Response create(@Valid @NotNull(message = "The request body is empty.") MotivationRequest request, @Context UriInfo uriInfo) {
+    public Response createPrinciple(@Valid @NotNull(message = "The request body is empty.") PrincipleRequestDto principleRequestDto, @Context UriInfo uriInfo) {
 
-        var motivation = motivationService.createMotivation(request, utility.getUserUniqueIdentifier());
+        var principle = principleService.create(principleRequestDto, utility.getUserUniqueIdentifier());
 
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(motivation.id)).build()).entity(motivation).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(principle.id)).build()).entity(principle).build();
     }
 
-    @Tag(name = "Motivation")
+    @Tag(name = "Principle")
     @Operation(
-            summary = "Get specific Motivation.",
-            description = "Returns a specific Motivation.")
+            summary = "Get Principle by ID.",
+            description = "Retrieves a specific principle item by ID.")
     @APIResponse(
             responseCode = "200",
-            description = "The corresponding Motivation.",
+            description = "The corresponding principle item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MotivationResponse.class)))
+                    implementation = PrincipleResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid UUID: must be a string of letters and numbers",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PrincipleResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -157,33 +166,30 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/{id}")
+    @Path("/principles/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    public Response getMotivation(@Parameter(
-            description = "The ID of the Motivation to retrieve.",
+    public Response findPrincipleById(@Parameter(
+            description = "The ID of the principle item to retrieve.",
             required = true,
-            example = "pid_graph:3E109BBA",
-            schema = @Schema(type = SchemaType.STRING))
-                               @PathParam("id")
-                               @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id) {
+            example = "pid_graph:6279AE43",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                          @Valid @NotFoundEntity(repository = PrincipleRepository.class, message = "There is no Principle with the following id:") String id) {
 
-        var motivation = motivationService.getMotivationById(id);
+        var principle = principleService.findById(id);
 
-        return Response.ok().entity(motivation).build();
+        return Response.ok(principle).build();
     }
 
-    @Tag(name = "Motivation")
+    @Tag(name = "Principle")
     @Operation(
-            summary = "Get list of Motivations.",
-            description = "This endpoint retrieves all Motivations." +
-                    "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")
+            summary = "List all principle items.",
+            description = "Retrieves a paginated list of all principle items.")
     @APIResponse(
             responseCode = "200",
-            description = "List of Motivations.",
+            description = "List of principle items.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableMotivationResponse.class)))
+                    implementation = PageablePrincipleResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -204,31 +210,87 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
+    @Path("/principles")
     @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    public Response getMotivations(@Parameter(name = "page", in = QUERY,
+    public Response listAllPrinciples(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                @Parameter(name = "size", in = QUERY,
-                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                @Context UriInfo uriInfo) {
+                                      @Parameter(name = "size", in = QUERY,
+                                              description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                      @Context UriInfo uriInfo) {
 
-        var subjects = motivationService.getMotivationsByPage(page - 1, size, uriInfo);
-
-        return Response.ok().entity(subjects).build();
+        var principles = principleService.listAll(page - 1, size, uriInfo);
+        return Response.ok(principles).build();
     }
 
-    @Tag(name = "Motivation")
+    @Tag(name = "Principle")
     @Operation(
-            summary = "Updates an existing Motivation.",
-            description = "To update the resource properties, the body of the request must contain an updated representation of Motivation. " +
-                    "You can update a part or all attributes of Motivation. The empty or null values are ignored.")
+            summary = "Update Principle Item.",
+            description = "Updates an existing principle item.")
     @APIResponse(
             responseCode = "200",
-            description = "Subject was updated successfully.",
+            description = "Principle item updated.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MotivationResponse.class)))
+                    implementation = PrincipleResponseDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/principles/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updatePrinciple(@Parameter(
+            description = "The ID of the principle item to update.",
+            required = true,
+            example = "pid_graph:7DE44287",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = PrincipleRepository.class, message = "There is no Principle with the following id:") String id, @Valid @NotNull(message = "The request body is empty.") PrincipleUpdateDto principleRequestDto) {
+
+        var principle = principleService.update(id, principleRequestDto, utility.getUserUniqueIdentifier());
+        return Response.ok(principle).build();
+    }
+
+    @Tag(name = "Principle")
+    @Operation(
+            summary = "Delete Principle Item.",
+            description = "Deletes a specific principle item by ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Principle item deleted.")
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -254,35 +316,44 @@ public class MotivationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-    @PATCH
-    @Path("/{id}")
+    @DELETE
+    @Path("/principles/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    public Response updateMotivation(@Parameter(
-            description = "The ID of the Subject to update.",
+    public Response deletePrinciple(@Parameter(
+            description = "The ID of the principle item to delete.",
             required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.STRING))
-                                  @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                                  @Valid @NotNull(message = "The request body is empty.") UpdateMotivationRequest request) {
+            example = "pid_graph:7DE44287",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = PrincipleRepository.class, message = "There is no Principle with the following id:") String id) {
 
-        var motivation = motivationService.update(id, request, utility.getUserUniqueIdentifier());
+        boolean deleted = principleService.delete(id);
 
-        return Response.ok().entity(motivation).build();
+        InformativeResponse informativeResponse = new InformativeResponse();
+
+        if (!deleted) {
+
+            informativeResponse.code =500;
+            informativeResponse.message = "Principle hasn't been deleted. An error occurred.";
+        } else {
+
+            informativeResponse.code = 200;
+            informativeResponse.message = "Principle has been successfully deleted.";
+        }
+
+        return Response.ok().entity(informativeResponse).build();
     }
 
-    public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
+    public static class PageablePrincipleResponse extends PageResource<PrincipleResponseDto> {
 
-        private List<MotivationResponse> content;
+        private List<PrincipleResponseDto> content;
 
         @Override
-        public List<MotivationResponse> getContent() {
+        public List<PrincipleResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<MotivationResponse> content) {
+        public void setContent(List<PrincipleResponseDto> content) {
             this.content = content;
         }
     }
