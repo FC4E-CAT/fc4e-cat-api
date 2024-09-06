@@ -52,7 +52,7 @@ public class ImperativeResponse{
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Date and Time when the Motivation has been populated on.",
+            description = "Date and Time when the Imperative has been populated on.",
             example = " 2023-06-09 12:19:31.333059"
     )
     @JsonProperty("last_touch")

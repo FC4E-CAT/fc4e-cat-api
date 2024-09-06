@@ -1,5 +1,6 @@
 package org.grnet.cat.entities.registry;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
@@ -16,9 +17,11 @@ public class TypeCriterion extends Registry {
     private String id;
 
     @Column(name = "labelTypeCriterion")
+    @NotNull
     private String labelTypeCriterion;
 
     @Column(name = "descTypeCriterion")
+    @NotNull
     private String descTypeCriterion;
 
     @Column(name = "urlTypeCriterion")

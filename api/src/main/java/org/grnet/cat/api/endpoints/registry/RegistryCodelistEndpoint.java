@@ -1,5 +1,6 @@
 package org.grnet.cat.api.endpoints.registry;
 
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -8,27 +9,35 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.grnet.cat.dtos.InformativeResponse;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
+import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
 import org.grnet.cat.services.registry.ImperativeService;
 import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkResponse;
 import org.grnet.cat.repositories.registry.TypeBenchmarkRepository;
+import org.grnet.cat.services.registry.RegistryActorService;
 import org.grnet.cat.services.registry.TypeBenchmarkService;
 import org.grnet.cat.services.registry.TypeCriterionService;
 import org.grnet.cat.utils.Utility;
@@ -37,9 +46,14 @@ import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/v1/registry/codelist")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@Path("/v1/registry")
+@Authenticated
+@SecurityScheme(securitySchemeName = "Authentication",
+        description = "JWT token",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        in = SecuritySchemeIn.HEADER)
 public class RegistryCodelistEndpoint {
 
     @Inject
@@ -49,13 +63,16 @@ public class RegistryCodelistEndpoint {
     @Inject
     TypeBenchmarkService typeBenchmarkService;
 
+    @Inject
+    RegistryActorService registryActorService;
+
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
 
     @Inject
     Utility utility;
 
-    @Tag(name = "Codelist")
+    @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get specific Type Criterion.",
             description = "Returns a specific Type Criterion.")
@@ -91,7 +108,7 @@ public class RegistryCodelistEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/type-criterion/{id}")
+    @Path("/criteria/types/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getTypeCriterion(@Parameter(
@@ -106,7 +123,7 @@ public class RegistryCodelistEndpoint {
         return Response.ok().entity(typeCriterion).build();
     }
 
-    @Tag(name = "Codelist")
+    @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get list of Type Criterion.",
             description = "This endpoint retrieves all Type Criterion." +
@@ -139,7 +156,7 @@ public class RegistryCodelistEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    @Path("/type-criterion")
+    @Path("/criteria/types")
     public Response getTypeCriterionList(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                          @Parameter(name = "size", in = QUERY,
@@ -167,7 +184,7 @@ public class RegistryCodelistEndpoint {
         }
     }
 
-    @Tag(name = "Codelist")
+    @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get specific Imperative.",
             description = "Returns a specific Imperative.")
@@ -203,7 +220,7 @@ public class RegistryCodelistEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/imperative/{id}")
+    @Path("/imperatives/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getImpertive(@Parameter(
@@ -218,7 +235,7 @@ public class RegistryCodelistEndpoint {
         return Response.ok().entity(imperative).build();
     }
 
-    @Tag(name = "Codelist")
+    @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get list of Imperative.",
             description = "This endpoint retrieves all Imperative." +
@@ -251,7 +268,7 @@ public class RegistryCodelistEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    @Path("/imperative")
+    @Path("/imperatives")
     public Response getImperativeList(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                       @Parameter(name = "size", in = QUERY,
@@ -280,7 +297,7 @@ public class RegistryCodelistEndpoint {
     }
 
 
-    @Tag(name = "Codelist")
+    @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get specific TypeBenchmark.",
             description = "Returns a specific TypeBenchmark.")
@@ -316,7 +333,7 @@ public class RegistryCodelistEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/type-benchmark/{id}")
+    @Path("/benchmarks/types/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getTypeBenchmark(@Parameter(
@@ -332,7 +349,7 @@ public class RegistryCodelistEndpoint {
         return Response.ok().entity(typeBenchmark).build();
     }
 
-    @Tag(name = "Codelist")
+    @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get list of TypeBenchmark.",
             description = "This endpoint retrieves all TypeBenchmarks." +
@@ -365,7 +382,7 @@ public class RegistryCodelistEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    @Path("/type-benchmark")
+    @Path("/benchmarks/types")
     public Response getTypeBenchmarkList(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                          @Parameter(name = "size", in = QUERY,
@@ -392,4 +409,119 @@ public class RegistryCodelistEndpoint {
             this.content = content;
         }
     }
+
+
+
+    @Tag(name = "Registry Codelist")
+    @Operation(
+            summary = "Get specific Actor.",
+            description = "Returns a specific Actor.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Actor.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RegistryActorResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/actors/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getActor(@Parameter(
+            description = "The ID of the Actor to retrieve.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                     @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Type Criterion with the following id:") String id) {
+
+        var actor = registryActorService.getActorById(id);
+        return Response.ok().entity(actor).build();
+    }
+
+    @Tag(name = "Registry Codelist")
+    @Operation(
+            summary = "Get list of Actor.",
+            description = "This endpoint retrieves all Actors" +
+                    "By default, the first page of 10 Actor will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Type Criterion.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRegistryActorResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("/actors")
+    public Response getActorList(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                         @Parameter(name = "size", in = QUERY,
+                                                 description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                         @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                         @Context UriInfo uriInfo) {
+
+        var actorList = registryActorService.getActorListByPage(page - 1, size, uriInfo);
+
+        return Response.ok().entity(actorList).build();
+    }
+
+    public static class PageableRegistryActorResponse extends PageResource<RegistryActorResponse> {
+
+        private List<RegistryActorResponse> content;
+
+        @Override
+        public List<RegistryActorResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RegistryActorResponse> content) {
+            this.content = content;
+        }
+    }
+
 }

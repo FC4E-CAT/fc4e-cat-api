@@ -64,7 +64,7 @@ public class TypeCriterionResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Date and Time when the Type Criteiron has been populated on.",
+            description = "Date and Time when the Type Criterion has been populated on.",
             example = " 2023-06-09 12:19:31.333059"
     )
     @JsonProperty("last_touch")

@@ -7,6 +7,7 @@ import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.RegistryCodelistEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
-                .get("/type-criterion/{id}", "pid_graph:07CA8184")
+                .get("/criteria/types/{id}", "pid_graph:07CA8184")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -46,7 +47,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/type-criterion/{id}", "pid_graph:07CA8184")
+                .get("/criteria/types/{id}", "pid_graph:07CA8184")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -65,7 +66,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
-                .get("/imperative/{id}", "pid_graph:293B1DEE")
+                .get("/imperatives/{id}", "pid_graph:293B1DEE")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -84,7 +85,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/imperative/{id}", "pid_graph:293B1DEE")
+                .get("/imperatives/{id}", "pid_graph:293B1DEE")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -102,7 +103,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
-                .get("/type-benchmark/{id}", "pid_graph:C4D0F2B1")
+                .get("/benchmarks/types/{id}", "pid_graph:0917EC0D")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -121,13 +122,53 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/type-benchmark/{id}", "pid_graph:C4D0F2B1")
+                .get("/benchmarks/types/{id}", "pid_graph:0917EC0D")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TypeBenchmarkResponse.class);
 
-        assertEquals(response.id, "pid_graph:C4D0F2B1");
+        assertEquals(response.id, "pid_graph:0917EC0D");
     }
+
+
+    @Test
+    public void getRegistryActorNotPermitted() {
+
+        register("alice");
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .contentType(ContentType.JSON)
+                .get("/actors/{id}", "pid_graph:234B60D8")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
+
+    @Test
+    public void getRegistryActor() {
+
+        register("admin");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/actors/{id}", "pid_graph:234B60D8")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(RegistryActorResponse.class);
+
+        assertEquals(response.id, "pid_graph:234B60D8");
+    }
+
 }

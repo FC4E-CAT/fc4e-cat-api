@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
@@ -20,11 +21,14 @@ public class Imperative extends Registry {
     private String id;
 
     @Column(name = "IMP")
+    @NotNull
     private String imp;
 
     @Column(name = "labelImperative")
+    @NotNull
     private String labelImperative;
 
     @Column(name = "descImperative")
+    @NotNull
     private String descImperative;
 }
