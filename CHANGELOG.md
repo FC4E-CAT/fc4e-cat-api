@@ -46,6 +46,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#258](https://github.com/FC4E-CAT/fc4e-cat-api/pull/258) CAT-484 Codelist - Tables sync with Vocabulary service (CRUD Type Criterion).
 - [#259](https://github.com/FC4E-CAT/fc4e-cat-api/pull/259) CAT-484 Codelist - Tables sync with Vocabulary service (GET Imperative).
 - [#260](https://github.com/FC4E-CAT/fc4e-cat-api/pull/260) CAT-477 Motivations & Principles.
+- [#261](
+- https://github.com/FC4E-CAT/fc4e-cat-api/pull/261) CAT-484 Codelist - Tables sync with Vocabulary service (GET Benchmark Type).
 
 ### Changed
 
