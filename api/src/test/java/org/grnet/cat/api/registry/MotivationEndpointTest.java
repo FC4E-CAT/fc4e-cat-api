@@ -6,8 +6,7 @@ import io.restassured.http.ContentType;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MotivationEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.ValidationRequest;
-import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.registry.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
@@ -157,5 +156,29 @@ public class MotivationEndpointTest extends KeycloakTest {
         assertEquals("updated_description", updated.description);
         assertEquals("pid_graph:DFE640B9", updated.motivationTypeId);
         assertEquals("pid_graph:BE36CD9E", updated.lodMtvP);
+    }
+
+    @Test
+    public void addActor() {
+
+        register("admin");
+        var motivationActor = new MotivationActorRequest();
+        motivationActor.actorId = "pid_graph:1A718108";
+        motivationActor.relation = "dcterms:isRequiredBy";
+        MotivationActorRequest[] array = new MotivationActorRequest[1];
+        array[0]=motivationActor;
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors", "pid_graph:C6B2D50E")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(response.code,  200);
     }
 }

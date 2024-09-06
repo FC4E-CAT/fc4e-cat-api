@@ -400,8 +400,6 @@ public class RegistryCodelistEndpoint {
         }
     }
 
-
-
     @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get specific Actor.",

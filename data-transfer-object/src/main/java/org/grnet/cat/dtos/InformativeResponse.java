@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import java.util.Arrays;
 import java.util.Set;
 
 @Schema(name="Response", description="Illustrates if an API operation is successful or not.")
@@ -23,6 +24,7 @@ public class InformativeResponse {
             description = "A message that informs whether a specific request has been completed.",
             example = "An informative message relative to the process"
     )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String message;
 
 
@@ -34,4 +36,14 @@ public class InformativeResponse {
     )
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> errors;
+
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = Arrays.class,
+            description = "An array of  message that informs whether a specific request has been completed.",
+            example = "An array of informative message relative to the process"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String[] messages;
 }

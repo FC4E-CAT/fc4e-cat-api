@@ -17,6 +17,7 @@ import java.util.List;
 /**
  * The MotivationMapper is responsible for mapping Motivation entities to DTOs and vice versa.
  */
+//@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
 @Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
 public interface MotivationMapper {
 
@@ -32,6 +33,7 @@ public interface MotivationMapper {
 
     @Named("map")
     @Mapping(target = "motivationTypeId", expression = "java(motivation.getMotivationType().getId())")
+    @Mapping(target = "actors", source = "actors")
     MotivationResponse motivationToDto(Motivation motivation);
 
     @IterableMapping(qualifiedByName="map")
