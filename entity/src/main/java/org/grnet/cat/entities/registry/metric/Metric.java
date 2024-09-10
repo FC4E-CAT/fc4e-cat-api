@@ -46,7 +46,6 @@ public class Metric {
     private TypeMetric typeMetric;
 
     @Column(name = "lodMTV")
-    @NotNull
     private String lodMTV;
 
     @Column(name = "populatedBy")

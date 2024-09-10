@@ -4,7 +4,6 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -16,16 +15,23 @@ import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
+import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
+import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 import org.jboss.logging.Logger;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.util.Objects;
 
 @ApplicationScoped
 public class MetricService {
 
     @Inject
     MetricRepository metricRepository;
+
+    @Inject
+    TypeAlgorithmRepository typeAlgorithmRepository;
+
+    @Inject
+    TypeMetricRepository typeMetricRepository;
 
     private static final Logger LOG = Logger.getLogger(MetricService.class);
 
@@ -38,10 +44,6 @@ public class MetricService {
     public MetricResponseDto getMetricById(String id) {
 
         var metric = metricRepository.findById(id);
-
-        if (metric == null) {
-            throw new NotFoundException("Metric not found.");
-        }
 
         return MetricMapper.INSTANCE.metricToDto(metric);
     }
@@ -72,21 +74,28 @@ public class MetricService {
      *
      * @param id The unique ID of the Metric to update.
      * @param userId The user performing the update.
-     * @param metricUpdateDto The Metric update data.
+     * @param request The Metric update data.
      * @return The updated Metric DTO.
      */
     @Transactional
-    public MetricResponseDto updateMetric(String id, String userId, MetricUpdateDto metricUpdateDto) {
+    public MetricResponseDto updateMetric(String id, String userId, MetricUpdateDto request) {
 
         var metric = metricRepository.findById(id);
 
-        if (metric == null) {
-            throw new IllegalArgumentException("Metric not found with ID: " + id);
+        MetricMapper.INSTANCE.updateMetricFromDto(request, metric);
+        metric.setPopulatedBy(userId);
+
+        if(!Objects.isNull(request.typeAlgorithmId)){
+
+            typeAlgorithmRepository.findByIdOptional(request.typeAlgorithmId).orElseThrow(()-> new NotFoundException("There is no Algorithm Type with the following id: "+request.typeAlgorithmId));
+            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId));
         }
 
-        MetricMapper.INSTANCE.updateMetricFromDto(metricUpdateDto, metric);
-        metric.setLastTouch(Timestamp.from(Instant.now()));
-        metric.setPopulatedBy(userId);
+        if(!Objects.isNull(request.typeMetricId)){
+
+            typeMetricRepository.findByIdOptional(request.typeMetricId).orElseThrow(()-> new NotFoundException("There is no Metric Type with the following id: "+request.typeMetricId));
+            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId));
+        }
 
         return MetricMapper.INSTANCE.metricToDto(metric);
     }
@@ -97,12 +106,9 @@ public class MetricService {
      * @param id The unique ID of the Metric item.
      */
     @Transactional
-    public void deleteMetric(String id) {
+    public boolean deleteMetric(String id) {
 
-        boolean deleted = metricRepository.deleteById(id);
-        if (!deleted) {
-            throw new IllegalArgumentException("Metric not found with ID: " + id);
-        }
+        return metricRepository.deleteById(id);
     }
 
     /**

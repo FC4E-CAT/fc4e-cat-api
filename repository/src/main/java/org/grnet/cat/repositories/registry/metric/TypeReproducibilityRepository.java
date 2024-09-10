@@ -2,16 +2,11 @@ package org.grnet.cat.repositories.registry.metric;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.grnet.cat.entities.Criteria;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeReproducibility;
 import org.grnet.cat.repositories.Repository;
-
-import java.util.HashMap;
-import java.util.StringJoiner;
 
 @ApplicationScoped
 public class TypeReproducibilityRepository implements Repository<TypeReproducibility, String> {

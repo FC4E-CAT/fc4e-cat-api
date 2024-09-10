@@ -12,6 +12,7 @@ import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.KeycloakAdminService;
+import org.grnet.cat.services.registry.CriterionService;
 import org.grnet.cat.services.registry.PrincipleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
@@ -47,6 +48,9 @@ public class KeycloakTest {
     @Inject
     PrincipleService principleService;
 
+    @Inject
+    CriterionService criterionService;
+
     @BeforeEach
     public void setup() {
 
@@ -61,6 +65,7 @@ public class KeycloakTest {
         validationService.deleteAll();
         userService.deleteAll();
         principleService.deleteAll();
+        criterionService.deleteAll();
     }
 
     protected UserProfileDto register(String username) {

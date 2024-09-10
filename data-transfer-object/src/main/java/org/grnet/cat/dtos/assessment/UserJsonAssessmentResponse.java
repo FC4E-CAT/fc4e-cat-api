@@ -16,7 +16,6 @@ public class UserJsonAssessmentResponse extends AdminJsonAssessmentResponse {
     @JsonProperty("shared_to_user")
     public Boolean sharedToUser;
 
-
     @Schema(
             type = SchemaType.BOOLEAN,
             implementation = Boolean.class,

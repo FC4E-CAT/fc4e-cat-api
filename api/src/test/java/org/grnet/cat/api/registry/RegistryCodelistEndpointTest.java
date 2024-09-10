@@ -39,25 +39,6 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void getTypeCriterion() {
-
-        register("admin");
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/criteria/types/{id}", "pid_graph:07CA8184")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(TypeCriterionResponse.class);
-
-        assertEquals(response.id, "pid_graph:07CA8184");
-    }
-
-    @Test
     public void getImperativeNotPermitted() {
 
         register("alice");

@@ -2,7 +2,6 @@ package org.grnet.cat.services.registry.metric;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.metric.TypeMetricResponseDto;
@@ -27,10 +26,6 @@ public class TypeMetricService {
     public TypeMetricResponseDto getTypeMetricById(String id) {
 
         var typeMetric = typeMetricRepository.findById(id);
-
-        if (typeMetric == null) {
-            throw new NotFoundException("Type Metric not found.");
-        }
 
         return TypeMetricMapper.INSTANCE.typeMetricToDto(typeMetric);
     }
