@@ -87,14 +87,14 @@ public class MetricService {
 
         if(!Objects.isNull(request.typeAlgorithmId)){
 
-            typeAlgorithmRepository.findByIdOptional(request.typeAlgorithmId).orElseThrow(()-> new NotFoundException("There is no Algorithm Type with the following id: "+request.typeAlgorithmId));
+            typeAlgorithmRepository.findById(request.typeAlgorithmId);
             metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId));
         }
 
         if(!Objects.isNull(request.typeMetricId)){
 
-            typeMetricRepository.findByIdOptional(request.typeMetricId).orElseThrow(()-> new NotFoundException("There is no Metric Type with the following id: "+request.typeMetricId));
-            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId));
+            typeMetricRepository.findById(request.typeMetricId);
+        metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId));
         }
 
         return MetricMapper.INSTANCE.metricToDto(metric);
