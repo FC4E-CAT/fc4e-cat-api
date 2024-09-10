@@ -31,7 +31,7 @@ public class PrincipleCriterionJunction extends Registry{
     @MapsId("principleId")
     private Principle principle;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("criterionId")
     private Criterion criterion;
 
@@ -41,7 +41,7 @@ public class PrincipleCriterionJunction extends Registry{
     @Column(name = "annotationURL")
     private String annotationURL;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lodREL")
     @NotNull
     private Relation relation;
@@ -54,6 +54,7 @@ public class PrincipleCriterionJunction extends Registry{
 
         this.motivation = motivation;
         this.principle = principle;
+        this.criterion = criterion;
         this.annotationURL = annotationURL;
         this.motivationX = motivationX;
         this.annotationText = annotationText;
@@ -73,13 +74,11 @@ public class PrincipleCriterionJunction extends Registry{
             return false;
 
         PrincipleCriterionJunction that = (PrincipleCriterionJunction) o;
-        return Objects.equals(motivation, that.motivation) &&
-                Objects.equals(principle, that.principle) &&
-                Objects.equals(criterion, that.criterion);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(motivation, principle, criterion);
+        return Objects.hash(id);
     }
 }
