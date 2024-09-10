@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.codelist;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -105,13 +106,14 @@ public class TypeBenchmarkResponse{
             description = "lodMTV",
             example = "pid_graph:3E109B2A"
     )
-    @JsonProperty(value = "lodTBNV")
+    @JsonProperty(value = "lod_tbn_v")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String lodTBNV;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Date and Time when the Motivation has been populated on.",
+            description = "Date and Time when the TypeBenchmark has been populated on.",
             example = " 2023-06-09 12:19:31.333059"
     )
     @JsonProperty("last_touch")

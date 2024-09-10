@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
@@ -20,12 +21,15 @@ public class TypeBenchmark extends Registry {
     private String id;
 
     @Column(name = "TBN")
+    @NotNull
     private String tbn;
 
     @Column(name = "labelBenchmarkType")
+    @NotNull
     private String labelBenchmarkType;
 
     @Column(name = "descBenchmarkType")
+    @NotNull
     private String descBenchmarkType;
 
     @Column(name = "functionPattern")
