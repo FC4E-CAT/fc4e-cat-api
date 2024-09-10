@@ -5,20 +5,24 @@ import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "p_Metric")
 @Getter
 @Setter
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Metric {
 
     @Id
     @Column(name = "lodMTR")
     @RegistryId
+    @EqualsAndHashCode.Include
     private String id;
 
     @Column(name = "MTR")
@@ -53,4 +57,12 @@ public class Metric {
 
     @Column(name = "lastTouch")
     private Timestamp lastTouch;
+
+    @OneToMany(
+            mappedBy = "metric",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<CriterionMetricJunction> criteria = new HashSet<>();
+
 }

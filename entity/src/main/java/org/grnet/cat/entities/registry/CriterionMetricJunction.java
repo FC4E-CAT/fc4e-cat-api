@@ -11,31 +11,30 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.grnet.cat.entities.registry.metric.Metric;
 
 import java.util.Objects;
 
-@Entity(name = "MotivationPrincipleJunction")
-@Table(name = "p_Motivation_Principle")
+@Entity(name = "CriterionMetricJunction")
+@Table(name = "p_Criterion_Metric")
 @Getter
 @Setter
-public class MotivationPrincipleJunction extends Registry{
+public class CriterionMetricJunction extends Registry{
 
     @EmbeddedId
-    private MotivationPrincipleId id;
+    private CriterionMetricId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("motivationId")
     private Motivation motivation;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("principleId")
-    private Principle principle;
+    @MapsId("metricId")
+    private Metric metric;
 
-    @Column(name = "annotationText")
-    private String annotationText;
-
-    @Column(name = "annotationURL")
-    private String annotationURL;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("criterionId")
+    private Criterion criterion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lodREL")
@@ -46,17 +45,17 @@ public class MotivationPrincipleJunction extends Registry{
     @NotNull
     private String motivationX;
 
-    public MotivationPrincipleJunction(Motivation motivation, Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV) {
+    public CriterionMetricJunction(Motivation motivation, Criterion criterion, Metric metric, Relation relation, String motivationX, Integer lodMcV) {
 
         this.motivation = motivation;
-        this.principle = principle;
-        this.annotationURL = annotationURL;
+        this.criterion = criterion;
+        this.metric = metric;
         this.motivationX = motivationX;
-        this.annotationText = annotationText;
         this.relation = relation;
-        this.id = new MotivationPrincipleId(motivation.getId(), principle.getId(), lodMpV);
+        this.id = new CriterionMetricId(motivation.getId(), criterion.getId(), metric.getId(), lodMcV);
     }
-    public MotivationPrincipleJunction() {
+
+    public CriterionMetricJunction() {
     }
 
     @Override
@@ -67,7 +66,7 @@ public class MotivationPrincipleJunction extends Registry{
         if (o == null || getClass() != o.getClass())
             return false;
 
-        MotivationPrincipleJunction that = (MotivationPrincipleJunction) o;
+        CriterionMetricJunction that = (CriterionMetricJunction) o;
         return Objects.equals(id, that.id);
     }
 
