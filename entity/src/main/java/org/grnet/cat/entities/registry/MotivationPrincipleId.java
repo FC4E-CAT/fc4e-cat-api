@@ -29,6 +29,18 @@ public class MotivationPrincipleId {
     public MotivationPrincipleId() {
     }
 
+    public String getMotivationId() {
+        return motivationId;
+    }
+
+    public String getPrincipleId() {
+        return principleId;
+    }
+
+    public Integer getLodMpV() {
+        return lodMpV;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

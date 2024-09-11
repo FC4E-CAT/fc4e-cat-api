@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.MotivationActorPartialResponse;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Schema(name = "Motivation", description = "This object represents a Motivation.")
 public class MotivationResponse {
@@ -80,4 +84,14 @@ public class MotivationResponse {
     @JsonProperty(value = "lod_mtv_p")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String lodMtvP;
+
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = Arrays.class,
+            description = "The Motivation actors",
+            example = ""
+    )
+    @JsonProperty(value = "actors")
+    public List<MotivationActorPartialResponse> actors;
 }

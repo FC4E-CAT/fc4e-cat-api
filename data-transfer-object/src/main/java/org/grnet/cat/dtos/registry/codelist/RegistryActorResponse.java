@@ -63,6 +63,7 @@ public class RegistryActorResponse{
             description = "The user who has populated the Motivation.",
             example = "user_id_populated_the_motivation"
     )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty(value = "populated_by")
     public String populatedBy;
 
