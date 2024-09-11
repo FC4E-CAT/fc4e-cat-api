@@ -14,9 +14,10 @@ public class SubjectRequest {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The subject id.",
+            required = true,
             example = "id"
     )
-    @NotEmpty(message = "id may not be empty.")
+    @NotEmpty(message = "subject_id may not be empty.")
     @JsonProperty("subject_id")
     public String id;
 
@@ -24,6 +25,7 @@ public class SubjectRequest {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The subject name.",
+            required = true,
             example = "name"
     )
     @NotEmpty(message = "name may not be empty.")
@@ -33,6 +35,7 @@ public class SubjectRequest {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The subject type.",
+            required = true,
             example = "type"
     )
     @NotEmpty(message = "type may not be empty.")

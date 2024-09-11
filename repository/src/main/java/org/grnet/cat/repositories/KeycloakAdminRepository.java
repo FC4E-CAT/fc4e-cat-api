@@ -9,6 +9,7 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.exceptions.EntityNotFoundException;
+import org.jboss.logging.Logger;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 @Named("keycloak-repository")
 public class KeycloakAdminRepository implements RoleRepository {
+
+    private static final Logger LOG = Logger.getLogger(KeycloakAdminRepository.class);
 
     @ConfigProperty(name = "quarkus.oidc.client-id")
     String clientId;
@@ -45,6 +48,7 @@ public class KeycloakAdminRepository implements RoleRepository {
      */
     @Override
     public List<Role> fetchRoles() {
+
         var realmResource = keycloak.realm(realm);
 
         var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
@@ -121,7 +125,8 @@ public class KeycloakAdminRepository implements RoleRepository {
 
         } catch (Exception e) {
 
-            throw new RuntimeException("Cannot communicate with keycloak.");
+            LOG.error("A communication error occurred while assigning roles to the user.", e);
+            throw new RuntimeException("A communication error occurred while assigning roles to the user.");
         }
     }
 
@@ -153,7 +158,8 @@ public class KeycloakAdminRepository implements RoleRepository {
 
         } catch (Exception e) {
 
-            throw new RuntimeException("Cannot communicate with keycloak.");
+            LOG.error("A communication error occurred while removing roles from the user.", e);
+            throw new RuntimeException("A communication error occurred while removing roles from the user.");
         }
     }
 
@@ -174,7 +180,7 @@ public class KeycloakAdminRepository implements RoleRepository {
                 .collect(Collectors.toList());
 
         if (!notExist.isEmpty()) {
-            throw new EntityNotFoundException(String.format("The following roles %s do not exist.", notExist.toString()));
+            throw new EntityNotFoundException(String.format("The following roles %s do not exist.", notExist));
         }
     }
 

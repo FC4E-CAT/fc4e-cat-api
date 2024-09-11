@@ -10,12 +10,17 @@ import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.services.CommentService;
+import org.grnet.cat.services.KeycloakAdminService;
+import org.grnet.cat.services.registry.CriterionService;
+import org.grnet.cat.services.registry.PrincipleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -37,20 +42,37 @@ public class KeycloakTest {
 
     @Inject
     ObjectMapper objectMapper;
+    @Inject
+    CommentService commentService;
+
+    @Inject
+    PrincipleService principleService;
+
+    @Inject
+    CriterionService criterionService;
 
     @BeforeEach
     public void setup() {
 
+        var mock = Mockito.mock(KeycloakAdminService.class);
+
+        Mockito.doNothing().when(mock).addEntitlementsToUser(any(), any());
+        Mockito.when(mock.getUserEntitlements(any())).thenReturn(Collections.emptyList());
+        QuarkusMock.installMockForType(mock, KeycloakAdminService.class);
+
+        commentService.deleteAll();
         jsonAssessmentService.deleteAll();
         validationService.deleteAll();
         userService.deleteAll();
+        principleService.deleteAll();
+        criterionService.deleteAll();
     }
 
     protected UserProfileDto register(String username) {
 
         var role = new Role("identidied_id", "identified", "The identified role");
 
-        KeycloakAdminRepository mock = Mockito.mock(KeycloakAdminRepository.class);
+        var mock = Mockito.mock(KeycloakAdminRepository.class);
         Mockito.when(mock.fetchUserRoles(any())).thenReturn(List.of(role));
         QuarkusMock.installMockForType(mock, KeycloakAdminRepository.class);
 
@@ -68,8 +90,7 @@ public class KeycloakTest {
         var update = new UpdateUserProfileDto();
         update.name = "foo";
         update.surname = "foo";
-        update.email = "foo@admin.grnet.gr";
-
+        update.email = username.concat("@admin.grnet.gr");
 
         var profile = given()
                 .auth()
@@ -86,7 +107,6 @@ public class KeycloakTest {
 
         return profile;
     }
-
 
     protected String getAccessToken(String userName) {
         return keycloakClient.getAccessToken(userName);

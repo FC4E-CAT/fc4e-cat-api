@@ -5,12 +5,11 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
 import org.grnet.cat.dtos.*;
-import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.assessment.JsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.UpdateJsonAssessmentRequest;
+import org.grnet.cat.dtos.assessment.*;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.entities.Comment;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         assertEquals(validation.id, response.validationId);
     }
@@ -200,7 +199,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var response = given()
                 .auth()
@@ -210,7 +209,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         assertEquals(assessment.id, response.id);
 
@@ -249,7 +248,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var pageResource = given()
                 .auth()
@@ -285,7 +284,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc = makeJsonDocUpdated();
@@ -300,7 +299,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var json = makeJsonDocUpdated();
         assertEquals(json.status , updatedResponse.assessmentDoc.status);
@@ -352,7 +351,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var updateRequest = new UpdateJsonAssessmentRequest();
         updateRequest.assessmentDoc =makeJsonDocUpdated();
@@ -473,7 +472,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var response = given()
                 .auth()
@@ -512,7 +511,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var informativeResponse = given()
                 .auth()
@@ -550,7 +549,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
        var informativeResponse = given()
                 .auth()
@@ -589,7 +588,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(JsonAssessmentResponse.class);
+                .as(UserJsonAssessmentResponse.class);
 
         var informativeResponse = given()
                 .auth()
@@ -602,7 +601,303 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("User not authorized to manage assessment with ID "+assessment.id, informativeResponse.message);
+        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
+    }
+    @Test
+    public void createComment() throws IOException {
+
+        register("validated");
+        register("admin");
+
+        var validation = makeValidation("validated", 6L);
+
+        var requestAssessment = new JsonAssessmentRequest();
+        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonAssessmentResponse.class);
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment.";
+
+        var responseComment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(commentRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CommentResponseDto.class);
+
+        assertEquals(commentRequest.text, responseComment.text);
+    }
+
+    @Test
+    public void createCommentNotAuthorized() throws IOException {
+
+        register("alice");
+        register("admin");
+        register("validated");
+
+        var validation = makeValidation("validated", 6L);
+
+        var requestAssessment = new JsonAssessmentRequest();
+        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonAssessmentResponse.class);
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment.";
+
+        var responseComment = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .body(commentRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(403, responseComment.code);
+    }
+
+    @Test
+    public void getComments() throws IOException {
+
+        register("validated");
+        register("admin");
+
+        makeValidation("validated", 6L);
+        fetchTemplateByActorAndType();
+
+        var requestAssessment = new JsonAssessmentRequest();
+        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonAssessmentResponse.class);
+
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment.";
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(commentRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments/", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CommentResponseDto.class);
+
+        var pageResource = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .get("/{id}/comments", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(PageResource.class);
+
+        assertEquals(1, pageResource.getTotalElements());
+    }
+
+    @Test
+    public void updateComment() throws IOException {
+
+        register("validated");
+        register("admin");
+
+        var validation = makeValidation("validated", 6L);
+
+        var requestAssessment = new JsonAssessmentRequest();
+        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonAssessmentResponse.class);
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment.";
+
+        var responseComment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(commentRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CommentResponseDto.class);
+
+        var updatedCommentRequest = new CommentRequestDto();
+        updatedCommentRequest.text = "This is an updated test comment.";
+
+        var updatedCommentResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(updatedCommentRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}/comments/{comment-id}", assessment.id, responseComment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(CommentResponseDto.class);
+
+        assertEquals(updatedCommentRequest.text, updatedCommentResponse.text);
+    }
+
+    @Test
+    public void deleteComment() throws IOException {
+
+        register("validated");
+        register("admin");
+
+        var validation = makeValidation("validated", 6L);
+
+        var requestAssessment = new JsonAssessmentRequest();
+        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonAssessmentResponse.class);
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment.";
+
+        var responseComment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(commentRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CommentResponseDto.class);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .contentType(ContentType.JSON)
+                .delete("/{id}/comments/{comment-id}", assessment.id, responseComment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Comment has been successfully deleted.", informativeResponse.message);
+    }
+
+    @Test
+    public void deleteCommentNotPermitted() throws IOException {
+
+        register("validated");
+        register("admin");
+        register("alice");
+
+        var validation = makeValidation("validated", 6L);
+
+        var requestAssessment = new JsonAssessmentRequest();
+        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonAssessmentResponse.class);
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment.";
+
+        var responseComment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .body(commentRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CommentResponseDto.class);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .contentType(ContentType.JSON)
+                .delete("/comments/{id}", responseComment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
     }
 
     private ValidationResponse makeValidation(String username, Long actorId) {
@@ -673,7 +968,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
                 "                  },\n" +
                 "                  \"evidence_url\": [\n" +
-                "                    \"https://www.in.gr\"\n" +
+                "                 {\"url\": \"https://www.in.gr\"}\n" +
                 "                  ]\n" +
                 "                }\n" +
                 "              ]\n" +
@@ -683,7 +978,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "      }\n" +
                 "    ]\n" +
                 "  }";
-
         return objectMapper.readValue(doc, TemplateDto.class);
     }
 
@@ -748,7 +1042,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
                 "                  },\n" +
                 "                  \"evidence_url\": [\n" +
-                "                    \"https://www.in.gr\"\n" +
+                "                   {\"url\": \"https://www.in.gr\"}\n" +
                 "                  ]\n" +
                 "                }\n" +
                 "              ]\n" +

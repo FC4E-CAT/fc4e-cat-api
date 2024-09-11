@@ -23,6 +23,37 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 
 ---
+### Added
+
+- [#222](https://github.com/FC4E-CAT/fc4e-cat-api/pull/222) CAT-425 Register a New Assessment Type in CAT Database.
+- [#223](https://github.com/FC4E-CAT/fc4e-cat-api/pull/223) CAT-426 Register a new template for PID Manager for PID NL National Policy.
+- [#225](https://github.com/FC4E-CAT/fc4e-cat-api/pull/225) CAT-429 Update Manager Template for National PID policy.
+- [#228](https://github.com/FC4E-CAT/fc4e-cat-api/pull/228) CAT-439 Enable Sharing of Assessments Among Users via Keycloak Attributes.
+- [#230](https://github.com/FC4E-CAT/fc4e-cat-api/pull/230) CAT-441 Guidance in db.
+- [#231](https://github.com/FC4E-CAT/fc4e-cat-api/pull/231) CAT-443 CRUD actions on Principles.
+- [#232](https://github.com/FC4E-CAT/fc4e-cat-api/pull/232) CAT-444 Create Endpoint for Sharing Assessments Among Users.
+- [#235](https://github.com/FC4E-CAT/fc4e-cat-api/pull/235) CAT-442 Create CRUD Operations for Criteria under Admin User.
+- [#236](https://github.com/FC4E-CAT/fc4e-cat-api/pull/236) CAT-386 wrong question -update text in templates.
+- [#239](https://github.com/FC4E-CAT/fc4e-cat-api/pull/239) CAT-370 Admin - View User.
+- [#241](https://github.com/FC4E-CAT/fc4e-cat-api/pull/241) CAT-448 Reason for rejection of a validation.
+- [#242](https://github.com/FC4E-CAT/fc4e-cat-api/pull/242) CAT-450 Input type in the evidence.
+- [#243](https://github.com/FC4E-CAT/fc4e-cat-api/pull/243) CAT-460 Share an assessment.
+- [#244](https://github.com/FC4E-CAT/fc4e-cat-api/pull/244) CAT-458 As a user i want to know to whom i shared an assessment.
+- [#245](https://github.com/FC4E-CAT/fc4e-cat-api/pull/245) CAT-452 Comments in an assessment.
+- [#250](https://github.com/FC4E-CAT/fc4e-cat-api/pull/250) CAT-465 Add more user info on each comment.
+- [#252](https://github.com/FC4E-CAT/fc4e-cat-api/pull/252) CAT-459 As a user i want to see to whom i shared an assessment.
+- [#257](https://github.com/FC4E-CAT/fc4e-cat-api/pull/257) CAT-475 Motivations.
+- [#258](https://github.com/FC4E-CAT/fc4e-cat-api/pull/258) CAT-484 Codelist - Tables sync with Vocabulary service (CRUD Type Criterion).
+- [#259](https://github.com/FC4E-CAT/fc4e-cat-api/pull/259) CAT-484 Codelist - Tables sync with Vocabulary service (GET Imperative).
+- [#260](https://github.com/FC4E-CAT/fc4e-cat-api/pull/260) CAT-477 Motivations & Principles.
+- [#261](https://github.com/FC4E-CAT/fc4e-cat-api/pull/261) CAT-484 Codelist - Tables sync with Vocabulary service (GET Benchmark Type).
+- [#263](https://github.com/FC4E-CAT/fc4e-cat-api/pull/263) CAT-476 Motivations and actors - (GET Actor).
+- [#265](https://github.com/FC4E-CAT/fc4e-cat-api/pull/265) CAT-481 Criterion & Metrics.
+
+### Changed
+
+- [#249](https://github.com/FC4E-CAT/fc4e-cat-api/pull/249) CAT-464 Issue when updating the user details in profile.
+
 
 ## 1.6.0 - 2024-07-08
 

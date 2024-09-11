@@ -15,15 +15,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
-import org.grnet.cat.api.utils.Utility;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.dtos.InformativeResponse;
@@ -35,6 +37,7 @@ import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
+import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
@@ -42,6 +45,12 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
 
 @Path("/v1/validations")
 @Authenticated
+@SecurityScheme(securitySchemeName = "Authentication",
+        description = "JWT token",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT",
+        in = SecuritySchemeIn.HEADER)
 public class ValidationsEndpoint {
 
     /**

@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories;
 
-import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -16,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,29 @@ public class UserRepository implements UserRepositoryI<User, String> {
         user.setType(findUserType(roles));
 
         return user;
+    }
+
+    /**
+     * It executes a query in database to retrieve an active user by email.
+     *
+     * @param email User's email.
+     * @return User's Profile.
+     */
+    @Override
+    public Optional<User> fetchActiveUserByEmail(String email) {
+
+        return find("from User user where user.email = ?1 and user.banned = ?2", email, Boolean.FALSE).stream().findAny();
+    }
+
+    /**
+     * It executes a query in database to retrieve a user by email.
+     *
+     * @param email User's email.
+     * @return User's Profile.
+     */
+    @Override
+    public Optional<User> fetchUserByEmail(String email) {
+        return find("from User user where user.email = ?1", email).stream().findAny();
     }
 
     /**
@@ -175,5 +199,33 @@ public class UserRepository implements UserRepositoryI<User, String> {
                 .collect(Collectors.toSet());
 
         return UserType.mostSeverity(set);
+    }
+
+    public Set<UserType> findUserTypes(List<Role> roles){
+
+        return roles
+                .stream()
+                .map(Role::getName)
+                .map(UserType::retrieveByRole)
+                .collect(Collectors.toSet());
+    }
+
+    public UserType findUserTypeById(String id){
+
+        var roles = roleRepository.fetchUserRoles(id);
+
+        return findUserType(roles);
+    }
+
+    public Set<UserType> findUserTypesById(String id){
+
+        var roles = roleRepository.fetchUserRoles(id);
+
+        return findUserTypes(roles);
+    }
+
+    public List<User> fetchUsers(List<String> ids) {
+
+        return find("from User user where user.id in ?1", ids).list();
     }
 }

@@ -21,4 +21,14 @@ public class UpdateValidationStatus {
     @StringEnumeration(enumClass = ValidationStatus.class, message = "status")
     @NotEmpty(message = "status may not be empty.")
     public String status;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = ValidationStatus.class,
+            required = true,
+            description = "The reason for rejecting a validation.",
+            example = ""
+    )
+    @JsonProperty("rejection_reason")
+    public String rejectionReason;
 }

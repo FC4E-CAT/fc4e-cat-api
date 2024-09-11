@@ -103,7 +103,6 @@ public class ValidationResponse {
     @Schema(
             type = SchemaType.NUMBER,
             implementation = Long.class,
-            required = true,
             description = "The ID of Actor.",
             example = "5"
     )
@@ -113,7 +112,6 @@ public class ValidationResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            required = true,
             description = "The Name of Actor.",
             example = "End User"
     )
@@ -152,9 +150,18 @@ public class ValidationResponse {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The user who has validated the validation request.",
-            example = " 2023-06-09 12:19:31.333059"
+            example = "user_id"
     )
     @JsonProperty("validated_by")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String validatedBy;
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The reason for rejection, if the status is REJECTED.",
+            example = "Invalid organisation ID"
+    )
+    @JsonProperty("rejection_reason")
+    @JsonInclude(JsonInclude.Include.NON_NULL)  // Exclude from JSON if null
+    public String rejectionReason;
 }

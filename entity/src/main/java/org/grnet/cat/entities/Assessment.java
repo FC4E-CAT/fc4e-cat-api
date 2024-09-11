@@ -2,16 +2,23 @@ package org.grnet.cat.entities;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This entity represents the Assessment table in database.
  *
  */
 @Entity
+@Getter
+@Setter
 public class Assessment {
 
     /**
@@ -43,59 +50,13 @@ public class Assessment {
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
-    public String getId() {
-        return id;
-    }
+    @Column(name = "updated_by")
+    private String updatedBy;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    @OneToMany(mappedBy = "assessment",
+                cascade = CascadeType.ALL,
+                orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+    private Boolean shared;
 
-    public String getAssessmentDoc() {
-        return assessmentDoc;
-    }
-
-    public void setAssessmentDoc(String assessmentDoc) {
-        this.assessmentDoc = assessmentDoc;
-    }
-
-    public Timestamp getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(Timestamp createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public Timestamp getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(Timestamp updatedOn) {
-        this.updatedOn = updatedOn;
-    }
-
-    public Template getTemplate() {
-        return template;
-    }
-
-    public void setTemplate(Template template) {
-        this.template = template;
-    }
-
-    public Validation getValidation() {
-        return validation;
-    }
-
-    public void setValidation(Validation validation) {
-        this.validation = validation;
-    }
-
-    public Subject getSubject() {
-        return subject;
-    }
-
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
 }

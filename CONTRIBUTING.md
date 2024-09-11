@@ -30,7 +30,7 @@ any functional requirements we have.
 
 External contributions can be accepted, if they provide functionality FAIRCORE4EOSC-CAT
 deems appropriate and are of acceptable quality.
-Specific requirements and criteria may apply to specific tools.
+Specific requirements and criterion may apply to specific tools.
 
 If you want to contribute to FAIRCORE4EOSC-CAT tools and services,
 please create a ticket to the repository / organization before proceeding.

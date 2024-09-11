@@ -6,9 +6,7 @@ import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.cat.dtos.UserProfileDto;
-import org.grnet.cat.dtos.ValidationRequest;
-import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.entities.Validation;
@@ -19,16 +17,15 @@ import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
-import org.grnet.cat.repositories.ActorRepository;
-import org.grnet.cat.repositories.HistoryRepository;
-import org.grnet.cat.repositories.RoleRepository;
-import org.grnet.cat.repositories.UserRepository;
+import org.grnet.cat.repositories.*;
+import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -50,6 +47,15 @@ public class UserService {
      */
     @Inject
     ValidationService validationService;
+
+    @Inject
+    ValidationRepository validationRepository;
+
+    @Inject
+    AssessmentRepository assessmentRepository;
+
+    @Inject
+    JsonAssessmentService jsonAssessmentService;
 
     /**
      * Injection point for the Actor repository
@@ -93,15 +99,43 @@ public class UserService {
     }
 
     /**
+     * Get User's profile.
+     *
+     * @param userId User's voperson_id
+     * @return User's profile information and validation and assessment counting.
+     */
+    public UserInfoDto getUserStatsById(String userId) {
+
+        var userProfile = getUserProfile(userId);
+
+        var info = new UserInfoDto();
+        info.id = userProfile.id;
+        info.name = userProfile.name;
+        info.surname = userProfile.surname;
+        info.email = userProfile.email;
+        info.banned = userProfile.banned;
+        info.orcidId = userProfile.orcidId;
+        info.roles = userProfile.roles;
+        info.registeredOn = userProfile.registeredOn;
+        info.type = userProfile.type;
+        info.validatedOn = userProfile.validatedOn;
+        info.updatedOn = userProfile.updatedOn;
+        info.totalValidationsCount = validationRepository.countValidationsByUserId(info.id);
+        info.totalAssessmentsCount = assessmentRepository.countAllAssessmentsByUser(info.id);
+
+        return info;
+    }
+
+    /**
      * Retrieves a page of users from the database.
      *
      * @param search  Enables clients to specify a text string for searching specific fields within User entity.
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of users to include in a page.
-     * @param sort Specifies the field by which the results to be sorted.
-     * @param order Specifies the order in which the sorted results should be returned.
-     * @param status Indicates whether the user is active or deleted.
-     * @param type Filters the results based on the type of user.
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of users to include in a page.
+     * @param sort    Specifies the field by which the results to be sorted.
+     * @param order   Specifies the order in which the sorted results should be returned.
+     * @param status  Indicates whether the user is active or deleted.
+     * @param type    Filters the results based on the type of user.
      * @param uriInfo The Uri Info.
      * @return A list of UserProfileDto objects representing the users in the requested page.
      */
@@ -124,6 +158,10 @@ public class UserService {
      */
     public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId) {
 
+       Optional<User> optionalUser=userRepository.fetchUserByEmail(email);
+        if (optionalUser.isPresent() && !optionalUser.get().getId().equals(id)){
+            throw new ConflictException("There is a User with email : " + email);
+        }
         var user = userRepository.updateUserMetadata(id, name, surname, email, orcidId);
 
         return UserMapper.INSTANCE.userToProfileDto(user);
@@ -255,6 +293,13 @@ public class UserService {
         userToBeBanned.setBanned(Boolean.FALSE);
         historyRepository.persist(history);
         roleRepository.removeRoles(userId, List.of("deny_access"));
+    }
+
+    public PageResource<UserAssessmentEligibilityResponse> getUserAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo) {
+
+        var list = validationService.getUserAssessmentEligibility(page, size, userID);
+
+        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserAssessmentEligibilityToDto(list.list()), uriInfo);
     }
 
 }

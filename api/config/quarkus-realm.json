@@ -1080,6 +1080,31 @@
             "icon_uri": ""
           },
           {
+            "name": "Registry Resource",
+            "ownerManagedAccess": false,
+            "displayName": "",
+            "attributes": {},
+            "_id": "8124e2f1-e6dc-55b4-87ab-24b010090b97",
+            "uris": [
+              "/v1/registry/*"
+            ],
+            "scopes": [
+              {
+                "name": "cat.delete"
+              },
+              {
+                "name": "cat.create"
+              },
+              {
+                "name": "cat.update"
+              },
+              {
+                "name": "cat.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Read Template By Actor",
             "ownerManagedAccess": false,
             "displayName": "Read Template By Actor",
@@ -1189,6 +1214,18 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "70188298-d55b-4066-b231-6a7c56ff7cc5",
+            "name": "Registry Resource Permission",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Registry Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -2951,7 +2988,7 @@
       "enabled": true,
       "serviceAccountClientId": "admin-cli",
       "clientRoles": {
-        "realm-management": ["manage-users", "manage-clients"]
+        "realm-management": ["manage-users", "manage-clients", "manage-authorization", "view-authorization"]
       }
     },
     {

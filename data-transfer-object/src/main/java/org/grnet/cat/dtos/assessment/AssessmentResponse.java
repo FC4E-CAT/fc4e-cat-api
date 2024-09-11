@@ -18,7 +18,9 @@ public class AssessmentResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The user to whom the assessments belongs.")
+            description = "The user to whom the assessments belongs.",
+            example = "user_id_created_the_assessment"
+    )
     @JsonProperty("user_id")
     public String userId;
 
@@ -46,4 +48,13 @@ public class AssessmentResponse {
     )
     @JsonProperty("updated_on")
     public String updatedOn;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The last user who updated the assessment.",
+            example = "user_id_updated_the_assessment"
+    )
+    @JsonProperty("updated_by")
+    public String updatedBy;
 }

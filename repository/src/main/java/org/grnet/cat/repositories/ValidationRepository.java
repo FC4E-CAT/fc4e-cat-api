@@ -10,6 +10,7 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.projections.UserAssessmentEligibility;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
@@ -43,6 +44,17 @@ public class ValidationRepository implements Repository<Validation, Long> {
         List<ValidationStatus> statuses = Arrays.asList(ValidationStatus.REVIEW, ValidationStatus.APPROVED, ValidationStatus.PENDING);
 
         return find("from Validation v where v.user.id = ?1 and v.organisationId = ?2 and v.organisationSource = ?3 and v.status IN (?4) and v.actor.id = ?5", id, organisationId, Source.valueOf(organisationSource), statuses, actorId).stream().findAny().isPresent();
+    }
+
+    /**
+     * Retrieves the total number of validation requests submitted by the specified user.
+     *
+     * @param userId The ID of the user.
+     * @return the number of counts of validation requests for a specified user
+     */
+    public Long countValidationsByUserId(String userId) {
+
+        return count("from Validation v where v.user.id = ?1", userId);
     }
 
     /**
@@ -192,5 +204,30 @@ public class ValidationRepository implements Repository<Validation, Long> {
                 Parameters.with("organisationID", organisationID).and("userID", userID).and("actorID", actorID).and("status", ValidationStatus.APPROVED)).firstResultOptional();
 
         return optional.orElseThrow(() -> new NotFoundException("There is no approved validation request."));
+    }
+
+    /**
+     * Retrieves the list of assessment types and actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and actors
+     */
+    public PageQuery<UserAssessmentEligibility> fetchUserAssessmentEligibility(int page, int size, String userID){
+
+        var panache = find("select v.organisationId, v.organisationName, v.organisationSource, v.organisationRole, " +
+                "t.actor.id, t.actor.name, t.type.id, t.type.label from Validation v inner join Template t on v.actor.id = t.actor.id " +
+                "where v.user.id = : userID and status = : status order by v.createdOn",
+                Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED)).project(UserAssessmentEligibility.class).page(page, size);
+
+        var pageable = new PageQueryImpl<UserAssessmentEligibility>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
     }
 }

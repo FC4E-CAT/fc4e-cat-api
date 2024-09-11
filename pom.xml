@@ -19,6 +19,7 @@
     <module>mapper</module>
     <module>enum</module>
     <module>validator</module>
+    <module>util</module>
   </modules>
 
   <properties>
@@ -102,6 +103,11 @@
         <version>${revision}</version>
       </dependency>
       <dependency>
+        <groupId>org.grnet</groupId>
+        <artifactId>cat-utils</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
         <groupId>org.mapstruct</groupId>
         <artifactId>mapstruct</artifactId>
         <version>${mapstruct.version}</version>
@@ -150,6 +156,11 @@
       <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-resteasy-reactive-qute</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>3.6.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

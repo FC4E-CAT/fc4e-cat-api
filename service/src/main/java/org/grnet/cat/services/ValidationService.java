@@ -1,6 +1,5 @@
 package org.grnet.cat.services;
 
-import io.quarkus.qute.Template;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -8,12 +7,12 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.projections.UserAssessmentEligibility;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
@@ -21,6 +20,8 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.validators.ValidationRequestValidator;
+
 import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
@@ -166,13 +167,18 @@ public class ValidationService {
      * @param id     The ID of the validation request to update.
      * @param status The new status to set for the validation request.
      * @param userId The user who validates a validation request.
+     * @param rejectionReason The reason for rejecting a validation.
      * @return The updated validation request.
      */
     @Transactional
-    public ValidationResponse updateValidationRequestStatus(Long id, ValidationStatus status, String userId) {
+    public ValidationResponse updateValidationRequestStatus(Long id, ValidationStatus status, String userId, String rejectionReason) {
 
-        validationRepository.update("status = ?1 , validatedBy = ?2 ,validatedOn = ?3  where id = ?4", status, userId, Timestamp.from(Instant.now()), id);
+        ValidationRequestValidator.validateRejectionReason(status, rejectionReason);
 
+        validationRepository.update(
+                "status = ?1, validatedBy = ?2, validatedOn = ?3, rejectionReason = ?4 WHERE id = ?5",
+                status, userId, Timestamp.from(Instant.now()), status == ValidationStatus.REJECTED ? rejectionReason : null, id
+        );
         var validation = validationRepository.findById(id);
         handleValidationStatus.accept(validation.getUser().getId(), status);
         MailerService.CustomCompletableFuture.runAsync(() -> mailerService.sendMails(validation, MailType.VALIDATED_ALERT_CHANGE_VALIDATION_STATUS, Arrays.asList(validation.getUser().getEmail())));
@@ -210,6 +216,19 @@ public class ValidationService {
         var validation = validationRepository.findById(validationId);
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
+    }
+
+    /**
+     * Retrieves the list of assessment types and actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and actors
+     */
+    public PageQuery<UserAssessmentEligibility> getUserAssessmentEligibility(int page, int size, String userID){
+
+        return validationRepository.fetchUserAssessmentEligibility(page, size, userID);
     }
 
     @Transactional
