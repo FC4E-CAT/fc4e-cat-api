@@ -37,7 +37,7 @@ public class MotivationActorResponse {
             example = ""
     )
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("motivation_X")
+    @JsonProperty("motivation_x")
     public String motivationX;
 
     @Schema(
@@ -46,6 +46,6 @@ public class MotivationActorResponse {
             description = "The LOD MAV.",
             example = "1"
     )
-    @JsonProperty("lod_m_a_v")
+    @JsonProperty("version")
     public Integer lodMAV;
 }

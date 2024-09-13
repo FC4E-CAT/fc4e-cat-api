@@ -18,7 +18,6 @@ public class TypeBenchmarkResponse{
     @JsonProperty(value = "id")
     public String id;
 
-
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
             description = "Type Benchmark",
@@ -30,7 +29,7 @@ public class TypeBenchmarkResponse{
             implementation = String.class,
             description = "Label of the Benchmark Type ",
             example = "Value-Binary")
-    @JsonProperty(value="labelBenchmarkType")
+    @JsonProperty(value="label")
     public String labelBenchmarkType;
 
     @Schema(type = SchemaType.STRING,
@@ -38,10 +37,8 @@ public class TypeBenchmarkResponse{
             description = "Description of the Benchmark Type ",
             example = "TThe benchmark maps a numeric value to a becnhmark - greater or equal to the benhcmark is desired")
 
-    @JsonProperty(value="descBenchmarkType")
+    @JsonProperty(value="description")
     public String descBenchmarkType;
-
-
 
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
@@ -55,10 +52,8 @@ public class TypeBenchmarkResponse{
                     "  return value >= benchmark;\n" +
                     "}")
 
-    @JsonProperty(value="functionPattern")
+    @JsonProperty(value="function")
     public String functionPattern;
-
-
 
     @Schema(
             type = SchemaType.STRING,
@@ -69,7 +64,6 @@ public class TypeBenchmarkResponse{
     @JsonProperty(value = "populated_by")
     public String populatedBy;
 
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -78,7 +72,6 @@ public class TypeBenchmarkResponse{
     )
     @JsonProperty(value = "pattern")
     public String pattern;
-
 
     @Schema(
             type = SchemaType.STRING,
@@ -89,15 +82,13 @@ public class TypeBenchmarkResponse{
     @JsonProperty(value = "example")
     public String example;
 
-
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "lodMTV",
+            description = "Motivation ID",
             example = "pid_graph:3E109BBA"
     )
-    @JsonProperty(value = "lodMTV")
+    @JsonProperty(value = "motivation_id")
     public String lodMTV;
 
     @Schema(
@@ -106,7 +97,7 @@ public class TypeBenchmarkResponse{
             description = "lodMTV",
             example = "pid_graph:3E109B2A"
     )
-    @JsonProperty(value = "lod_tbn_v")
+    @JsonProperty(value = "version")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String lodTBNV;
 

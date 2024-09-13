@@ -16,7 +16,7 @@ public class MetricUpdateDto {
             description = "The Metric code.",
             example = "MTR001"
     )
-    @JsonProperty("MTR")
+    @JsonProperty("mtr")
     public String MTR;
 
     @Schema(

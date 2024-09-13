@@ -21,7 +21,6 @@ public class TestResponseDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The Test Name",
-            required = true,
             example = "T12"
     )
     @JsonProperty("tes")
@@ -48,7 +47,7 @@ public class TestResponseDto {
             implementation = String.class,
             description = "Motivation ID",
             example = "pid_graph:3E109BBA")
-    @JsonProperty("lodmtv")
+    @JsonProperty("motivation_id")
     public String lodMTV;
 
     @Schema(
@@ -72,6 +71,6 @@ public class TestResponseDto {
     @Schema(
             type = SchemaType.STRING,
             description = "Test version")
-    @JsonProperty("lodtes_v")
+    @JsonProperty("version")
     public String lodTES_V;
 }

@@ -27,7 +27,7 @@ public class MotivationResponse {
             description = "The Motivation.",
             example = "EOSC-PID"
     )
-    @JsonProperty(value = "MTV")
+    @JsonProperty(value = "mtv")
     public String mtv;
 
     @Schema(
@@ -81,7 +81,7 @@ public class MotivationResponse {
             description = "The Motivation parent identifier.",
             example = "pid_graph:986123FA"
     )
-    @JsonProperty(value = "lod_mtv_p")
+    @JsonProperty(value = "motivation_parent_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String lodMtvP;
 

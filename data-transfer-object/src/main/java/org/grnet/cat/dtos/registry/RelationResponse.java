@@ -26,7 +26,7 @@ public class RelationResponse {
             description = "The label ",
             example = "Is Required By"
     )
-    @JsonProperty("label_relation")
+    @JsonProperty("label")
     public String labelRelation;
 
     @Schema(
@@ -35,7 +35,7 @@ public class RelationResponse {
             description = "The description ",
             example = "A related resource that requires the described resource to support its function, delivery, or coherence."
     )
-    @JsonProperty("desc_relation")
+    @JsonProperty("description")
     public String descRelation;
 
     @Schema(
@@ -44,7 +44,7 @@ public class RelationResponse {
             description = "The url ",
             example = "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/"
     )
-    @JsonProperty("url_relation")
+    @JsonProperty("url")
     public String urlRelation;
 
 }

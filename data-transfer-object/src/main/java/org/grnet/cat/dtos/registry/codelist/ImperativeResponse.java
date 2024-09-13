@@ -16,7 +16,6 @@ public class ImperativeResponse{
     @JsonProperty(value = "id")
     public String id;
 
-
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
             description = "Imperative",
@@ -28,7 +27,7 @@ public class ImperativeResponse{
             implementation = String.class,
             description = "Label of the Imperative",
             example = "MAY")
-    @JsonProperty(value="labelImperative")
+    @JsonProperty(value="label")
     public String labelImperative;
 
     @Schema(type = SchemaType.STRING,
@@ -36,14 +35,13 @@ public class ImperativeResponse{
             description = "Description of the Imperative",
             example = "This word, or the adjective \"OPTIONAL\", means that an item is truly optional. One vendor may choose to include the item because a particular marketplace requires it or because the vendor feels that it enhances the product while another vendor may omit the same item. An implementation which does not include a particular option MUST be prepared to interoperate with another implementation which does include the option, though perhaps with reduced functionality. In the same vein an implementation which does include a particular option MUST be prepared to interoperate with another implementation which does not include the option (except, of course, for the feature the option provides")
 
-    @JsonProperty(value="descImperative")
+    @JsonProperty(value="description")
     public String descImperative;
-
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The user who has populated the Motivation.",
+            description = "The user who has populated the Imperative.",
             example = "user_id_populated_the_motivation"
     )
     @JsonProperty(value = "populated_by")

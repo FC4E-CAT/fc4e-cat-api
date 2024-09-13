@@ -24,7 +24,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "The algorithm's name",
             example = "Some Algorithm")
-    @JsonProperty("TAL")
+    @JsonProperty("tal")
     public String TAL;
 
     @Schema(
@@ -32,7 +32,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "The label of the algorithm type",
             example = "Algorithm Type Label")
-    @JsonProperty("labelAlgorithmType")
+    @JsonProperty("label")
     public String labelAlgorithmType;
 
     @Schema(
@@ -40,7 +40,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "The description of the algorithm type",
             example = "This is an algorithm description.")
-    @JsonProperty("descAlgorithmType")
+    @JsonProperty("description")
     public String descAlgorithmType;
 
     @Schema(
@@ -48,7 +48,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "The URI of the algorithm type",
             example = "http://example.com/algorithm")
-    @JsonProperty("uriAlgorithmType")
+    @JsonProperty("uri")
     public String uriAlgorithmType;
 
     @Schema(
@@ -56,7 +56,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "The function pattern",
             example = "Pattern XYZ")
-    @JsonProperty("functionPattern")
+    @JsonProperty("function")
     public String functionPattern;
 
     @Schema(
@@ -64,7 +64,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "Version of the lodTAL",
             example = "v1.0")
-    @JsonProperty("lodTAL_V")
+    @JsonProperty("version")
     public String lodTAL_V;
 
     @Schema(
@@ -72,7 +72,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "Populated by user ID",
             example = "0000-0002-0255-5101")
-    @JsonProperty("populatedBy")
+    @JsonProperty("populated_by")
     public String populatedBy;
 
     @Schema(
@@ -80,7 +80,7 @@ public class TypeAlgorithmResponseDto {
             implementation = String.class,
             description = "Last modified timestamp",
             example = "2024-07-18T11:32:00")
-    @JsonProperty("lastTouch")
+    @JsonProperty("last_touch")
     public Timestamp lastTouch;
 
     @Schema(
