@@ -25,39 +25,36 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.test.TestRequestDto;
-import org.grnet.cat.dtos.registry.test.TestResponseDto;
-import org.grnet.cat.dtos.registry.test.TestUpdateDto;
-import org.grnet.cat.repositories.registry.TestRepository;
-
-import org.grnet.cat.services.registry.TestService;
+import org.grnet.cat.dtos.registry.test.*;
+import org.grnet.cat.repositories.registry.TestMethodRepository;
+import org.grnet.cat.services.registry.TestMethodService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/v1/registry/tests")
+@Path("/v1/registry/tests/test-method")
 @Authenticated
-public class TestEndpoint {
+public class TestMethodEndpoint {
     @Inject
     Utility utility;
 
     @Inject
-    TestService testService;
+    TestMethodService testMethodService;
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
     @Tag(name = "Test")
     @Operation(
-            summary = "Get Test by ID",
-            description = "Retrieves a specific Test item by ID."
+            summary = "Get Test Method by ID",
+            description = "Retrieves a specific Test Method item by ID."
     )
     @APIResponse(
             responseCode = "200",
-            description = "The corresponding Test item.",
+            description = "The corresponding Test Method item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class))
+                    implementation = TestMethodResponseDto.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -88,32 +85,31 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     @Path("/{id}")
-    public Response getTestById(
+    public Response getTestMethodById(
             @Parameter(
-                    description = "The ID of the Test to retrieve.",
+                    description = "The ID of the Test Method to retrieve.",
                     required = true,
-                    example = "pid_graph:9F1A6267",
+                    example = "pid_graph:03615660",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id)
+            @Valid @NotFoundEntity(repository = TestMethodRepository.class, message = "There is no Test Method with the following id:") String id)
     {
-
-        var response = testService.getTestById(id);
+        var response = testMethodService.getTestMethodById(id);
 
         return Response.ok(response).build();
     }
 
     @Tag(name = "Test")
     @Operation(
-            summary     = "Create new Test",
-            description = "Creates a new Test item."
+            summary     = "Create new Test Method",
+            description = "Creates a new Test Method item."
     )
     @APIResponse(
             responseCode = "201",
-            description = "Test item created.",
+            description = "Test Method item created.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class))
+                    implementation = TestMethodResponseDto.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -143,26 +139,26 @@ public class TestEndpoint {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response createTest(
-            @Valid @NotNull(message = "The request body is empty.") TestRequestDto testRequestDto, @Context UriInfo uriInfo) {
+    public Response createTestMethod(
+            @Valid @NotNull(message = "The request body is empty.") TestMethodRequestDto testRequestDto, @Context UriInfo uriInfo) {
 
-        var test = testService.createTest(utility.getUserUniqueIdentifier(),testRequestDto);
+        var testMethod = testMethodService.createTestMethod(utility.getUserUniqueIdentifier(),testRequestDto);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.id)).build()).entity(test).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(testMethod.id)).build()).entity(testMethod).build();
     }
 
     @Tag(name = "Test")
     @Operation(
-            summary = "Update Test",
-            description = "Updates an existing Test item."
+            summary = "Update TestMethod",
+            description = "Updates an existing TestMethod item."
     )
     @APIResponse(
             responseCode = "200",
             description = "Subject was updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class)))
+                    implementation = TestMethodResponseDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -193,28 +189,28 @@ public class TestEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Registration
     @Path("/{id}")
-    public Response updateTest(
+    public Response updateTestMethod(
             @Parameter(
-                    description = "The ID of the Test to update.",
+                    description = "The ID of the TestMethod to update.",
                     required = true,
                     example = "pid_graph:9F1A6267",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestUpdateDto testUpdateDto) {
+            @Valid @NotFoundEntity(repository = TestMethodRepository.class, message = "There is no Test Method with the following id:") String id,
+            @Valid TestMethodUpdateDto testMethodUpdateDto) {
 
-        var updatedDto = testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
+        var updatedDto = testMethodService.updateTestMethod(id, utility.getUserUniqueIdentifier(), testMethodUpdateDto);
 
         return Response.ok(updatedDto).build();
     }
 
     @Tag(name = "Test")
     @Operation(
-            summary = "Delete Test",
-            description = "Deletes a specific Test item by ID.")
+            summary = "Delete Test Method",
+            description = "Deletes a specific Test Method item by ID.")
     @APIResponse(
             responseCode = "200",
-            description = "Test item deleted.",
+            description = "Test Method item deleted.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -247,27 +243,27 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     @Path("/{id}")
-    public Response deleteTest(
+    public Response deleteTestMethod(
             @Parameter(
-                    description = "The ID of the Test to be deleted.",
+                    description = "The ID of the Test Method to be deleted.",
                     required = true,
                     example = "pid_graph:3E109BBA",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
+            @Valid @NotFoundEntity(repository = TestMethodRepository.class, message = "There is no Test Method with the following id:") String id) {
 
-        var deleted =  testService.deleteTest(id);
+        var deleted =  testMethodService.deleteTestMethod(id);
 
         InformativeResponse informativeResponse = new InformativeResponse();
 
         if (!deleted) {
 
             informativeResponse.code =500;
-            informativeResponse.message = "Test hasn't been deleted. An error occurred.";
+            informativeResponse.message = "TestMethod hasn't been deleted. An error occurred.";
         } else {
 
             informativeResponse.code = 200;
-            informativeResponse.message = "Test has been successfully deleted.";
+            informativeResponse.message = "TestMethod has been successfully deleted.";
         }
 
         return Response.ok().entity(informativeResponse).build();
@@ -276,15 +272,15 @@ public class TestEndpoint {
 
     @Tag(name = "Test")
     @Operation(
-            summary = "List all Tests",
-            description = "Retrieves a paginated list of Tests."
+            summary = "List all Test Methods",
+            description = "Retrieves a paginated list of Test Methods."
     )
     @APIResponse(
             responseCode = "200",
-            description = "List of Tests.",
+            description = "List of Test Methods.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableTestResponse.class)))
+                    implementation = PageableTestMethodResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -313,7 +309,7 @@ public class TestEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response listTests(
+    public Response listTestMethods(
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.")
             @DefaultValue("1")
@@ -327,22 +323,22 @@ public class TestEndpoint {
             @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var tests = testService.getTestlistAll(page - 1, size, uriInfo);
+        var testMethods = testMethodService.getTestMethodlistAll(page - 1, size, uriInfo);
 
-        return Response.ok().entity(tests).build();
+        return Response.ok().entity(testMethods).build();
     }
 
-    public static class PageableTestResponse extends PageResource<TestResponseDto> {
+    public static class PageableTestMethodResponse extends PageResource<TestMethodResponseDto> {
 
-        private List<TestResponseDto> content;
+        private List<TestMethodResponseDto> content;
 
         @Override
-        public List<TestResponseDto> getContent() {
+        public List<TestMethodResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<TestResponseDto> content) {
+        public void setContent(List<TestMethodResponseDto> content) {
             this.content = content;
         }
     }

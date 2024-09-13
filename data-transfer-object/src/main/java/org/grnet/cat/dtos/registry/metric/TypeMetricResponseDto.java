@@ -92,7 +92,7 @@ public class TypeMetricResponseDto {
             description = "The version of the Type Metric.",
             example = "v1.0"
     )
-    @JsonProperty("versionn")
+    @JsonProperty("version")
     public String lodTMT_V;
 
     @Schema(
