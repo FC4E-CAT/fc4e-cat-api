@@ -25,18 +25,9 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
-import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
-import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
-import org.grnet.cat.repositories.registry.ImperativeRepository;
-import org.grnet.cat.repositories.registry.RegistryActorRepository;
-import org.grnet.cat.repositories.registry.TypeCriterionRepository;
-import org.grnet.cat.services.registry.ImperativeService;
-import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkResponse;
-import org.grnet.cat.repositories.registry.TypeBenchmarkRepository;
-import org.grnet.cat.services.registry.RegistryActorService;
-import org.grnet.cat.services.registry.TypeBenchmarkService;
-import org.grnet.cat.services.registry.TypeCriterionService;
+import org.grnet.cat.dtos.registry.codelist.*;
+import org.grnet.cat.repositories.registry.*;
+import org.grnet.cat.services.registry.*;
 
 import java.util.List;
 
@@ -62,6 +53,9 @@ public class RegistryCodelistEndpoint {
     @Inject
     RegistryActorService registryActorService;
 
+
+    @Inject
+    MotivationTypeService motivationTypeService;
     @Tag(name = "Registry Codelist")
     @Operation(
             summary = "Get specific Type Criterion.",
@@ -98,7 +92,7 @@ public class RegistryCodelistEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/criteria/types/{id}")
+    @Path("/criterion-types/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getTypeCriterion(@Parameter(
@@ -146,7 +140,7 @@ public class RegistryCodelistEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    @Path("/criteria/types")
+    @Path("/criterion-types")
     public Response getTypeCriterionList(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                          @Parameter(name = "size", in = QUERY,
@@ -296,7 +290,7 @@ public class RegistryCodelistEndpoint {
             description = "The corresponding TypeBenchmark.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = ImperativeResponse.class)))
+                    implementation = TypeBenchmarkResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -323,7 +317,7 @@ public class RegistryCodelistEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/benchmarks/types/{id}")
+    @Path("/benchmark-types/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getTypeBenchmark(@Parameter(
@@ -372,7 +366,7 @@ public class RegistryCodelistEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    @Path("/benchmarks/types")
+    @Path("/benchmark-types")
     public Response getTypeBenchmarkList(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                          @Parameter(name = "size", in = QUERY,
@@ -511,5 +505,122 @@ public class RegistryCodelistEndpoint {
             this.content = content;
         }
     }
+
+
+
+    @Tag(name = "Registry Codelist")
+    @Operation(
+            summary = "Get specific MotivationType.",
+            description = "Returns a specific MotivationType.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding MotivationType.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MotivationTypeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/motivation-types/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getMotivationType(@Parameter(
+            description = "The ID of the Motivation Type to retrieve.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                     @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = MotivationTypeRepository.class, message = "There is no MotivationType with the following id:") String
+                                             id) {
+
+        var motivationType = motivationTypeService.getMotivationTypeById(id);
+        return Response.ok().entity(motivationType).build();
+    }
+
+    @Tag(name = "Registry Codelist")
+    @Operation(
+            summary = "Get list of MotivationType.",
+            description = "This endpoint retrieves all MotivationTypes." +
+                    "By default, the first page of 10 MotivationType will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of TypeBenchmark.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMotivationTypeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("/motivation-types")
+    public Response getMotivationTypeList(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                         @Parameter(name = "size", in = QUERY,
+                                                 description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                         @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                         @Context UriInfo uriInfo) {
+
+        var motivationTypeList = motivationTypeService.getMotivationTypeListByPage(page - 1, size, uriInfo);
+
+        return Response.ok().entity(motivationTypeList).build();
+    }
+
+    public static class PageableMotivationTypeResponse extends PageResource<MotivationTypeResponse> {
+
+        private List<MotivationTypeResponse> content;
+
+        @Override
+        public List<MotivationTypeResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MotivationTypeResponse> content) {
+            this.content = content;
+        }
+    }
+
+
 
 }

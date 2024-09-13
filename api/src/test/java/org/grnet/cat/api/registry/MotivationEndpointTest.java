@@ -6,7 +6,7 @@ import io.restassured.http.ContentType;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MotivationEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.registry.MotivationActorRequest;
+import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;

@@ -1,8 +1,7 @@
 package org.grnet.cat.mappers.registry;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.dtos.registry.MotivationActorPartialResponse;
-import org.grnet.cat.dtos.registry.MotivationActorResponse;
+import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -19,14 +18,6 @@ import java.util.List;
 public interface MotivationActorMapper {
 
     MotivationActorMapper INSTANCE = Mappers.getMapper(MotivationActorMapper.class);
-
-
-//    @Named("map")
-//    MotivationActorPartialResponse motivationActorToDto(MotivationActorJunction motivationActor);
-//
-//    @IterableMapping(qualifiedByName = "map")
-//    List<MotivationActorPartialResponse> motivationActorToDtos(List<MotivationActorJunction> motivationActorList);
-
 
     @Named("map")
 

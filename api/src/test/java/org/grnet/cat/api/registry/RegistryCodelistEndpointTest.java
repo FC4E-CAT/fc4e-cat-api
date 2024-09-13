@@ -6,10 +6,7 @@ import io.restassured.http.ContentType;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.RegistryCodelistEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
-import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
-import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkResponse;
-import org.grnet.cat.dtos.registry.codelist.TypeCriterionResponse;
+import org.grnet.cat.dtos.registry.codelist.*;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -28,7 +25,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
-                .get("/criteria/types/{id}", "pid_graph:07CA8184")
+                .get("/criterion-types/{id}", "pid_graph:07CA8184")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -84,7 +81,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("alice"))
                 .contentType(ContentType.JSON)
-                .get("/benchmarks/types/{id}", "pid_graph:0917EC0D")
+                .get("/benchmark-types/{id}", "pid_graph:0917EC0D")
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -103,7 +100,7 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/benchmarks/types/{id}", "pid_graph:0917EC0D")
+                .get("/benchmark-types/{id}", "pid_graph:0917EC0D")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -152,4 +149,41 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
         assertEquals(response.id, "pid_graph:234B60D8");
     }
 
+    @Test
+    public void getMotivationType() {
+
+        register("admin");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .get("/motivation-types/{id}", "pid_graph:5AF642D8")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(MotivationTypeResponse.class);
+
+        assertEquals(response.id, "pid_graph:5AF642D8");
+    }
+
+    @Test
+    public void getMotivationTypeNotPermitted() {
+
+        register("alice");
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("alice"))
+                .contentType(ContentType.JSON)
+                .get("/motivation-types/{id}", "pid_graph:5AF642D8")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
 }
