@@ -187,8 +187,6 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
 
         assertEquals("You do not have permission to access this resource.", error.message);
     }
-
-
     @Test
     public void getRelation() {
 
