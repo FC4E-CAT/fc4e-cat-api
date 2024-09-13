@@ -25,6 +25,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.RelationResponse;
 import org.grnet.cat.dtos.registry.codelist.*;
 import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.services.registry.*;
@@ -53,6 +54,8 @@ public class RegistryCodelistEndpoint {
     @Inject
     RegistryActorService registryActorService;
 
+    @Inject
+    RelationService relationService;
 
     @Inject
     MotivationTypeService motivationTypeService;
@@ -617,6 +620,120 @@ public class RegistryCodelistEndpoint {
 
         @Override
         public void setContent(List<MotivationTypeResponse> content) {
+            this.content = content;
+        }
+    }
+
+
+    @Tag(name = "Registry Codelist")
+    @Operation(
+            summary = "Get specific relation.",
+            description = "Returns a specific Relation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding Relation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RelationResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/relations/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getRelation(@Parameter(
+            description = "The ID of the Relation to retrieve.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                      @PathParam("id")
+                                      @Valid @NotFoundEntity(repository = RelationRepository.class, message = "There is no Relation with the following id:") String
+                                              id) {
+
+        var relation = relationService.getRelationById(id);
+        return Response.ok().entity(relation).build();
+    }
+
+    @Tag(name = "Registry Codelist")
+    @Operation(
+            summary = "Get list of Relation.",
+            description = "This endpoint retrieves all Relation." +
+                    "By default, the first page of 10 Relation will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of TypeBenchmark.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRelationResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("/relations")
+    public Response getRelationList(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                          @Parameter(name = "size", in = QUERY,
+                                                  description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                          @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                          @Context UriInfo uriInfo) {
+
+        var relationList =relationService.getRelationListByPage(page - 1, size, uriInfo);
+
+        return Response.ok().entity(relationList).build();
+    }
+
+    public static class PageableRelationResponse extends PageResource<RelationResponse> {
+
+        private List<RelationResponse> content;
+
+        @Override
+        public List<RelationResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RelationResponse> content) {
             this.content = content;
         }
     }

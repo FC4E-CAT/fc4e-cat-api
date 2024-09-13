@@ -27,7 +27,7 @@ public class RelationResponse {
             example = "Is Required By"
     )
     @JsonProperty("label")
-    public String labelRelation;
+    public String label;
 
     @Schema(
             type = SchemaType.STRING,
@@ -36,7 +36,7 @@ public class RelationResponse {
             example = "A related resource that requires the described resource to support its function, delivery, or coherence."
     )
     @JsonProperty("description")
-    public String descRelation;
+    public String description;
 
     @Schema(
             type = SchemaType.STRING,
@@ -45,6 +45,6 @@ public class RelationResponse {
             example = "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/"
     )
     @JsonProperty("url")
-    public String urlRelation;
+    public String url;
 
 }
