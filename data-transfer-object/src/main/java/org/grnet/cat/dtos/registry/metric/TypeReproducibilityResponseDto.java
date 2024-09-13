@@ -26,7 +26,7 @@ public class TypeReproducibilityResponseDto {
             description = "Label for the type of confidence.",
             example = "High Confidence"
     )
-    @JsonProperty("labelTypeConfidence")
+    @JsonProperty("label")
     public String labelTypeConfidence;
 
     @Schema(
@@ -35,7 +35,7 @@ public class TypeReproducibilityResponseDto {
             description = "Description of the type of confidence.",
             example = "This represents a high level of confidence in data."
     )
-    @JsonProperty("descTypeConfidence")
+    @JsonProperty("description")
     public String descTypeConfidence;
 
     @Schema(
@@ -45,7 +45,7 @@ public class TypeReproducibilityResponseDto {
             example = "0000-0002-0255-5101"
     )
     @NotEmpty
-    @JsonProperty("populatedBy")
+    @JsonProperty("populated_by")
     public String populatedBy;
 
     @Schema(
@@ -54,7 +54,7 @@ public class TypeReproducibilityResponseDto {
             description = "LOD Reference",
             example = "pid_graph:8D254805"
     )
-    @JsonProperty("lodReference")
+    @JsonProperty("reference_id")
     public String lodReference;
 
     @Schema(
@@ -63,7 +63,7 @@ public class TypeReproducibilityResponseDto {
             description = "Last touch date",
             example = "2024-08-22T11:42:20.000+03:00"
     )
-    @JsonProperty("lastTouch")
+    @JsonProperty("last_touch")
     public Timestamp lastTouch;
 
     @Schema(
@@ -72,6 +72,6 @@ public class TypeReproducibilityResponseDto {
             description = "List of related metrics",
             example = "[...]"
     )
-    @JsonProperty("typeMetrics")
+    @JsonProperty("type_metrics")
     public List<TypeMetricResponseDto> typeMetrics;
 }

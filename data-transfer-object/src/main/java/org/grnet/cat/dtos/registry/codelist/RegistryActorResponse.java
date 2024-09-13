@@ -30,37 +30,37 @@ public class RegistryActorResponse{
             implementation = String.class,
             description = "Label of the Actor",
             example = "Compliance Monitoring (Role)")
-    @JsonProperty(value="labelActor")
+    @JsonProperty(value="label")
     public String labelActor;
 
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
             description = "Description of the Actor",
             example = "On completion, the work will support an additional role and associated component for the EOSC PID Policy, as follows: Compliance Monitoring (Role) - One or more organisations that provide services to monitor and/ or enforce compliance (with PID Policy), resulting in interoperable and aggregatable compliance metrics for the roles and components foreseen in the policy.")
-    @JsonProperty(value="descActor")
+    @JsonProperty(value="description")
     public String descActor;
 
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
             description = "URI of the Actor",
             example = "https://mscr-test.rahtiapp.fi/vocabularies/terminology/9c735525-960e-4f13-a74d-4eb23ea9c308/concept/ce148a85-ee85-4c88-8e6c-34b9f281dd61', 'pid_graph:3E109BBA")
-    @JsonProperty(value="uriActor")
+    @JsonProperty(value="uri")
     public String uriActor;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "lodMTV",
+            description = "Actor Version",
             example = "pid_graph:3E109B2A"
     )
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty(value = "lod_act_v")
+    @JsonProperty(value = "version")
     public String lodACTV;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The user who has populated the Motivation.",
+            description = "The user who has populated the Actor.",
             example = "user_id_populated_the_motivation"
     )
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -70,7 +70,7 @@ public class RegistryActorResponse{
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Date and Time when the Registry has been populated on.",
+            description = "Date and Time when the Actor has been populated on.",
             example = " 2023-06-09 12:19:31.333059"
     )
     @JsonProperty("last_touch")

@@ -23,6 +23,7 @@ public class MetricResponseDto {
             description = "The metric identifier",
             example = "MTR001"
     )
+    @JsonProperty("mtr")
     public String MTR;
 
     @Schema(
@@ -31,6 +32,7 @@ public class MetricResponseDto {
             description = "Label for the metric",
             example = "Performance Metric"
     )
+    @JsonProperty("label")
     public String labelMetric;
 
     @Schema(
@@ -39,6 +41,7 @@ public class MetricResponseDto {
             description = "Description of the metric",
             example = "This metric measures performance."
     )
+    @JsonProperty("description")
     public String descrMetric;
 
     @Schema(
@@ -47,6 +50,7 @@ public class MetricResponseDto {
             description = "URL for more information about the metric",
             example = "http://example.com/metric"
     )
+    @JsonProperty("url")
     public String urlMetric;
 
     @Schema(
@@ -55,6 +59,7 @@ public class MetricResponseDto {
             description = "The ID of the Type Algorithm associated with this metric",
             example = "pid_graph:TAL1234"
     )
+    @JsonProperty("type_algorithm_id")
     public String typeAlgorithmId;
 
     @Schema(
@@ -63,14 +68,16 @@ public class MetricResponseDto {
             description = "The ID of the Type Metric associated with this metric",
             example = "pid_graph:TMT1234"
     )
+    @JsonProperty("type_metric_id")
     public String typeMetricId;
 
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Vocabulary associated with the metric",
-            example = "vocabulary1"
+            description = "Motivation associated with the metric",
+            example = "Motivation"
     )
+    @JsonProperty("motivation_id")
     public String lodMTV;
 
     @Schema(
@@ -79,6 +86,7 @@ public class MetricResponseDto {
             description = "The user who populated this metric",
             example = "0000-0002-0255-5101"
     )
+    @JsonProperty(value = "populated_by")
     public String populatedBy;
 
     @Schema(
@@ -87,6 +95,7 @@ public class MetricResponseDto {
             description = "The last time this metric was touched",
             example = "2024-08-22T14:34:00"
     )
+    @JsonProperty("last_touch")
     public Timestamp lastTouch;
 
     @Schema(
@@ -95,6 +104,6 @@ public class MetricResponseDto {
             description = "List of related metrics",
             example = "[...]"
     )
-    @JsonProperty("typeMetrics")
+    @JsonProperty("type_metrics")
     public List<TypeMetricResponseDto> typeMetrics;
 }

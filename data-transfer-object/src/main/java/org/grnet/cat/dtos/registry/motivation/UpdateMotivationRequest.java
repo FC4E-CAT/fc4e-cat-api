@@ -14,7 +14,7 @@ public class UpdateMotivationRequest {
             description = "The Motivation.",
             example = "EOSC-PID"
     )
-    @JsonProperty(value = "MTV")
+    @JsonProperty(value = "mtv")
     public String mtv;
 
     @Schema(
@@ -50,6 +50,6 @@ public class UpdateMotivationRequest {
             description = "The Motivation parent identifier.",
             example = "pid_graph:986123FA"
     )
-    @JsonProperty(value = "lod_mtv_p")
+    @JsonProperty(value = "motivation_parent_id")
     public String lodMtvP;
 }

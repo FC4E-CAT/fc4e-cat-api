@@ -26,7 +26,7 @@ public class TypeMetricResponseDto {
             description = "The Type Metric code.",
             example = "TMT001"
     )
-    @JsonProperty("TMT")
+    @JsonProperty("tmt")
     public String TMT;
 
     @Schema(
@@ -35,7 +35,7 @@ public class TypeMetricResponseDto {
             description = "The label of the Type Metric.",
             example = "Performance Metric"
     )
-    @JsonProperty("labelTypeMetric")
+    @JsonProperty("label")
     public String labelTypeMetric;
 
     @Schema(
@@ -44,7 +44,7 @@ public class TypeMetricResponseDto {
             description = "The description of the Type Metric.",
             example = "This is a description for the type metric."
     )
-    @JsonProperty("descTypeMetric")
+    @JsonProperty("description")
     public String descTypeMetric;
 
     @Schema(
@@ -53,7 +53,7 @@ public class TypeMetricResponseDto {
             description = "The metric approach description.",
             example = "This is a description of the metric approach."
     )
-    @JsonProperty("descMetricApproach")
+    @JsonProperty("description_metric_approach")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String descMetricApproach;
 
@@ -63,7 +63,7 @@ public class TypeMetricResponseDto {
             description = "The benchmark approach description.",
             example = "This is a description of the benchmark approach."
     )
-    @JsonProperty("descBenchmarkApproach")
+    @JsonProperty("description_benchmark_approach")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String descBenchmarkApproach;
 
@@ -73,7 +73,7 @@ public class TypeMetricResponseDto {
             description = "The URI of the Type Metric.",
             example = "http://example.com/metric"
     )
-    @JsonProperty("uriTypeMetric")
+    @JsonProperty("uri")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String uriTypeMetric;
 
@@ -83,7 +83,7 @@ public class TypeMetricResponseDto {
             description = "The ID of the associated Type Reproducibility.",
             example = "pid_graph:8D254805"
     )
-    @JsonProperty("typeReproducibilityId")
+    @JsonProperty("type_reproducibility_id")
     public String typeReproducibilityId;
 
     @Schema(
@@ -92,7 +92,7 @@ public class TypeMetricResponseDto {
             description = "The version of the Type Metric.",
             example = "v1.0"
     )
-    @JsonProperty("lodTMT_V")
+    @JsonProperty("versionn")
     public String lodTMT_V;
 
     @Schema(
@@ -101,7 +101,7 @@ public class TypeMetricResponseDto {
             description = "The user who populated the data.",
             example = "0000-0002-0255-5101"
     )
-    @JsonProperty("populatedBy")
+    @JsonProperty("populated_by")
     public String populatedBy;
 
     @Schema(
@@ -110,7 +110,7 @@ public class TypeMetricResponseDto {
             description = "The last touch timestamp of the Type Metric.",
             example = "2024-08-26T21:47:32"
     )
-    @JsonProperty("lastTouch")
+    @JsonProperty("last_touch")
     public String lastTouch;
 
     @Schema(

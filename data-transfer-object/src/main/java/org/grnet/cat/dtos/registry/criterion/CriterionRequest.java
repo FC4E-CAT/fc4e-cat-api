@@ -19,8 +19,8 @@ public class CriterionRequest {
             description = "The Criterion's code identifier.",
             example = "C1"
     )
-    @NotEmpty(message = "CRI may not be empty.")
-    @JsonProperty("CRI")
+    @NotEmpty(message = "cri may not be empty.")
+    @JsonProperty("cri")
     public String cri;
 
     @Schema(
@@ -65,7 +65,7 @@ public class CriterionRequest {
             example = "pid_graph:4A47BB1A"
     )
     @NotEmpty(message = "type_criterion may not be empty.")
-    @JsonProperty("type_criterion")
+    @JsonProperty("type_criterion_id")
     @NotFoundEntity(repository = TypeCriterionRepository.class, message = "There is no Type Criterion with the following id:")
     public String typeCriterion;
 
@@ -84,7 +84,7 @@ public class CriterionRequest {
             description = "The Criterion parent identifier.",
             example = "pid_graph:986123FA"
     )
-    @JsonProperty(value = "lod_cri_p")
+    @JsonProperty(value = "criterion_parent_id")
     @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:")
     public String lodCriP;
 }

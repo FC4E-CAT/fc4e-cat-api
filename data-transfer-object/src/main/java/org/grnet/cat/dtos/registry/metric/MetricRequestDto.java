@@ -17,8 +17,8 @@ public class MetricRequestDto {
             required = true,
             example = "MTR001"
     )
-    @JsonProperty("MTR")
-    @NotEmpty(message = "MTR may not be empty.")
+    @JsonProperty("mtr")
+    @NotEmpty(message = "mtr may not be empty.")
     public String MTR;
 
     @Schema(

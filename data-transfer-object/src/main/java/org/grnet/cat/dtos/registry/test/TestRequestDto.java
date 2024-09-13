@@ -14,7 +14,7 @@ public class TestRequestDto {
             example = "T12"
     )
     @JsonProperty("tes")
-    @NotEmpty(message = "TES may not be empty.")
+    @NotEmpty(message = "tes may not be empty.")
     public String TES;
 
     @Schema(

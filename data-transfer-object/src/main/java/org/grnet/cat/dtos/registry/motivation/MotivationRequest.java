@@ -18,8 +18,8 @@ public class MotivationRequest {
             required = true,
             example = "EOSC-PID"
     )
-    @NotEmpty(message = "MTV may not be empty.")
-    @JsonProperty(value = "MTV")
+    @NotEmpty(message = "mtv may not be empty.")
+    @JsonProperty(value = "mtv")
     public String mtv;
 
     @Schema(
@@ -61,7 +61,7 @@ public class MotivationRequest {
             description = "The Motivation parent identifier.",
             example = "pid_graph:986123FA"
     )
-    @JsonProperty(value = "lod_mtv_p")
+    @JsonProperty(value = "motivation_parent_id")
     @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
     public String lodMtvP;
 }
