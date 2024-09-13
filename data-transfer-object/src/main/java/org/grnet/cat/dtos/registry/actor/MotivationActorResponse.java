@@ -1,12 +1,9 @@
-package org.grnet.cat.dtos.registry;
+package org.grnet.cat.dtos.registry.actor;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 
 @Schema(name="MotivationActorResponse", description="This object represents a MotivationActorJunction item.")
 
@@ -44,7 +41,7 @@ public class MotivationActorResponse {
             type = SchemaType.INTEGER,
             implementation = Integer.class,
             description = "The LOD MAV.",
-            example = "1"
+            example = "pid_graph:3E109B2A"
     )
     @JsonProperty("version")
     public Integer lodMAV;
