@@ -28,4 +28,5 @@ public class Relation {
 
     @Column(name = "urlRelation")
     private String url;
+
 }
