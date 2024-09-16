@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.dtos.registry.actor.MotivationActorPartialResponse;
+import org.grnet.cat.dtos.registry.codelist.MotivationTypeResponse;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Schema(name = "Motivation", description = "This object represents a Motivation.")
@@ -49,13 +49,12 @@ public class MotivationResponse {
     public String description;
 
     @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Motivation Type ID.",
-            example = "pid_graph:AD9D854B"
+            type = SchemaType.OBJECT,
+            implementation = MotivationTypeResponse.class,
+            description = "The Motivation Type ID."
     )
-    @JsonProperty(value = "motivation_type_id")
-    public String motivationTypeId;
+    @JsonProperty(value = "motivation_type")
+    public MotivationTypeResponse motivationType;
 
     @Schema(
             type = SchemaType.STRING,
@@ -85,13 +84,11 @@ public class MotivationResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String lodMtvP;
 
-
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = Arrays.class,
-            description = "The Motivation actors",
-            example = ""
+            implementation = RegistryActorResponse.class,
+            description = "The Motivation actors"
     )
     @JsonProperty(value = "actors")
-    public List<MotivationActorPartialResponse> actors;
+    public List<RegistryActorResponse> actors;
 }

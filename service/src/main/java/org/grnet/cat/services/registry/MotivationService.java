@@ -96,7 +96,7 @@ public class MotivationService {
      */
     public MotivationResponse getMotivationById(String id) {
 
-        var motivation = motivationRepository.findById(id);
+        var motivation = motivationRepository.fetchById(id);
 
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
