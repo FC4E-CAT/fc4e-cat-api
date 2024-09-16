@@ -1,10 +1,12 @@
 package org.grnet.cat.mappers.registry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,11 +15,12 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The MotivationMapper is responsible for mapping Motivation entities to DTOs and vice versa.
  */
-//@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
 @Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
 public interface MotivationMapper {
 
@@ -32,8 +35,7 @@ public interface MotivationMapper {
     Motivation dtoToMotivation(MotivationRequest request);
 
     @Named("map")
-    @Mapping(target = "motivationTypeId", expression = "java(motivation.getMotivationType().getId())")
-    @Mapping(target = "actors", source = "actors")
+    @Mapping(source = "actors", target = "actors", qualifiedByName = "actors")
     MotivationResponse motivationToDto(Motivation motivation);
 
     @IterableMapping(qualifiedByName="map")
@@ -49,4 +51,15 @@ public interface MotivationMapper {
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "motivationType", ignore = true)
     void updateMotivationFromDto(UpdateMotivationRequest request, @MappingTarget Motivation motivation);
+
+    @Named("actors")
+    default List<RegistryActorResponse> actorsToDto(Set<MotivationActorJunction> junction) {
+
+        var actors = junction
+                .stream()
+                .map(MotivationActorJunction::getActor)
+                .collect(Collectors.toList());
+
+        return RegistryActorMapper.INSTANCE.actorToDtos(actors);
+    }
 }

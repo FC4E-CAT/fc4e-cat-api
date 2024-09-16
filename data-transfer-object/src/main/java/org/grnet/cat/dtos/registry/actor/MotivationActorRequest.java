@@ -32,7 +32,7 @@ public class MotivationActorRequest {
             implementation = String.class,
             description = "The Relation id.",
             required = true,
-            example = "pid_graph:0E00C332"
+            example = "maintainedBy"
     )
     @NotEmpty(message = "relation id may not be empty.")
     @NotFoundEntity(repository = RelationRepository.class, message = "There is no Relation  with the following id:")

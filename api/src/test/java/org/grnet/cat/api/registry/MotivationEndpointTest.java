@@ -81,7 +81,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(MotivationResponse.class);
 
-        assertEquals(response.motivationTypeId, "pid_graph:AD9D854B");
+        assertEquals(response.motivationType.id, "pid_graph:AD9D854B");
     }
 
     @Test
@@ -108,7 +108,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(MotivationResponse.class);
 
         assertEquals("decMotivation", response.description);
-        assertEquals("pid_graph:8882700E", response.motivationTypeId);
+        assertEquals("pid_graph:8882700E", response.motivationType.id);
     }
 
     @Test
@@ -154,7 +154,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(MotivationResponse.class);
 
         assertEquals("updated_description", updated.description);
-        assertEquals("pid_graph:DFE640B9", updated.motivationTypeId);
+        assertEquals("pid_graph:DFE640B9", updated.motivationType.id);
         assertEquals("pid_graph:BE36CD9E", updated.lodMtvP);
     }
 

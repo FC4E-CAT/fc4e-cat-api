@@ -18,7 +18,6 @@ public class RegistryActorResponse{
     @JsonProperty(value = "id")
     public String id;
 
-
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
             description = "Actor",

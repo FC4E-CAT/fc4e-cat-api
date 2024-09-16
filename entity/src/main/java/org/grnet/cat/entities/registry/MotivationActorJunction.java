@@ -18,15 +18,15 @@ public class MotivationActorJunction extends Registry{
     @EmbeddedId
     private MotivationActorId id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("motivationId")
     private Motivation motivation;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("actorId")
     private RegistryActor actor;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lodREL")
     @NotNull
     private Relation relation;

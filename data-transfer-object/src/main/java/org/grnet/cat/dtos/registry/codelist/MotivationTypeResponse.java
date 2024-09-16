@@ -45,6 +45,7 @@ public class MotivationTypeResponse{
             example = "https://mscr-test.rahtiapp.fi/vocabularies/terminology/a9ceb5a3-15ca-4e95-908f-36cab72014a2/concept/55bdb433-3fa9-44b1-871e-a99f24bbd647")
     @JsonProperty(value="uri")
     public String urlMotivationType;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -72,5 +73,4 @@ public class MotivationTypeResponse{
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty(value = "version")
     public String lodTmtV;
-
 }

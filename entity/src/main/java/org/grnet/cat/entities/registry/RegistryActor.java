@@ -21,8 +21,8 @@ public class RegistryActor extends Registry {
     @RegistryId
     @Column(name = "lodActor")
     @EqualsAndHashCode.Include
-
     private String id;
+
     @Column(name = "ACT")
     @NotNull
     private String act;
@@ -40,7 +40,6 @@ public class RegistryActor extends Registry {
 
     @Column(name = "lodACT_V")
     private String lodACTV;
-
 
     @OneToMany(
             mappedBy = "actor",

@@ -37,7 +37,7 @@ public class Motivation extends Registry {
     @NotNull
     private String mtv;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lodTMT", referencedColumnName = "lodTMT")
     private MotivationType motivationType;
 
