@@ -62,6 +62,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#261](https://github.com/FC4E-CAT/fc4e-cat-api/pull/261) CAT-484 Codelist - Tables sync with Vocabulary service (GET Benchmark Type).
 - [#263](https://github.com/FC4E-CAT/fc4e-cat-api/pull/263) CAT-476 Motivations and actors - (GET Actor).
 - [#265](https://github.com/FC4E-CAT/fc4e-cat-api/pull/265) CAT-481 Criterion & Metrics.
+- [#276](https://github.com/FC4E-CAT/fc4e-cat-api/pull/276) CAT-499 Metric-Test Relations Table
 
 ### Changed
 
