@@ -32,7 +32,7 @@ public class MotivationActorRepository  implements Repository<MotivationActorJun
         return pageable;
     }
 
-    public boolean existsByMotivationAndActorAndVersion(String motivationId, String actorId,Integer lodMAV) {
+    public boolean existsByMotivationAndActor(String motivationId, String actorId,Integer lodMAV) {
         return find(
                 "SELECT 1 FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV=?3",
                 motivationId, actorId,lodMAV

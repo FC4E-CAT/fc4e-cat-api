@@ -7,7 +7,6 @@ import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MotivationEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
-import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
@@ -174,50 +173,6 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", "pid_graph:C6B2D50E")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(response.code,  200);
-    }
-
-    @Test
-    public void addCriterion() {
-
-        register("admin");
-        var motivationActor = new MotivationActorRequest();
-        motivationActor.actorId = "pid_graph:1A718108";
-        motivationActor.relation = "dcterms:isRequiredBy";
-        MotivationActorRequest[] array = new MotivationActorRequest[1];
-        array[0]=motivationActor;
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(array)
-                .contentType(ContentType.JSON)
-                .post("/{id}/actors", "pid_graph:C6B2D50E")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-
-
-        var criterionActor = new CriterionActorRequest();
-        criterionActor.criterionId = "pid_graph:5F81AEA8";
-        criterionActor.imperativeId = "pid_graph:293B1DEE";
-        CriterionActorRequest[] array1 = new CriterionActorRequest[1];
-        array1[0]=criterionActor;
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(array1)
-                .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", "pid_graph:C6B2D50E","pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(200)

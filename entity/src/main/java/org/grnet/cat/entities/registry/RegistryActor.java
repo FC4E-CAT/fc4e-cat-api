@@ -7,11 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
-import org.grnet.cat.entities.registry.metric.Metric;
 
-import java.sql.Timestamp;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 @Entity
@@ -50,36 +47,7 @@ public class RegistryActor extends Registry {
             orphanRemoval = true
     )
     private Set<MotivationActorJunction> motivations = new HashSet<>();
-
-    @OneToMany(
-            mappedBy = "actor",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private Set<CriterionActorJunction> criteria = new HashSet<>();
-
-    public void addCriterion(Motivation motivation,Criterion criterion, Imperative imperative,String motivationX, Integer lodMAV,String populatedBy, Timestamp lastTouch) {
-
-        var criterionActor = new CriterionActorJunction(motivation,criterion,this,imperative,motivationX, lastTouch,populatedBy,lodMAV);
-        criteria.add(criterionActor);
-        criterionActor.getActor().criteria.add(criterionActor);
-    }
-//    public void removeCriterion(Criterion criterion) {
-//        for (Iterator<CriterionActorJunction> iterator = criteria.iterator();
-//             iterator.hasNext(); ) {
-//            var actorCriterion = iterator.next();
 //
-//            if (actorCriterion.getActor().equals(this) &&
-//                    actorCriterion.getCriterion().equals(criterion)) {
-//                iterator.remove();
-//                actorCriterion.getCriterion().getActors().remove(actorCriterion);
-//                actorCriterion.setActor(null);
-//                actorCriterion.setCriterion(null);
-//            }
-//        }
-//    }
-
     public String getId() {
         return id;
     }
@@ -88,7 +56,4 @@ public class RegistryActor extends Registry {
         return motivations;
     }
 
-    public Set<CriterionActorJunction> getCriteria() {
-        return criteria;
-    }
 }
