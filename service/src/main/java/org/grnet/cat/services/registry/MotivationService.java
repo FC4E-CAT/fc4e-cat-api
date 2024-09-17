@@ -78,7 +78,7 @@ public class MotivationService {
             var relation = relationRepository.findById(req.relation);
 
             var actor = registryActorRepository.findById(req.actorId);
-            if (!motivationActorRepository.existsByMotivationAndActor(motivationId, actor.getId(), 1)) {
+            if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actor.getId(), 1)) {
                 motivation.addActor(actor, relation, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
                 resultMessages.add("actor with id :: " + actor.getId() + " successfully added to motivation");
             } else {

@@ -69,6 +69,13 @@ public class Criterion extends Registry {
             orphanRemoval = true
     )
     private Set<CriterionMetricJunction> metrics = new HashSet<>();
+    @OneToMany(
+            mappedBy = "criterion",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<CriterionActorJunction> actors = new HashSet<>();
 
     public void addMetric(Motivation motivation, Metric metric, Relation relation, String motivationX, Integer lodMcV) {
 
@@ -90,5 +97,13 @@ public class Criterion extends Registry {
                 criterionMetric.setMetric(null);
             }
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Set<CriterionActorJunction> getActors() {
+        return actors;
     }
 }
