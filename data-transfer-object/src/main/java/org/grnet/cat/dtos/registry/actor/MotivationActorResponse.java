@@ -45,4 +45,5 @@ public class MotivationActorResponse {
     )
     @JsonProperty("version")
     public Integer lodMAV;
+
 }

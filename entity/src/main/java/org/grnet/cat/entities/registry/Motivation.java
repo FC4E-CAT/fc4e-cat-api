@@ -97,6 +97,7 @@ public class Motivation extends Registry {
         var actorMotivation = new MotivationActorJunction(this,actor,relation, motivationX, lodMAV,populatedBy,lastTouch);
         actors.add(actorMotivation);
         actorMotivation.getMotivation().actors.add(actorMotivation);
+
     }
 //
 //    public void removeActor(RegistryActor actor) {

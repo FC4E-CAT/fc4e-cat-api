@@ -33,6 +33,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Fix
 
 - [#275](https://github.com/FC4E-CAT/fc4e-cat-api/pull/275) CAT-501 Unwrap description column values that are wrapped with double quotes in the database.
+- [#282](https://github.com/FC4E-CAT/fc4e-cat-api/pull/282) CAT-506 lodMTV missing column from t_Actor.
+
 
 ## 1.7.0 - 2024-09-10
 
