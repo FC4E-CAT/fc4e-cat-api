@@ -6,6 +6,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.dtos.registry.codelist.MotivationTypeResponse;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 
 import java.util.List;
 
@@ -91,4 +92,13 @@ public class MotivationResponse {
     )
     @JsonProperty(value = "actors")
     public List<RegistryActorResponse> actors;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = PrincipleResponseDto.class,
+            description = "The Motivation principles"
+    )
+    @JsonProperty(value = "principles")
+    public List<PrincipleResponseDto> principles;
+
 }

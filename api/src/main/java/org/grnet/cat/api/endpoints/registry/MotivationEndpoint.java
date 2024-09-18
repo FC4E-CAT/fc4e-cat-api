@@ -43,11 +43,9 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
-import org.grnet.cat.entities.registry.RegistryActor;
-import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
-import org.grnet.cat.services.registry.CriterionService;
 import org.grnet.cat.services.registry.MotivationService;
 import org.grnet.cat.services.registry.RegistryActorService;
 import org.grnet.cat.utils.Utility;
@@ -285,21 +283,6 @@ public class MotivationEndpoint {
         return Response.ok().entity(motivation).build();
     }
 
-    public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
-
-        private List<MotivationResponse> content;
-
-        @Override
-        public List<MotivationResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<MotivationResponse> content) {
-            this.content = content;
-        }
-    }
-
     @Tag(name = "Motivation")
     @Operation(
             summary = "Get list of Actors of a Motivation.",
@@ -354,11 +337,11 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
-            summary = "Add Actor Item.",
-            description = "Adds a new actor item to motivation.")
+            summary = "Assign Actors to a Motivation.",
+            description = "Assign multiple Actors to a single motivation.")
     @APIResponse(
-            responseCode = "201",
-            description = "Actor item added.",
+            responseCode = "200",
+            description = "Actors successfully assigned to the motivation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -381,8 +364,58 @@ public class MotivationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/actors")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assignActorToMotivation(@Parameter(
+            description = "The ID of the Motivation to assign actors.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                         @PathParam("id")
+                                         @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                         @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request) {
+
+        var messages = motivationService.assignActors(id, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.messages = messages;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Assign Principles to a Motivation.",
+            description = "Assign multiple Principles to a single motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Principles successfully assigned to the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -394,42 +427,25 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
-    @Path("/{id}/actors")
+    @Path("/{id}/principles")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addActorToMotivation(@Parameter(
-            description = "The ID of the Motivation to add actors.",
+    public Response assignPrinciplesToMotivation(@Parameter(
+            description = "The ID of the Motivation to assign Principles.",
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
                                          @PathParam("id")
                                          @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                                         @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request,
-                                         @Context UriInfo uriInfo) {
+                                         @NotEmpty(message = "Principles list can not be empty.") Set<@Valid MotivationPrincipleRequest> request) {
 
-        var messages = motivationService.addActors(id, request, utility.getUserUniqueIdentifier());
+        var messages = motivationService.assignPrinciples(id, request, utility.getUserUniqueIdentifier());
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages.stream().toArray(String[]::new);
+        informativeResponse.messages = messages;
 
         return Response.ok().entity(informativeResponse).build();
     }
-
-    public static class PageableMotivationActorJunctionResponse extends PageResource<MotivationActorResponse> {
-
-        private List<MotivationActorResponse> content;
-
-        @Override
-        public List<MotivationActorResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<MotivationActorResponse> content) {
-            this.content = content;
-        }
-    }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -496,26 +512,10 @@ public class MotivationEndpoint {
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages.stream().toArray(String[]::new);
+        informativeResponse.messages = messages;
 
         return Response.ok().entity(informativeResponse).build();
     }
-
-    public static class PageableCriterionActorJunctionResponse extends PageResource<CriterionActorResponse> {
-
-        private List<CriterionActorResponse> content;
-
-        @Override
-        public List<CriterionActorResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<CriterionActorResponse> content) {
-            this.content = content;
-        }
-    }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -576,4 +576,48 @@ public class MotivationEndpoint {
         return Response.ok().entity(criteria).build();
     }
 
+    public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
+
+        private List<MotivationResponse> content;
+
+        @Override
+        public List<MotivationResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MotivationResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableCriterionActorJunctionResponse extends PageResource<CriterionActorResponse> {
+
+        private List<CriterionActorResponse> content;
+
+        @Override
+        public List<CriterionActorResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<CriterionActorResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableMotivationActorJunctionResponse extends PageResource<MotivationActorResponse> {
+
+        private List<MotivationActorResponse> content;
+
+        @Override
+        public List<MotivationActorResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MotivationActorResponse> content) {
+            this.content = content;
+        }
+    }
 }

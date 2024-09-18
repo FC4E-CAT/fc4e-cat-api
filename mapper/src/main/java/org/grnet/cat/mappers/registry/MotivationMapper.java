@@ -5,8 +5,10 @@ import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
+import org.grnet.cat.entities.registry.MotivationPrincipleJunction;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -36,6 +38,7 @@ public interface MotivationMapper {
 
     @Named("map")
     @Mapping(source = "actors", target = "actors", qualifiedByName = "actors")
+    @Mapping(source = "principles", target = "principles", qualifiedByName = "principles")
     MotivationResponse motivationToDto(Motivation motivation);
 
     @IterableMapping(qualifiedByName="map")
@@ -61,5 +64,16 @@ public interface MotivationMapper {
                 .collect(Collectors.toList());
 
         return RegistryActorMapper.INSTANCE.actorToDtos(actors);
+    }
+
+    @Named("principles")
+    default List<PrincipleResponseDto> principlesToDto(Set<MotivationPrincipleJunction> junction) {
+
+        var principles = junction
+                .stream()
+                .map(MotivationPrincipleJunction::getPrinciple)
+                .collect(Collectors.toList());
+
+        return PrincipleMapper.INSTANCE.principleToDtos(principles);
     }
 }

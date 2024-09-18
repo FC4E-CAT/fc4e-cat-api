@@ -60,11 +60,11 @@ public class RegistryActorResponse{
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "Motivation",
+            description = "Motivation id",
             example = "pid_graph:3E109B2E"
     )
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty(value = "motivation")
+    @JsonProperty(value = "motivation_id")
     public String lodMTV;
 
     @Schema(

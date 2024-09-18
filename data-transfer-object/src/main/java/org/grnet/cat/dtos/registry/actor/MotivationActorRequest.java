@@ -9,7 +9,7 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.repositories.registry.RelationRepository;
 
-@Schema(name="MotivationActorRequest", description="This object represents a request for creating a new Motivation.")
+@Schema(name="MotivationActorRequest", description="This object represents a request for assigning Actors to a Motivation.")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MotivationActorRequest {
 
@@ -34,7 +34,7 @@ public class MotivationActorRequest {
             required = true,
             example = "maintainedBy"
     )
-    @NotEmpty(message = "relation id may not be empty.")
+    @NotEmpty(message = "relation may not be empty.")
     @NotFoundEntity(repository = RelationRepository.class, message = "There is no Relation  with the following id:")
     @JsonProperty(value = "relation")
     public String relation;

@@ -71,49 +71,20 @@ public class Motivation extends Registry {
     )
     private Set<MotivationActorJunction> actors = new HashSet<>();
 
-    public void addPrinciple(Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV) {
+    public void addPrinciple(Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV, String populatedBy, Timestamp lastTouch) {
 
-        var principleMotivation = new MotivationPrincipleJunction(this, principle, annotationText, annotationURL,relation, motivationX, lodMpV);
+        var principleMotivation = new MotivationPrincipleJunction(this, principle, annotationText, annotationURL, relation, motivationX, lodMpV, populatedBy, lastTouch);
         principles.add(principleMotivation);
         principle.getMotivations().add(principleMotivation);
     }
 
-    public void removePrinciple(Principle principle) {
-        for (Iterator<MotivationPrincipleJunction> iterator = principles.iterator();
-             iterator.hasNext(); ) {
-            var motivationPrinciple = iterator.next();
+    public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
 
-            if (motivationPrinciple.getMotivation().equals(this) &&
-                    motivationPrinciple.getPrinciple().equals(principle)) {
-                iterator.remove();
-                motivationPrinciple.getPrinciple().getMotivations().remove(motivationPrinciple);
-                motivationPrinciple.setMotivation(null);
-                motivationPrinciple.setPrinciple(null);
-            }
-        }
-    }
-    public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV,String populatedBy, Timestamp lastTouch) {
-
-        var actorMotivation = new MotivationActorJunction(this,actor,relation, motivationX, lodMAV,populatedBy,lastTouch);
+        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch);
         actors.add(actorMotivation);
         actorMotivation.getMotivation().actors.add(actorMotivation);
 
     }
-//
-//    public void removeActor(RegistryActor actor) {
-//        for (Iterator<MotivationActorJunction> iterator = actors.iterator();
-//             iterator.hasNext(); ) {
-//            var motivationActor = iterator.next();
-//
-//            if (motivationActor.getMotivation().equals(this) &&
-//                    motivationActor.getActor().equals(actor)) {
-//                iterator.remove();
-//                motivationActor.getActor().getMotivations().remove(motivationActor);
-//                motivationActor.setMotivation(null);
-//                motivationActor.setActor(null);
-//            }
-//        }
-//    }
 
     public String getId() {
         return id;

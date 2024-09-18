@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
@@ -70,7 +71,6 @@ public class PrincipleService {
         return PrincipleMapper.INSTANCE.principleToDto(principle);
     }
 
-
     /**
      * Updates an existing principle item.
      *
@@ -83,6 +83,13 @@ public class PrincipleService {
     public PrincipleResponseDto update(String id, PrincipleUpdateDto principleUpdateDto, String userId) {
 
         var principle = principleRepository.findById(id);
+
+        if(StringUtils.isNotEmpty(principleUpdateDto.pri)){
+
+            if (principleRepository.notUnique("pri", principleUpdateDto.pri.toUpperCase())) {
+                throw new UniqueConstraintViolationException("pri", principleUpdateDto.pri.toUpperCase());
+            }
+        }
 
         PrincipleMapper.INSTANCE.updatePrinciple(principleUpdateDto,principle);
 

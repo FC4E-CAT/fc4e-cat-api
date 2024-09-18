@@ -6,15 +6,18 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
-import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.entities.registry.MotivationType;
 import org.grnet.cat.entities.registry.RegistryActor;
+import org.grnet.cat.entities.registry.Principle;
+import org.grnet.cat.entities.registry.Relation;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.repositories.registry.*;
@@ -30,12 +33,6 @@ import java.util.Set;
 public class MotivationService {
 
     @Inject
-    private MotivationRepository motivationRepository;
-
-    @Inject
-    private MotivationTypeRepository motivationTypeRepository;
-
-    @Inject
     MotivationActorRepository motivationActorRepository;
 
     @Inject
@@ -43,6 +40,18 @@ public class MotivationService {
 
     @Inject
     RelationRepository relationRepository;
+
+    @Inject
+    PrincipleRepository principleRepository;
+
+    @Inject
+    MotivationRepository motivationRepository;
+
+    @Inject
+    MotivationTypeRepository motivationTypeRepository;
+
+    @Inject
+    MotivationPrincipleRepository motivationPrincipleRepository;
 
     /**
      * Creates a new Motivation.
@@ -63,27 +72,68 @@ public class MotivationService {
     }
 
     /**
-     * Adds  a new Actor to motivation.
+     * Assign a new Actor to motivation.
      *
-     * @param motivationId           The Motivation to add actor.     *      *
+     * @param motivationId           The Motivation to assign actors.
      * @param motivationActorRequest The MotivationActorRequest to be added.
      * @param userId                 The user who requests to add actors to  the Motivation.
      * @return The added relation.
      */
     @Transactional
-    public List<String> addActors(String motivationId, Set<MotivationActorRequest> motivationActorRequest, String userId) {
-        List<String> resultMessages = new ArrayList<>();
+    public List<String> assignActors(String motivationId, Set<MotivationActorRequest> motivationActorRequest, String userId) {
 
-        Motivation motivation = motivationRepository.findById(motivationId);
+        var resultMessages = new ArrayList<String>();
+
+        var motivation = motivationRepository.findById(motivationId);
         motivationActorRequest.stream().iterator().forEachRemaining(req -> {
-            var relation = relationRepository.findById(req.relation);
 
-            var actor = registryActorRepository.findById(req.actorId);
-            if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actor.getId(), 1)) {
-                motivation.addActor(actor, relation, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
-                resultMessages.add("actor with id :: " + actor.getId() + " successfully added to motivation");
+            if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, req.actorId, 1)) {
+
+                var actor = registryActorRepository.findById(req.actorId);
+
+                if(StringUtils.isEmpty(actor.getLodMTV())){
+
+                    actor.setLodMTV(motivationId);
+                }
+
+                motivation.addActor(Panache.getEntityManager().getReference(RegistryActor.class, req.actorId), Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                resultMessages.add("Actor with id :: " + req.actorId + " successfully added to motivation.");
             } else {
-                resultMessages.add("actor with id :: " + actor.getId() + " already exists to motivation");
+                resultMessages.add("Actor with id :: " + req.actorId + " already exists to motivation.");
+            }
+        });
+        return resultMessages;
+    }
+
+    /**
+     * Assign multiple principles to a single motivation.
+     *
+     * @param motivationId           The Motivation to assign Principles.
+     * @param request                The MotivationPrincipleRequest to be added.
+     * @param userId                 The user who requests to assign Principles to the Motivation.
+     * @return The added relation.
+     */
+    @Transactional
+    public List<String> assignPrinciples(String motivationId, Set<MotivationPrincipleRequest> request, String userId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        var motivation = motivationRepository.findById(motivationId);
+        request.stream().iterator().forEachRemaining(req -> {
+
+            if (!motivationPrincipleRepository.existsByMotivationAndPrincipleAndVersion(motivationId, req.principleId, 1)) {
+
+                var principle = principleRepository.findById(req.principleId);
+
+                if(StringUtils.isEmpty(principle.getLodMTV())){
+
+                    principle.setLodMTV(motivationId);
+                }
+
+                motivation.addPrinciple(Panache.getEntityManager().getReference(Principle.class, req.principleId), req.annotationText, req.annotationUrl, Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                resultMessages.add("Principle with id :: " + req.principleId + " successfully added to motivation.");
+            } else {
+                resultMessages.add("Principle with id :: " +req.principleId + " already exists to motivation.");
             }
         });
         return resultMessages;
