@@ -56,6 +56,17 @@ public class RegistryActorResponse{
     @JsonProperty(value = "version")
     public String lodACTV;
 
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Motivation",
+            example = "pid_graph:3E109B2E"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(value = "motivation")
+    public String lodMTV;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

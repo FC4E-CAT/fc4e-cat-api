@@ -14,6 +14,7 @@ import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.MotivationType;
+import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.repositories.registry.*;

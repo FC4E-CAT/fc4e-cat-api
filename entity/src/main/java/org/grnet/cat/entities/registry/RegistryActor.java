@@ -44,6 +44,9 @@ public class RegistryActor extends Registry {
     @Column(name = "lodACT_V")
     private String lodACTV;
 
+    @Column(name = "lodMTV")
+    private String lodMTV;
+
     @OneToMany(
             mappedBy = "actor",
             cascade = CascadeType.ALL,
@@ -90,5 +93,13 @@ public class RegistryActor extends Registry {
 
     public Set<CriterionActorJunction> getCriteria() {
         return criteria;
+    }
+
+    public String getLodMTV() {
+        return lodMTV;
+    }
+
+    public void setLodMTV(String lodMTV) {
+        this.lodMTV = lodMTV;
     }
 }

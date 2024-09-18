@@ -18,7 +18,7 @@ public class RegistryActorRepository implements Repository<RegistryActor, String
      * @param size The maximum number of Actor list to include in a page.
      * @return A list of Actor  objects representing the Actor list in the requested page.
      */
-    public PageQuery<RegistryActor> fetchActorsByPage(int page, int size){
+    public PageQuery<RegistryActor> fetchActorsByPage(int page, int size) {
 
         var panache = find("from RegistryActor", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
 
