@@ -68,5 +68,4 @@ public class MotivationRepository implements Repository<Motivation, String> {
     public Motivation fetchById(String id) {
         return  find("from Motivation m left join fetch m.motivationType mt left join fetch m.actors act left join fetch act.actor left join fetch m.principles pri left join fetch pri.principle where m.id = ?1", id).firstResult();
     }
-
 }
