@@ -22,7 +22,7 @@ public class TypeCriterionRepository implements Repository<TypeCriterion, String
      */
     public PageQuery<TypeCriterion> fetchTypeCriterionListByPage(int page, int size){
 
-        var panache = find("from TypeCriterion", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from TypeCriterion", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<TypeCriterion>();
         pageable.list = panache.list();

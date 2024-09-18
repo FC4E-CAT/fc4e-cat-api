@@ -20,7 +20,7 @@ public class RegistryActorRepository implements Repository<RegistryActor, String
      */
     public PageQuery<RegistryActor> fetchActorsByPage(int page, int size) {
 
-        var panache = find("from RegistryActor", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from RegistryActor", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<RegistryActor>();
         pageable.list = panache.list();

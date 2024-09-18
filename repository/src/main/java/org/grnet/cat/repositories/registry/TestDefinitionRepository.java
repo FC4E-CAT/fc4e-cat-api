@@ -20,7 +20,7 @@ public class TestDefinitionRepository implements Repository<TestDefinition, Stri
      */
     public PageQuery<TestDefinition> fetchTestDefinitionByPage(int page, int size){
 
-        var panache = find("from TestDefinition", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from TestDefinition", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<TestDefinition>();
         pageable.list = panache.list();

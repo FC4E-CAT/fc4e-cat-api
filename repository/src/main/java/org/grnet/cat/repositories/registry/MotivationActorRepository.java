@@ -21,7 +21,7 @@ public class MotivationActorRepository  implements Repository<MotivationActorJun
      */
     public PageQuery<MotivationActorJunction> fetchActorsByMotivationAndPage(String motivationId, int page, int size){
 
-        var panache = find("SELECT m FROM MotivationActorJunction m WHERE m.id.motivationId = ?1", Sort.by("lastTouch", Sort.Direction.Descending),motivationId).page(page, size);
+        var panache = find("SELECT m FROM MotivationActorJunction m WHERE m.id.motivationId = ?1", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending),motivationId).page(page, size);
 
         var pageable = new PageQueryImpl<MotivationActorJunction>();
         pageable.list = panache.list();

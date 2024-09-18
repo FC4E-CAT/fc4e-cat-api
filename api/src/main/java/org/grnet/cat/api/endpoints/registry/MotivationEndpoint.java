@@ -7,14 +7,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -25,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -217,14 +211,38 @@ public class MotivationEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response getMotivations(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+    public Response getMotivations(  @Parameter(name = "page", in = QUERY,
+                                           description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                    @Parameter(name = "size", in = QUERY,
                                            description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                                    @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                   @Context UriInfo uriInfo) {
+                                     @Parameter(name = "search", in = QUERY,
+                                             description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in Motivation entity. The search will be conducted in the following fields : MTV, Label.") @QueryParam("search") String search,
 
-        var subjects = motivationService.getMotivationsByPage(page - 1, size, uriInfo);
+                                     @Parameter(name = "actor", in = QUERY,
+                                             description = "The Motivation actor to filter.") @QueryParam("actor") @DefaultValue("") String actor,
+                                     @Parameter(name = "sort", in = QUERY,
+                                             schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                                             examples = {@ExampleObject(name = "Last Touch", value = "lastTouch"), @ExampleObject(name = "MTV", value = "mtv"),@ExampleObject(name = "Label", value = "label")},
+                                             description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("lastTouch") @QueryParam("sort") String sort,
+                                     @Parameter(name = "order", in = QUERY, schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                                             examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
+                                             description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("DESC") @QueryParam("order") String order,
+
+                                     @Context UriInfo uriInfo) {
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("mtv", "label","lastTouch");
+
+        if (!orderValues.contains(order)) {
+
+            throw new BadRequestException("The available values of order parameter are : " + orderValues);
+        }
+        if (!sortValues.contains(sort)) {
+
+            throw new BadRequestException("The available values of sort parameter are : " + sortValues);
+        }
+
+        var subjects = motivationService.getMotivationsByPage(actor,search,sort,order, page - 1, size, uriInfo);
 
         return Response.ok().entity(subjects).build();
     }
@@ -556,22 +574,22 @@ public class MotivationEndpoint {
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
-                                                   @PathParam("id")
-                                                   @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                                                   @Parameter(
-                                                           description = "The ID of the Actor to add criterion.",
-                                                           required = true,
-                                                           example = "pid_graph:234B60D8",
-                                                           schema = @Schema(type = SchemaType.STRING))
-                                                   @PathParam("actor-id")
-                                                   @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId, @Parameter(name = "page", in = QUERY,
+                                                 @PathParam("id")
+                                                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                 @Parameter(
+                                                         description = "The ID of the Actor to add criterion.",
+                                                         required = true,
+                                                         example = "pid_graph:234B60D8",
+                                                         schema = @Schema(type = SchemaType.STRING))
+                                                 @PathParam("actor-id")
+                                                 @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId, @Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                                   @Parameter(name = "size", in = QUERY,
-                                                           description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                                   @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                                   @Context UriInfo uriInfo) {
+                                                 @Parameter(name = "size", in = QUERY,
+                                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                                 @Context UriInfo uriInfo) {
 
-        var criteria = registryActorService.getCriteriaByMotivationActorAndPage(id,actorId, page - 1, size, uriInfo);
+        var criteria = registryActorService.getCriteriaByMotivationActorAndPage(id, actorId, page - 1, size, uriInfo);
 
         return Response.ok().entity(criteria).build();
     }
