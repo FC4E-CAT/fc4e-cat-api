@@ -31,9 +31,9 @@ public class MetricDefinitionService {
      * @param uriInfo The Uri Info.
      * @return A list of MetricDefinitionResponseDto objects representing the Metric Definitions in the requested page.
      */
-    public PageResource<MetricDefinitionResponseDto> getMetricDefinitionsByPage(int page, int size, UriInfo uriInfo) {
+    public PageResource<MetricDefinitionResponseDto> getMetricDefinitionsWithSearch(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitions = metricDefinitionRepository.fetchMetricByPage(page, size);
+        var metricDefinitions = metricDefinitionRepository.fetchMetricDefinitionWithSearch(search, sort, order ,page, size);
         var metricDefinitionsDtos = MetricDefinitionMapper.INSTANCE.metricDefinitionToResponseDtos(metricDefinitions.list());
 
         return new PageResource<>(metricDefinitions, metricDefinitionsDtos , uriInfo);
