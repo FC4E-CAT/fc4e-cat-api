@@ -80,7 +80,7 @@ public class MetricEndpoint {
             @Parameter(
                     description = "The ID of the Metric to retrieve.",
                     required = true,
-                    example = "pid_graph:3E109BBA",
+                    example = "pid_graph:CF9B6EDF",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id)

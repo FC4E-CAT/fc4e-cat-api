@@ -1,3 +1,4 @@
+
 package org.grnet.cat.services;
 
 import jakarta.enterprise.context.ApplicationScoped;
