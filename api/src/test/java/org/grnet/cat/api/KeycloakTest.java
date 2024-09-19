@@ -10,13 +10,13 @@ import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.repositories.registry.MotivationPrincipleRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.KeycloakAdminService;
-import org.grnet.cat.services.registry.CriterionService;
-import org.grnet.cat.services.registry.PrincipleService;
 import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.services.registry.CriterionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
@@ -46,10 +46,10 @@ public class KeycloakTest {
     CommentService commentService;
 
     @Inject
-    PrincipleService principleService;
+    CriterionService criterionService;
 
     @Inject
-    CriterionService criterionService;
+    MotivationPrincipleRepository motivationPrincipleRepository;
 
     @BeforeEach
     public void setup() {
@@ -64,8 +64,8 @@ public class KeycloakTest {
         jsonAssessmentService.deleteAll();
         validationService.deleteAll();
         userService.deleteAll();
-        principleService.deleteAll();
         criterionService.deleteAll();
+        motivationPrincipleRepository.removeAll();
     }
 
     protected UserProfileDto register(String username) {

@@ -13,7 +13,10 @@ import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -210,8 +213,6 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(CriterionResponse.class);
 
-
-//
         var motivationActor = new MotivationActorRequest();
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
@@ -229,9 +230,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-//
-//
-//
+
         var criterionActor = new CriterionActorRequest();
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
@@ -248,11 +247,9 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-//
+
         assertEquals(response.code,  200);
     }
-
-
 
     @Test
     public void addCriterionNoMotivation() {
@@ -297,9 +294,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-//
-//
-//
+
         var criterionActor = new CriterionActorRequest();
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
@@ -316,7 +311,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-//
+
         assertEquals(response.code,  404);
     }
 
@@ -346,8 +341,6 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(CriterionResponse.class);
 
-
-//
         var motivationActor = new MotivationActorRequest();
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
@@ -365,9 +358,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-//
-//
-//
+
         var criterionActor = new CriterionActorRequest();
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
@@ -384,7 +375,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-//
+
         assertEquals(response.code,  404);
     }
 
@@ -413,8 +404,6 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(CriterionResponse.class);
 
-
-//
         var motivationActor = new MotivationActorRequest();
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
@@ -432,9 +421,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-//
-//
-//
+
         var criterionActor = new CriterionActorRequest();
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEEE";
@@ -451,7 +438,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-//
+
         assertEquals(response.code,  404);
     }
 
@@ -481,28 +468,6 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(CriterionResponse.class);
 
-
-//
-//        var motivationActor = new MotivationActorRequest();
-//        motivationActor.actorId = "pid_graph:1A718108";
-//        motivationActor.relation = "dcterms:isRequiredBy";
-//        MotivationActorRequest[] array = new MotivationActorRequest[1];
-//        array[0]=motivationActor;
-//
-//        given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .body(array)
-//                .contentType(ContentType.JSON)
-//                .post("/{id}/actors", "pid_graph:C6B2D50E")
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .extract()
-//                .as(InformativeResponse.class);
-//
-//
-//
         var criterionActor = new CriterionActorRequest();
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
@@ -519,7 +484,101 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-//
+
         assertEquals(response.code,  404);
+    }
+
+    @Test
+    public void addPrinciple() {
+
+        register("admin");
+        var mpr = new MotivationPrincipleRequest();
+        mpr.principleId = "pid_graph:F9141635";
+        mpr.relation = "isSupportedBy";
+
+        var request = new HashSet<MotivationPrincipleRequest>();
+        request.add(mpr);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principles", "pid_graph:C6B2D50E")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(response.code, 200);
+        assertEquals("Principle with id :: pid_graph:F9141635 successfully added to motivation.", response.messages.get(0));
+    }
+
+    @Test
+    public void duplicatePrinciple() {
+
+        register("admin");
+        var mpr = new MotivationPrincipleRequest();
+        mpr.principleId = "pid_graph:E7C00DBA";
+        mpr.relation = "isSupportedBy";
+
+        var request = new HashSet<MotivationPrincipleRequest>();
+        request.add(mpr);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principles", "pid_graph:C6B2D50E")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(response.code, 200);
+
+        var duplicate = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principles", "pid_graph:C6B2D50E")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("Principle with id :: pid_graph:E7C00DBA already exists to motivation.",  duplicate.messages.get(0));
+    }
+
+    @Test
+    public void principleNotFound() {
+
+        register("admin");
+        var mpr = new MotivationPrincipleRequest();
+        mpr.principleId = "lalala";
+        mpr.relation = "isSupportedBy";
+
+        var request = new HashSet<MotivationPrincipleRequest>();
+        request.add(mpr);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principles", "pid_graph:C6B2D50E")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(response.code, 404);
+        assertEquals(response.message, "There is no Principle with the following id: lalala");
     }
 }

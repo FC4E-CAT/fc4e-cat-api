@@ -68,20 +68,6 @@ public class RegistryActor extends Registry {
         criteria.add(criterionActor);
         criterionActor.getActor().criteria.add(criterionActor);
     }
-//    public void removeCriterion(Criterion criterion) {
-//        for (Iterator<CriterionActorJunction> iterator = criteria.iterator();
-//             iterator.hasNext(); ) {
-//            var actorCriterion = iterator.next();
-//
-//            if (actorCriterion.getActor().equals(this) &&
-//                    actorCriterion.getCriterion().equals(criterion)) {
-//                iterator.remove();
-//                actorCriterion.getCriterion().getActors().remove(actorCriterion);
-//                actorCriterion.setActor(null);
-//                actorCriterion.setCriterion(null);
-//            }
-//        }
-//    }
 
     public String getId() {
         return id;
