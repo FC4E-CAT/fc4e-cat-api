@@ -20,7 +20,7 @@ public class CriterionRepository implements Repository<Criterion, String> {
      */
     public PageQuery<Criterion> fetchCriteriaByPage(int page, int size) {
 
-        var panache = find("from Criterion", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from Criterion", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<Criterion>();
         pageable.list = panache.list();

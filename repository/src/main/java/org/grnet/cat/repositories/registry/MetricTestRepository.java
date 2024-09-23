@@ -23,7 +23,7 @@ public class MetricTestRepository  implements Repository<MetricTestJunction, Str
      */
     public PageQuery<MetricTestJunction> fetchMetricTestAll(int page, int size){
 
-        var panache = find("from MetricTestJunction", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from MetricTestJunction", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<MetricTestJunction>();
         pageable.list = panache.list();

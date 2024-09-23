@@ -20,7 +20,7 @@ public class MetricRepository implements Repository<Metric, String> {
      */
     public PageQuery<Metric> fetchMetricByPage(int page, int size){
 
-        var panache = find("from Metric", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from Metric", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<Metric>();
         pageable.list = panache.list();

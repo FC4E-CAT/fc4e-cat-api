@@ -20,7 +20,7 @@ public class PrincipleRepository implements Repository<Principle, String> {
      */
     public PageQuery<Principle> fetchPrincipleByPage(int page, int size) {
 
-        var panache = find("from Principle", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from Principle", Sort.descending("lastTouch").and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<Principle>();
         pageable.list = panache.list();

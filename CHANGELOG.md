@@ -30,11 +30,12 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#274](https://github.com/FC4E-CAT/fc4e-cat-api/pull/274) CAT-500 API: Get list of relations (codelist).
 - [#278](https://github.com/FC4E-CAT/fc4e-cat-api/pull/278) CAT-479:Criteria & actors.
 - [#283](https://github.com/FC4E-CAT/fc4e-cat-api/pull/283) CAT-504 Create API Endpoint to Assign Principles to a Motivation.
-
+- [#284](https://github.com/FC4E-CAT/fc4e-cat-api/pull/284) CAT-508 Filters on Motivation.
 ### Fix
 
 - [#275](https://github.com/FC4E-CAT/fc4e-cat-api/pull/275) CAT-501 Unwrap description column values that are wrapped with double quotes in the database.
 - [#282](https://github.com/FC4E-CAT/fc4e-cat-api/pull/282) CAT-506 lodMTV missing column from t_Actor.
+- [#286](https://github.com/FC4E-CAT/fc4e-cat-api/pull/286) CAT-509 Weird Principles local pagination issue when page size=5.
 
 
 ## 1.7.0 - 2024-09-10

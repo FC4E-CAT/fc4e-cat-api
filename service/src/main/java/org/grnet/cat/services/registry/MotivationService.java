@@ -15,8 +15,8 @@ import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.entities.registry.MotivationType;
-import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.entities.registry.Principle;
+import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.entities.registry.Relation;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
 import org.grnet.cat.mappers.registry.MotivationMapper;
@@ -91,7 +91,7 @@ public class MotivationService {
 
                 var actor = registryActorRepository.findById(req.actorId);
 
-                if(StringUtils.isEmpty(actor.getLodMTV())){
+                if (StringUtils.isEmpty(actor.getLodMTV())) {
 
                     actor.setLodMTV(motivationId);
                 }
@@ -108,9 +108,9 @@ public class MotivationService {
     /**
      * Assign multiple principles to a single motivation.
      *
-     * @param motivationId           The Motivation to assign Principles.
-     * @param request                The MotivationPrincipleRequest to be added.
-     * @param userId                 The user who requests to assign Principles to the Motivation.
+     * @param motivationId The Motivation to assign Principles.
+     * @param request      The MotivationPrincipleRequest to be added.
+     * @param userId       The user who requests to assign Principles to the Motivation.
      * @return The added relation.
      */
     @Transactional
@@ -125,7 +125,7 @@ public class MotivationService {
 
                 var principle = principleRepository.findById(req.principleId);
 
-                if(StringUtils.isEmpty(principle.getLodMTV())){
+                if (StringUtils.isEmpty(principle.getLodMTV())) {
 
                     principle.setLodMTV(motivationId);
                 }
@@ -133,7 +133,7 @@ public class MotivationService {
                 motivation.addPrinciple(Panache.getEntityManager().getReference(Principle.class, req.principleId), req.annotationText, req.annotationUrl, Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
                 resultMessages.add("Principle with id :: " + req.principleId + " successfully added to motivation.");
             } else {
-                resultMessages.add("Principle with id :: " +req.principleId + " already exists to motivation.");
+                resultMessages.add("Principle with id :: " + req.principleId + " already exists to motivation.");
             }
         });
         return resultMessages;
@@ -152,17 +152,22 @@ public class MotivationService {
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
 
+
     /**
      * Retrieves a page of Motivations.
      *
+     * @param actor   the actor text to search on motivation actor label
+     * @param search  the search text to search on mtv or label of a motivation
+     * @param sort    the field to sort on the results
+     * @param order   the order to retrieve the results, ASC or DESC
      * @param page    The index of the page to retrieve (starting from 0).
      * @param size    The maximum number of Motivations to include in a page.
      * @param uriInfo The Uri Info.
      * @return A list of MotivationResponse objects representing the submitted Motivations in the requested page.
      */
-    public PageResource<MotivationResponse> getMotivationsByPage(int page, int size, UriInfo uriInfo) {
+    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var motivations = motivationRepository.fetchMotivationsByPage(page, size);
+        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, sort, order, page, size);
 
         return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
     }
@@ -205,7 +210,8 @@ public class MotivationService {
      * @param uriInfo The Uri Info.
      * @return A list of MotivationActorJunctionResponse objects representing the submitted Motivations in the requested page.
      */
-    public PageResource<MotivationActorResponse> getActorsByMotivationAndPage(String motivationId, int page, int size, UriInfo uriInfo) {
+    public PageResource<MotivationActorResponse> getActorsByMotivationAndPage(String motivationId, int page,
+                                                                              int size, UriInfo uriInfo) {
 
         var motivationActors = motivationActorRepository.fetchActorsByMotivationAndPage(motivationId, page, size);
 

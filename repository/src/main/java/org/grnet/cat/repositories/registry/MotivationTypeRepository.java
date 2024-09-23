@@ -21,7 +21,7 @@ public class MotivationTypeRepository implements Repository<MotivationType, Stri
      */
     public PageQuery<MotivationType> fetchMotivationTypesByPage(int page, int size){
 
-        var panache = find("from MotivationType", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from MotivationType", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<MotivationType>();
         pageable.list = panache.list();
