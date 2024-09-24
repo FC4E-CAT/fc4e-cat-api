@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -26,6 +27,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.grnet.cat.validators.SortAndOrderValidator;
+
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -81,7 +84,31 @@ public class MetricTestEndpoint {
     @GET
     @Path("/")
     @Registration
-    public Response listMetricTestsByMetric(
+    public Response listMetricTestsWithSearch(
+            @Parameter(name = "Search", in = QUERY,
+                    description = "The \"search\" parameter allows clients to search " +
+                            "for matches in specific fields in the MetricTest entity. " +
+                            "The search will be conducted in the following fields: " +
+                            "metric ID, test ID, test definition ID, motivation ID, and motivation description.")
+            @QueryParam("search") String search,
+            @Parameter(name = "Sort", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                    examples = {
+                            @ExampleObject(name = "Last Touch", value = "lastTouch"),
+                            @ExampleObject(name = "Metric", value = "metric"),
+                            @ExampleObject(name = "Test", value = "test"),
+                            @ExampleObject(name = "Motivation", value = "motivation")},
+                    description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
+            @DefaultValue("lastTouch")
+            @QueryParam("sort") String sort,
+            @Parameter(name = "Order", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                    examples = {
+                            @ExampleObject(name = "Ascending", value = "ASC"),
+                            @ExampleObject(name = "Descending", value = "DESC")},
+                    description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
+            @DefaultValue("DESC")
+            @QueryParam("order") String order,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.")
             @DefaultValue("1")
@@ -95,7 +122,12 @@ public class MetricTestEndpoint {
             @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var metricTests = metricTestService.getMetricTestlistAll(page - 1, size, uriInfo);
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("lastTouch", "metric", "test", "motivation");
+
+        SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
+
+        var metricTests = metricTestService.getMetricTestWithSearch(search, order, sort,page - 1, size, uriInfo);
 
         return Response.ok().entity(metricTests).build();
     }
@@ -114,4 +146,5 @@ public class MetricTestEndpoint {
             this.content = content;
         }
     }
+
 }

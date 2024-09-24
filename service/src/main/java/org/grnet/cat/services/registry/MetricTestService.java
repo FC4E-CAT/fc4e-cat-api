@@ -23,9 +23,9 @@ public class MetricTestService {
      * @param uriInfo The Uri Info for pagination links.
      * @return A PageResource containing the Metric-Test Relation items in the requested page.
      */
-    public PageResource<MetricTestResponseDto> getMetricTestlistAll(int page, int size, UriInfo uriInfo) {
+    public PageResource<MetricTestResponseDto> getMetricTestWithSearch(String search, String order, String sort, int page, int size, UriInfo uriInfo) {
 
-        var metricTestPage = metricTestRepository.fetchMetricTestAll(page, size);
+        var metricTestPage = metricTestRepository.fetchMetricTestWithSearch(search, order, sort, page, size);
         var metricTestDtos = MetricTestMapper.INSTANCE.metricTestToDtos(metricTestPage.list());
 
         return new PageResource<>(metricTestPage, metricTestDtos, uriInfo);
