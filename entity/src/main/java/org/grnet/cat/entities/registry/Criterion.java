@@ -106,4 +106,8 @@ public class Criterion extends Registry {
     public Set<CriterionActorJunction> getActors() {
         return actors;
     }
+
+    public Set<PrincipleCriterionJunction> getPrinciples() {
+        return principles;
+    }
 }

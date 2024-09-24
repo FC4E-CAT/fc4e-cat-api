@@ -34,12 +34,14 @@ import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
+import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
+import org.grnet.cat.services.registry.CriterionService;
 import org.grnet.cat.services.registry.MotivationService;
 import org.grnet.cat.services.registry.RegistryActorService;
 import org.grnet.cat.utils.Utility;
@@ -64,6 +66,10 @@ public class MotivationEndpoint {
 
     @Inject
     private RegistryActorService registryActorService;
+
+    @Inject
+    private CriterionService criterionService;
+
     /**
      * Injection point for the Utility class
      */
@@ -539,7 +545,7 @@ public class MotivationEndpoint {
     @Operation(
             summary = "Get list of Criteria of an Motivation Actor.",
             description = "This endpoint retrieves all Criteria of a Motivation Actor." +
-                    "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")
+                    "By default, the first page of 10 Actors will be returned. You can tune the default values by using the query parameters page and size.")
     @APIResponse(
             responseCode = "200",
             description = "List of Actors of a Motivation.",
@@ -570,7 +576,7 @@ public class MotivationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getCriteriaByMotivationActor(@Parameter(
-            description = "The ID of the Motivation to add actors.",
+            description = "The ID of the Motivation to add criteria.",
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
@@ -638,4 +644,71 @@ public class MotivationEndpoint {
             this.content = content;
         }
     }
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get list of Criteria of an Motivation.",
+            description = "This endpoint retrieves all Criteria of a Motivation." +
+                    "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Criteria of a Motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageablePrincipleCriteriaJunctionResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/criteria")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getCriteriaByMotivation(@Parameter(
+            description = "The ID of the Motivation to get criteria.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                 @PathParam("id")
+                                                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id, @Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                                 @Parameter(name = "size", in = QUERY,
+                                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                                 @Context UriInfo uriInfo) {
+
+        var criteria = criterionService.listCriteriaByMotivation(id, page - 1, size, uriInfo);
+
+        return Response.ok().entity(criteria).build();
+    }
+
+    public static class PageablePrincipleCriteriaJunctionResponse extends PageResource<PrincipleCriterionResponse> {
+
+        private List<PrincipleCriterionResponse> content;
+
+        @Override
+        public List<PrincipleCriterionResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<PrincipleCriterionResponse> content) {
+            this.content = content;
+        }
+    }
+
 }

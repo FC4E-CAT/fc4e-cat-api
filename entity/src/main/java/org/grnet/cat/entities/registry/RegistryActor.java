@@ -63,7 +63,6 @@ public class RegistryActor extends Registry {
     private Set<CriterionActorJunction> criteria = new HashSet<>();
 
     public void addCriterion(Motivation motivation,Criterion criterion, Imperative imperative,String motivationX, Integer lodMAV,String populatedBy, Timestamp lastTouch) {
-
         var criterionActor = new CriterionActorJunction(motivation,criterion,this,imperative,motivationX, lastTouch,populatedBy,lodMAV);
         criteria.add(criterionActor);
         criterionActor.getActor().criteria.add(criterionActor);

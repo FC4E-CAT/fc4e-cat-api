@@ -10,10 +10,12 @@ import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.TypeCriterion;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.CriteriaMapper;
+import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
@@ -139,4 +141,20 @@ public class CriterionService {
 
         criteriaRepository.deleteAll();
     }
+
+    /**
+     * Retrieves a page of criteria items.
+     * @param motivationId The motivation id
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of criteria items to include in a page.
+     * @param uriInfo The Uri Info.
+     * @return A PageResource containing the criteria items in the requested page.
+     */
+    public PageResource<PrincipleCriterionResponse> listCriteriaByMotivation(String motivationId, int page, int size, UriInfo uriInfo) {
+
+        var criteriaPage = criteriaRepository.fetchCriteriaByMotivationAndPage(motivationId,page, size);
+        var criteriaDTOs = PrincipleCriterionMapper.INSTANCE.criteriaToDtos(criteriaPage.list());
+        return new PageResource<>(criteriaPage, criteriaDTOs, uriInfo);
+    }
+
 }

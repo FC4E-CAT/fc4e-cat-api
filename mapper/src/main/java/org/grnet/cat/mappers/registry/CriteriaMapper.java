@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 /**
- * The GuidanceMapper is responsible for mapping Criteria entities to DTOs and vice versa.
+ * The CriteriaMapper is responsible for mapping Criteria entities to DTOs and vice versa.
  */
 @Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
 public interface CriteriaMapper {
