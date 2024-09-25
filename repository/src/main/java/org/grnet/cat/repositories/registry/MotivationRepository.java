@@ -25,31 +25,28 @@ public class MotivationRepository implements Repository<Motivation, String> {
      * @return A list of Motivations objects representing the Motivations in the requested page.
      */
     @Transactional
-    public PageQuery<Motivation> fetchMotivationsByPage(String actor,String search,String sort,String order, int page, int size) {
+    public PageQuery<Motivation> fetchMotivationsByPage(String actor, String search, String sort, String order, int page, int size) {
 
         var joiner = new StringJoiner(StringUtils.SPACE);
-        joiner.add("from Motivation m left join fetch m.motivationType mt left join fetch m.actors act left join fetch act.actor left join fetch m.principles pri left join fetch pri.principle");
-
         var map = new HashMap<String, Object>();
 
-        if (StringUtils.isNotEmpty(search)) {
+        joiner.add("from Motivation m left join fetch m.motivationType mt left join fetch m.actors act left join fetch act.actor left join fetch m.principles pri left join fetch pri.principle");
 
-            joiner.add(" where m.mtv like :search or m.label like :search ");
-            map.put("search", "%" + search + "%");
-        }
-
-        if (StringUtils.isNotEmpty(actor) ) {
-            if (StringUtils.isNotEmpty(search)) {
-                joiner.add(" and ");
-            }else{
-                joiner.add(" where");
-            }
-            joiner.add("  act.actor.labelActor = :actor");
+        if (StringUtils.isNotEmpty(actor)) {
+            joiner.add("  where act.actor.labelActor = :actor");
             map.put("actor", actor);
         }
+        if (StringUtils.isNotEmpty(search)) {
+            if (StringUtils.isNotEmpty(actor)) {
+                joiner.add(" and  ( m.mtv like :search or m.label like :search )");
+            } else {
+                joiner.add(" where  m.mtv like :search or m.label like :search ");
+            }
 
+            map.put("search", "%" + search + "%");
+        }
         joiner.add("order by");
-        joiner.add("m."+sort);
+        joiner.add("m." + sort);
         joiner.add(order);
 
         var panache = find(joiner.toString(), map).page(page, size);
@@ -58,14 +55,39 @@ public class MotivationRepository implements Repository<Motivation, String> {
         pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.list().stream().count();
+        pageable.count = countQuery(actor, search);
         pageable.page = Page.of(page, size);
 
         return pageable;
     }
 
+    private long countQuery(String actor, String search) {
+        var count_joiner = new StringJoiner(StringUtils.SPACE);
+        var count_map = new HashMap<String, Object>();
+
+        count_joiner.add("from Motivation m");
+        if (StringUtils.isNotEmpty(actor)) {
+            count_joiner.add("left join  m.actors act left join act.actor");
+            count_joiner.add(" where");
+            count_joiner.add("  act.actor.labelActor = :actor");
+            count_map.put("actor", actor);
+        }
+
+        if (StringUtils.isNotEmpty(search)) {
+            if (StringUtils.isNotEmpty(actor)) {
+                count_joiner.add(" and (m.mtv like :search or m.label like :search) ");
+            } else {
+                count_joiner.add(" where m.mtv like :search or m.label like :search ");
+
+            }
+            count_map.put("search", "%" + search + "%");
+        }
+
+        return count(count_joiner.toString(), count_map);
+    }
+
     @Transactional
     public Motivation fetchById(String id) {
-        return  find("from Motivation m left join fetch m.motivationType mt left join fetch m.actors act left join fetch act.actor left join fetch m.principles pri left join fetch pri.principle where m.id = ?1", id).firstResult();
+        return find("from Motivation m left join fetch m.motivationType mt left join fetch m.actors act left join fetch act.actor left join fetch m.principles pri left join fetch pri.principle where m.id = ?1", id).firstResult();
     }
 }

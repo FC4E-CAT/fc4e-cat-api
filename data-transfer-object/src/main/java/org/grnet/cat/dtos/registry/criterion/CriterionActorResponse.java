@@ -12,7 +12,7 @@ public class CriterionActorResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Actor.",
+            description = "The Criterion.",
             example = ""
     )
     @JsonProperty("criterion")

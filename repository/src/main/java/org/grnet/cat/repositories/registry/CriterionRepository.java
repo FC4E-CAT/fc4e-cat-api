@@ -39,4 +39,25 @@ public class CriterionRepository implements Repository<Criterion, String> {
                 .getSingleResult();
         return count > 0;
     }
+
+    /**
+     * Retrieves a page of Motivations.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of Motivations to include in a page.
+     * @return A list of Motivations objects representing the Motivations in the requested page.
+     */
+    public PageQuery<Criterion> fetchCriteriaByMotivationAndPage(String motivationId, int page, int size) {
+
+        var panache = find("from Criterion c left join PrincipleCriterionJunction j ON j.criterion.id =c.id left join Principle p on j.principle.id=p.id where j.motivation.id =?1 ",Sort.by("c.lastTouch", Sort.Direction.Descending).and("c.id",Sort.Direction.Ascending),motivationId).page(page, size);
+
+        var pageable = new PageQueryImpl<Criterion>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
 }
