@@ -2,11 +2,10 @@ package org.grnet.cat.repositories.registry;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.grnet.cat.entities.registry.Criterion;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.CriterionActorJunction;
+import org.grnet.cat.entities.registry.Criterion;
 import org.grnet.cat.repositories.Repository;
 
 @ApplicationScoped

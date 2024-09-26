@@ -6,21 +6,13 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
-import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
-import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
-import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.entities.PageQuery;
-import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.Motivation;
-import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.mappers.registry.CriterionActorMapper;
-import org.grnet.cat.mappers.registry.ImperativeMapper;
-import org.grnet.cat.mappers.registry.MotivationActorMapper;
 import org.grnet.cat.mappers.registry.RegistryActorMapper;
 import org.grnet.cat.repositories.registry.*;
 
@@ -28,7 +20,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
@@ -101,7 +92,7 @@ public class RegistryActorService {
             var principleCriterionJunction = principleCriterionRepository.findCriterion(req.criterionId, motivation.getId());
             if (!principleCriterionJunction.isPresent()) {
                 resultMessages.add("criterion with id :: " + req.criterionId + " is not related to principles");
-            }else {
+            } else {
 
                 var criterion = principleCriterionJunction.get().getCriterion();
                 if (!criterionActorRepository.existsByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1)) {
@@ -134,4 +125,55 @@ public class RegistryActorService {
         return new PageResource<>(criteriaActor, CriterionActorMapper.INSTANCE.toPrincipleCriterionResponseList(criteriaActor.list()), uriInfo);
     }
 
+    /**
+     * Adds  a new Actor to motivation.
+     *
+     * @param motivationId          The Motivation
+     * @param actorId               The Actor.
+     * @param criterionActorRequest The CriterionActorRequest to be added.
+     * @param userId                The user who requests to add criteria to  the Actor.
+     * @return The added relation.
+     */
+    @Transactional
+    public List<String> updateCriteria(String motivationId, String actorId, Set<CriterionActorRequest> criterionActorRequest, String userId) {
+        List<String> resultMessages = new ArrayList<>();
+
+        if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
+            throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
+        }
+        Motivation motivation = motivationRepository.findById(motivationId);
+        RegistryActor actor = registryActorRepository.findById(actorId);
+
+        removeCriteria(actor, criterionActorRequest, resultMessages);
+        criterionActorRequest.stream().iterator().forEachRemaining(req -> {
+            var imperative = imperativeRepository.findById(req.imperativeId);
+            var principleCriterionJunction = principleCriterionRepository.findCriterion(req.criterionId, motivation.getId());
+            if (principleCriterionJunction.isEmpty()) {
+                resultMessages.add("criterion with id :: " + req.criterionId + " is not related to principles");
+            } else {
+                var criterion = principleCriterionJunction.get().getCriterion();
+                if (!criterionActorRepository.existsByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1)) {
+                    actor.addCriterion(motivation, criterion, imperative, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                    resultMessages.add("criterion with id :: " + criterion.getId() + " successfully added to actor");
+                } else {
+                    resultMessages.add("criterion with id :: " + criterion.getId() + " already exists to actor");
+                }
+            }
+        });
+        registryActorRepository.persist(actor);
+        return resultMessages;
+    }
+
+    private void removeCriteria(RegistryActor actor, Set<CriterionActorRequest> request, List<String> resultMessages) {
+        List<String> criterionList = new ArrayList<>();
+        request.iterator().forEachRemaining(req -> {
+            criterionList.add(req.criterionId);
+        });
+        actor.getCriteria().iterator().forEachRemaining(ac -> {
+            if (!criterionList.contains(ac.getCriterion().getId())) {
+                criterionActorRepository.delete(ac);
+                resultMessages.add("criterion with id : " + ac.getCriterion().getId() + " removed from actor");
+            }
+        });
+    }
 }
