@@ -39,6 +39,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#282](https://github.com/FC4E-CAT/fc4e-cat-api/pull/282) CAT-506 lodMTV missing column from t_Actor.
 - [#286](https://github.com/FC4E-CAT/fc4e-cat-api/pull/286) CAT-509 Weird Principles local pagination issue when page size=5.
 - [#288](https://github.com/FC4E-CAT/fc4e-cat-api/pull/288) CAT-518 Pagination issues in Motivation > Actor > Criteria.
+- [#289](https://github.com/FC4E-CAT/fc4e-cat-api/pull/289) CAT-516 Criteria items under motivation are represented with a bit different schema under two different GET calls - Missing criterion id
 
 
 ## 1.7.0 - 2024-09-10

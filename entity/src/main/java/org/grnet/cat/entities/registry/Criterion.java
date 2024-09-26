@@ -110,4 +110,8 @@ public class Criterion extends Registry {
     public Set<PrincipleCriterionJunction> getPrinciples() {
         return principles;
     }
+
+    public @NotNull String getCri() {
+        return cri;
+    }
 }

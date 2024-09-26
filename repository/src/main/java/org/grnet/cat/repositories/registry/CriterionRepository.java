@@ -49,8 +49,9 @@ public class CriterionRepository implements Repository<Criterion, String> {
      * @return A list of Motivations objects representing the Criteria in the requested page.
      */
     public PageQuery<Criterion> fetchCriteriaByMotivationAndPage(String motivationId, int page, int size) {
-
-        var panache = find("SELECT pri.criterion FROM PrincipleCriterionJunction pri WHERE pri.motivation.id = ?1 ", Sort.by("pri.lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+        var panache = find("SELECT DISTINCT pri.criterion FROM PrincipleCriterionJunction pri WHERE pri.motivation.id = ?1",
+               Sort.ascending("pri.criterion.cri"), motivationId)
+                .page(page, size);
 
         var pageable = new PageQueryImpl<Criterion>();
         pageable.list = panache.list();

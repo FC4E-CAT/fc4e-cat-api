@@ -10,6 +10,9 @@ import org.grnet.cat.entities.registry.CriterionActorJunction;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.repositories.Repository;
 
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
 @ApplicationScoped
 public class CriterionActorRepository  implements Repository<CriterionActorJunction, String> {
 
@@ -22,10 +25,15 @@ public class CriterionActorRepository  implements Repository<CriterionActorJunct
      */
     public PageQuery<CriterionActorJunction> fetchCriteriaByMotivationAndActorAndPage(String motivationId, String actorId, int page, int size) {
 
-        var panache = find("SELECT c FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2", Sort.by("lastTouch", Sort.Direction.Descending), motivationId, actorId).page(page, size);
+        var panache = find("SELECT DISTINCT c FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 ", motivationId, actorId).page(page, size);
+
+        var sortedResults = panache.list()
+                .stream()
+                .sorted(Comparator.comparing(c -> c.getCriterion().getCri())) // Adjust 'getCri()' to the actual method
+                .collect(Collectors.toList());
 
         var pageable = new PageQueryImpl<CriterionActorJunction>();
-        pageable.list = panache.list();
+        pageable.list = sortedResults;
         pageable.index = page;
         pageable.size = size;
         pageable.count = panache.count();
