@@ -30,6 +30,8 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.RelationsResponseDto;
+import org.grnet.cat.dtos.registry.RelationsResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
@@ -44,6 +46,7 @@ import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.registry.CriterionService;
 import org.grnet.cat.services.registry.MotivationService;
 import org.grnet.cat.services.registry.RegistryActorService;
+import org.grnet.cat.services.registry.RelationsService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
@@ -63,6 +66,12 @@ public class MotivationEndpoint {
 
     @Inject
     private MotivationService motivationService;
+
+    @Inject
+    RelationsService relationsService;
+
+    @Inject
+    MotivationRepository motivationRepository;
 
     @Inject
     private RegistryActorService registryActorService;
@@ -123,7 +132,14 @@ public class MotivationEndpoint {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response create(@Valid @NotNull(message = "The request body is empty.") MotivationRequest request, @Context UriInfo uriInfo) {
+    public Response create(@Valid @NotNull(message = "The request body is empty.") MotivationRequest request,
+//                           @Parameter (
+//                                   description = "The ID of the Motivation to copy from.",
+//                                   example = "pid_graph:3E109BBA",
+//                                   schema = @Schema(type = SchemaType.STRING))
+//                           @QueryParam ("copy-from-motivation-id")
+//                           @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String copyFromMotivationId,
+                           @Context UriInfo uriInfo) {
 
         var motivation = motivationService.createMotivation(request, utility.getUserUniqueIdentifier());
 
@@ -600,6 +616,66 @@ public class MotivationEndpoint {
         return Response.ok().entity(criteria).build();
     }
 
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get list of Criteria of an Motivation Actor.",
+            description = "This endpoint retrieves all Criteria of a Motivation Actor." +
+                    "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Actors of a Motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRelationsResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/relations/{motivation-id}")
+    @Registration
+    public Response getRelationsByMotivation(
+            @Parameter(description = "The ID of the Motivation to retrieve the associated relations.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("motivation-id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            String motivationId,
+            @Parameter(name = "page",
+                    description = "Page number. Must be >= 1.")
+            @DefaultValue("1")
+            @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size",
+                    description = "Page size. Must be between 1 and 100.")
+            @DefaultValue("10")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var relations = relationsService.getRelationsByMotivation(motivationId, page - 1, size, uriInfo);
+
+        return Response.ok(relations).build();
+    }
+
     public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
 
         private List<MotivationResponse> content;
@@ -644,69 +720,18 @@ public class MotivationEndpoint {
             this.content = content;
         }
     }
-    @Tag(name = "Motivation")
-    @Operation(
-            summary = "Get list of Criteria of an Motivation.",
-            description = "This endpoint retrieves all Criteria of a Motivation." +
-                    "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")
-    @APIResponse(
-            responseCode = "200",
-            description = "List of Criteria of a Motivation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageablePrincipleCriteriaJunctionResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/{id}/criteria")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    public Response getCriteriaByMotivation(@Parameter(
-            description = "The ID of the Motivation to get criteria.",
-            required = true,
-            example = "pid_graph:3E109BBA",
-            schema = @Schema(type = SchemaType.STRING))
-                                                 @PathParam("id")
-                                                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id, @Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                                 @Parameter(name = "size", in = QUERY,
-                                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                                 @Context UriInfo uriInfo) {
 
-        var criteria = criterionService.listCriteriaByMotivation(id, page - 1, size, uriInfo);
+    public static class PageableRelationsResponse extends PageResource<RelationsResponseDto> {
 
-        return Response.ok().entity(criteria).build();
-    }
-
-    public static class PageablePrincipleCriteriaJunctionResponse extends PageResource<PrincipleCriterionResponse> {
-
-        private List<PrincipleCriterionResponse> content;
+        private List<RelationsResponseDto> content;
 
         @Override
-        public List<PrincipleCriterionResponse> getContent() {
+        public List<RelationsResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<PrincipleCriterionResponse> content) {
+        public void setContent(List<RelationsResponseDto> content) {
             this.content = content;
         }
     }

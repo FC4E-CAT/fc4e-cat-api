@@ -9,6 +9,7 @@ import org.grnet.cat.entities.registry.generator.RegistryId;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "p_Test_Definition")
@@ -62,4 +63,12 @@ public class TestDefinition {
 
     @Column(name = "lodTDF_V")
     private String lodDFV;
+
+    @Column(name = "upload")
+    private LocalDate upload;
+
+    @Column(name = "dataType")
+    private String dataType;
+
+
 }

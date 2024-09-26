@@ -22,9 +22,13 @@ public class MetricDefinitionId {
     @Column(name = "lodM_TB_V")
     private Integer lodMTBV;
 
-    public MetricDefinitionId(String metricId, String typeBenchmarkId, Integer lodMTBV) {
+    @Column(name = "motivation_lodMTV")
+    private String motivationId;
+
+    public MetricDefinitionId(String metricId, String typeBenchmarkId, String motivationId, Integer lodMTBV) {
         this.metricId = metricId;
         this.typeBenchmarkId = typeBenchmarkId;
+        this.motivationId = motivationId;
         this.lodMTBV = lodMTBV;
     }
     public MetricDefinitionId() {
@@ -39,12 +43,13 @@ public class MetricDefinitionId {
         MetricDefinitionId that = (MetricDefinitionId) o;
         return  Objects.equals(metricId, that.metricId) &&
                 Objects.equals(typeBenchmarkId, that.typeBenchmarkId) &&
+                Objects.equals(motivationId, that.motivationId) &&
                 Objects.equals(lodMTBV, that.lodMTBV);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(metricId, typeBenchmarkId, lodMTBV);
+        return Objects.hash(metricId, typeBenchmarkId, motivationId, lodMTBV);
     }
 
 }

@@ -7,11 +7,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.MetricDefinitionJunction;
 import org.grnet.cat.entities.registry.MetricTestJunction;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -32,7 +34,7 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         if (StringUtils.isNotEmpty(search)) {
             joiner.add("and (m.metric.id like :search")
                     .add("or m.typeBenchmark.id like :search")
-                    .add("or m.motivationId like :search")
+                    .add("or m.motivation.Id like :search")
                     .add("or m.metricDefinition like :search")
                     .add("or m.lodReference like :search")
                     .add("or m.valueBenchmark like :search")
@@ -56,4 +58,23 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
 
         return pageable;
     }
+
+    public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionByMotivation(String motivationId, int page, int size) {
+
+        var panache = find("SELECT md FROM MetricDefinitionJunction md WHERE md.motivation.id = ?1", Sort.by("lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+
+        var pageable = new PageQueryImpl<MetricDefinitionJunction>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    public List<MetricDefinitionJunction> fetchMetricDefinitionByMotivation(String motivationId) {
+        return find("SELECT md FROM MetricDefinitionJunction md WHERE md.motivation.id = ?1", motivationId).list();
+    }
+
 }

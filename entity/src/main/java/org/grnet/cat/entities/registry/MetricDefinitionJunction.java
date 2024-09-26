@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.grnet.cat.entities.registry.metric.Metric;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity(name = "MetricDefinitionJunction")
@@ -27,8 +29,9 @@ public class MetricDefinitionJunction extends Registry{
     @JoinColumn(name = "type_benchmark_lodTBN")
     private TypeBenchmark typeBenchmark;
 
-    @Column(name = "motivation_lodMTV")
-    private String motivationId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @MapsId("motivationId")
+    private Motivation motivation;
 
     @Column(name = "valueBenchmark")
     @NotNull
@@ -41,14 +44,6 @@ public class MetricDefinitionJunction extends Registry{
     @NotNull
     private String motivationX;
 
-    @Column(name = "populatedBy")
-    @NotNull
-    private String populatedBy;
-
-    @Column(name = "lastTouch")
-    @NotNull
-    private Timestamp lastTouch;
-
     @Column(name = "lodMDF_V")
     private String version;
 
@@ -58,9 +53,16 @@ public class MetricDefinitionJunction extends Registry{
     @Column(name = "lodReference")
     private String lodReference;
 
-    public MetricDefinitionJunction(Metric metric, TypeBenchmark typeBenchmark, String motivationId, String valueBenchmark, String metricDefinition, String motivationX, String version, Integer lodMTBV, String lodReference2, String lodReference, String populatedBy, Timestamp lastTouch) {
+    @Column(name = "upload")
+    private LocalDate upload;
 
-        this.motivationId = motivationId;
+    @Column(name = "dataType")
+    private String dataType;
+
+
+    public MetricDefinitionJunction(Metric metric, TypeBenchmark typeBenchmark, Motivation motivation, String valueBenchmark, String metricDefinition, String motivationX, String version, Integer lodMTBV, String lodReference2, String lodReference, LocalDate upload, String dataType) {
+
+        this.motivation = motivation;
         this.metric = metric;
         this.typeBenchmark = typeBenchmark;
         this.metricDefinition = metricDefinition;
@@ -69,9 +71,9 @@ public class MetricDefinitionJunction extends Registry{
         this.lodReference = lodReference;
         this.lodReference2 = lodReference2;
         this.motivationX = motivationX;
-        this.setLastTouch(lastTouch);
-        this.setPopulatedBy(populatedBy);
-        this.id = new MetricDefinitionId(metric.getId(), typeBenchmark.getId(), lodMTBV);
+        this.upload = upload;
+        this.dataType = dataType;
+        this.id = new MetricDefinitionId(metric.getId(), typeBenchmark.getId(), motivation.getId(), lodMTBV);
     }
 
     public MetricDefinitionJunction() {

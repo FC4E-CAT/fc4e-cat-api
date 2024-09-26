@@ -10,11 +10,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.CriterionMetricJunction;
+import org.grnet.cat.entities.registry.MetricDefinitionJunction;
 import org.grnet.cat.entities.registry.MetricTestId;
 import org.grnet.cat.entities.registry.MetricTestJunction;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -59,5 +62,24 @@ public class MetricTestRepository  implements Repository<MetricTestJunction, Str
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+
+    public PageQuery<MetricTestJunction> fetchMetricTestByMotivation(String motivationId, int page, int size) {
+
+        var panache = find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1", Sort.by("lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+
+        var pageable = new PageQueryImpl<MetricTestJunction>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    public List<MetricTestJunction> fetchMetricTestByMotivation(String motivationId) {
+        return find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1", motivationId).list();
     }
 }

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity(name = "PrincipleCriterionJunction")
