@@ -6,6 +6,7 @@ import org.grnet.cat.entities.registry.Criterion;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.CriterionActorJunction;
 import org.grnet.cat.repositories.Repository;
 
 @ApplicationScoped
@@ -41,15 +42,15 @@ public class CriterionRepository implements Repository<Criterion, String> {
     }
 
     /**
-     * Retrieves a page of Motivations.
+     * Retrieves a page of Criteria per Motivation.
      *
      * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of Motivations to include in a page.
-     * @return A list of Motivations objects representing the Motivations in the requested page.
+     * @param size The maximum number of Criteria to include in a page.
+     * @return A list of Motivations objects representing the Criteria in the requested page.
      */
     public PageQuery<Criterion> fetchCriteriaByMotivationAndPage(String motivationId, int page, int size) {
 
-        var panache = find("from Criterion c left join PrincipleCriterionJunction j ON j.criterion.id =c.id left join Principle p on j.principle.id=p.id where j.motivation.id =?1 ",Sort.by("c.lastTouch", Sort.Direction.Descending).and("c.id",Sort.Direction.Ascending),motivationId).page(page, size);
+        var panache = find("SELECT pri.criterion FROM PrincipleCriterionJunction pri WHERE pri.motivation.id = ?1 ", Sort.by("pri.lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
 
         var pageable = new PageQueryImpl<Criterion>();
         pageable.list = panache.list();
