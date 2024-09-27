@@ -14,11 +14,11 @@ import org.grnet.cat.repositories.Repository;
 public class CriterionActorRepository  implements Repository<CriterionActorJunction, String> {
 
     /**
-     * Retrieves a page of Motivations.
+     * Retrieves a page of Criteria by Actor and Motivation.
      *
      * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of Motivations to include in a page.
-     * @return A list of Motivations objects representing the Motivations in the requested page.
+     * @param size The maximum number of Criteria to include in a page.
+     * @return A list of Motivations objects representing the Criteria in the requested page.
      */
     public PageQuery<CriterionActorJunction> fetchCriteriaByMotivationAndActorAndPage(String motivationId, String actorId, int page, int size) {
 

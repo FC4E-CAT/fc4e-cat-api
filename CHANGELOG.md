@@ -38,6 +38,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#275](https://github.com/FC4E-CAT/fc4e-cat-api/pull/275) CAT-501 Unwrap description column values that are wrapped with double quotes in the database.
 - [#282](https://github.com/FC4E-CAT/fc4e-cat-api/pull/282) CAT-506 lodMTV missing column from t_Actor.
 - [#286](https://github.com/FC4E-CAT/fc4e-cat-api/pull/286) CAT-509 Weird Principles local pagination issue when page size=5.
+- [#288](https://github.com/FC4E-CAT/fc4e-cat-api/pull/288) CAT-518 Pagination issues in Motivation > Actor > Criteria.
 
 
 ## 1.7.0 - 2024-09-10
