@@ -12,9 +12,11 @@ import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
+import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.mappers.registry.CriterionActorMapper;
 import org.grnet.cat.mappers.registry.ImperativeMapper;
@@ -26,6 +28,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
@@ -37,10 +40,8 @@ public class RegistryActorService {
     MotivationRepository motivationRepository;
     @Inject
     ImperativeRepository imperativeRepository;
-
     @Inject
-    CriterionRepository criterionRepository;
-
+    PrincipleCriterionRepository principleCriterionRepository;
     @Inject
     CriterionActorRepository criterionActorRepository;
 
@@ -97,12 +98,18 @@ public class RegistryActorService {
 
         criterionActorRequest.stream().iterator().forEachRemaining(req -> {
             var imperative = imperativeRepository.findById(req.imperativeId);
-            var criterion = criterionRepository.findById(req.criterionId);
-            if (!criterionActorRepository.existsByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1)) {
-                actor.addCriterion(motivation, criterion, imperative, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
-                resultMessages.add("criterion with id :: " + criterion.getId() + " successfully added to actor");
-            } else {
-                resultMessages.add("criterion with id :: " + criterion.getId() + " already exists to actor");
+            var principleCriterionJunction = principleCriterionRepository.findCriterion(req.criterionId, motivation.getId());
+            if (!principleCriterionJunction.isPresent()) {
+                resultMessages.add("criterion with id :: " + req.criterionId + " is not related to principles");
+            }else {
+
+                var criterion = principleCriterionJunction.get().getCriterion();
+                if (!criterionActorRepository.existsByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1)) {
+                    actor.addCriterion(motivation, criterion, imperative, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                    resultMessages.add("criterion with id :: " + criterion.getId() + " successfully added to actor");
+                } else {
+                    resultMessages.add("criterion with id :: " + criterion.getId() + " already exists to actor");
+                }
             }
         });
         return resultMessages;
@@ -116,7 +123,7 @@ public class RegistryActorService {
      * @param uriInfo The Uri Info.
      * @return A list of CriteriaActorJunctionResponse objects representing the submitted Criteria in the requested page.
      */
-    public PageResource<CriterionActorResponse> getCriteriaByMotivationActorAndPage(String motivationId, String actorId, int page, int size, UriInfo uriInfo) {
+    public PageResource<PrincipleCriterionResponse> getCriteriaByMotivationActorAndPage(String motivationId, String actorId, int page, int size, UriInfo uriInfo) {
 
         if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
             throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
@@ -124,7 +131,7 @@ public class RegistryActorService {
 
         var criteriaActor = criterionActorRepository.fetchCriteriaByMotivationAndActorAndPage(motivationId, actorId, page, size);
 
-        return new PageResource<>(criteriaActor, CriterionActorMapper.INSTANCE.criterionActorToDtos(criteriaActor.list()), uriInfo);
+        return new PageResource<>(criteriaActor, CriterionActorMapper.INSTANCE.toPrincipleCriterionResponseList(criteriaActor.list()), uriInfo);
     }
 
 }

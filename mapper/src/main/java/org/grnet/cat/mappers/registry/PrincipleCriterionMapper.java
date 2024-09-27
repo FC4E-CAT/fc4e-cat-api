@@ -26,6 +26,7 @@ public interface PrincipleCriterionMapper {
     List<PrincipleCriterionResponse> criteriaToDtos(List<Criterion> criteria);
 
     @Named("mapWithExpression")
+    @Mapping(target = "id", expression = "java(criterion.getId())")
     @Mapping(target = "imperative", expression = "java(criterion.getImperative().getId())")
     @Mapping(target = "typeCriterion", expression = "java(criterion.getTypeCriterion().getId())")
     @Mapping(source = "principles", target = "principles", qualifiedByName = "mapPrinciples")
@@ -42,7 +43,6 @@ public interface PrincipleCriterionMapper {
     @Mapping(target = "id",  expression = "java(principleJunction.getPrinciple().getId())")  // Ignore the id field here as well
     @Mapping(target = "pri", expression = "java(principleJunction.getPrinciple().getPri())")
     @Mapping(target = "label", expression = "java(principleJunction.getPrinciple().getLabel())")
-    //@Mapping(target = "motivation_id", expression = "java(principleJunction.getLodMTV())")
 
     PrinciplePartialResponse mapPrinciple(PrincipleCriterionJunction principleJunction);
 

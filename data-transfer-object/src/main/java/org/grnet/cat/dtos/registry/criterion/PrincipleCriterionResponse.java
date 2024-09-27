@@ -18,6 +18,15 @@ public class PrincipleCriterionResponse {
             description = "The Criterion's code identifier.",
             example = "C1"
     )
+    @JsonProperty("id")
+    public String id;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Criterion's code identifier.",
+            example = "C1"
+    )
     @JsonProperty("cri")
     public String cri;
 
