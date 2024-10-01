@@ -32,7 +32,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#283](https://github.com/FC4E-CAT/fc4e-cat-api/pull/283) CAT-504 Create API Endpoint to Assign Principles to a Motivation.
 - [#284](https://github.com/FC4E-CAT/fc4e-cat-api/pull/284) CAT-508 Filters on Motivation.
 - [#287](https://github.com/FC4E-CAT/fc4e-cat-api/pull/287) CAT-512 CAT-515 GET list of Criteria by Motivation, Pagination issue in Motivations.
-
+- [#291](https://github.com/FC4E-CAT/fc4e-cat-api/pull/291) CAT-519 API provide a call to update the criteria of a motivation actor (assessment type).
 ### Fix
 
 - [#275](https://github.com/FC4E-CAT/fc4e-cat-api/pull/275) CAT-501 Unwrap description column values that are wrapped with double quotes in the database.

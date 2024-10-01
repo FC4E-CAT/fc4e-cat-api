@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.CriterionActorId;
 import org.grnet.cat.entities.registry.CriterionActorJunction;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.repositories.Repository;
@@ -14,7 +15,7 @@ import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class CriterionActorRepository  implements Repository<CriterionActorJunction, String> {
+public class CriterionActorRepository implements Repository<CriterionActorJunction, CriterionActorId> {
 
     /**
      * Retrieves a page of Criteria by Actor and Motivation.
@@ -47,5 +48,10 @@ public class CriterionActorRepository  implements Repository<CriterionActorJunct
                 "SELECT 1 FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 AND c.id.criterionId = ?3 AND  c.id.lodCAV = ?4",
                 motivationId, actorId, criterionId, lodMAV
         ).firstResultOptional().isPresent();
+    }
+
+   // @Transactional
+    public void delete(CriterionActorJunction ac) {
+        delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 and c.actor.id =?2 and c.criterion.id =?3", ac.getMotivation().getId(), ac.getActor().getId(), ac.getCriterion().getId());
     }
 }

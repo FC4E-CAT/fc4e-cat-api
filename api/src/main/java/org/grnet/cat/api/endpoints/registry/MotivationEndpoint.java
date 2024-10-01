@@ -711,4 +711,73 @@ public class MotivationEndpoint {
         }
     }
 
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update Criterion Item to Motivation Actor.",
+            description = "Updates the criterion list to motivation actor.")
+    @APIResponse(
+            responseCode = "201",
+            description = "Criterion items updated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/actors/{actor-id}/criteria")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCriterionToMotivationActor(@Parameter(
+            description = "The ID of the Motivation to add actors.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                  @PathParam("id")
+                                                  @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                  @Parameter(
+                                                          description = "The ID of the Actor to add criterion to.",
+                                                          required = true,
+                                                          example = "pid_graph:234B60D8",
+                                                          schema = @Schema(type = SchemaType.STRING))
+                                                  @PathParam("actor-id")
+                                                  @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+                                                  @NotEmpty(message = "Actors list can not be empty.") Set<@Valid CriterionActorRequest> request,
+                                                  @Context UriInfo uriInfo) {
+
+        var messages = registryActorService.updateCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.messages = messages;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
 }

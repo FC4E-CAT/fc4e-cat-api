@@ -62,12 +62,25 @@ public class RegistryActor extends Registry {
     )
     private Set<CriterionActorJunction> criteria = new HashSet<>();
 
-    public void addCriterion(Motivation motivation,Criterion criterion, Imperative imperative,String motivationX, Integer lodMAV,String populatedBy, Timestamp lastTouch) {
-        var criterionActor = new CriterionActorJunction(motivation,criterion,this,imperative,motivationX, lastTouch,populatedBy,lodMAV);
+    public void addCriterion(Motivation motivation, Criterion criterion, Imperative imperative, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
+        var criterionActor = new CriterionActorJunction(motivation, criterion, this, imperative, motivationX, lastTouch, populatedBy, lodMAV);
         criteria.add(criterionActor);
         criterionActor.getActor().criteria.add(criterionActor);
     }
 
+    public void removeCriterion(Criterion criterion) {
+        for (Iterator<CriterionActorJunction> iterator = criteria.iterator();
+             iterator.hasNext(); ) {
+            var actorCriterion = iterator.next();
+
+            if (actorCriterion.getActor().equals(this) &&
+                    actorCriterion.getCriterion().equals(criterion)) {
+                actorCriterion.getCriterion().getActors().remove(this);
+                iterator.remove();
+
+            }
+        }
+    }
     public String getId() {
         return id;
     }
