@@ -1,9 +1,14 @@
 package org.grnet.cat.mappers.registry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.dtos.registry.CriterionMetricResponseDto;
+import org.grnet.cat.dtos.registry.MetricTestResponseDto;
+import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
 import org.grnet.cat.entities.registry.Criterion;
+import org.grnet.cat.entities.registry.CriterionMetricJunction;
+import org.grnet.cat.entities.registry.MetricTestJunction;
 import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -25,6 +30,8 @@ public interface PrincipleCriterionMapper {
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<PrincipleCriterionResponse> criteriaToDtos(List<Criterion> criteria);
 
+    List<PrincipleCriterionResponseDto> principleCriterionToResponseDtos(List<PrincipleCriterionJunction> entities);
+
     @Named("mapWithExpression")
     @Mapping(target = "id", expression = "java(criterion.getId())")
     @Mapping(target = "imperative", expression = "java(criterion.getImperative().getId())")
@@ -45,6 +52,17 @@ public interface PrincipleCriterionMapper {
     @Mapping(target = "label", expression = "java(principleJunction.getPrinciple().getLabel())")
 
     PrinciplePartialResponse mapPrinciple(PrincipleCriterionJunction principleJunction);
+
+    @Mapping(target = "principleId", expression = "java(principleCriterion.getPrinciple().getId())")
+    @Mapping(target = "criterionId", expression = "java(principleCriterion.getCriterion().getId())")
+    @Mapping(target = "motivationId", expression = "java(principleCriterion.getMotivation().getId())")
+    @Mapping(target = "relationId", expression = "java(principleCriterion.getRelation().getId())")
+    PrincipleCriterionResponseDto principleCriterionToDto(PrincipleCriterionJunction principleCriterion);
+
+
+
+
+
 
 
 }

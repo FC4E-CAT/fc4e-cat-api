@@ -18,8 +18,7 @@ import org.grnet.cat.entities.registry.MotivationType;
 import org.grnet.cat.entities.registry.Principle;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.entities.registry.Relation;
-import org.grnet.cat.mappers.registry.MotivationActorMapper;
-import org.grnet.cat.mappers.registry.MotivationMapper;
+import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.repositories.registry.*;
 
 import java.sql.Timestamp;
@@ -53,6 +52,9 @@ public class MotivationService {
     @Inject
     MotivationPrincipleRepository motivationPrincipleRepository;
 
+    @Inject
+    RelationsService relationsService;
+
     /**
      * Creates a new Motivation.
      *
@@ -68,6 +70,11 @@ public class MotivationService {
         motivation.setPopulatedBy(userId);
         motivation.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
         motivationRepository.persist(motivation);
+
+        if (request.basedOn != null && !request.basedOn.isEmpty()) {
+            relationsService.copyRelationsToNewMotivation(motivation.getId(), request.basedOn);
+        }
+
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
 

@@ -9,6 +9,7 @@ import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,6 +58,12 @@ public class Metric {
 
     @Column(name = "lastTouch")
     private Timestamp lastTouch;
+
+    @Column(name = "upload")
+    private LocalDate upload;
+
+    @Column(name = "dataType")
+    private String dataType;
 
     @OneToMany(
             mappedBy = "metric",

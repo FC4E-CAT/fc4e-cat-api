@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.grnet.cat.entities.registry.metric.Metric;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity(name = "MetricTestJunction")
@@ -45,7 +46,7 @@ public class MetricTestJunction extends Registry{
     @NotNull
     private Relation relation;
 
-    public MetricTestJunction(Metric metric, Test test, TestDefinition testDefinition, Motivation motivation, Relation relation, String motivationX, Integer lodMTTDV, String populatedBy, Timestamp lastTouch) {
+    public MetricTestJunction(Metric metric, Test test, TestDefinition testDefinition, Motivation motivation, Relation relation, String motivationX, Integer lodMTTDV) {
 
         this.motivation = motivation;
         this.metric = metric;
@@ -53,15 +54,12 @@ public class MetricTestJunction extends Registry{
         this.testDefinition = testDefinition;
         this.motivationX = motivationX;
         this.relation = relation;
-        this.setLastTouch(lastTouch);
-        this.setPopulatedBy(populatedBy);
         this.id = new MetricTestId(motivation.getId(),metric.getId(), test.getId(), testDefinition.getId(), lodMTTDV);
     }
 
 
     public MetricTestJunction() {
     }
-
 
     @Override
     public boolean equals(Object o) {

@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "p_Test")
@@ -45,4 +46,10 @@ public class Test {
 
     @Column(name = "lodTES_V")
     private String lodTES_V;
+
+    @Column(name = "upload")
+    private LocalDate upload;
+
+    @Column(name = "dataType")
+    private String dataType;
 }

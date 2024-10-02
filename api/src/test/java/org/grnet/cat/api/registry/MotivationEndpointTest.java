@@ -14,11 +14,15 @@ import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
+import org.grnet.cat.services.registry.RelationsService;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;
+import static io.smallrye.common.constraint.Assert.assertTrue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -91,7 +95,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void motivation() {
+    public void createMotivation() {
 
         register("admin");
 
@@ -115,6 +119,64 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         assertEquals("decMotivation", response.description);
         assertEquals("pid_graph:8882700E", response.motivationType.id);
+    }
+
+    @Test
+    public void createMotivationAndCopyFromMotivation() {
+
+        register("admin");
+
+        var request = new MotivationRequest();
+        request.mtv = "mtv";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
+        request.motivationTypeId = "pid_graph:8882700E";
+        request.basedOn = "pid_graph:3E109BBA";
+
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        assertEquals("decMotivation", response.description);
+        assertEquals("pid_graph:8882700E", response.motivationType.id);
+
+    }
+
+    @Test
+    public void createMotivationCopyNotFound() {
+
+        register("admin");
+
+        var request = new MotivationRequest();
+        request.mtv = "mtv";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
+        request.motivationTypeId = "pid_graph:8882700E";
+        request.basedOn = "notfound";
+
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("There is no Motivation with the following id: notfound", response.message);
     }
 
     @Test

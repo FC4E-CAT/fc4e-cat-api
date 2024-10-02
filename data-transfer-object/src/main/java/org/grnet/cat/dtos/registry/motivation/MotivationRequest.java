@@ -64,4 +64,14 @@ public class MotivationRequest {
     @JsonProperty(value = "motivation_parent_id")
     @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
     public String lodMtvP;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The ID of the Motivation to copy relations",
+            example = "pid_graph:3E109BBA"
+    )
+    @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+    @JsonProperty("based_on")
+    public String basedOn;
 }

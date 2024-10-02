@@ -22,6 +22,7 @@ public interface MetricDefinitionMapper {
     @Named("map")
     @Mapping(target = "metricId", expression = "java(metricDefinitionJunction.getMetric().getId())")
     @Mapping(target = "typeBenchmarkId",  expression = "java(metricDefinitionJunction.getTypeBenchmark().getId())")
+    @Mapping(target = "motivationId", expression = "java(metricDefinitionJunction.getMotivation().getId())")
     MetricDefinitionResponseDto metricDefinitionToResponseDto(MetricDefinitionJunction metricDefinitionJunction);
 
 }
