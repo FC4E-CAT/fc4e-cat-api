@@ -42,11 +42,9 @@ import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
-import org.grnet.cat.services.registry.CriterionService;
-import org.grnet.cat.services.registry.MotivationService;
-import org.grnet.cat.services.registry.RegistryActorService;
-import org.grnet.cat.services.registry.RelationsService;
+import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
@@ -78,6 +76,9 @@ public class MotivationEndpoint {
 
     @Inject
     private CriterionService criterionService;
+    @Inject
+    private PrincipleService principleService;
+
 
     /**
      * Injection point for the Utility class
@@ -133,13 +134,7 @@ public class MotivationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") MotivationRequest request,
-//                           @Parameter (
-//                                   description = "The ID of the Motivation to copy from.",
-//                                   example = "pid_graph:3E109BBA",
-//                                   schema = @Schema(type = SchemaType.STRING))
-//                           @QueryParam ("copy-from-motivation-id")
-//                           @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String copyFromMotivationId,
-                           @Context UriInfo uriInfo) {
+                            @Context UriInfo uriInfo) {
 
         var motivation = motivationService.createMotivation(request, utility.getUserUniqueIdentifier());
 
@@ -489,6 +484,64 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
+            summary = "Get list of Principles of a Motivation.",
+            description = "This endpoint retrieves all Principles of a Motivation." +
+                    "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Principles of a Motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageablePrincipleCriteriaJunctionResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/principles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getPrincipleByMotivation(
+                @Parameter(description = "The ID of the Motivation to get principle.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+                @PathParam("id")
+                @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+                @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+                @QueryParam("page") int page,
+                @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+                @DefaultValue("10")
+                @Min(value = 1, message = "Page size must be between 1 and 100.")
+                @Max(value = 100, message = "Page size must be between 1 and 100.")
+                @QueryParam("size") int size,
+                @Context UriInfo uriInfo) {
+
+        var principle = principleService.listPrinciplesByMotivation(id, page - 1, size, uriInfo);
+
+        return Response.ok().entity(principle).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
             summary = "Add Criterion Item to Motivation Actor.",
             description = "Adds a new criterion item to motivation actor.")
     @APIResponse(
@@ -615,7 +668,6 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(criteria).build();
     }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -781,19 +833,19 @@ public class MotivationEndpoint {
     @Path("/{id}/actors/{actor-id}/criteria")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateCriterionToMotivationActor(
-                @Parameter(description = "The ID of the Motivation to add actors.",
-                        required = true,
-                        example = "pid_graph:3E109BBA",
-                        schema = @Schema(type = SchemaType.STRING))
-                @PathParam("id")
-                @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                @Parameter(description = "The ID of the Actor to add criterion to.",
-                        required = true,
-                        example = "pid_graph:234B60D8",
-                        schema = @Schema(type = SchemaType.STRING))
-                @PathParam("actor-id")
-                @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId, @NotEmpty(message = "Actors list can not be empty.") Set<@Valid CriterionActorRequest> request,
-                @Context UriInfo uriInfo) {
+            @Parameter(description = "The ID of the Motivation to add actors.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+            @Parameter(description = "The ID of the Actor to add criterion to.",
+                    required = true,
+                    example = "pid_graph:234B60D8",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId, @NotEmpty(message = "Actors list can not be empty.") Set<@Valid CriterionActorRequest> request,
+            @Context UriInfo uriInfo) {
 
         var messages = registryActorService.updateCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
 

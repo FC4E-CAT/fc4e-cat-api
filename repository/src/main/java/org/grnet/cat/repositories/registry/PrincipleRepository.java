@@ -2,10 +2,12 @@ package org.grnet.cat.repositories.registry;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Principle;
+import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.repositories.Repository;
 
 @ApplicationScoped
@@ -31,6 +33,26 @@ public class PrincipleRepository implements Repository<Principle, String> {
 
         return pageable;
     }
+
+
+    @Transactional
+    public PageQuery<Principle> fetchPrincipleByMotivation(String motivationId, int page, int size) {
+
+        var panache = find("SELECT pc.principle FROM PrincipleCriterionJunction pc WHERE pc.motivation.id = ?1", Sort.by("lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+
+        var pageable = new PageQueryImpl<Principle>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+
+
+
 
     public boolean notUnique(String name, String value) {
         String query = "select count(p) from Principle p where lower(p." + name + ") = lower(?1)";

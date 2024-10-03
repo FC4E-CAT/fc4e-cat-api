@@ -5,11 +5,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
+import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
+import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
@@ -107,6 +110,21 @@ public class PrincipleService {
     public boolean delete(String id) {
         return principleRepository.deleteById(id);
     }
+
+
+
+    @Transactional
+    public PageResource<PrincipleResponseDto> listPrinciplesByMotivation(String motivationId, int page, int size, UriInfo uriInfo) {
+
+        var principlePage = principleRepository.fetchPrincipleByMotivation(motivationId, page, size);
+        var principleDto = PrincipleCriterionMapper.INSTANCE.principleToDtos(principlePage.list());
+
+        return new PageResource<>(principlePage, principleDto, uriInfo);
+
+    }
+
+
+
 
     @Transactional
     public void deleteAll() {
