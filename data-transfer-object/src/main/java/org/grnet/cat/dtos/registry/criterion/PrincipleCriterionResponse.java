@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.codelist.ImperativePartialResponse;
+import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 
@@ -49,13 +51,12 @@ public class PrincipleCriterionResponse {
     public String description;
 
     @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The imperative ID of the Criterion.",
-            example = "pid_graph:4A47BB1A"
+            type = SchemaType.OBJECT,
+            implementation = ImperativePartialResponse.class,
+            description = "Details of the imperative associated with this Criterion."
     )
     @JsonProperty("imperative")
-    public String imperative;
+    public ImperativePartialResponse imperative;
 
     @Schema(
             type = SchemaType.STRING,
@@ -112,5 +113,4 @@ public class PrincipleCriterionResponse {
     )
     @JsonProperty(value = "principles")
     public List<PrinciplePartialResponse> principles;
-
 }

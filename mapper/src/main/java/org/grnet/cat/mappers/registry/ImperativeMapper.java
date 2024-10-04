@@ -1,6 +1,8 @@
 package org.grnet.cat.mappers.registry;
 
+import jdk.jfr.Name;
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.dtos.registry.codelist.ImperativePartialResponse;
 import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.mapstruct.*;
@@ -22,6 +24,9 @@ public interface ImperativeMapper {
     @IterableMapping(qualifiedByName = "map")
     List<ImperativeResponse> imperativeToDtos(List<Imperative> imperativeList);
 
+    @Named("mapPartial")
+    @Mapping(source = "id", target = "id")
+    ImperativePartialResponse imperativePartialToDto(Imperative imperative);
 }
 
 
