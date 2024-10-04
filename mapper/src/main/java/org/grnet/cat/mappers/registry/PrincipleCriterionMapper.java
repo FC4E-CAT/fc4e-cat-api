@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * The PrincipleCriterionMapper is responsible for mapping Criteria entities to DTOs and vice versa.
  */
-@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
+@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class}, uses = ImperativeMapper.class)
 public interface PrincipleCriterionMapper {
     PrincipleCriterionMapper INSTANCE = Mappers.getMapper(PrincipleCriterionMapper.class);
 
@@ -34,7 +34,8 @@ public interface PrincipleCriterionMapper {
 
     @Named("mapWithExpression")
     @Mapping(target = "id", expression = "java(criterion.getId())")
-    @Mapping(target = "imperative", expression = "java(criterion.getImperative().getId())")
+    //@Mapping(target = "imperative", expression = "java(criterion.getImperative().getId())")
+    @Mapping(target = "imperative", source = "imperative", qualifiedByName = "mapPartial")
     @Mapping(target = "typeCriterion", expression = "java(criterion.getTypeCriterion().getId())")
     @Mapping(source = "principles", target = "principles", qualifiedByName = "mapPrinciples")
     PrincipleCriterionResponse criteriaToDto(Criterion criterion);

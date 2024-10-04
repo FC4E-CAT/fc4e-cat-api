@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * The CriterionActorMapper is responsible for mapping CriterionActor entities to DTOs and vice versa.
  */
-@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
+@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class}, uses = {ImperativeMapper.class})
 public interface CriterionActorMapper {
 
     CriterionActorMapper INSTANCE = Mappers.getMapper(CriterionActorMapper.class);
@@ -29,7 +29,8 @@ public interface CriterionActorMapper {
     @Mapping(source = "criterion.cri", target = "cri")
     @Mapping(source = "criterion.label", target = "label")
     @Mapping(source = "criterion.description", target = "description")
-    @Mapping(source = "criterion.imperative.id", target = "imperative")
+    //@Mapping(source = "criterion.imperative.id", target = "imperative")
+    @Mapping(source = "criterion.imperative", target = "imperative", qualifiedByName = "mapPartial")
     @Mapping(source = "criterion.typeCriterion.id", target = "typeCriterion")
     @Mapping(source = "criterion.url", target = "url")
     @Mapping(source = "criterion.lodCriP", target = "lodCriP")
