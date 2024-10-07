@@ -26,6 +26,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
+import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.UserType;
 import org.grnet.cat.enums.ValidationStatus;
@@ -39,18 +40,14 @@ import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.KeycloakAdminService;
+import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.SubjectService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.grnet.cat.services.KeycloakAdminService.ENTITLEMENTS_DELIMITER;
@@ -85,6 +82,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
     @Inject
     UserRepository userRepository;
+
+    @Inject
+    MailerService mailerService;
 
     @Transactional
     @SneakyThrows
@@ -587,7 +587,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         Assessment assessment = assessmentRepository.findById(assessmentId);
         assessment.setShared(true);
-      }
+
+        mailerService.sendMails(assessment, MailType.USER_ALERT_SHARED_ASSESSMENT, Collections.singletonList(email));
+    }
 
     /**
      * Retrieves a list of users to whom the specified assessment has been shared by the current user.
