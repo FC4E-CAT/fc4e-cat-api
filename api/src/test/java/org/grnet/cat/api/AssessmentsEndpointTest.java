@@ -8,8 +8,7 @@ import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.assessment.*;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
-import org.grnet.cat.dtos.template.TemplateResponse;
-import org.grnet.cat.entities.Comment;
+import org.grnet.cat.dtos.registry.template.TemplateResponse;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

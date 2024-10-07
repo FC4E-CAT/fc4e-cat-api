@@ -38,9 +38,6 @@ public class MotivationService {
     RegistryActorRepository registryActorRepository;
 
     @Inject
-    RelationRepository relationRepository;
-
-    @Inject
     PrincipleRepository principleRepository;
 
     @Inject

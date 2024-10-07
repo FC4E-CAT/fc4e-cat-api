@@ -6,7 +6,9 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Template;
+import org.grnet.cat.entities.registry.RegistryTemplateProjection;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -95,5 +97,55 @@ public class TemplateRepository implements Repository<Template, Long> {
         var optional = find("from Template t where t.actor.id = ?1", actorId).stream().findFirst();
 
         return optional.orElseThrow(()-> new NotFoundException("There is no template for an actor : "+actorId));
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public List<RegistryTemplateProjection> fetchTemplateByMotivationAndActor(String motivationId, String actorId){
+
+        return (List<RegistryTemplateProjection>) getEntityManager()
+                .createNativeQuery("SELECT\n" +
+                "        p.PRI,\n" +
+                "        p.labelPrinciple,\n" +
+                "        p.descPrinciple,\n" +
+                "        c.CRI,\n" +
+                "        c.labelCriterion,\n" +
+                "        c.descCriterion,\n" +
+                "        m.lodMTR,\n" +
+                "        m.MTR,\n" +
+                "        m.labelMetric,\n" +
+                "        t.TES,\n" +
+                "        t.labelTest,\n" +
+                "        t.descTest,\n" +
+                "        md.valueBenchmark,\n" +
+                "        tb.labelBenchmarkType,\n" +
+                "        ca.actor_lodActor as lodActor,\n" +
+                "        i.labelImperative,\n"+
+                "        tm.labelTestMethod\n"+
+                "    FROM\n" +
+                "        t_Type_Benchmark tb \n" +
+                "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
+                "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                "        INNER JOIN p_Metric_Test mt ON m.lodMTR = mt.metric_lodMTR\n" +
+                "        INNER JOIN p_Test_Definition td ON mt.test_definition_lodTDF = td.lodTDF\n" +
+                "        INNER JOIN t_TestMethod tm ON td.lodTME = tm.lodTME\n" +
+                "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
+                "        INNER JOIN p_Criterion_Metric cm ON m.lodMTR = cm.metric_lodMTR\n" +
+                "        INNER JOIN p_Criterion c ON cm.criterion_lodCRI = c.lodCRI\n" +
+                "        INNER JOIN p_Criterion_Actor ca ON c.lodCRI = ca.criterion_lodCRI\n" +
+                "        INNER JOIN s_Imperative i ON ca.imperative_lodIMP = i.lodIMP\n" +
+                "        INNER JOIN p_Principle_Criterion pc ON c.lodCRI = pc.criterion_lodCRI\n" +
+                "        INNER JOIN p_Principle p ON pc.principle_lodPRI = p.lodPRI\n" +
+                "    WHERE\n" +
+                "        md.motivation_lodMTV = :motivationId\n" +
+                "        AND mt.motivation_lodMTV = :motivationId\n" +
+                "        AND cm.motivation_lodMTV = :motivationId\n" +
+                "        AND ca.actor_lodActor = :actorId\n" +
+                "        AND pc.motivation_lodMTV = :motivationId\n" +
+                "    ORDER BY\n" +
+                "        c.CRI;", "registry-template")
+                .setParameter("motivationId", motivationId)
+                .setParameter("actorId", actorId)
+                .getResultList();
     }
 }

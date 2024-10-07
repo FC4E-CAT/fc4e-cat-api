@@ -1,5 +1,6 @@
 package org.grnet.cat.api.endpoints;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.SpecVersion;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -33,15 +34,19 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
 import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.dtos.registry.template.TemplateResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.JsonSchema;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.repositories.TemplateRepository;
+import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.TemplateService;
+import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
@@ -66,6 +71,9 @@ public class TemplatesEndpoint {
 
     @Inject
     Utility utility;
+
+    @Inject
+    ObjectMapper mapper;
 
     @Tag(name = "Template")
     @Operation(
@@ -388,6 +396,62 @@ public class TemplatesEndpoint {
         var templates = templateService.getTemplatesByActor(page-1, size, typeId, uriInfo);
 
         return Response.ok().entity(templates).build();
+    }
+
+    @Tag(name = "Template")
+    @Operation(
+            summary = "Retrieve registry template for a specific motivation and actor.",
+            description = "This endpoint retrieves a registry template for a specific motivation and actor.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of assessment templates.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RegistryTemplateDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/by-motivation/{motivation-id}/by-actor/{actor-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getRegistryTemplate(@Parameter(
+            description = "The Motivation to retrieve template.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                            @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String motivationId, @Parameter(
+            description = "The Actor to retrieve template.",
+            required = true,
+            example = "pid_graph:566C01F6",
+            schema = @Schema(type = SchemaType.STRING))
+                                            @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
+
+        var template = templateService.buildTemplate(motivationId, actorId);
+
+        return Response.ok().entity(template).build();
     }
 
     public static class PageableTemplate extends PageResource<TemplateResponse> {
