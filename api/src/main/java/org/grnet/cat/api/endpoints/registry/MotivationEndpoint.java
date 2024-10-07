@@ -31,7 +31,6 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.RelationsResponseDto;
-import org.grnet.cat.dtos.registry.RelationsResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
@@ -42,12 +41,13 @@ import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.repositories.registry.MotivationRepository;
-import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
@@ -598,7 +598,7 @@ public class MotivationEndpoint {
                                                           schema = @Schema(type = SchemaType.STRING))
                                                   @PathParam("actor-id")
                                                   @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
-                                                  @NotEmpty(message = "Actors list can not be empty.") Set<@Valid CriterionActorRequest> request,
+                                                  @NotEmpty(message = "List of criteria can not be empty.") Set<@Valid CriterionActorRequest> request,
                                                   @Context UriInfo uriInfo) {
 
         var messages = registryActorService.addCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
@@ -844,8 +844,13 @@ public class MotivationEndpoint {
                     example = "pid_graph:234B60D8",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("actor-id")
-            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId, @NotEmpty(message = "Actors list can not be empty.") Set<@Valid CriterionActorRequest> request,
-            @Context UriInfo uriInfo) {
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+            Set<@Valid CriterionActorRequest> request) {
+
+        if(Objects.isNull(request)){
+
+            request = new HashSet<>();
+        }
 
         var messages = registryActorService.updateCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
 
