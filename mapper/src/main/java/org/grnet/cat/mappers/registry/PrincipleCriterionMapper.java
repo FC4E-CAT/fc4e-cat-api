@@ -6,10 +6,8 @@ import org.grnet.cat.dtos.registry.MetricTestResponseDto;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
-import org.grnet.cat.entities.registry.Criterion;
-import org.grnet.cat.entities.registry.CriterionMetricJunction;
-import org.grnet.cat.entities.registry.MetricTestJunction;
-import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.entities.registry.*;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,6 +27,10 @@ public interface PrincipleCriterionMapper {
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<PrincipleCriterionResponse> criteriaToDtos(List<Criterion> criteria);
+
+
+    //@IterableMapping(qualifiedByName = "mapWithExpression")
+    List<PrincipleResponseDto> principleToDtos(List<Principle> principle);
 
     List<PrincipleCriterionResponseDto> principleCriterionToResponseDtos(List<PrincipleCriterionJunction> entities);
 

@@ -18,8 +18,10 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.CriterionMetricResponseDto;
+import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.services.registry.CriterionMetricService;
 import org.grnet.cat.services.registry.MetricTestService;
+import org.grnet.cat.services.registry.PrincipleCriterionService;
 import org.grnet.cat.validators.SortAndOrderValidator;
 
 import jakarta.inject.Inject;
@@ -31,25 +33,25 @@ import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
-@Path("/v1/registry/criterion-metric")
+@Path("/v1/registry/principle-criterion")
 @Tag(name = "Relations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class CriterionMetricEndpoint {
+public class PrincipleCriterionEndpoint {
 
     @Inject
-    CriterionMetricService criterionMetricService;
+    PrincipleCriterionService principleCriterionService;
 
     @Operation(
-            summary = "List all Criterion-Metric relations",
-            description = "Retrieves a paginated list of Criterion-Metric relations."
+            summary = "List all Principle-Criterion relations",
+            description = "Retrieves a paginated list of Principle-Criterion relations."
     )
     @APIResponse(
             responseCode = "200",
-            description = "List of Criterion-Metric relations.",
+            description = "List of Principle-Criterion relations.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableCriterionMetricResponse.class))
+                    implementation = PageablePrincipleCriterionResponse.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -82,7 +84,7 @@ public class CriterionMetricEndpoint {
     @GET
     @Path("/")
     @Registration
-    public Response listMetricTestsWithSearch(
+    public Response listPrincipleCriterionWithSearch(
             @Parameter(name = "search", in = QUERY,
                     description = "The \"search\" parameter allows clients to search for matches in specific fields in the MetricTest entity.")
             @QueryParam("search") String search,
@@ -90,7 +92,7 @@ public class CriterionMetricEndpoint {
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
                     examples = {
                             @ExampleObject(name = "Last Touch", value = "lastTouch"),
-                            @ExampleObject(name = "Metric", value = "metric"),
+                            @ExampleObject(name = "Principle", value = "principle"),
                             @ExampleObject(name = "Criterion", value = "criterion"),
                             @ExampleObject(name = "Motivation", value = "motivation")},
                     description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
@@ -119,28 +121,26 @@ public class CriterionMetricEndpoint {
 
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("lastTouch", "metric", "criterion", "motivation");
+        var sortValues = List.of("lastTouch", "principle", "criterion", "motivation");
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 
-        var metricTests = criterionMetricService.getCriterionMetricsWithSearch(search, sort, order, page - 1, size, uriInfo);
+        var principleCriterion = principleCriterionService.getPrincipleCriterionWithSearch(search, sort, order, page - 1, size, uriInfo);
 
-        return Response.ok().entity(metricTests).build();
+        return Response.ok().entity(principleCriterion).build();
     }
 
-    public static class PageableCriterionMetricResponse extends PageResource<CriterionMetricResponseDto> {
+    public static class PageablePrincipleCriterionResponse extends PageResource<PrincipleCriterionResponseDto> {
 
-        private List<CriterionMetricResponseDto> content;
+        private List<PrincipleCriterionResponseDto> content;
 
         @Override
-        public List<CriterionMetricResponseDto> getContent() {
+        public List<PrincipleCriterionResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<CriterionMetricResponseDto> content) {
-            this.content = content;
-        }
+        public void setContent(List<PrincipleCriterionResponseDto> content) {this.content = content;}
     }
 
 }
