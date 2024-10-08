@@ -141,17 +141,22 @@ public class RegistryActorService {
         if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
             throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
         }
-        Motivation motivation = motivationRepository.findById(motivationId);
-        RegistryActor actor = registryActorRepository.findById(actorId);
 
-        removeCriteria(actor, criterionActorRequest, resultMessages);
+        var motivation = motivationRepository.findById(motivationId);
+        var actor = registryActorRepository.findById(actorId);
+
+        removeCriteria(motivation, actor, criterionActorRequest, resultMessages);
+
         criterionActorRequest.stream().iterator().forEachRemaining(req -> {
             var imperative = imperativeRepository.findById(req.imperativeId);
             var principleCriterionJunction = principleCriterionRepository.findCriterion(req.criterionId, motivation.getId());
+
             if (principleCriterionJunction.isEmpty()) {
                 resultMessages.add("criterion with id :: " + req.criterionId + " is not related to principles");
             } else {
+
                 var criterion = principleCriterionJunction.get().getCriterion();
+
                 if (!criterionActorRepository.existsByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1)) {
                     actor.addCriterion(motivation, criterion, imperative, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
                     resultMessages.add("criterion with id :: " + criterion.getId() + " successfully added to actor");
@@ -160,16 +165,18 @@ public class RegistryActorService {
                 }
             }
         });
+
         registryActorRepository.persist(actor);
+
         return resultMessages;
     }
 
-    private void removeCriteria(RegistryActor actor, Set<CriterionActorRequest> request, List<String> resultMessages) {
+    private void removeCriteria(Motivation motivation, RegistryActor actor, Set<CriterionActorRequest> request, List<String> resultMessages) {
         List<String> criterionList = new ArrayList<>();
         request.iterator().forEachRemaining(req -> {
             criterionList.add(req.criterionId);
         });
-        actor.getCriteria().iterator().forEachRemaining(ac -> {
+        criterionActorRepository.fetchCriteriaByMotivationAndActor(motivation.getId(), actor.getId()).iterator().forEachRemaining(ac -> {
             if (!criterionList.contains(ac.getCriterion().getId())) {
                 criterionActorRepository.delete(ac);
                 resultMessages.add("criterion with id : " + ac.getCriterion().getId() + " removed from actor");

@@ -12,6 +12,7 @@ import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -42,6 +43,21 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
 
         return pageable;
     }
+
+
+    /**
+     * Retrieves a list of Criteria by Actor and Motivation.
+     *
+     * @return A list of Motivations objects representing the Criteria in the requested page.
+     */
+    public List<CriterionActorJunction> fetchCriteriaByMotivationAndActor(String motivationId, String actorId) {
+
+        var panache = find("SELECT DISTINCT c FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 ", motivationId, actorId);
+
+        return panache.list();
+
+    }
+
 
     public boolean existsByMotivationAndActorAndCriterion(String motivationId, String actorId, String criterionId, Integer lodMAV) {
         return find(
