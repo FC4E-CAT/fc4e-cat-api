@@ -1,5 +1,6 @@
 package org.grnet.cat.api.registry;
 
+import com.mysql.cj.log.Log;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -18,6 +19,7 @@ import org.grnet.cat.services.registry.RelationsService;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 import static io.restassured.RestAssured.given;
 import static io.smallrye.common.constraint.Assert.assertTrue;
@@ -548,6 +550,68 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertEquals(response.code,  404);
+    }
+    @Test
+    public void updateCriterionImperativeNotFound() {
+
+        register("admin");
+        var request = new CriterionRequest();
+
+        request.cri = "C100";
+        request.label = "Minimum Operations";
+        request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
+        request.imperative = "pid_graph:BED209B9";
+        request.typeCriterion = "pid_graph:A2719B92";
+
+        var criterionResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/registry/criteria")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CriterionResponse.class);
+
+        var motivationActor = new MotivationActorRequest();
+        motivationActor.actorId = "pid_graph:1A718108";
+        motivationActor.relation = "dcterms:isRequiredBy";
+        MotivationActorRequest[] array = new MotivationActorRequest[1];
+        array[0]=motivationActor;
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors", "pid_graph:3E109BBA")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        var criterionActor = new CriterionActorRequest();
+        criterionActor.criterionId = criterionResponse.id;
+        criterionActor.imperativeId = "notfound";
+        CriterionActorRequest[] array1 = new CriterionActorRequest[1];
+        array1[0]=criterionActor;
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array1)
+                .contentType(ContentType.JSON)
+                .put("/{id}/actors/{actor-id}/criteria", "pid_graph:C6B2D50E","pid_graph:1A718108")
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals ("There is no Imperative  with the following id: notfound", response.message);
     }
 
     @Test
