@@ -13,6 +13,7 @@ import org.grnet.cat.repositories.Repository;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -58,6 +59,12 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
 
     }
 
+    public Optional<CriterionActorJunction> findByMotivationAndActorAndCriterion(String motivationId, String actorId, String criterionId, Integer lodMAV) {
+        return find(
+                "FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 AND c.id.criterionId = ?3 AND  c.id.lodCAV = ?4",
+                motivationId, actorId, criterionId, lodMAV
+        ).firstResultOptional();
+    }
 
     public boolean existsByMotivationAndActorAndCriterion(String motivationId, String actorId, String criterionId, Integer lodMAV) {
         return find(
