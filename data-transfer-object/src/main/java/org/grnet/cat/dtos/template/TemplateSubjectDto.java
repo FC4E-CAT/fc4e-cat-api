@@ -24,7 +24,7 @@ public class TemplateSubjectDto {
             description = "The subject id.",
             example = "id"
     )
-    public String id;
+    public String id = "";
 
     @Schema(
             type = SchemaType.STRING,
@@ -32,7 +32,7 @@ public class TemplateSubjectDto {
             description = "The subject name.",
             example = "name"
     )
-    public String name;
+    public String name = "";
 
     @Schema(
             type = SchemaType.STRING,
@@ -40,5 +40,5 @@ public class TemplateSubjectDto {
             description = "The subject type.",
             example = "type"
     )
-    public String type;
+    public String type = "";
 }

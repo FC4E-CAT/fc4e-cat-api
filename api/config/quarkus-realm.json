@@ -1044,6 +1044,22 @@
             "icon_uri": ""
           },
           {
+            "name": "Read Template By Motivation and Actor",
+            "ownerManagedAccess": false,
+            "displayName": "Read Template By Motivation and Actor",
+            "attributes": {},
+            "_id": "02e85c4c-ae0b-4a9e-b211-583ebbe2c622",
+            "uris": [
+              "/v1/templates/by-motivation/{motivation-id}/by-actor/{actor-id}"
+            ],
+            "scopes": [
+              {
+                "name": "cat.template.by.type.actor.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "User Resource",
             "ownerManagedAccess": false,
             "displayName": "",
@@ -1188,6 +1204,19 @@
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
               "resources": "[\"Read Template By Type and Actor\"]",
+              "scopes": "[\"cat.template.by.type.actor.read\"]",
+              "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "233836ad-46b6-40fd-9423-305acaaeb8b7",
+            "name": "Read Template By Motivation and Actor",
+            "description": "Read Template By Motivation and Actor",
+            "type": "scope",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Read Template By Motivation and Actor\"]",
               "scopes": "[\"cat.template.by.type.actor.read\"]",
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }

@@ -6,7 +6,6 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(name="MotivationActorResponse", description="This object represents a MotivationActorJunction item.")
-
 public class MotivationActorResponse {
 
     @Schema(

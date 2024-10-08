@@ -3,7 +3,7 @@ package org.grnet.cat.mappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.template.TemplateDto;
-import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.dtos.registry.template.TemplateResponse;
 import org.grnet.cat.dtos.template.TemplateRequest;
 import org.grnet.cat.entities.Template;
 import org.mapstruct.IterableMapping;

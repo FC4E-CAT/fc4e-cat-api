@@ -4,12 +4,19 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.grnet.cat.dtos.registry.template.RegistryTemplateActorDto;
+import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
+import org.grnet.cat.dtos.registry.template.RegistryTemplateMotivationDto;
 import org.grnet.cat.dtos.template.TemplateActorDto;
 import org.grnet.cat.dtos.template.TemplateAssessmentTypeDto;
+import org.grnet.cat.dtos.template.TemplateOrganisationDto;
 import org.grnet.cat.dtos.template.TemplateRequest;
-import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.dtos.registry.template.TemplateResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.template.TemplateResultDto;
+import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Actor;
 import org.grnet.cat.entities.AssessmentType;
 import org.grnet.cat.exceptions.ConflictException;
@@ -18,6 +25,17 @@ import org.grnet.cat.mappers.TemplateMapper;
 import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.repositories.TemplateRepository;
+import org.grnet.cat.dtos.registry.template.CriNode;
+import org.grnet.cat.dtos.registry.template.MetricNode;
+import org.grnet.cat.dtos.registry.template.Node;
+import org.grnet.cat.dtos.registry.template.PriNode;
+import org.grnet.cat.dtos.registry.template.TestNode;
+import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @ApplicationScoped
@@ -37,6 +55,12 @@ public class TemplateService {
 
     @Inject
     ActorRepository actorRepository;
+    
+    @Inject
+    RegistryActorRepository registryActorRepository;
+    
+    @Inject
+    MotivationRepository motivationRepository;
 
     public TemplateResponse getTemplateByActorAndType(Long actorId, Long typeId) {
 
@@ -149,5 +173,67 @@ public class TemplateService {
         var templates = templateRepository.fetchTemplatesByActor(page, size, actorId);
 
         return new PageResource<>(templates, TemplateMapper.INSTANCE.templatesToDto(templates.list()), uriInfo);
+    }
+
+    public RegistryTemplateDto buildTemplate(String motivationId, String actorId) {
+        
+        var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(()->new NotFoundException("There is no Motivation with the following id : "+motivationId));
+        var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(()->new NotFoundException("There is no Actor with the following id : "+actorId));
+        
+        var template = new RegistryTemplateDto();
+
+        var list = templateRepository.fetchTemplateByMotivationAndActor(motivationId, actorId);
+
+        var priMap = new HashMap<String, PriNode>();
+        var criMap = new HashMap<String, CriNode>();
+        var mtrMap = new HashMap<String, MetricNode>();
+        var testMap = new HashMap<String, TestNode>();
+
+
+        for (var row : list) {
+
+            // Same logic as before to build the hierarchy
+            Node priNode = priMap.computeIfAbsent(row.getPRI(), k -> new PriNode(k, row.getLabelPrinciple(), row.getDescPrinciple()));
+            Node criNode = criMap.computeIfAbsent(row.getCRI(), k -> new CriNode(k, row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
+            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric(), row.getLabelBenchmarkType(), row.getValueBenchmark(), null, null));
+            Node testNode = testMap.computeIfAbsent(row.getTES(), k -> {
+
+                TestNode tn;
+
+                if(row.getLabelTestMethod().contains("Evidence")){
+
+                    tn = new TestNode(k, row.getLabelTest(), row.getDescTest(), row.getLabelTestMethod(), null, null,  new ArrayList<>());
+                } else {
+
+                    tn = new TestNode(k, row.getLabelTest(), row.getDescTest(), row.getLabelTestMethod(), null, null, null);
+                }
+
+                return tn;
+            });
+
+            if (!priNode.getChildren().contains(criNode)) {
+                priNode.addChild(criNode);
+            }
+            if (!criNode.getChildren().contains(mtrNode)) {
+                criNode.addChild(mtrNode);
+            }
+            if (!mtrNode.getChildren().contains(testNode)) {
+                mtrNode.addChild(testNode);
+            }
+        }
+
+        template.principles = new ArrayList<>(priMap.values());
+
+        template.actor = new RegistryTemplateActorDto(actor.getId(), actor.getLabelActor());
+
+        template.motivation = new RegistryTemplateMotivationDto(motivation.getId(), motivation.getLabel());
+
+        template.organisation = new TemplateOrganisationDto();
+
+        template.result = new TemplateResultDto();
+
+        template.subject = new TemplateSubjectDto();
+
+        return template;
     }
 }
