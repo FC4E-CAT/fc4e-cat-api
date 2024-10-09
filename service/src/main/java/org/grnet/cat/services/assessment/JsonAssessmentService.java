@@ -585,10 +585,12 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         keycloakAdminService.addEntitlementsToUser(user.getId(), ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
 
-        Assessment assessment = assessmentRepository.findById(assessmentId);
+        var assessment  = assessmentRepository.findById(assessmentId);
+        var activeUser  = userRepository.fetchActiveUserByEmail(email);
+        var userName    = activeUser.get().getName();
         assessment.setShared(true);
 
-        mailerService.sendMails(assessment, MailType.USER_ALERT_SHARED_ASSESSMENT, Collections.singletonList(email));
+        mailerService.sendMails(assessment, userName, MailType.USER_ALERT_SHARED_ASSESSMENT, Collections.singletonList(email));
     }
 
     /**
