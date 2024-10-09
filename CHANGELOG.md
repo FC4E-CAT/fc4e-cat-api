@@ -55,6 +55,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#296](https://github.com/FC4E-CAT/fc4e-cat-api/pull/296) CAT-541 When we try to update MotivationActor Criteria with empty list we get error.
 - [#298](https://github.com/FC4E-CAT/fc4e-cat-api/pull/298) CAT-539 Updating Criteria for specific MotivationActor items fails with 500
 - [#299](https://github.com/FC4E-CAT/fc4e-cat-api/pull/299) CAT-548 API: Updating MotivationActor with existing criteria (but changed imperatives) doesn't proceed
+- [#300](https://github.com/FC4E-CAT/fc4e-cat-api/pull/300) CAT-547 API: Updating Criteria for specific MotivationActor item doesn't change the imperative
 
 
 ## 1.7.0 - 2024-09-10
