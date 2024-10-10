@@ -43,6 +43,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#290](https://github.com/FC4E-CAT/fc4e-cat-api/pull/290) CAT-511 Create API Enpoints to List and Copy Relations for a Motivation
 - [#293](https://github.com/FC4E-CAT/fc4e-cat-api/pull/293) CAT-537 Implement GET /principles by Motivation API Endpoint
 - [#295](https://github.com/FC4E-CAT/fc4e-cat-api/pull/295) CAT-543 Implement Email Notification for User on Shared Assessment
+- [#304](https://github.com/FC4E-CAT/fc4e-cat-api/pull/304) CAT-558 Add Sorting, Ordering, and Search to GET motivations/{id}/principles Endpoint
 
 ### Fix
 
