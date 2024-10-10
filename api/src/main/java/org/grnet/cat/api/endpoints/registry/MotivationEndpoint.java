@@ -46,6 +46,7 @@ import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
+import org.grnet.cat.validators.SortAndOrderValidator;
 
 import java.util.HashSet;
 import java.util.List;
@@ -525,19 +526,46 @@ public class MotivationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
                 @PathParam("id")
                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                @Parameter(name = "search", in = QUERY,
+                        description = "The \"search\" parameter allows clients to search for matches in specific fields in the MetricTest entity.")
+                @QueryParam("search") String search,
+                @Parameter(name = "sort", in = QUERY,
+                        schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                        examples = {
+                                @ExampleObject(name = "Last Touch", value = "lastTouch"),
+                                @ExampleObject(name = "Label", value = "label"),
+                                @ExampleObject(name = "Pri", value = "pri")},
+                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
+                @DefaultValue("lastTouch")
+                @QueryParam("sort") String sort,
+                @Parameter(name = "order", in = QUERY,
+                        schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                        examples = {
+                                @ExampleObject(name = "Ascending", value = "ASC"),
+                                @ExampleObject(name = "Descending", value = "DESC")},
+                        description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
+                @DefaultValue("DESC")
+                @QueryParam("order") String order,
                 @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.")
-                @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+                        description = "Indicates the page number. Page number must be >= 1.")
+                @DefaultValue("1")
+                @Min(value = 1, message = "Page number must be >= 1.")
                 @QueryParam("page") int page,
                 @Parameter(name = "size", in = QUERY,
-                    description = "The page size.")
+                        description = "The page size.")
                 @DefaultValue("10")
                 @Min(value = 1, message = "Page size must be between 1 and 100.")
                 @Max(value = 100, message = "Page size must be between 1 and 100.")
                 @QueryParam("size") int size,
                 @Context UriInfo uriInfo) {
 
-        var principle = principleService.listPrinciplesByMotivation(id, page - 1, size, uriInfo);
+
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("lastTouch", "label", "pri");
+
+        SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
+
+        var principle = principleService.listPrinciplesByMotivation(id, search, sort, order, page - 1, size, uriInfo);
 
         return Response.ok().entity(principle).build();
     }
