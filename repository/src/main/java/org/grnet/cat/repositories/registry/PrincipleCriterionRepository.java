@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.CriterionActorJunction;
 import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.repositories.Repository;
@@ -86,7 +87,20 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
         return find("SELECT pc FROM PrincipleCriterionJunction pc WHERE pc.motivation.id = ?1", motivationId).list();
     }
 
+    public boolean existsByMotivationAndPrincipleAndCriterionAndVersion(String motivationId, String principleId, String criterionId, Integer lodPcV) {
+        return find("SELECT 1 FROM PrincipleCriterionJunction pc WHERE pc.id.motivationId = ?1 AND pc.id.principleId = ?2 AND pc.id.criterionId = ?3 AND pc.id.lodPcV = ?4", motivationId, principleId, criterionId, lodPcV)
+                .firstResultOptional()
+                .isPresent();
+    }
 
+    public Optional<PrincipleCriterionJunction> findByMotivationAndPrincipleAndCriterionAndVersion(String motivationId, String principleId, String criterionId, Integer lodPcV) {
+        return find("FROM PrincipleCriterionJunction pc WHERE pc.id.motivationId = ?1 AND pc.id.principleId = ?2 AND pc.id.criterionId = ?3 AND pc.id.lodPcV = ?4", motivationId, principleId, criterionId, lodPcV)
+                .firstResultOptional();
+    }
+
+    public void delete(PrincipleCriterionJunction pc) {
+        delete("FROM PrincipleCriterionJunction pc WHERE pc.motivation.id =?1 and pc.criterion.id =?2 and pc.principle.id =?3", pc.getMotivation().getId(), pc.getCriterion().getId(), pc.getPrinciple().getId());
+    }
 
 }
 

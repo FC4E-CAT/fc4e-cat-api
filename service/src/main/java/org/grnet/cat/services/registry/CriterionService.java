@@ -152,9 +152,8 @@ public class CriterionService {
      */
     public PageResource<PrincipleCriterionResponse> listCriteriaByMotivation(String motivationId, int page, int size, UriInfo uriInfo) {
 
-        var criteriaPage = criteriaRepository.fetchCriteriaByMotivationAndPage(motivationId,page, size);
+        var criteriaPage = criteriaRepository.fetchCriteriaByMotivationAndPage(motivationId, page, size);
         var criteriaDTOs = PrincipleCriterionMapper.INSTANCE.criteriaToDtos(criteriaPage.list());
         return new PageResource<>(criteriaPage, criteriaDTOs, uriInfo);
     }
-
 }

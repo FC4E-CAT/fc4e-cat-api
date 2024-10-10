@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
  */
 @Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class}, uses = ImperativeMapper.class)
 public interface PrincipleCriterionMapper {
+
     PrincipleCriterionMapper INSTANCE = Mappers.getMapper(PrincipleCriterionMapper.class);
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<PrincipleCriterionResponse> criteriaToDtos(List<Criterion> criteria);
-
 
     //@IterableMapping(qualifiedByName = "mapWithExpression")
     List<PrincipleResponseDto> principleToDtos(List<Principle> principle);
@@ -61,11 +61,4 @@ public interface PrincipleCriterionMapper {
     @Mapping(target = "motivationId", expression = "java(principleCriterion.getMotivation().getId())")
     @Mapping(target = "relationId", expression = "java(principleCriterion.getRelation().getId())")
     PrincipleCriterionResponseDto principleCriterionToDto(PrincipleCriterionJunction principleCriterion);
-
-
-
-
-
-
-
 }

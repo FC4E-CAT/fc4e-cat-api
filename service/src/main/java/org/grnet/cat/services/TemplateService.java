@@ -35,7 +35,6 @@ import org.grnet.cat.repositories.registry.RegistryActorRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 
 @ApplicationScoped
@@ -158,7 +157,6 @@ public class TemplateService {
         return new PageResource<>(templates, TemplateMapper.INSTANCE.templatesToDto(templates.list()), uriInfo);
     }
 
-
     /**
      * Retrieves a page of assessment templates for a specific type.
      *
@@ -189,13 +187,11 @@ public class TemplateService {
         var mtrMap = new HashMap<String, MetricNode>();
         var testMap = new HashMap<String, TestNode>();
 
-
         for (var row : list) {
 
-            // Same logic as before to build the hierarchy
             Node priNode = priMap.computeIfAbsent(row.getPRI(), k -> new PriNode(k, row.getLabelPrinciple(), row.getDescPrinciple()));
             Node criNode = criMap.computeIfAbsent(row.getCRI(), k -> new CriNode(k, row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
-            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric(), row.getLabelBenchmarkType(), row.getValueBenchmark(), null, null));
+            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric(), row.getLabelBenchmarkType(), Double.parseDouble(row.getValueBenchmark()), null, null));
             Node testNode = testMap.computeIfAbsent(row.getTES(), k -> {
 
                 TestNode tn;

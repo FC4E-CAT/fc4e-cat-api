@@ -34,7 +34,6 @@ public class PrincipleRepository implements Repository<Principle, String> {
         return pageable;
     }
 
-
     @Transactional
     public PageQuery<Principle> fetchPrincipleByMotivation(String motivationId, int page, int size) {
 
@@ -49,10 +48,6 @@ public class PrincipleRepository implements Repository<Principle, String> {
 
         return pageable;
     }
-
-
-
-
 
     public boolean notUnique(String name, String value) {
         String query = "select count(p) from Principle p where lower(p." + name + ") = lower(?1)";

@@ -38,8 +38,10 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
+import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.registry.*;
@@ -492,7 +494,7 @@ public class MotivationEndpoint {
             description = "List of Principles of a Motivation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageablePrincipleCriteriaJunctionResponse.class)))
+                    implementation = PageablePrincipleResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -861,6 +863,180 @@ public class MotivationEndpoint {
         return Response.ok().entity(informativeResponse).build();
     }
 
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Create a new relationship between motivation, principles and criteria.",
+            description = "Create a new relationship between motivation, principles and criteria.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/principles-criteria")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createNewPrinciplesCriteriaRelationship(@Parameter(
+            description = "The ID of the Motivation to assign Principles.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                 @PathParam("id")
+                                                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                 @NotEmpty(message = "Principles-Criteria list can not be empty.") Set<@Valid PrincipleCriterionRequest> request) {
+
+        var messages = motivationService.createNewPrinciplesCriteriaRelationship(id, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.messages = messages;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update an existing relationship between motivation, principles and criteria.",
+            description = "Update an existing relationship between motivation, principles and criteria.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/principles-criteria")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updatePrinciplesCriteriaRelationship(@Parameter(
+            description = "The ID of the Motivation to assign Principles.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                            @PathParam("id")
+                                                            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                            Set<@Valid PrincipleCriterionRequest> request) {
+
+        if(Objects.isNull(request)){
+
+            request = new HashSet<>();
+        }
+
+        var messages = motivationService.updatePrinciplesCriteriaRelationship(id, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.messages = messages;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get a list of relationships between motivation, principles and criteria.",
+            description = "Get a list of relationships between motivation, principles and criteria.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of relationships between motivation, principles and criteria.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageablePrincipleCriteriaJunctionResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/principles-criteria")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPrinciplesCriteriaRelationship(@Parameter(
+            description = "The ID of the Motivation to assign Principles.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("id")
+                                                         @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                      @Parameter(name = "page", in = QUERY,
+                                                              description = "Indicates the page number. Page number must be >= 1.")
+                                                      @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+                                                      @QueryParam("page") int page,
+                                                      @Parameter(name = "size", in = QUERY,
+                                                              description = "The page size.")
+                                                          @DefaultValue("10")
+                                                          @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                          @Max(value = 100, message = "Page size must be between 1 and 100.")
+                                                          @QueryParam("size") int size,
+                                                      @Context UriInfo uriInfo) {
+
+
+        var response = motivationService.getPrinciplesCriteriaRelationship(id, page-1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
     public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
 
         private List<MotivationResponse> content;
@@ -932,6 +1108,21 @@ public class MotivationEndpoint {
 
         @Override
         public void setContent(List<PrincipleCriterionResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageablePrincipleResponse extends PageResource<PrincipleResponseDto> {
+
+        private List<PrincipleResponseDto> content;
+
+        @Override
+        public List<PrincipleResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<PrincipleResponseDto> content) {
             this.content = content;
         }
     }
