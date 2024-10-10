@@ -21,7 +21,7 @@ public class MetricNode extends Node{
     private String type;
 
     @JsonProperty("benchmark_value")
-    private String benchmarkValue;
+    private Number benchmarkValue;
 
     private Number value;
 

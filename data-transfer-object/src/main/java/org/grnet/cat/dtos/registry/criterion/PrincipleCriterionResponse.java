@@ -14,6 +14,7 @@ import java.util.List;
 @Schema(name="PrincipleCriterionResponse", description="This object represents a PrincipleCriterionJunction item.")
 
 public class PrincipleCriterionResponse {
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

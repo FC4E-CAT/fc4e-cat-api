@@ -79,7 +79,8 @@ public class RegistryActorService {
      */
     @Transactional
     public List<String> addCriteria(String motivationId, String actorId, Set<CriterionActorRequest> criterionActorRequest, String userId) {
-        List<String> resultMessages = new ArrayList<>();
+
+        var resultMessages = new ArrayList<String>();
 
         if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
             throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
@@ -181,10 +182,10 @@ public class RegistryActorService {
     }
 
     private void removeCriteria(Motivation motivation, RegistryActor actor, Set<CriterionActorRequest> request, List<String> resultMessages) {
-        List<String> criterionList = new ArrayList<>();
-        request.iterator().forEachRemaining(req -> {
-            criterionList.add(req.criterionId);
-        });
+
+        var criterionList = new ArrayList<String>();
+
+        request.iterator().forEachRemaining(req -> criterionList.add(req.criterionId));
         criterionActorRepository.fetchCriteriaByMotivationAndActor(motivation.getId(), actor.getId()).iterator().forEachRemaining(ac -> {
             if (!criterionList.contains(ac.getCriterion().getId())) {
                 criterionActorRepository.delete(ac);
