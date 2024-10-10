@@ -112,7 +112,7 @@ public class MailerService {
         }
     }
 
-    public void sendMails(Assessment assessment, MailType type, List<String> mailAddrs) {
+    public void sendMails(Assessment assessment, String name, MailType type, List<String> mailAddrs) {
 
         HashMap<String, String> templateParams = new HashMap<>();
         templateParams.put("contactMail", contactMail);
@@ -128,6 +128,7 @@ public class MailerService {
             case USER_ALERT_SHARED_ASSESSMENT:
                 templateParams.put("assessmentUrl", uiBaseUrl + "/assessment/" + assessment.getId());
                 templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
+                templateParams.put("name", name);
                 templateParams.put("userrole", "User");
                 LOG.info("Template parameters: " + templateParams);
                 notifyUser(userSharedAssessmentTemplate, templateParams, mailAddrs, type);

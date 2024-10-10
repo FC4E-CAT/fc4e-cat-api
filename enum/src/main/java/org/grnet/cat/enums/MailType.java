@@ -110,6 +110,7 @@ public enum MailType {
                     .data("image4", templateParams.get("image4"))
                     .data("cat", templateParams.get("cat"))
                     .data("userrole", templateParams.get("userrole"))
+                    .data("name",templateParams.get("name"))
                     .data("contactMail", templateParams.get("contactMail"))
                     .render();
 
