@@ -30,4 +30,7 @@ public class MotivationType extends Registry {
 
     @Column(name = "lodTMT_V")
     private String lodTmtV;
+
+    @Column
+    private Boolean  verified;
 }

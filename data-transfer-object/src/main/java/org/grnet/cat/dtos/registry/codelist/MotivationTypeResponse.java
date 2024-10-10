@@ -73,4 +73,14 @@ public class MotivationTypeResponse{
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty(value = "version")
     public String lodTmtV;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The verified status of the motivation type.",
+            example = "TRUE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("verified")
+    public Boolean verified;
 }

@@ -112,6 +112,15 @@ public class TypeMetricResponseDto {
     )
     @JsonProperty("last_touch")
     public String lastTouch;
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The verified status of the metric type.",
+            example = "TRUE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("verified")
+    public Boolean verified;
 
     @Schema(
             type = SchemaType.ARRAY,

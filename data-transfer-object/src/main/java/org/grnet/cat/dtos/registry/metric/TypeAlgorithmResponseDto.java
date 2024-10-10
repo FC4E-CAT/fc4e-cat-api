@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.metric;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -84,6 +85,16 @@ public class TypeAlgorithmResponseDto {
     public Timestamp lastTouch;
 
     @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The verified status of the algorithm type.",
+            example = "TRUE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("verified")
+    public Boolean verified;
+
+    @Schema(
             type = SchemaType.ARRAY,
             implementation = MetricResponseDto.class,
             description = "List of related metrics",
@@ -91,4 +102,5 @@ public class TypeAlgorithmResponseDto {
     )
     @JsonProperty("metrics")
     public List<MetricResponseDto> metrics;
-}
+
+  }

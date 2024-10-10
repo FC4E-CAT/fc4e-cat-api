@@ -46,6 +46,8 @@ public class RegistryActor extends Registry {
 
     @Column(name = "lodMTV")
     private String lodMTV;
+    @Column
+    private Boolean  verified;
 
     @OneToMany(
             mappedBy = "actor",

@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.codelist;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -29,4 +30,14 @@ public class ImperativePartialResponse {
             example = "MAY")
     @JsonProperty(value="label")
     public String labelImperative;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The verified status of the imperative.",
+            example = "TRUE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("verified")
+    public Boolean verified;
 }
