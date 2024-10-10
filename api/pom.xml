@@ -15,7 +15,23 @@
         <junit.vintage.engine.version>5.10.0</junit.vintage.engine.version>
         <mockito.core.version>5.5.0</mockito.core.version>
     </properties>
-    <dependencies>  <dependency>
+    <dependencies>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-reactive</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jsonb</artifactId>
+        </dependency>
+        <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
     </dependency>
