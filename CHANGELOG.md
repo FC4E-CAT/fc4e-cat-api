@@ -25,13 +25,13 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ---
 ### Added
 
-- [#262](https://github.com/FC4E-CAT/fc4e-cat-api/pull/262) CAT-485: Metrics.
-- [#270](https://github.com/FC4E-CAT/fc4e-cat-api/pull/270) CAT-482 Tests.
-- [#271](https://github.com/FC4E-CAT/fc4e-cat-api/pull/271) CAT-483 Metrics & Tests.
+- [#262](https://github.com/FC4E-CAT/fc4e-cat-api/pull/262) CAT-485: Metrics
+- [#270](https://github.com/FC4E-CAT/fc4e-cat-api/pull/270) CAT-482 Tests
+- [#271](https://github.com/FC4E-CAT/fc4e-cat-api/pull/271) CAT-483 Metrics & Tests
 - [#269](https://github.com/FC4E-CAT/fc4e-cat-api/pull/269) CAT-476 Motivations and actors (motivation-actor relation).
-- [#268](https://github.com/FC4E-CAT/fc4e-cat-api/pull/268) CAT-480 Metrics & Metric Definintion.
+- [#268](https://github.com/FC4E-CAT/fc4e-cat-api/pull/268) CAT-480 Metrics & Metric Definintion
 - [#273](https://github.com/FC4E-CAT/fc4e-cat-api/pull/273) CAT-498 GET endpoints for motivation types.
-- [#276](https://github.com/FC4E-CAT/fc4e-cat-api/pull/276) CAT-499 Metric-Test Relations Table.
+- [#276](https://github.com/FC4E-CAT/fc4e-cat-api/pull/276) CAT-499 Metric-Test Relations Table
 - [#274](https://github.com/FC4E-CAT/fc4e-cat-api/pull/274) CAT-500 API: Get list of relations (codelist).
 - [#278](https://github.com/FC4E-CAT/fc4e-cat-api/pull/278) CAT-479 Criteria & actors.
 - [#283](https://github.com/FC4E-CAT/fc4e-cat-api/pull/283) CAT-504 Create API Endpoint to Assign Principles to a Motivation.
@@ -44,6 +44,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#293](https://github.com/FC4E-CAT/fc4e-cat-api/pull/293) CAT-537 Implement GET /principles by Motivation API Endpoint.
 - [#295](https://github.com/FC4E-CAT/fc4e-cat-api/pull/295) CAT-543 Implement Email Notification for User on Shared Assessment.
 - [#302](https://github.com/FC4E-CAT/fc4e-cat-api/pull/302) CAT-550 Add/Update Relationship: Principle-Criterion-Motivation in Database and Generate POST/PUT Endpoints.
+- [#304](https://github.com/FC4E-CAT/fc4e-cat-api/pull/304) CAT-558 Add Sorting, Ordering, and Search to GET motivations/{id}/principles Endpoint
 
 ### Fix
 
@@ -54,9 +55,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#289](https://github.com/FC4E-CAT/fc4e-cat-api/pull/289) CAT-516 Criteria items under motivation are represented with a bit different schema under two different GET calls - Missing criterion id.
 - [#292](https://github.com/FC4E-CAT/fc4e-cat-api/pull/292) CAT-538 Regression: Get /registry/motivation/{motivation_id}/criteria missing
 - [#296](https://github.com/FC4E-CAT/fc4e-cat-api/pull/296) CAT-541 When we try to update MotivationActor Criteria with empty list we get error.
-- [#298](https://github.com/FC4E-CAT/fc4e-cat-api/pull/298) CAT-539 Updating Criteria for specific MotivationActor items fails with 500.
-- [#299](https://github.com/FC4E-CAT/fc4e-cat-api/pull/299) CAT-548 API: Updating MotivationActor with existing criteria (but changed imperatives) doesn't proceed.
-- [#300](https://github.com/FC4E-CAT/fc4e-cat-api/pull/300) CAT-547 API: Updating Criteria for specific MotivationActor item doesn't change the imperative.
+- [#298](https://github.com/FC4E-CAT/fc4e-cat-api/pull/298) CAT-539 Updating Criteria for specific MotivationActor items fails with 500
+- [#299](https://github.com/FC4E-CAT/fc4e-cat-api/pull/299) CAT-548 API: Updating MotivationActor with existing criteria (but changed imperatives) doesn't proceed
+- [#300](https://github.com/FC4E-CAT/fc4e-cat-api/pull/300) CAT-547 API: Updating Criteria for specific MotivationActor item doesn't change the imperative
 
 
 ## 1.7.0 - 2024-09-10
@@ -88,7 +89,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#261](https://github.com/FC4E-CAT/fc4e-cat-api/pull/261) CAT-484 Codelist - Tables sync with Vocabulary service (GET Benchmark Type).
 - [#263](https://github.com/FC4E-CAT/fc4e-cat-api/pull/263) CAT-476 Motivations and actors - (GET Actor).
 - [#265](https://github.com/FC4E-CAT/fc4e-cat-api/pull/265) CAT-481 Criterion & Metrics.
-- [#276](https://github.com/FC4E-CAT/fc4e-cat-api/pull/276) CAT-499 Metric-Test Relations Table.
+- [#276](https://github.com/FC4E-CAT/fc4e-cat-api/pull/276) CAT-499 Metric-Test Relations Table
 
 ### Changed
 

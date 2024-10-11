@@ -112,9 +112,9 @@ public class PrincipleService {
 
 
     @Transactional
-    public PageResource<PrincipleResponseDto> listPrinciplesByMotivation(String motivationId, int page, int size, UriInfo uriInfo) {
+    public PageResource<PrincipleResponseDto> listPrinciplesByMotivation(String motivationId, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var principlePage = principleRepository.fetchPrincipleByMotivation(motivationId, page, size);
+        var principlePage = principleRepository.fetchPrincipleByMotivation(motivationId, search, sort, order, page, size);
         var principleDto = PrincipleCriterionMapper.INSTANCE.principleToDtos(principlePage.list());
 
         return new PageResource<>(principlePage, principleDto, uriInfo);

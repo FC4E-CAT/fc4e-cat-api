@@ -3,12 +3,15 @@ package org.grnet.cat.repositories.registry;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.Principle;
-import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
+import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.repositories.Repository;
+
+import java.util.HashMap;
+import java.util.StringJoiner;
 
 @ApplicationScoped
 public class PrincipleRepository implements Repository<Principle, String> {
@@ -35,15 +38,35 @@ public class PrincipleRepository implements Repository<Principle, String> {
     }
 
     @Transactional
-    public PageQuery<Principle> fetchPrincipleByMotivation(String motivationId, int page, int size) {
+    public PageQuery<Principle> fetchPrincipleByMotivation(String motivationId, String search, String sort, String order, int page, int size) {
 
-        var panache = find("SELECT pc.principle FROM PrincipleCriterionJunction pc WHERE pc.motivation.id = ?1", Sort.by("lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+        var joiner = new StringJoiner(StringUtils.SPACE);
+
+        joiner.add("select DISTINCT pri FROM PrincipleCriterionJunction cm")
+                .add("join cm.principle pri")
+                .add("where cm.motivation.id = :motivationId");
+
+        var map = new HashMap<String, Object>();
+        map.put("motivationId", motivationId);
+
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("and (pri.label LIKE :search")
+                    .add("or pri.description LIKE :search")
+                    .add("or pri.pri LIKE :search)");
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("ORDER BY pri." + sort + " " + order);
+
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Principle>();
         pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.count();
+        pageable.count = panache.list().stream().count();
         pageable.page = Page.of(page, size);
 
         return pageable;
