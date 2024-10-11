@@ -3,6 +3,7 @@ package org.grnet.cat.repositories.registry;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -11,9 +12,7 @@ import org.grnet.cat.entities.registry.CriterionActorJunction;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.repositories.Repository;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -28,15 +27,23 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
      */
     public PageQuery<CriterionActorJunction> fetchCriteriaByMotivationAndActorAndPage(String motivationId, String actorId, int page, int size) {
 
-        var panache = find("SELECT DISTINCT c FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 ", motivationId, actorId).page(page, size);
+        var joiner = new StringJoiner(StringUtils.SPACE);
 
-        var sortedResults = panache.list()
-                .stream()
-                .sorted(Comparator.comparing(c -> c.getCriterion().getCri()))
-                .collect(Collectors.toList());
+        joiner.add("select DISTINCT ca FROM CriterionActorJunction ca")
+                .add("join ca.criterion c")
+                .add("join ca.motivation m")
+                .add("join ca.actor a")
+                .add("where ca.motivation.id = :motivationId")
+                .add("and ca.actor.id = :actorId");
+
+        var map = new HashMap<String, Object>();
+        map.put("motivationId", motivationId);
+        map.put("actorId", actorId);
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<CriterionActorJunction>();
-        pageable.list = sortedResults;
+        pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
         pageable.count = panache.count();

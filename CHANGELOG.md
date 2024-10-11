@@ -45,6 +45,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#295](https://github.com/FC4E-CAT/fc4e-cat-api/pull/295) CAT-543 Implement Email Notification for User on Shared Assessment.
 - [#302](https://github.com/FC4E-CAT/fc4e-cat-api/pull/302) CAT-550 Add/Update Relationship: Principle-Criterion-Motivation in Database and Generate POST/PUT Endpoints.
 - [#304](https://github.com/FC4E-CAT/fc4e-cat-api/pull/304) CAT-558 Add Sorting, Ordering, and Search to GET motivations/{id}/principles Endpoint
+- [#306](https://github.com/FC4E-CAT/fc4e-cat-api/pull/306) CAT-560 Motivation Name and Actor Name in Motivation/Criteria api call
+
 
 ### Fix
 
