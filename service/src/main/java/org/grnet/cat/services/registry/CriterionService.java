@@ -10,17 +10,24 @@ import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
+import org.grnet.cat.dtos.registry.template.MetricNode;
+import org.grnet.cat.dtos.registry.template.Node;
+import org.grnet.cat.dtos.registry.template.TestNode;
 import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.TypeCriterion;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.CriteriaMapper;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
+import org.grnet.cat.repositories.registry.CriterionMetricRepository;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
 import org.jboss.logging.Logger;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 @ApplicationScoped
@@ -34,6 +41,9 @@ public class CriterionService {
 
     @Inject
     TypeCriterionRepository typeCriterionRepository;
+
+    @Inject
+    CriterionMetricRepository criterionMetricRepository;
 
     private static final Logger LOG = Logger.getLogger(CriterionService.class);
 
@@ -155,5 +165,39 @@ public class CriterionService {
         var criteriaPage = criteriaRepository.fetchCriteriaByMotivationAndPage(motivationId, page, size);
         var criteriaDTOs = PrincipleCriterionMapper.INSTANCE.criteriaToDtos(criteriaPage.list());
         return new PageResource<>(criteriaPage, criteriaDTOs, uriInfo);
+    }
+
+    /**
+     * Retrieves a detailed Motivation Criterion, including the Metric and associated Metric Tests, by its Motivation ID and Criterion ID.
+     *
+     * @param motivationId the ID of the Motivation.
+     * @param criterionId the ID of the Motivation Criterion to retrieve.
+     * @return the Motivation Criterion if found.
+     * @throws NotFoundException if the Motivation Criterion is not found.
+     */
+    public DetailedCriterionDto getMotivationCriterion(String motivationId, String criterionId) {
+
+        criterionMetricRepository.fetchCriterionMetricByMotivationAndCriterion(motivationId, criterionId).orElseThrow(()-> new NotFoundException("Not Found Criterion."));
+
+        var cri = criteriaRepository.fetchMotivationCriterion(motivationId, criterionId);
+
+        var mtrMap = new HashMap<String, MetricNode>();
+        var testMap = new HashMap<String, TestNode>();
+
+        for (var row : cri) {
+
+            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric().trim(), row.getLabelBenchmarkType(), Double.parseDouble(row.getValueBenchmark())));
+            Node testNode = testMap.computeIfAbsent(row.getTES(), k -> new TestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), row.getTestQuestion(), row.getTestParams(), row.getToolTip()));
+
+            if (!mtrNode.getChildren().contains(testNode)) {
+                mtrNode.addChild(testNode);
+            }
+        }
+
+        var detailed = new DetailedCriterionDto();
+
+        detailed.metrics =  new ArrayList<>(mtrMap.values());
+
+        return detailed;
     }
 }

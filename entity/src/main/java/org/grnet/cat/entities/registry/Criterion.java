@@ -12,6 +12,27 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+@SqlResultSetMapping(
+        name = "detailed-criterion",
+        classes = @ConstructorResult(
+                targetClass = CriterionProjection.class,
+                columns = {
+                        @ColumnResult(name = "lodMTR", type = String.class),
+                        @ColumnResult(name = "MTR", type = String.class),
+                        @ColumnResult(name = "labelMetric", type = String.class),
+                        @ColumnResult(name = "TES", type = String.class),
+                        @ColumnResult(name = "labelTest", type = String.class),
+                        @ColumnResult(name = "descTest", type = String.class),
+                        @ColumnResult(name = "valueBenchmark", type = String.class),
+                        @ColumnResult(name = "labelBenchmarkType", type = String.class),
+                        @ColumnResult(name = "labelTestMethod", type = String.class),
+                        @ColumnResult(name = "testQuestion", type = String.class),
+                        @ColumnResult(name = "testParams", type = String.class),
+                        @ColumnResult(name = "toolTip", type = String.class)
+
+                }
+        )
+)
 @Entity
 @Getter
 @Setter

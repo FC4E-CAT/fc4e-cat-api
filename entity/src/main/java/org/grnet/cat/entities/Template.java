@@ -32,7 +32,10 @@ import java.sql.Timestamp;
                         @ColumnResult(name = "labelBenchmarkType", type = String.class),
                         @ColumnResult(name = "lodActor", type = String.class),
                         @ColumnResult(name = "labelImperative", type = String.class),
-                        @ColumnResult(name = "labelTestMethod", type = String.class)
+                        @ColumnResult(name = "labelTestMethod", type = String.class),
+                        @ColumnResult(name = "testQuestion", type = String.class),
+                        @ColumnResult(name = "testParams", type = String.class),
+                        @ColumnResult(name = "toolTip", type = String.class)
                 }
         )
 )

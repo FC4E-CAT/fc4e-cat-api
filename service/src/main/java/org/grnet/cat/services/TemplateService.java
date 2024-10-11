@@ -26,10 +26,10 @@ import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.dtos.registry.template.CriNode;
-import org.grnet.cat.dtos.registry.template.MetricNode;
+import org.grnet.cat.dtos.registry.template.TemplateMetricNode;
 import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.dtos.registry.template.PriNode;
-import org.grnet.cat.dtos.registry.template.TestNode;
+import org.grnet.cat.dtos.registry.template.TemplateTestNode;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 
@@ -184,24 +184,24 @@ public class TemplateService {
 
         var priMap = new HashMap<String, PriNode>();
         var criMap = new HashMap<String, CriNode>();
-        var mtrMap = new HashMap<String, MetricNode>();
-        var testMap = new HashMap<String, TestNode>();
+        var mtrMap = new HashMap<String, TemplateMetricNode>();
+        var testMap = new HashMap<String, TemplateTestNode>();
 
         for (var row : list) {
 
             Node priNode = priMap.computeIfAbsent(row.getPRI(), k -> new PriNode(k, row.getLabelPrinciple(), row.getDescPrinciple()));
             Node criNode = criMap.computeIfAbsent(row.getCRI(), k -> new CriNode(k, row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
-            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric(), row.getLabelBenchmarkType(), Double.parseDouble(row.getValueBenchmark()), null, null));
+            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new TemplateMetricNode(k, row.getLabelMetric().trim(), row.getLabelBenchmarkType().trim(), Double.parseDouble(row.getValueBenchmark())));
             Node testNode = testMap.computeIfAbsent(row.getTES(), k -> {
 
-                TestNode tn;
+                TemplateTestNode tn;
 
                 if(row.getLabelTestMethod().contains("Evidence")){
 
-                    tn = new TestNode(k, row.getLabelTest(), row.getDescTest(), row.getLabelTestMethod(), null, null,  new ArrayList<>());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), row.getTestParams(), row.getToolTip());
                 } else {
 
-                    tn = new TestNode(k, row.getLabelTest(), row.getDescTest(), row.getLabelTestMethod(), null, null, null);
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), row.getTestParams(), row.getToolTip());
                 }
 
                 return tn;

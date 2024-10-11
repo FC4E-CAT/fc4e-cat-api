@@ -35,6 +35,7 @@ import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
+import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
@@ -42,6 +43,7 @@ import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.registry.*;
@@ -723,6 +725,12 @@ public class MotivationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -756,7 +764,6 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(criteria).build();
     }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -1061,6 +1068,64 @@ public class MotivationEndpoint {
 
 
         var response = motivationService.getPrinciplesCriteriaRelationship(id, page-1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get the Metrics and associated Metric Tests of a Criterion.",
+            description = "Returns the Metrics and associated Metric Tests of a Criterion.")
+    @APIResponse(
+            responseCode = "200",
+            description = "the Metrics and associated Metric Tests of a Criterion.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = DetailedCriterionDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/criteria/{criterion-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getCriterionByMotivation(
+            @Parameter(description = "The ID of the Motivation to get Criterion.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+            @Parameter(description = "The ID of the Criterion.",
+                    required = true,
+                    example = "pid_graph:1F4D6BEF",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("criterion-id")
+            @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String criterionId) {
+
+        var response = criterionService.getMotivationCriterion(id, criterionId);
 
         return Response.ok().entity(response).build();
     }

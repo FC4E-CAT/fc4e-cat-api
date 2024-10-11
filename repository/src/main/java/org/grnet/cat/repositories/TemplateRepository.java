@@ -99,7 +99,6 @@ public class TemplateRepository implements Repository<Template, Long> {
         return optional.orElseThrow(()-> new NotFoundException("There is no template for an actor : "+actorId));
     }
 
-
     @SuppressWarnings("unchecked")
     public List<RegistryTemplateProjection> fetchTemplateByMotivationAndActor(String motivationId, String actorId){
 
@@ -121,7 +120,10 @@ public class TemplateRepository implements Repository<Template, Long> {
                 "        tb.labelBenchmarkType,\n" +
                 "        ca.actor_lodActor as lodActor,\n" +
                 "        i.labelImperative,\n"+
-                "        tm.labelTestMethod\n"+
+                "        tm.labelTestMethod,\n"+
+                "        td.testQuestion,\n"+
+                "        td.testParams,\n"+
+                "        td.toolTip\n"+
                 "    FROM\n" +
                 "        t_Type_Benchmark tb \n" +
                 "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
