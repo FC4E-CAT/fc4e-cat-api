@@ -32,7 +32,7 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
 
         var sortedResults = panache.list()
                 .stream()
-                .sorted(Comparator.comparing(c -> c.getCriterion().getCri())) // Adjust 'getCri()' to the actual method
+                .sorted(Comparator.comparing(c -> c.getCriterion().getCri()))
                 .collect(Collectors.toList());
 
         var pageable = new PageQueryImpl<CriterionActorJunction>();
