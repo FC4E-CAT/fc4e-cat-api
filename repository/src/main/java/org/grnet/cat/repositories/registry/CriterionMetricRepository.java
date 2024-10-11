@@ -13,6 +13,7 @@ import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -82,15 +83,7 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
         return pageable;
     }
 
-    @Transactional
-    public List<CriterionMetricJunction> fetchCriterionMetricByMotivation(String motivationId) {
-        return find("SELECT c FROM CriterionMetricJunction c WHERE c.motivation.id = ?1", motivationId).list();
-    }
-
-    public boolean existsByMotivationAndMetricAndCriterion(String motivationId, String metricId, String criterionId, Integer lodMcV) {
-        return find(
-                "SELECT 1 FROM CriterionMetricJunction cm WHERE cm.motivation.id = ?1 AND cm.metric.id = ?2 AND cm.criterion.id = ?3 AND cm.id.lodMcV = ?4",
-                motivationId, metricId, criterionId, lodMcV
-        ).firstResultOptional().isPresent();
+    public Optional<CriterionMetricJunction> fetchCriterionMetricByMotivationAndCriterion(String motivationId, String criterionId) {
+        return find("SELECT c FROM CriterionMetricJunction c WHERE c.id.motivationId = ?1 AND c.id.criterionId = ?2", motivationId, criterionId).firstResultOptional();
     }
 }

@@ -8,19 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class RegistryTemplateProjection {
-
-    private String PRI;
-
-    private String labelPrinciple;
-
-    private String descPrinciple;
-
-    private String CRI;
-
-    private String labelCriterion;
-
-    private String descCriterion;
+public class CriterionProjection {
 
     private String lodMTR;
 
@@ -37,10 +25,6 @@ public class RegistryTemplateProjection {
     private String valueBenchmark;
 
     private String labelBenchmarkType;
-
-    private String lodActor;
-
-    private String labelImperative;
 
     private String labelTestMethod;
 
