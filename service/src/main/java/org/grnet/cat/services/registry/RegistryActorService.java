@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
+import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.registry.Motivation;
@@ -115,7 +116,7 @@ public class RegistryActorService {
      * @param uriInfo The Uri Info.
      * @return A list of CriteriaActorJunctionResponse objects representing the submitted Criteria in the requested page.
      */
-    public PageResource<PrincipleCriterionResponse> getCriteriaByMotivationActorAndPage(String motivationId, String actorId, int page, int size, UriInfo uriInfo) {
+    public PageResource<CriterionActorResponse> getCriteriaByMotivationActorAndPage(String motivationId, String actorId, int page, int size, UriInfo uriInfo) {
 
         if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
             throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
@@ -123,7 +124,7 @@ public class RegistryActorService {
 
         var criteriaActor = criterionActorRepository.fetchCriteriaByMotivationAndActorAndPage(motivationId, actorId, page, size);
 
-        return new PageResource<>(criteriaActor, CriterionActorMapper.INSTANCE.toPrincipleCriterionResponseList(criteriaActor.list()), uriInfo);
+        return new PageResource<>(criteriaActor, CriterionActorMapper.INSTANCE.toCriterionActorResponseList(criteriaActor.list()), uriInfo);
     }
 
     /**
