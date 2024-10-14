@@ -46,7 +46,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#302](https://github.com/FC4E-CAT/fc4e-cat-api/pull/302) CAT-550 Add/Update Relationship: Principle-Criterion-Motivation in Database and Generate POST/PUT Endpoints.
 - [#304](https://github.com/FC4E-CAT/fc4e-cat-api/pull/304) CAT-558 Add Sorting, Ordering, and Search to GET motivations/{id}/principles Endpoint.
 - [#305](https://github.com/FC4E-CAT/fc4e-cat-api/pull/305) CAT-563 Returns the Metrics and associated Metric Tests of a Criterion.
-- [#306](https://github.com/FC4E-CAT/fc4e-cat-api/pull/306) CAT-560 Motivation Name and Actor Name in Motivation/Criteria api call
+- [#306](https://github.com/FC4E-CAT/fc4e-cat-api/pull/306) CAT-560 Motivation Name and Actor Name in Motivation/Criteria api call.
 
 
 ### Fix
@@ -61,6 +61,12 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#298](https://github.com/FC4E-CAT/fc4e-cat-api/pull/298) CAT-539 Updating Criteria for specific MotivationActor items fails with 500.
 - [#299](https://github.com/FC4E-CAT/fc4e-cat-api/pull/299) CAT-548 API: Updating MotivationActor with existing criteria (but changed imperatives) doesn't proceed.
 - [#300](https://github.com/FC4E-CAT/fc4e-cat-api/pull/300) CAT-547 API: Updating Criteria for specific MotivationActor item doesn't change the imperative.
+
+### Changed
+
+- [#307](https://github.com/FC4E-CAT/fc4e-cat-api/pull/307) CAT-565 Template Response to Use Object Metric Instead of Array of Metrics.
+
+
 
 
 ## 1.7.0 - 2024-09-10

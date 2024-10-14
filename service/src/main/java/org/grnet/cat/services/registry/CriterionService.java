@@ -196,7 +196,9 @@ public class CriterionService {
 
         var detailed = new DetailedCriterionDto();
 
-        detailed.metrics =  new ArrayList<>(mtrMap.values());
+        var mtr = mtrMap.values().stream().findFirst();
+
+        detailed.metric = mtr.orElse(null);
 
         return detailed;
     }

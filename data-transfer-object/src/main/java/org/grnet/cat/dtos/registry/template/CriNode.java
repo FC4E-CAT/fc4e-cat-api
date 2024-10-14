@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.template;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
@@ -22,8 +23,14 @@ public class CriNode extends Node{
 
     private String imperative;
 
-    @JsonProperty("metric")
+    @JsonIgnore
     public List<Node> getChildren() {
         return super.getChildren();
+    }
+
+    @JsonProperty("metric")
+    public Node getMetric(){
+
+        return getChildren().get(0);
     }
 }

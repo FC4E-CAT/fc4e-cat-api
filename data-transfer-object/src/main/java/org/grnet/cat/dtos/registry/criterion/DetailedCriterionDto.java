@@ -15,5 +15,5 @@ import java.util.List;
 @Schema(name = "DetailedCriterionDto", description = "This object represents the Metrics and associated Metric Tests of a Criterion.")
 public class DetailedCriterionDto {
 
-    public List<Node> metrics;
+    public Node metric;
 }
