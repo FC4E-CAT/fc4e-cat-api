@@ -14,6 +14,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,9 +45,11 @@ public interface PrincipleCriterionMapper {
 
     @Named("mapPrinciples")
     default List<PrinciplePartialResponse> mapPrinciples(Set<PrincipleCriterionJunction> principles) {
+
         return principles.stream()
                 .map(this::mapPrinciple)
                 .distinct()
+                .sorted(Comparator.comparing(e -> Integer.parseInt(e.pri.substring(1))))
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +57,6 @@ public interface PrincipleCriterionMapper {
     @Mapping(target = "id",  expression = "java(principleJunction.getPrinciple().getId())")  // Ignore the id field here as well
     @Mapping(target = "pri", expression = "java(principleJunction.getPrinciple().getPri())")
     @Mapping(target = "label", expression = "java(principleJunction.getPrinciple().getLabel())")
-
     PrinciplePartialResponse mapPrinciple(PrincipleCriterionJunction principleJunction);
 
     @Mapping(target = "principleId", expression = "java(principleCriterion.getPrinciple().getId())")
