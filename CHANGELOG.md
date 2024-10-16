@@ -22,6 +22,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 
+## 1.8.0 - 2024-10-16
 ---
 ### Added
 
@@ -62,6 +63,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#299](https://github.com/FC4E-CAT/fc4e-cat-api/pull/299) CAT-548 API: Updating MotivationActor with existing criteria (but changed imperatives) doesn't proceed.
 - [#300](https://github.com/FC4E-CAT/fc4e-cat-api/pull/300) CAT-547 API: Updating Criteria for specific MotivationActor item doesn't change the imperative.
 - [#314](https://github.com/FC4E-CAT/fc4e-cat-api/pull/314) CAT-576 API: Pagination issue in Motivation Principles call.
+- [#315](https://github.com/FC4E-CAT/fc4e-cat-api/pull/315) CAT-577: Duplicate Principle Entries in Response on GET /motivation/{id}/criteria.
+
 
 ### Changed
 
