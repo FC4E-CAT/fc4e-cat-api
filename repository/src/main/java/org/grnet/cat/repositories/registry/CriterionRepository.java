@@ -11,6 +11,7 @@ import org.grnet.cat.entities.registry.CriterionProjection;
 import org.grnet.cat.entities.registry.RegistryTemplateProjection;
 import org.grnet.cat.repositories.Repository;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
@@ -59,7 +60,7 @@ public class CriterionRepository implements Repository<Criterion, String> {
         var joiner = new StringJoiner(StringUtils.SPACE);
 
         joiner.add("select DISTINCT c FROM Criterion c")
-                .add("join c.principles pc")
+                .add("join fetch c.principles pc")
                 .add("join pc.principle p")
                 .add("where pc.motivation.id = :motivationId");
 
@@ -68,11 +69,25 @@ public class CriterionRepository implements Repository<Criterion, String> {
 
         var panache = find(joiner.toString(), map).page(page, size);
 
+        var counter = new StringJoiner(StringUtils.SPACE);
+
+        counter.add("select count(DISTINCT c) FROM Criterion c")
+                .add("join c.principles pc")
+                .add("join pc.principle p")
+                .add("where pc.motivation.id = :motivationId");
+
+        var count = (Long) getEntityManager().createQuery(counter.toString()).setParameter("motivationId", motivationId).getSingleResult();
+
         var pageable = new PageQueryImpl<Criterion>();
-        pageable.list = panache.list();
+
+        var list = panache.list();
+
+        list.sort(Comparator.comparing((Criterion e) -> Integer.parseInt(e.getCri().substring(1))));
+
+        pageable.list = list;
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.count();
+        pageable.count = count;
         pageable.page = Page.of(page, size);
 
         return pageable;
