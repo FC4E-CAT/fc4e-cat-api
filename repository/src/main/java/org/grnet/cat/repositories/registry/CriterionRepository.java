@@ -2,6 +2,7 @@ package org.grnet.cat.repositories.registry;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -10,7 +11,9 @@ import org.grnet.cat.entities.registry.CriterionProjection;
 import org.grnet.cat.entities.registry.RegistryTemplateProjection;
 import org.grnet.cat.repositories.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.StringJoiner;
 
 @ApplicationScoped
 public class CriterionRepository implements Repository<Criterion, String> {
@@ -52,9 +55,18 @@ public class CriterionRepository implements Repository<Criterion, String> {
      * @return A list of Motivations objects representing the Criteria in the requested page.
      */
     public PageQuery<Criterion> fetchCriteriaByMotivationAndPage(String motivationId, int page, int size) {
-        var panache = find("SELECT DISTINCT pri.criterion FROM PrincipleCriterionJunction pri WHERE pri.motivation.id = ?1",
-               Sort.ascending("pri.criterion.cri"), motivationId)
-                .page(page, size);
+
+        var joiner = new StringJoiner(StringUtils.SPACE);
+
+        joiner.add("select DISTINCT c FROM Criterion c")
+                .add("join c.principles pc")
+                .add("join pc.principle p")
+                .add("where pc.motivation.id = :motivationId");
+
+        var map = new HashMap<String, Object>();
+        map.put("motivationId", motivationId);
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Criterion>();
         pageable.list = panache.list();
