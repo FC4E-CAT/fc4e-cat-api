@@ -66,7 +66,7 @@ public class PrincipleRepository implements Repository<Principle, String> {
         pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.list().stream().count();
+        pageable.count = panache.count();
         pageable.page = Page.of(page, size);
 
         return pageable;
