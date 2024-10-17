@@ -26,7 +26,6 @@ import org.grnet.cat.repositories.registry.ImperativeRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
 import org.jboss.logging.Logger;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
