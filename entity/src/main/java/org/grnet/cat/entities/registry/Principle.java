@@ -39,6 +39,9 @@ public class Principle extends Registry {
     @Column(name = "lodPRI_V")
     private String lodPriV;
 
+    @Column(name = "lodMTV")
+    private String lodMTV;
+
     @OneToMany(
             mappedBy = "principle",
             cascade = CascadeType.ALL,

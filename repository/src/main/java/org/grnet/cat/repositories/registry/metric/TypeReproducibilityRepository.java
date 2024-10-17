@@ -21,7 +21,7 @@ public class TypeReproducibilityRepository implements Repository<TypeReproducibi
 
     public PageQuery<TypeReproducibility> fetchTypeReproducibilityByPage(int page, int size){
 
-        var panache = find("from TypeReproducibility", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from TypeReproducibility", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<TypeReproducibility>();
         pageable.list = panache.list();

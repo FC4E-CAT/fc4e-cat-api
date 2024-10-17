@@ -1,5 +1,7 @@
 package org.grnet.cat.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Location;
@@ -8,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
@@ -51,6 +54,11 @@ public class MailerService {
     @Inject
     @Location("admin_created_validation.html")
     Template adminCreatedValidationTemplate;
+
+
+    @Inject
+    @Location("shared_assessment_notification")
+    Template userSharedAssessmentTemplate;
     private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     @Inject
@@ -103,6 +111,34 @@ public class MailerService {
                 break;
         }
     }
+
+    public void sendMails(Assessment assessment, String name, MailType type, List<String> mailAddrs) {
+
+        HashMap<String, String> templateParams = new HashMap<>();
+        templateParams.put("contactMail", contactMail);
+        templateParams.put("image", serviceUrl + "/v1/images/logo.png");
+        templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
+        templateParams.put("image2", serviceUrl + "/v1/images/logo-grnet.png");
+        templateParams.put("image3", serviceUrl + "/v1/images/logo-datacite.png");
+        templateParams.put("image4", serviceUrl + "/v1/images/logo-gwdg.png");
+        templateParams.put("cat", uiBaseUrl);
+        templateParams.put("title", apiName.toUpperCase());
+
+        switch (type) {
+            case USER_ALERT_SHARED_ASSESSMENT:
+                templateParams.put("assessmentUrl", uiBaseUrl + "/assessment/" + assessment.getId());
+                templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
+                templateParams.put("name", name);
+                templateParams.put("userrole", "User");
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(userSharedAssessmentTemplate, templateParams, mailAddrs, type);
+                break;
+            default:
+                break;
+        }
+    }
+
+
 
     public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
 
@@ -167,6 +203,25 @@ public class MailerService {
             return new CompletableFuture<U>().completeAsync(supplier);
         }
     }
+
+    private String extractAssessmentName(String assessmentDocJson) {
+        var mapper = new ObjectMapper();
+        String assessmentName = null;
+
+        try {
+            var assessmentDocNode = mapper.readTree(assessmentDocJson);
+            if (assessmentDocNode.has("name")) {
+                assessmentName = assessmentDocNode.get("name").asText();
+            } else {
+                LOG.warn("The 'name' field was not found in the assessment document.");
+            }
+        } catch (Exception e) {
+            LOG.error("Error parsing assessment document JSON: ", e);
+        }
+
+        return assessmentName;
+    }
+
 
 //    private String mapMailTitleByInstance() {
 //        String replacement = serviceUrl.replace("https://", "").replace("http://", "").replace("argo.grnet.gr", "").replace(".", " ").replace(":8080","").replace("/","").replace("api","").toUpperCase();

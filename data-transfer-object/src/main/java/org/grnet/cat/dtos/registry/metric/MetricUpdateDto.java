@@ -16,7 +16,7 @@ public class MetricUpdateDto {
             description = "The Metric code.",
             example = "MTR001"
     )
-    @JsonProperty("MTR")
+    @JsonProperty("mtr")
     public String MTR;
 
     @Schema(
@@ -45,12 +45,11 @@ public class MetricUpdateDto {
     )
     @JsonProperty("url")
     public String urlMetric;
-
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The associated Type Algorithm ID.",
-            example = "pid_graph:12345678"
+            example = "pid_graph:682883EA"
     )
     @NotFoundEntity(repository = TypeAlgorithmRepository.class, message = "There is no Algorithm Type with the following id:")
     @JsonProperty("type_algorithm_id")
@@ -60,7 +59,7 @@ public class MetricUpdateDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The associated Type Metric ID.",
-            example = "pid_graph:87654321"
+            example = "pid_graph:8720C485"
     )
     @NotFoundEntity(repository = TypeMetricRepository.class, message = "There is no Metric Type with the following id:")
     @JsonProperty("type_metric_id")

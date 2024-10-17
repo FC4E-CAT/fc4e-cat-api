@@ -4,11 +4,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
+import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
@@ -70,7 +72,6 @@ public class PrincipleService {
         return PrincipleMapper.INSTANCE.principleToDto(principle);
     }
 
-
     /**
      * Updates an existing principle item.
      *
@@ -83,6 +84,13 @@ public class PrincipleService {
     public PrincipleResponseDto update(String id, PrincipleUpdateDto principleUpdateDto, String userId) {
 
         var principle = principleRepository.findById(id);
+
+        if(StringUtils.isNotEmpty(principleUpdateDto.pri)){
+
+            if (principleRepository.notUnique("pri", principleUpdateDto.pri.toUpperCase())) {
+                throw new UniqueConstraintViolationException("pri", principleUpdateDto.pri.toUpperCase());
+            }
+        }
 
         PrincipleMapper.INSTANCE.updatePrinciple(principleUpdateDto,principle);
 
@@ -100,6 +108,21 @@ public class PrincipleService {
     public boolean delete(String id) {
         return principleRepository.deleteById(id);
     }
+
+
+
+    @Transactional
+    public PageResource<PrincipleResponseDto> listPrinciplesByMotivation(String motivationId, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
+
+        var principlePage = principleRepository.fetchPrincipleByMotivation(motivationId, search, sort, order, page, size);
+        var principleDto = PrincipleCriterionMapper.INSTANCE.principleToDtos(principlePage.list());
+
+        return new PageResource<>(principlePage, principleDto, uriInfo);
+
+    }
+
+
+
 
     @Transactional
     public void deleteAll() {

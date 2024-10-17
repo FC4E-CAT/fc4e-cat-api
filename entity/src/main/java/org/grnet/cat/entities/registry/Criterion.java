@@ -12,6 +12,27 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+@SqlResultSetMapping(
+        name = "detailed-criterion",
+        classes = @ConstructorResult(
+                targetClass = CriterionProjection.class,
+                columns = {
+                        @ColumnResult(name = "lodMTR", type = String.class),
+                        @ColumnResult(name = "MTR", type = String.class),
+                        @ColumnResult(name = "labelMetric", type = String.class),
+                        @ColumnResult(name = "TES", type = String.class),
+                        @ColumnResult(name = "labelTest", type = String.class),
+                        @ColumnResult(name = "descTest", type = String.class),
+                        @ColumnResult(name = "valueBenchmark", type = String.class),
+                        @ColumnResult(name = "labelBenchmarkType", type = String.class),
+                        @ColumnResult(name = "labelTestMethod", type = String.class),
+                        @ColumnResult(name = "testQuestion", type = String.class),
+                        @ColumnResult(name = "testParams", type = String.class),
+                        @ColumnResult(name = "toolTip", type = String.class)
+
+                }
+        )
+)
 @Entity
 @Getter
 @Setter
@@ -69,6 +90,13 @@ public class Criterion extends Registry {
             orphanRemoval = true
     )
     private Set<CriterionMetricJunction> metrics = new HashSet<>();
+    @OneToMany(
+            mappedBy = "criterion",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<CriterionActorJunction> actors = new HashSet<>();
 
     public void addMetric(Motivation motivation, Metric metric, Relation relation, String motivationX, Integer lodMcV) {
 
@@ -90,5 +118,21 @@ public class Criterion extends Registry {
                 criterionMetric.setMetric(null);
             }
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Set<CriterionActorJunction> getActors() {
+        return actors;
+    }
+
+    public Set<PrincipleCriterionJunction> getPrinciples() {
+        return principles;
+    }
+
+    public @NotNull String getCri() {
+        return cri;
     }
 }

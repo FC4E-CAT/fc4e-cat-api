@@ -13,7 +13,7 @@ public class TemplateOrganisationDto {
             example = "00tjv0s33"
     )
     @JsonProperty("id")
-    public String id;
+    public String id = "";
 
     @Schema(
             type = SchemaType.STRING,
@@ -22,5 +22,5 @@ public class TemplateOrganisationDto {
             example = "Keimyung University"
     )
     @JsonProperty("name")
-    public String name;
+    public String name = "";
 }

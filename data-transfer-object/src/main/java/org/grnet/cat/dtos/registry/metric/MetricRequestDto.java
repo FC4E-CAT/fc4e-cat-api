@@ -17,8 +17,8 @@ public class MetricRequestDto {
             required = true,
             example = "MTR001"
     )
-    @JsonProperty("MTR")
-    @NotEmpty(message = "MTR may not be empty.")
+    @JsonProperty("mtr")
+    @NotEmpty(message = "mtr may not be empty.")
     public String MTR;
 
     @Schema(
@@ -57,7 +57,7 @@ public class MetricRequestDto {
             implementation = String.class,
             description = "The ID of the Type Algorithm associated with this metric",
             required = true,
-            example = "pid_graph:TAL1234"
+            example = "pid_graph:2050775C"
     )
     @NotEmpty(message = "type_algorithm_id may not be empty.")
     @NotFoundEntity(repository = TypeAlgorithmRepository.class, message = "There is no Algorithm Type with the following id:")

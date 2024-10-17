@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity(name = "MotivationPrincipleJunction")
@@ -46,7 +47,7 @@ public class MotivationPrincipleJunction extends Registry{
     @NotNull
     private String motivationX;
 
-    public MotivationPrincipleJunction(Motivation motivation, Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV) {
+    public MotivationPrincipleJunction(Motivation motivation, Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV, String populatedBy, Timestamp lastTouch) {
 
         this.motivation = motivation;
         this.principle = principle;
@@ -55,6 +56,8 @@ public class MotivationPrincipleJunction extends Registry{
         this.annotationText = annotationText;
         this.relation = relation;
         this.id = new MotivationPrincipleId(motivation.getId(), principle.getId(), lodMpV);
+        this.setPopulatedBy(populatedBy);
+        this.setLastTouch(lastTouch);
     }
     public MotivationPrincipleJunction() {
     }

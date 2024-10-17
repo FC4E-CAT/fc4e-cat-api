@@ -1,17 +1,12 @@
 package org.grnet.cat.entities.registry;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity(name = "PrincipleCriterionJunction")
@@ -80,5 +75,9 @@ public class PrincipleCriterionJunction extends Registry{
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Criterion getCriterion() {
+        return criterion;
     }
 }

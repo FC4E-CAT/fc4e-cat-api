@@ -1,19 +1,24 @@
 package org.grnet.cat.entities.registry;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
+import org.grnet.cat.entities.registry.metric.Metric;
+
+import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 @Entity
 @Table(name = "t_Actor")
 @Getter
 @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class RegistryActor extends Registry {
     @Id
     @RegistryId
@@ -39,4 +44,60 @@ public class RegistryActor extends Registry {
     @Column(name = "lodACT_V")
     private String lodACTV;
 
+    @Column(name = "lodMTV")
+    private String lodMTV;
+
+    @OneToMany(
+            mappedBy = "actor",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<MotivationActorJunction> motivations = new HashSet<>();
+
+    @OneToMany(
+            mappedBy = "actor",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<CriterionActorJunction> criteria = new HashSet<>();
+
+    public void addCriterion(Motivation motivation, Criterion criterion, Imperative imperative, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
+        var criterionActor = new CriterionActorJunction(motivation, criterion, this, imperative, motivationX, lastTouch, populatedBy, lodMAV);
+        criteria.add(criterionActor);
+        criterionActor.getActor().criteria.add(criterionActor);
+    }
+
+    public void removeCriterion(Criterion criterion) {
+        for (Iterator<CriterionActorJunction> iterator = criteria.iterator();
+             iterator.hasNext(); ) {
+            var actorCriterion = iterator.next();
+
+            if (actorCriterion.getActor().equals(this) &&
+                    actorCriterion.getCriterion().equals(criterion)) {
+                actorCriterion.getCriterion().getActors().remove(this);
+                iterator.remove();
+
+            }
+        }
+    }
+    public String getId() {
+        return id;
+    }
+
+    public Set<MotivationActorJunction> getMotivations() {
+        return motivations;
+    }
+
+    public Set<CriterionActorJunction> getCriteria() {
+        return criteria;
+    }
+
+    public String getLodMTV() {
+        return lodMTV;
+    }
+
+    public void setLodMTV(String lodMTV) {
+        this.lodMTV = lodMTV;
+    }
 }

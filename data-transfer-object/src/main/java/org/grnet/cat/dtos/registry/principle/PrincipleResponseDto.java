@@ -1,12 +1,13 @@
 package org.grnet.cat.dtos.registry.principle;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.sql.Timestamp;
 
-@Schema(name="PrincipleResponseDto", description="This object represents a principle item.")
+@Schema(name="PrincipleResponse", description="This object represents a principle item.")
 public class PrincipleResponseDto {
 
     @Schema(
@@ -62,4 +63,14 @@ public class PrincipleResponseDto {
     )
     @JsonProperty("last_touch")
     public String lastTouch;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Motivation id",
+            example = "pid_graph:3E109B2E"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(value = "motivation_id")
+    public String lodMTV;
 }

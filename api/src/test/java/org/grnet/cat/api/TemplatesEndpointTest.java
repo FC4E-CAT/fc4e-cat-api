@@ -5,7 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.TemplatesEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.template.TemplateResponse;
+import org.grnet.cat.dtos.registry.template.TemplateResponse;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;

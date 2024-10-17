@@ -21,7 +21,7 @@ public class TypeBenchmarkRepository implements Repository<TypeBenchmark, String
      */
     public PageQuery<TypeBenchmark> fetchTypeBenchmarksByPage(int page, int size){
 
-        var panache = find("from TypeBenchmark", Sort.by("lastTouch", Sort.Direction.Descending)).page(page, size);
+        var panache = find("from TypeBenchmark", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
 
         var pageable = new PageQueryImpl<TypeBenchmark>();
         pageable.list = panache.list();

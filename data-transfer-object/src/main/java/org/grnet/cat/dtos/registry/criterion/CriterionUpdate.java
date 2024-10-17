@@ -19,7 +19,7 @@ public class CriterionUpdate {
             description = "The Criterion's code identifier.",
             example = "C1"
     )
-    @JsonProperty("CRI")
+    @JsonProperty("cri")
     public String cri;
 
     @Schema(
@@ -55,7 +55,7 @@ public class CriterionUpdate {
             description = "The Type ID of the Criterion.",
             example = "pid_graph:4A47BB1A"
     )
-    @JsonProperty("type_criterion")
+    @JsonProperty("type_criterion_id")
     public String typeCriterion;
 
     @Schema(

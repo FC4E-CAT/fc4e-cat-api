@@ -38,7 +38,7 @@
     <apache.common3.version>3.12.0</apache.common3.version>
     <vavr.version>0.10.4</vavr.version>
     <pivovarit.version>1.5.1</pivovarit.version>
-    <revision>1.6.0</revision>
+    <revision>1.8.0</revision>
     <json.simple.version>1.1.1</json.simple.version>
     <json.schema.validator>1.0.72</json.schema.validator>
   </properties>

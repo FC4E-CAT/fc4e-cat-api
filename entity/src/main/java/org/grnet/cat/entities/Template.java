@@ -2,6 +2,7 @@ package org.grnet.cat.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import org.grnet.cat.entities.registry.RegistryTemplateProjection;
 
 import java.sql.Timestamp;
 
@@ -9,6 +10,35 @@ import java.sql.Timestamp;
  * This entity represents the Template table in database.
  *
  */
+
+@SqlResultSetMapping(
+        name = "registry-template",
+        classes = @ConstructorResult(
+                targetClass = RegistryTemplateProjection.class,
+                columns = {
+                        @ColumnResult(name = "PRI", type = String.class),
+                        @ColumnResult(name = "labelPrinciple", type = String.class),
+                        @ColumnResult(name = "descPrinciple", type = String.class),
+                        @ColumnResult(name = "CRI", type = String.class),
+                        @ColumnResult(name = "labelCriterion", type = String.class),
+                        @ColumnResult(name = "descCriterion", type = String.class),
+                        @ColumnResult(name = "lodMTR", type = String.class),
+                        @ColumnResult(name = "MTR", type = String.class),
+                        @ColumnResult(name = "labelMetric", type = String.class),
+                        @ColumnResult(name = "TES", type = String.class),
+                        @ColumnResult(name = "labelTest", type = String.class),
+                        @ColumnResult(name = "descTest", type = String.class),
+                        @ColumnResult(name = "valueBenchmark", type = String.class),
+                        @ColumnResult(name = "labelBenchmarkType", type = String.class),
+                        @ColumnResult(name = "lodActor", type = String.class),
+                        @ColumnResult(name = "labelImperative", type = String.class),
+                        @ColumnResult(name = "labelTestMethod", type = String.class),
+                        @ColumnResult(name = "testQuestion", type = String.class),
+                        @ColumnResult(name = "testParams", type = String.class),
+                        @ColumnResult(name = "toolTip", type = String.class)
+                }
+        )
+)
 @Entity
 public class Template {
 

@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -36,7 +37,7 @@ public class Motivation extends Registry {
     @NotNull
     private String mtv;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lodTMT", referencedColumnName = "lodTMT")
     private MotivationType motivationType;
 
@@ -62,25 +63,34 @@ public class Motivation extends Registry {
     )
     private Set<MotivationPrincipleJunction> principles = new HashSet<>();
 
-    public void addPrinciple(Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV) {
+    @OneToMany(
+            mappedBy = "motivation",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Set<MotivationActorJunction> actors = new HashSet<>();
 
-        var principleMotivation = new MotivationPrincipleJunction(this, principle, annotationText, annotationURL,relation, motivationX, lodMpV);
+    public void addPrinciple(Principle principle, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV, String populatedBy, Timestamp lastTouch) {
+
+        var principleMotivation = new MotivationPrincipleJunction(this, principle, annotationText, annotationURL, relation, motivationX, lodMpV, populatedBy, lastTouch);
         principles.add(principleMotivation);
         principle.getMotivations().add(principleMotivation);
     }
 
-    public void removePrinciple(Principle principle) {
-        for (Iterator<MotivationPrincipleJunction> iterator = principles.iterator();
-             iterator.hasNext(); ) {
-            var motivationPrinciple = iterator.next();
+    public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
 
-            if (motivationPrinciple.getMotivation().equals(this) &&
-                    motivationPrinciple.getPrinciple().equals(principle)) {
-                iterator.remove();
-                motivationPrinciple.getPrinciple().getMotivations().remove(motivationPrinciple);
-                motivationPrinciple.setMotivation(null);
-                motivationPrinciple.setPrinciple(null);
-            }
-        }
+        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch);
+        actors.add(actorMotivation);
+        actorMotivation.getMotivation().actors.add(actorMotivation);
+
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

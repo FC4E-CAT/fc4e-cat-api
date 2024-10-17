@@ -40,6 +40,18 @@ public class PrincipleEndpointTest extends KeycloakTest {
                 .as(PrincipleResponseDto.class);
 
         assertEquals(response.pri, principle.pri);
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(principle)
+                .contentType(ContentType.JSON)
+                .delete("/{id}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
     }
 
     @Test
@@ -92,8 +104,9 @@ public class PrincipleEndpointTest extends KeycloakTest {
 
         var principleUpdated = new PrincipleRequestDto();
         principleUpdated.description = "principle description updated";
-        principleUpdated.pri = "P60";
         principleUpdated.label = "Principle 2";
+        principleUpdated.pri = "110";
+
         var responseUpdated = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
@@ -106,9 +119,20 @@ public class PrincipleEndpointTest extends KeycloakTest {
                 .extract()
                 .as(PrincipleResponseDto.class);
 
-        assertEquals(responseUpdated.pri, principleUpdated.pri);
         assertEquals(responseUpdated.description, principleUpdated.description);
         assertEquals(responseUpdated.label, principleUpdated.label);
+        assertEquals(responseUpdated.pri, principleUpdated.pri);
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .delete("/{id}", response.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
     }
 
     @Test

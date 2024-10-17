@@ -23,7 +23,7 @@ public class TypeCriterionResponse {
             description = "The Type Criterion.",
             example = " Best Practice"
     )
-    @JsonProperty(value = "labelTypeCriterion")
+    @JsonProperty(value = "label")
     public String labelTypeCriterion;
 
     @Schema(
@@ -32,7 +32,7 @@ public class TypeCriterionResponse {
             description = "The Type Criterion Description.",
             example = "A method or technique that has been generally accepted as superior to alternatives either because it produces results that are better or because it has become a standard way of doing things"
     )
-    @JsonProperty(value = "descTypeCriterion")
+    @JsonProperty(value = "description")
     public String descTypeCriterion;
 
     @Schema(
@@ -41,16 +41,15 @@ public class TypeCriterionResponse {
             description = "The Type Criterion URL.",
             example = "https://www.wikidata.org/wiki/Q830382"
     )
-    @JsonProperty(value = "urlTypeCriterion")
+    @JsonProperty(value = "url")
 
     public String urlTypeCriterion;
 
     @Schema(description = "Version of the TypeCriterion",
             example = "1.0")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty(value = "lod_tcr_v")
+    @JsonProperty(value = "version")
     public String lodTCRV;
-
 
     @Schema(
             type = SchemaType.STRING,
