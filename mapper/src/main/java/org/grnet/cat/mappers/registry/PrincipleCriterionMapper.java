@@ -1,8 +1,6 @@
 package org.grnet.cat.mappers.registry;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.dtos.registry.CriterionMetricResponseDto;
-import org.grnet.cat.dtos.registry.MetricTestResponseDto;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
@@ -49,7 +47,6 @@ public interface PrincipleCriterionMapper {
         return principles.stream()
                 .map(this::mapPrinciple)
                 .distinct()
-                .sorted(Comparator.comparing(e -> Integer.parseInt(e.pri.substring(1))))
                 .collect(Collectors.toList());
     }
 

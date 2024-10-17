@@ -8,10 +8,8 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Criterion;
 import org.grnet.cat.entities.registry.CriterionProjection;
-import org.grnet.cat.entities.registry.RegistryTemplateProjection;
 import org.grnet.cat.repositories.Repository;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
@@ -80,11 +78,7 @@ public class CriterionRepository implements Repository<Criterion, String> {
 
         var pageable = new PageQueryImpl<Criterion>();
 
-        var list = panache.list();
-
-        list.sort(Comparator.comparing((Criterion e) -> Integer.parseInt(e.getCri().substring(1))));
-
-        pageable.list = list;
+        pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
         pageable.count = count;

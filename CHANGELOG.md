@@ -21,16 +21,26 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 -   `Deprecated` for soon-to-be removed features.
 
 ## Unreleased
+---
+
+## 1.8.1 - 2024-10-17
+---
+
+### Removed
+
+- [#320](https://github.com/FC4E-CAT/fc4e-cat-api/pull/320) CAT-579 Remove criteria ordering logic based on unique names.
+
 
 ## 1.8.0 - 2024-10-16
 ---
+
 ### Added
 
-- [#262](https://github.com/FC4E-CAT/fc4e-cat-api/pull/262) CAT-485: Metrics
-- [#270](https://github.com/FC4E-CAT/fc4e-cat-api/pull/270) CAT-482 Tests
-- [#271](https://github.com/FC4E-CAT/fc4e-cat-api/pull/271) CAT-483 Metrics & Tests
+- [#262](https://github.com/FC4E-CAT/fc4e-cat-api/pull/262) CAT-485: Metrics.
+- [#270](https://github.com/FC4E-CAT/fc4e-cat-api/pull/270) CAT-482 Tests.
+- [#271](https://github.com/FC4E-CAT/fc4e-cat-api/pull/271) CAT-483 Metrics & Tests.
 - [#269](https://github.com/FC4E-CAT/fc4e-cat-api/pull/269) CAT-476 Motivations and actors (motivation-actor relation).
-- [#268](https://github.com/FC4E-CAT/fc4e-cat-api/pull/268) CAT-480 Metrics & Metric Definintion
+- [#268](https://github.com/FC4E-CAT/fc4e-cat-api/pull/268) CAT-480 Metrics & Metric Definition.
 - [#273](https://github.com/FC4E-CAT/fc4e-cat-api/pull/273) CAT-498 GET endpoints for motivation types.
 - [#276](https://github.com/FC4E-CAT/fc4e-cat-api/pull/276) CAT-499 Metric-Test Relations Table
 - [#274](https://github.com/FC4E-CAT/fc4e-cat-api/pull/274) CAT-500 API: Get list of relations (codelist).
