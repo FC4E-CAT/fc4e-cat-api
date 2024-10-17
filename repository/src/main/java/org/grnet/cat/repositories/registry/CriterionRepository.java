@@ -80,11 +80,7 @@ public class CriterionRepository implements Repository<Criterion, String> {
 
         var pageable = new PageQueryImpl<Criterion>();
 
-        var list = panache.list();
-
-        list.sort(Comparator.comparing((Criterion e) -> Integer.parseInt(e.getCri().substring(1))));
-
-        pageable.list = list;
+        pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
         pageable.count = count;
