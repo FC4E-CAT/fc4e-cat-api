@@ -8,10 +8,8 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Criterion;
 import org.grnet.cat.entities.registry.CriterionProjection;
-import org.grnet.cat.entities.registry.RegistryTemplateProjection;
 import org.grnet.cat.repositories.Repository;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
