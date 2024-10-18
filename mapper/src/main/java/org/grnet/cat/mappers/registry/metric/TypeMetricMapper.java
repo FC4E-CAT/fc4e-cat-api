@@ -19,6 +19,7 @@ public interface TypeMetricMapper {
 
     @Named("map")
     @Mapping(target = "typeReproducibilityId", expression = "java(typeMetric.getTypeReproducibility().getId())")
+    @Mapping(target = "metrics", ignore = true)
     TypeMetricResponseDto typeMetricToDto(TypeMetric typeMetric);
 
     @IterableMapping(qualifiedByName = "map")

@@ -34,6 +34,8 @@ public interface MotivationMapper {
     @Mapping(target = "lodMtvP", ignore = true)
     @Mapping(target = "lodMtvV", ignore = true)
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+    @Mapping(target = "principles", ignore = true)
+    @Mapping(target = "actors", ignore = true)
     Motivation dtoToMotivation(MotivationRequest request);
 
     @Named("map")
@@ -53,6 +55,8 @@ public interface MotivationMapper {
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "motivationType", ignore = true)
+    @Mapping(target = "principles", ignore = true)
+    @Mapping(target = "actors", ignore = true)
     void updateMotivationFromDto(UpdateMotivationRequest request, @MappingTarget Motivation motivation);
 
     @Named("actors")

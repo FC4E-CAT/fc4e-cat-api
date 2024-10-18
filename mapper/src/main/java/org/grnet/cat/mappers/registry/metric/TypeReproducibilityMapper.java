@@ -16,6 +16,7 @@ public interface TypeReproducibilityMapper {
 
     TypeReproducibilityMapper INSTANCE = Mappers.getMapper(TypeReproducibilityMapper.class);
     @Named("map")
+    @Mapping(target = "typeMetrics", ignore = true)
     TypeReproducibilityResponseDto typeReproducibilityToDto(TypeReproducibility typeReproducibility);
 
     @IterableMapping(qualifiedByName = "map")

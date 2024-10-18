@@ -28,6 +28,9 @@ public interface PrincipleMapper {
     @Mapping(target = "lodPriV", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "motivations", ignore = true)
+    @Mapping(target = "criteria", ignore = true)
     Principle principleToEntity(PrincipleRequestDto principleRequestDto);
 
     @Mapping(target = "pri", expression = "java(StringUtils.isNotEmpty(request.pri) ? request.pri : principle.getPri())")
@@ -37,5 +40,8 @@ public interface PrincipleMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lodPriV", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "motivations", ignore = true)
+    @Mapping(target = "criteria", ignore = true)
     void updatePrinciple(PrincipleUpdateDto request, @MappingTarget Principle principle);
 }

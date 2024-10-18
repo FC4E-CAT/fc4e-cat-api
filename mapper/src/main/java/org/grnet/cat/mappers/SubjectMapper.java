@@ -12,12 +12,13 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
  * The SubjectMapper is responsible for mapping Subject entities to DTOs and vice versa.
  */
-@Mapper(imports = StringUtils.class)
+@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, Instant.class})
 public interface SubjectMapper {
 
     SubjectMapper INSTANCE = Mappers.getMapper(SubjectMapper.class );
@@ -25,6 +26,7 @@ public interface SubjectMapper {
     @Mapping(target = "subjectId", source = "id")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdOn", expression = "java(Timestamp.from(Instant.now()))")
     Subject dtoToSubject(SubjectRequest request);
 
     @Named("map")
@@ -37,5 +39,7 @@ public interface SubjectMapper {
     @Mapping(target = "name", expression = "java(StringUtils.isNotEmpty(request.name) ? request.name : subject.getName())")
     @Mapping(target = "type", expression = "java(StringUtils.isNotEmpty(request.type) ? request.type : subject.getType())")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
     void updateSubjectFromDto(UpdateSubjectRequestDto request, @MappingTarget Subject subject);
 }

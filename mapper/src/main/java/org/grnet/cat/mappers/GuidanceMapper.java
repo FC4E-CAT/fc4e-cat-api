@@ -10,12 +10,13 @@ import org.grnet.cat.entities.Subject;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
  * The GuidanceMapper is responsible for mapping Guidance entities to DTOs and vice versa.
  */
-@Mapper(imports = StringUtils.class)
+@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, Instant.class})
 public interface GuidanceMapper {
 
     GuidanceMapper INSTANCE = Mappers.getMapper(GuidanceMapper.class);
@@ -28,6 +29,11 @@ public interface GuidanceMapper {
 
     @Mapping(target = "uuid", expression = "java(guidanceRequestDto.uuid.toUpperCase())")
     @Mapping(target = "gdn", expression = "java(guidanceRequestDto.gdn.toUpperCase())")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdOn", expression = "java(Timestamp.from(Instant.now()))" )
+    @Mapping(target = "modifiedOn", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
     Guidance guidanceToEntity(GuidanceRequestDto guidanceRequestDto);
 
     @Mapping(target = "uuid", expression = "java(StringUtils.isNotEmpty(request.uuid) ? request.uuid : guidance.getUuid())")
@@ -35,5 +41,10 @@ public interface GuidanceMapper {
     @Mapping(target = "label", expression = "java(StringUtils.isNotEmpty(request.label) ? request.label : guidance.getLabel())")
     @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : guidance.getDescription())")
     @Mapping(target = "statusCode", expression = "java(StringUtils.isNotEmpty(request.statusCode) ? request.statusCode : guidance.getStatusCode())")
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "modifiedOn", expression = "java(Timestamp.from(Instant.now()))")
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "id", ignore = true)
     void updateGuidance(GuidanceUpdateDto request, @MappingTarget Guidance guidance);
 }

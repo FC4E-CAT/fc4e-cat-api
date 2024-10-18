@@ -76,7 +76,6 @@ public class GuidanceService {
 
         var guidance = GuidanceMapper.INSTANCE.guidanceToEntity(guidanceRequestDto);
 
-        guidance.setCreatedOn(Timestamp.from(Instant.now()));
         guidance.setCreatedBy(userId);
 
         guidanceRepository.persist(guidance);
@@ -100,7 +99,6 @@ public class GuidanceService {
 
         GuidanceMapper.INSTANCE.updateGuidance(guidanceUpdateDto, guidance);
 
-        guidance.setModifiedOn(Timestamp.from(Instant.now()));
         guidance.setModifiedBy(userId);
 
         return GuidanceMapper.INSTANCE.guidanceToDto(guidance);
