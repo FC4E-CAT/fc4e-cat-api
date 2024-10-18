@@ -30,6 +30,9 @@ public interface TemplateMapper {
 
     @Mapping(target = "templateDoc", expression = "java(dtoToStringJson(request.templateDoc))")
     @Mapping(target = "createdOn", expression = "java(Timestamp.from(Instant.now()))")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "actor", ignore = true)
+    @Mapping(target = "type", ignore = true)
     Template dtoToTemplate(TemplateRequest request);
 
     @IterableMapping(qualifiedByName="mapWithExpression")

@@ -34,6 +34,9 @@ public interface CriteriaMapper {
     @Mapping(target = "lodCriV", ignore = true)
     @Mapping(target = "imperative", ignore = true)
     @Mapping(target = "typeCriterion", ignore = true)
+    @Mapping(target = "principles", ignore = true)
+    @Mapping(target = "metrics", ignore = true)
+    @Mapping(target = "actors", ignore = true)
     Criterion criteriaToEntity(CriterionRequest criteriaRequestDto);
 
     @Mapping(target = "cri", expression = "java(StringUtils.isNotEmpty(request.cri) ? request.cri : criterion.getCri())")
@@ -46,5 +49,8 @@ public interface CriteriaMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lodCriP", ignore = true)
     @Mapping(target = "lodCriV", ignore = true)
+    @Mapping(target = "principles", ignore = true)
+    @Mapping(target = "metrics", ignore = true)
+    @Mapping(target = "actors", ignore = true)
     void updateCriteria(CriterionUpdate request, @MappingTarget Criterion criterion);
 }

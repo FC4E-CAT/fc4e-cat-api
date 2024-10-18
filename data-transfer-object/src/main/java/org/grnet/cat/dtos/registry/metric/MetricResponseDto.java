@@ -100,7 +100,7 @@ public class MetricResponseDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = TypeAlgorithmResponseDto.class,
+            implementation = TypeMetricResponseDto.class,
             description = "List of related metrics",
             example = "[...]"
     )

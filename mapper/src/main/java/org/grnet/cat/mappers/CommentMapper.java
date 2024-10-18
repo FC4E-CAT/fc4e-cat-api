@@ -26,8 +26,11 @@ public interface CommentMapper {
     @Mapping(source = "user", target = "user")
     CommentResponseDto commentToDto(Comment comment);
 
-
-    @Named("mapWithExpression")
     @Mapping(source = "text", target = "text")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "assessment", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "modifiedOn", ignore = true)
     Comment commentRequestToEntity(CommentRequestDto commentRequestDto);
 }
