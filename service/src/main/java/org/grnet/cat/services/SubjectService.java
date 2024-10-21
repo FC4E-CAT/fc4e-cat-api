@@ -49,7 +49,6 @@ public class SubjectService {
 
         var subject = SubjectMapper.INSTANCE.dtoToSubject(request);
         subject.setCreatedBy(userId);
-        subject.setCreatedOn(Timestamp.from(Instant.now()));
 
         var optional = subjectRepository.fetchSubjectByNameAndTypeAndSubjectId(request.name, request.type, request.id, userId);
 

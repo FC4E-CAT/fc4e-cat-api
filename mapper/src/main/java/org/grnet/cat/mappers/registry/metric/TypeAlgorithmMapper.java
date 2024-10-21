@@ -18,11 +18,9 @@ public interface TypeAlgorithmMapper {
     TypeAlgorithmMapper INSTANCE = Mappers.getMapper(TypeAlgorithmMapper.class);
 
     @Named("map")
+    @Mapping(target = "metrics", ignore = true)
     TypeAlgorithmResponseDto typeAlgorithmToDto(TypeAlgorithm entity);
 
     @IterableMapping(qualifiedByName = "map")
     List<TypeAlgorithmResponseDto> typeAlgorithmToDtos(List<TypeAlgorithm> entities);
-
-    @Named("mapMetrics")
-    List<MetricResponseDto> mapMetrics(List<Metric> metrics);
 }
