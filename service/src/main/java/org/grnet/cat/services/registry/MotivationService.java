@@ -207,11 +207,6 @@ public class MotivationService {
             motivation.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
         }
 
-        if (!Objects.isNull(request.lodMtvP)) {
-
-            var parent = motivationRepository.findByIdOptional(request.lodMtvP).orElseThrow(() -> new NotFoundException("There is no Motivation with the following id: " + request.motivationTypeId));
-            motivation.setLodMtvP(parent.getId());
-        }
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
 

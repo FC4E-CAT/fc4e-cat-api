@@ -31,7 +31,7 @@ public interface MotivationMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "motivationType", ignore = true)
-    @Mapping(target = "lodMtvP", ignore = true)
+    @Mapping(target = "lodMtvP", source = "basedOn")
     @Mapping(target = "lodMtvV", ignore = true)
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     @Mapping(target = "principles", ignore = true)
