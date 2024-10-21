@@ -57,6 +57,6 @@ public class Assessment {
                 cascade = CascadeType.ALL,
                 orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
-    private Boolean shared;
 
+    private Boolean shared;
 }

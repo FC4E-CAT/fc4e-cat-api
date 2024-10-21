@@ -23,12 +23,17 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 ---
 
+### Added
+
+-[#330](https://github.com/FC4E-CAT/fc4e-cat-api/pull/330) CAT-432: Add demo data to local installation.
+
+
 ## 1.8.1 - 2024-10-17
 ---
 
 ### Fix
 
--[#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584: Resolve Unique Constraint Violation When Updating Principle with Existing PRI
+-[#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584: Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
 
 ### Removed
 
