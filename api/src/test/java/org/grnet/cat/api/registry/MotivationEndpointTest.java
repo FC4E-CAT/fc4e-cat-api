@@ -209,7 +209,6 @@ public class MotivationEndpointTest extends KeycloakTest {
         var update = new UpdateMotivationRequest();
         update.description = "updated_description";
         update.motivationTypeId = "pid_graph:DFE640B9";
-        update.lodMtvP = "pid_graph:BE36CD9E";
 
         var updated = given()
                 .auth()
@@ -225,7 +224,6 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         assertEquals("updated_description", updated.description);
         assertEquals("pid_graph:DFE640B9", updated.motivationType.id);
-        assertEquals("pid_graph:BE36CD9E", updated.lodMtvP);
     }
 
     @Test

@@ -55,15 +55,6 @@ public class MotivationRequest {
     @NotFoundEntity(repository = MotivationTypeRepository.class, message = "There is no Motivation Type with the following id:")
     @JsonProperty(value = "motivation_type_id")
     public String motivationTypeId;
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Motivation parent identifier.",
-            example = "pid_graph:986123FA"
-    )
-    @JsonProperty(value = "motivation_parent_id")
-    @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-    public String lodMtvP;
 
     @Schema(
             type = SchemaType.STRING,
