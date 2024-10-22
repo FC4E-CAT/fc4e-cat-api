@@ -20,7 +20,7 @@ public class CriterionActorJunction extends Registry {
     private CriterionActorId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="motivation_lodMTV")
+    @MapsId("motivationId")
     private Motivation motivation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,6 +40,7 @@ public class CriterionActorJunction extends Registry {
     @NotNull
     private String motivationX;
 
+
     public CriterionActorJunction(Motivation motivation, Criterion criterion, RegistryActor actor, Imperative imperative, String motivationX, Timestamp lastTouch, String populatedBy, Integer lodCAV) {
         this.motivation = motivation;
         this.criterion = criterion;
@@ -48,7 +49,7 @@ public class CriterionActorJunction extends Registry {
         this.motivationX = motivationX;
         this.setLastTouch(lastTouch);
         this.setPopulatedBy(populatedBy);
-        this.id = new CriterionActorId( criterion.getId(), actor.getId(), lodCAV);
+        this.id = new CriterionActorId( criterion.getId(), actor.getId(), motivation.getId(),lodCAV);
     }
 
     public CriterionActorJunction() {
@@ -65,12 +66,12 @@ public class CriterionActorJunction extends Registry {
         CriterionActorJunction that = (CriterionActorJunction) o;
         return Objects.equals(motivation, that.motivation) &&
                 Objects.equals(id.getCriterionId(), that.id.getCriterionId()) &&
-                Objects.equals(id.getActorId(), that.id.getActorId()) && Objects.equals(id.getLodCAV(), that.id.getLodCAV());
+                Objects.equals(id.getActorId(), that.id.getActorId()) &&  Objects.equals(id.getMotivationId(), that.id.getMotivationId()) && Objects.equals(id.getLodCAV(), that.id.getLodCAV());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(motivation,id.getCriterionId(), id.getActorId(), id.getLodCAV());
+        return Objects.hash(id.getMotivationId(),id.getCriterionId(), id.getActorId(), id.getLodCAV());
     }
 
     public CriterionActorId getId() {

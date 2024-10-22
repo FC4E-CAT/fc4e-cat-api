@@ -20,10 +20,13 @@ public class CriterionActorId {
 
     @Column(name = "lodC_A_V")
     private Integer lodCAV;
+    @Column(name = "motivation_lodMTV")
+    private String motivationId;
 
-    public CriterionActorId( String criterionId, String actorId, Integer lodCAV) {
+    public CriterionActorId( String criterionId, String actorId, String motivationId,Integer lodCAV) {
         this.criterionId = criterionId;
         this.actorId = actorId;
+        this.motivationId=motivationId;
         this.lodCAV = lodCAV;
     }
 
@@ -40,12 +43,13 @@ public class CriterionActorId {
         CriterionActorId that = (CriterionActorId) o;
         return Objects.equals(criterionId, that.criterionId) &&
                 Objects.equals(actorId, that.actorId) &&
+                Objects.equals(motivationId, that.motivationId) &&
                 Objects.equals(lodCAV, that.lodCAV)  ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(criterionId, actorId, lodCAV );
+        return Objects.hash(criterionId, actorId,motivationId, lodCAV );
     }
 
     public String getCriterionId() {
@@ -70,6 +74,14 @@ public class CriterionActorId {
 
     public void setLodCAV(Integer lodCAV) {
         this.lodCAV = lodCAV;
+    }
+
+    public String getMotivationId() {
+        return motivationId;
+    }
+
+    public void setMotivationId(String motivationId) {
+        this.motivationId = motivationId;
     }
 }
 
