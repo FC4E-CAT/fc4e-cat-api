@@ -14,7 +14,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.grnet.cat.converter.StatusAttributeConverter;
+import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 
@@ -25,6 +28,8 @@ import java.sql.Timestamp;
  */
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
 public class Validation {
 
     @Id
@@ -58,8 +63,11 @@ public class Validation {
 
     @OneToOne
     @JoinColumn(name = "actor_id", referencedColumnName = "id")
-    @NotNull
     private Actor actor;
+
+    @OneToOne
+    @JoinColumn(name = "registry_actor_id", referencedColumnName = "lodActor")
+    private RegistryActor registryActor;
 
     @Column(name = "created_on")
     @NotNull
@@ -77,104 +85,4 @@ public class Validation {
 
     @Column(name = "rejection_reason")
     private String rejectionReason;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getOrganisationRole() {
-        return organisationRole;
-    }
-
-    public void setOrganisationRole(String organisationRole) {
-        this.organisationRole = organisationRole;
-    }
-
-    public String getOrganisationId() {
-        return organisationId;
-    }
-
-    public void setOrganisationId(String organisationId) {
-        this.organisationId = organisationId;
-    }
-
-    public String getOrganisationName() {
-        return organisationName;
-    }
-
-    public void setOrganisationName(String organisationName) {
-        this.organisationName = organisationName;
-    }
-
-    public String getOrganisationWebsite() {
-        return organisationWebsite;
-    }
-
-    public void setOrganisationWebsite(String organisationWebsite) {
-        this.organisationWebsite = organisationWebsite;
-    }
-
-    public Timestamp getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(Timestamp createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public ValidationStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ValidationStatus status) {
-        this.status = status;
-    }
-
-    public Source getOrganisationSource() {
-        return organisationSource;
-    }
-
-    public void setOrganisationSource(Source organisationSource) {
-        this.organisationSource = organisationSource;
-    }
-
-    public Actor getActor() {
-        return actor;
-    }
-
-    public void setActor(Actor actor) {
-        this.actor = actor;
-    }
-
-    public Timestamp getValidatedOn() {
-        return validatedOn;
-    }
-
-    public void setValidatedOn(Timestamp validatedOn) {
-        this.validatedOn = validatedOn;
-    }
-
-    public String getValidatedBy() {
-        return validatedBy;
-    }
-
-    public void setValidatedBy(String validatedBy) {
-        this.validatedBy = validatedBy;
-    }
-
-    public String getRejectionReason() { return rejectionReason; }
-
-    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 }

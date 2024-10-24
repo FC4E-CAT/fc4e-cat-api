@@ -262,7 +262,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("actor_id may not be empty.", response.message);
+        assertEquals("Actor or Registry Actor may not be empty.", response.message);
     }
 
     @Test
@@ -405,7 +405,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         assertEquals("Project Manager", response.organisationRole);
         assertEquals("NTUA", response.organisationName);
-        assertEquals(3L, response.actorId);
+        assertEquals(1L, response.actorId);
         assertEquals("ROR", updateRequest.organisationSource);
         assertEquals("00tjv0s33", updateRequest.organisationId);
     }
