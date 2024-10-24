@@ -11,6 +11,8 @@ import jakarta.ws.rs.BadRequestException;
 import lombok.SneakyThrows;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.template.TemplateDto;
+import org.grnet.cat.entities.registry.RegistryActor;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 
 import java.util.stream.Collectors;
 
@@ -28,6 +30,9 @@ public class Utility {
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    RegistryActorRepository registryActorRepository;
 
     public String getUserUniqueIdentifier(){
 
@@ -62,6 +67,39 @@ public class Utility {
 
         if(!messages.isEmpty()){
             throw new org.grnet.cat.exceptions.BadRequestException("Json validation error.", messages.stream().map(ValidationMessage::getMessage).collect(Collectors.toSet()));
+        }
+    }
+
+    public RegistryActor transformActorToRegistryActor(String name){
+
+
+        if(name.equals("PID Scheme")){
+
+            return registryActorRepository.findById("pid_graph:0E00C332");
+        } else if (name.equals("PID Authority")) {
+
+            return registryActorRepository.findById("pid_graph:1A718108");
+        } else if (name.equals("End User")) {
+
+            return registryActorRepository.findById("pid_graph:20A7A125");
+        } else if (name.equals("Compliance Monitoring")) {
+
+            return registryActorRepository.findById("pid_graph:234B60D8");
+        } else if (name.equals("PID Owner")) {
+
+            return registryActorRepository.findById("pid_graph:B5CC396B");
+        } else if (name.equals("PID Manager")) {
+
+            return registryActorRepository.findById("pid_graph:D42428D7");
+        } else if (name.equals("PID Service Provider")) {
+
+            return registryActorRepository.findById("pid_graph:E92B9B49");
+        } else if (name.equals("Multi-Primary Administrator")) {
+
+            return registryActorRepository.findById("pid_graph:7835EF43");
+        } else {
+
+            return registryActorRepository.findById("pid_graph:566C01F6");
         }
     }
 }

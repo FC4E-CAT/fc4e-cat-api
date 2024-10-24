@@ -164,4 +164,23 @@ public class ValidationResponse {
     @JsonProperty("rejection_reason")
     @JsonInclude(JsonInclude.Include.NON_NULL)  // Exclude from JSON if null
     public String rejectionReason;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The ID of Registry Actor.",
+            example = "pid_graph:0E00C332"
+    )
+    @JsonProperty("registry_actor_id")
+    public String registryActorId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Name of Registry Actor.",
+            example = "PID Scheme (Component)"
+    )
+    @JsonProperty("registry_actor_name")
+    public String registryActorName;
+
 }
