@@ -40,6 +40,7 @@ public interface CriterionActorMapper {
     default List<PrinciplePartialResponse> mapPrinciples(Set<PrincipleCriterionJunction> principles) {
         return principles.stream()
                 .map(this::mapPrinciple)
+                .distinct()
                 .collect(Collectors.toList());
     }
 
