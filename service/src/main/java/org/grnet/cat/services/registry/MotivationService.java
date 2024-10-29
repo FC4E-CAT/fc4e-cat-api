@@ -61,6 +61,9 @@ public class MotivationService {
     @Inject
     PrincipleCriterionRepository principleCriterionRepository;
 
+    @Inject
+    CriterionActorRepository criterionActorRepository;
+
     /**
      * Creates a new Motivation.
      *
@@ -115,6 +118,32 @@ public class MotivationService {
                 resultMessages.add("Actor with id :: " + req.actorId + " already exists to motivation.");
             }
         });
+        return resultMessages;
+    }
+
+    @Transactional
+    public List<String> deleteActorFromMotivation(String motivationId, String actorId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        if (motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
+
+            motivationActorRepository.deleteByMotivationAndActorAndVersion(motivationId, actorId, 1);
+            resultMessages.add("Actor with ID: " + actorId + " has been removed from motivation: " + motivationId + ".");
+
+        } else {
+            resultMessages.add("Actor with ID: " + actorId + " does not exist in motivation: " + motivationId + ".");
+        }
+
+        if (criterionActorRepository.existsByMotivationAndActor(motivationId, actorId, 1)) {
+
+            criterionActorRepository.deleteByActorId(motivationId, actorId);
+            resultMessages.add("Actor with ID: " + actorId + " has been removed from all criterion relations.");
+
+        } else {
+            resultMessages.add("Actor with ID: " + actorId + " does not exist in any criterion relations.");
+        }
+
         return resultMessages;
     }
 

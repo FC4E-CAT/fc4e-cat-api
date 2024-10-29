@@ -84,4 +84,14 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
     public void delete(CriterionActorJunction ac) {
         delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 and c.actor.id =?2 and c.criterion.id =?3", ac.getMotivation().getId(), ac.getActor().getId(), ac.getCriterion().getId());
     }
+
+    public boolean existsByMotivationAndActor(String motivationId, String actorId, Integer lodMAV) {
+        return find("SELECT 1 FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 AND c.id.lodCAV = ?3", motivationId, actorId, lodMAV)
+                .firstResultOptional()
+                .isPresent();
+    }
+
+    public void deleteByActorId(String motivationId, String actorId) {
+        delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 AND c.id.actorId = ?2", motivationId, actorId);
+    }
 }

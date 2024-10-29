@@ -38,4 +38,8 @@ public class MotivationActorRepository  implements Repository<MotivationActorJun
                 .firstResultOptional()
                 .isPresent();
     }
+    public void deleteByMotivationAndActorAndVersion(String motivationId, String actorId, Integer lodMAV) {
+
+        delete("DELETE FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV = ?3", motivationId, actorId, lodMAV);
+    }
 }
