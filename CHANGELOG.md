@@ -33,6 +33,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## 1.8.1 - 2024-10-17
 ---
 
+### Added
+- [#338](https://github.com/FC4E-CAT/fc4e-cat-api/pull/338) CAT-599 Add published as status in a Motivation
+
 ### Fix
 
 - [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.

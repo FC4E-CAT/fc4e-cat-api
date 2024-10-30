@@ -43,8 +43,6 @@ import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
-import org.grnet.cat.repositories.ActorRepository;
-import org.grnet.cat.repositories.CommentRepository;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
@@ -52,10 +50,8 @@ import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
 import org.grnet.cat.validators.SortAndOrderValidator;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -141,7 +137,7 @@ public class MotivationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") MotivationRequest request,
-                            @Context UriInfo uriInfo) {
+                           @Context UriInfo uriInfo) {
 
         var motivation = motivationService.createMotivation(request, utility.getUserUniqueIdentifier());
 
@@ -245,6 +241,12 @@ public class MotivationEndpoint {
 
                                    @Parameter(name = "actor", in = QUERY,
                                            description = "The Motivation actor to filter.") @QueryParam("actor") @DefaultValue("") String actor,
+                                   @Parameter(name = "published",
+                                           in = QUERY,
+                                           schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                           examples = {@ExampleObject(name = "TRUE", value = "TRUE"), @ExampleObject(name = "FALSE", value = "FALSE")},
+                                           description = "The \"published\" parameter allows clients to filter the results based on the publication status of the motivation.") @QueryParam("published") String status,
+
                                    @Parameter(name = "sort", in = QUERY,
                                            schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
                                            examples = {@ExampleObject(name = "Last Touch", value = "lastTouch"), @ExampleObject(name = "MTV", value = "mtv"), @ExampleObject(name = "Label", value = "label")},
@@ -265,8 +267,14 @@ public class MotivationEndpoint {
 
             throw new BadRequestException("The available values of sort parameter are : " + sortValues);
         }
+        var validStatuses = new String[]{"FALSE", "TRUE"};
+        if (status != null && !Arrays.stream(validStatuses).collect(Collectors.toList()).contains(status)) {
 
-        var subjects = motivationService.getMotivationsByPage(actor, search, sort, order, page - 1, size, uriInfo);
+            throw new BadRequestException("The value " + status + " is not a valid status. Valid status values are: " + Arrays.toString(validStatuses));
+        }
+
+
+        var subjects = motivationService.getMotivationsByPage(actor, search, status, sort, order, page - 1, size, uriInfo);
 
         return Response.ok().entity(subjects).build();
     }
@@ -480,14 +488,14 @@ public class MotivationEndpoint {
     @Registration
     public Response removeActorFromMotivation(
             @Parameter(
-                description = "The ID of the Motivation from which to remove actors.",
-                required = true,
-                example = "pid_graph:3E109BBA",
-                schema = @Schema(type = SchemaType.STRING))
+                    description = "The ID of the Motivation from which to remove actors.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MotivationRepository.class,
                     message = "There is no Motivation with the following id: ")
-                    String id,
+            String id,
             @Parameter(
                     description = "The actor to be deleted.",
                     required = true,
@@ -497,7 +505,7 @@ public class MotivationEndpoint {
             @Valid @NotFoundEntity(
                     repository = RegistryActorRepository.class,
                     message = "There is no Actor with the following id: ")
-                    String actorId) {
+            String actorId) {
 
         var messages = motivationService.deleteActorFromMotivation(id, actorId);
 
@@ -599,44 +607,44 @@ public class MotivationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getPrincipleByMotivation(
-                @Parameter(description = "The ID of the Motivation to get principle.",
+            @Parameter(description = "The ID of the Motivation to get principle.",
                     required = true,
                     example = "pid_graph:3E109BBA",
                     schema = @Schema(type = SchemaType.STRING))
-                @PathParam("id")
-                @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                @Parameter(name = "search", in = QUERY,
-                        description = "The \"search\" parameter allows clients to search for matches in specific fields in the MetricTest entity.")
-                @QueryParam("search") String search,
-                @Parameter(name = "sort", in = QUERY,
-                        schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
-                        examples = {
-                                @ExampleObject(name = "Last Touch", value = "lastTouch"),
-                                @ExampleObject(name = "Label", value = "label"),
-                                @ExampleObject(name = "Pri", value = "pri")},
-                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
-                @DefaultValue("lastTouch")
-                @QueryParam("sort") String sort,
-                @Parameter(name = "order", in = QUERY,
-                        schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
-                        examples = {
-                                @ExampleObject(name = "Ascending", value = "ASC"),
-                                @ExampleObject(name = "Descending", value = "DESC")},
-                        description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
-                @DefaultValue("DESC")
-                @QueryParam("order") String order,
-                @Parameter(name = "page", in = QUERY,
-                        description = "Indicates the page number. Page number must be >= 1.")
-                @DefaultValue("1")
-                @Min(value = 1, message = "Page number must be >= 1.")
-                @QueryParam("page") int page,
-                @Parameter(name = "size", in = QUERY,
-                        description = "The page size.")
-                @DefaultValue("10")
-                @Min(value = 1, message = "Page size must be between 1 and 100.")
-                @Max(value = 100, message = "Page size must be between 1 and 100.")
-                @QueryParam("size") int size,
-                @Context UriInfo uriInfo) {
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+            @Parameter(name = "search", in = QUERY,
+                    description = "The \"search\" parameter allows clients to search for matches in specific fields in the MetricTest entity.")
+            @QueryParam("search") String search,
+            @Parameter(name = "sort", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                    examples = {
+                            @ExampleObject(name = "Last Touch", value = "lastTouch"),
+                            @ExampleObject(name = "Label", value = "label"),
+                            @ExampleObject(name = "Pri", value = "pri")},
+                    description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
+            @DefaultValue("lastTouch")
+            @QueryParam("sort") String sort,
+            @Parameter(name = "order", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                    examples = {
+                            @ExampleObject(name = "Ascending", value = "ASC"),
+                            @ExampleObject(name = "Descending", value = "DESC")},
+                    description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
+            @DefaultValue("DESC")
+            @QueryParam("order") String order,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+            @DefaultValue("1")
+            @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
 
 
         var orderValues = List.of("ASC", "DESC");
@@ -961,7 +969,7 @@ public class MotivationEndpoint {
             @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
             Set<@Valid CriterionActorRequest> request) {
 
-        if(Objects.isNull(request)){
+        if (Objects.isNull(request)) {
 
             request = new HashSet<>();
         }
@@ -1018,9 +1026,9 @@ public class MotivationEndpoint {
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
-                                                 @PathParam("id")
-                                                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                                                 @NotEmpty(message = "Principles-Criteria list can not be empty.") Set<@Valid PrincipleCriterionRequest> request) {
+                                                            @PathParam("id")
+                                                            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                            @NotEmpty(message = "Principles-Criteria list can not be empty.") Set<@Valid PrincipleCriterionRequest> request) {
 
         var messages = motivationService.createNewPrinciplesCriteriaRelationship(id, request, utility.getUserUniqueIdentifier());
 
@@ -1074,11 +1082,11 @@ public class MotivationEndpoint {
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
-                                                            @PathParam("id")
-                                                            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-                                                            Set<@Valid PrincipleCriterionRequest> request) {
+                                                         @PathParam("id")
+                                                         @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                         Set<@Valid PrincipleCriterionRequest> request) {
 
-        if(Objects.isNull(request)){
+        if (Objects.isNull(request)) {
 
             request = new HashSet<>();
         }
@@ -1129,22 +1137,22 @@ public class MotivationEndpoint {
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
-                                                         @PathParam("id")
-                                                         @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                      @PathParam("id")
+                                                      @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
                                                       @Parameter(name = "page", in = QUERY,
                                                               description = "Indicates the page number. Page number must be >= 1.")
                                                       @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
                                                       @QueryParam("page") int page,
                                                       @Parameter(name = "size", in = QUERY,
                                                               description = "The page size.")
-                                                          @DefaultValue("10")
-                                                          @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                                          @Max(value = 100, message = "Page size must be between 1 and 100.")
-                                                          @QueryParam("size") int size,
+                                                      @DefaultValue("10")
+                                                      @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                      @Max(value = 100, message = "Page size must be between 1 and 100.")
+                                                      @QueryParam("size") int size,
                                                       @Context UriInfo uriInfo) {
 
 
-        var response = motivationService.getPrinciplesCriteriaRelationship(id, page-1, size, uriInfo);
+        var response = motivationService.getPrinciplesCriteriaRelationship(id, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -1296,5 +1304,70 @@ public class MotivationEndpoint {
             this.content = content;
         }
     }
+
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Publish Motivation",
+            description = "Publish the motivation")
+    @APIResponse(
+            responseCode = "201",
+            description = "Motivation is Published.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response publishMotivation(
+            @Parameter(description = "The ID of the Motivation to publish",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id
+    ) {
+
+        motivationService.publish(id);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message="Successful publish";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+
 }
 

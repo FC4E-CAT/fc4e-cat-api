@@ -11,8 +11,6 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
-import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
-import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
@@ -73,6 +71,7 @@ public class MotivationService {
 
         motivation.setPopulatedBy(userId);
         motivation.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
+        motivation.setPublished(Boolean.FALSE);
         motivationRepository.persist(motivation);
 
         if (request.basedOn != null && !request.basedOn.isEmpty()) {
@@ -214,9 +213,9 @@ public class MotivationService {
      * @param uriInfo The Uri Info.
      * @return A list of MotivationResponse objects representing the submitted Motivations in the requested page.
      */
-    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
+    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String status, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, sort, order, page, size);
+        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
 
         return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
     }
@@ -265,8 +264,8 @@ public class MotivationService {
      * Creates a new relationship between principle, criterion, and motivation.
      *
      * @param motivationId the ID of the motivation.
-     * @param request the list of relationships containing principle and criterion IDs.
-     * @param userId the ID of the user performing the action.
+     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param userId       the ID of the user performing the action.
      */
     @Transactional
     public List<String> createNewPrinciplesCriteriaRelationship(String motivationId, Set<PrincipleCriterionRequest> request, String userId) {
@@ -290,9 +289,9 @@ public class MotivationService {
                 priCri.setLastTouch(Timestamp.from(Instant.now()));
 
                 principleCriterionRepository.persist(priCri);
-                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - "+req.criterionId+" successfully added to Motivation.");
+                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - " + req.criterionId + " successfully added to Motivation.");
             } else {
-                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - "+req.criterionId+" already exists to Motivation.");
+                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - " + req.criterionId + " already exists to Motivation.");
             }
         });
 
@@ -303,8 +302,8 @@ public class MotivationService {
      * Updates an existing relationship between principle, criterion, and motivation.
      *
      * @param motivationId the ID of the motivation.
-     * @param request the list of relationships containing principle and criterion IDs.
-     * @param userId the ID of the user performing the action.
+     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param userId       the ID of the user performing the action.
      */
     @Transactional
     public List<String> updatePrinciplesCriteriaRelationship(String motivationId, Set<PrincipleCriterionRequest> request, String userId) {
@@ -326,7 +325,7 @@ public class MotivationService {
                 existingJunction.setAnnotationText(req.annotationText);
                 existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
 
-                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - "+req.criterionId+" successfully updated.");
+                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - " + req.criterionId + " successfully updated.");
             } else {
 
                 var priCri = new PrincipleCriterionJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
@@ -342,7 +341,7 @@ public class MotivationService {
                 priCri.setLastTouch(Timestamp.from(Instant.now()));
 
                 principleCriterionRepository.persist(priCri);
-                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - "+req.criterionId+" successfully added to Motivation.");
+                resultMessages.add("principle-criterion with ids :: " + req.principleId + " - " + req.criterionId + " successfully added to Motivation.");
             }
         });
 
@@ -365,18 +364,34 @@ public class MotivationService {
 
         pcList
                 .iterator()
-                .forEachRemaining(pc-> {
+                .forEachRemaining(pc -> {
 
                     var temp = new PrincipleCriterionRequest();
                     temp.criterionId = pc.getId().getCriterionId();
                     temp.principleId = pc.getId().getPrincipleId();
 
-                    if(!request.contains(temp)){
+                    if (!request.contains(temp)) {
 
                         principleCriterionRepository.delete(pc);
-                        resultMessages.add("principle-criterion with ids :: " + temp.principleId + " - "+temp.criterionId+" removed from Motivation.");
+                        resultMessages.add("principle-criterion with ids :: " + temp.principleId + " - " + temp.criterionId + " removed from Motivation.");
                     }
                 });
 
     }
+
+    /**
+     * Publish a  Motivation.
+     *
+     * @param id The id of the  Motivation  to be published.
+     * @return A message to signify success or failure.
+     */
+    @Transactional
+    public void publish(String id) {
+
+        var motivation = motivationRepository.fetchById(id);
+        motivation.setPublished(Boolean.TRUE);
+
+    }
+
+
 }
