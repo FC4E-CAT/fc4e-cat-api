@@ -43,6 +43,8 @@ import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.repositories.CommentRepository;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
@@ -423,6 +425,81 @@ public class MotivationEndpoint {
                                             @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request) {
 
         var messages = motivationService.assignActors(id, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.messages = messages;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Remove an Actor from a Motivation.",
+            description = "Removes an Actor from a specific Motivation and its associated relations.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Actors successfully deleted from the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Motivation or Actor not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Path("/{id}/actors/{actor-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response removeActorFromMotivation(
+            @Parameter(
+                description = "The ID of the Motivation from which to remove actors.",
+                required = true,
+                example = "pid_graph:3E109BBA",
+                schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class,
+                    message = "There is no Motivation with the following id: ")
+                    String id,
+            @Parameter(
+                    description = "The actor to be deleted.",
+                    required = true,
+                    example = "pid_graph:0E00C332",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(
+                    repository = RegistryActorRepository.class,
+                    message = "There is no Actor with the following id: ")
+                    String actorId) {
+
+        var messages = motivationService.deleteActorFromMotivation(id, actorId);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
