@@ -11,8 +11,10 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.entities.projections.UserAssessmentEligibility;
+import org.grnet.cat.entities.projections.UserRegistryAssessmentEligibility;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,20 +32,39 @@ public class ValidationRepository implements Repository<Validation, Long> {
     @Inject
     ActorRepository actorRepository;
 
+    @Inject
+    RegistryActorRepository registryActorRepository;
+
     /**
-     * It executes a query in database to check if there is a promotion request for a specific user and organisation.
+     * It executes a query in database to check if there is a promotion request for a specific user, organisation and actor.
      *
      * @param id                 The ID of the user.
      * @param organisationId     The ID of the organisation.
      * @param organisationSource The source of the organisation.
      * @param actorId            The actor id.
-     * @return {@code true} if a promotion request exists for the user and organization, {@code false} otherwise
+     * @return {@code true} if a promotion request exists for the user, organization and actor, {@code false} otherwise
      */
-    public boolean hasPromotionRequest(String id, String organisationId, String organisationSource, Long actorId) {
+    public boolean hasPromotionRequestWithActor(String id, String organisationId, String organisationSource, Long actorId) {
 
         List<ValidationStatus> statuses = Arrays.asList(ValidationStatus.REVIEW, ValidationStatus.APPROVED, ValidationStatus.PENDING);
 
         return find("from Validation v where v.user.id = ?1 and v.organisationId = ?2 and v.organisationSource = ?3 and v.status IN (?4) and v.actor.id = ?5", id, organisationId, Source.valueOf(organisationSource), statuses, actorId).stream().findAny().isPresent();
+    }
+
+    /**
+     * It executes a query in database to check if there is a promotion request for a specific user, organisation and registry actor.
+     *
+     * @param id                 The ID of the user.
+     * @param organisationId     The ID of the organisation.
+     * @param organisationSource The source of the organisation.
+     * @param registryActorId            The actor id.
+     * @return {@code true} if a promotion request exists for the user, organization and registry actor, {@code false} otherwise
+     */
+    public boolean hasPromotionRequestWithRegistryActor(String id, String organisationId, String organisationSource, String registryActorId) {
+
+        List<ValidationStatus> statuses = Arrays.asList(ValidationStatus.REVIEW, ValidationStatus.APPROVED, ValidationStatus.PENDING);
+
+        return find("from Validation v where v.user.id = ?1 and v.organisationId = ?2 and v.organisationSource = ?3 and v.status IN (?4) and v.registryActor.id = ?5", id, organisationId, Source.valueOf(organisationSource), statuses, registryActorId).stream().findAny().isPresent();
     }
 
     /**
@@ -101,7 +122,6 @@ public class ValidationRepository implements Repository<Validation, Long> {
 
         return pageable;
     }
-
 
     /**
      * Retrieves a page of validation requests submitted by users.
@@ -222,6 +242,31 @@ public class ValidationRepository implements Repository<Validation, Long> {
                 Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED)).project(UserAssessmentEligibility.class).page(page, size);
 
         var pageable = new PageQueryImpl<UserAssessmentEligibility>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
+     * Retrieves the list of assessment types and registry actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and registry actors
+     */
+    public PageQuery<UserRegistryAssessmentEligibility> fetchUserRegistryAssessmentEligibility(int page, int size, String userID){
+
+        var panache = find("select v.organisationId, v.organisationName, v.organisationSource, v.organisationRole, " +
+                        "ra.id as actorId, ra.labelActor as actorName, m.id as assessmentTypeId, m.label as assessmentTypeName from Validation v inner join MotivationActorJunction ma on v.registryActor.id = ma.id.actorId inner join RegistryActor ra on ma.id.actorId = ra.id inner join Motivation m on ma.id.motivationId = m.id " +
+                        "where v.user.id = : userID and v.status = : status order by v.createdOn",
+                Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED)).project(UserRegistryAssessmentEligibility.class).page(page, size);
+
+        var pageable = new PageQueryImpl<UserRegistryAssessmentEligibility>();
         pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
