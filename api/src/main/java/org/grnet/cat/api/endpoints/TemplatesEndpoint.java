@@ -33,6 +33,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
+import org.grnet.cat.constraints.CheckPublished;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
 import org.grnet.cat.dtos.template.TemplateRequest;
@@ -115,16 +116,16 @@ public class TemplatesEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response getAssessmentTemplateByActorAndType(@Parameter(
-                                description = "The Type to retrieve template.",
-                                required = true,
-                                example = "1",
-                                schema = @Schema(type = SchemaType.NUMBER))
-                        @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
+            description = "The Type to retrieve template.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.NUMBER))
+                                                        @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId, @Parameter(
             description = "The Actor to retrieve template.",
             required = true,
             example = "6",
             schema = @Schema(type = SchemaType.NUMBER))
-    @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId) {
+                                                        @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId) {
 
         var template = templateService.getTemplateByActorAndType(actorId, typeId);
         return Response.ok().entity(template).build();
@@ -229,8 +230,8 @@ public class TemplatesEndpoint {
             required = true,
             example = "1",
             schema = @Schema(type = SchemaType.NUMBER))
-                                              @PathParam("id")
-                                              @Valid @NotFoundEntity(repository = TemplateRepository.class, message = "There is no assessment template with the following id:") Long id) {
+                                          @PathParam("id")
+                                          @Valid @NotFoundEntity(repository = TemplateRepository.class, message = "There is no assessment template with the following id:") Long id) {
 
         var template = templateService.getAssessmentTemplate(id);
 
@@ -279,18 +280,18 @@ public class TemplatesEndpoint {
     @Registration
     public Response getTemplatesByType(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                @Parameter(name = "size", in = QUERY,
-                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                @Parameter(
-                                        description = "The Type to retrieve templates.",
-                                        required = true,
-                                        example = "1",
-                                        schema = @Schema(type = SchemaType.NUMBER))
-                                    @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId,
-                                @Context UriInfo uriInfo) {
+                                       @Parameter(name = "size", in = QUERY,
+                                               description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                       @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                       @Parameter(
+                                               description = "The Type to retrieve templates.",
+                                               required = true,
+                                               example = "1",
+                                               schema = @Schema(type = SchemaType.NUMBER))
+                                       @PathParam("type-id") @Valid @NotFoundEntity(repository = AssessmentTypeRepository.class, message = "There is no Assessment Type with the following id:") Long typeId,
+                                       @Context UriInfo uriInfo) {
 
-        var templates = templateService.getTemplatesByType(page-1, size, typeId, uriInfo);
+        var templates = templateService.getTemplatesByType(page - 1, size, typeId, uriInfo);
 
         return Response.ok().entity(templates).build();
     }
@@ -330,12 +331,12 @@ public class TemplatesEndpoint {
     @Registration
     public Response getTemplates(@Parameter(name = "page", in = QUERY,
             description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                       @Parameter(name = "size", in = QUERY,
-                                               description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                       @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                       @Context UriInfo uriInfo) {
+                                 @Parameter(name = "size", in = QUERY,
+                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                 @Context UriInfo uriInfo) {
 
-        var templates = templateService.getTemplates(page-1, size, uriInfo);
+        var templates = templateService.getTemplates(page - 1, size, uriInfo);
 
         return Response.ok().entity(templates).build();
     }
@@ -393,7 +394,7 @@ public class TemplatesEndpoint {
                                         @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long typeId,
                                         @Context UriInfo uriInfo) {
 
-        var templates = templateService.getTemplatesByActor(page-1, size, typeId, uriInfo);
+        var templates = templateService.getTemplatesByActor(page - 1, size, typeId, uriInfo);
 
         return Response.ok().entity(templates).build();
     }
@@ -442,12 +443,17 @@ public class TemplatesEndpoint {
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
-                                            @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String motivationId, @Parameter(
-            description = "The Actor to retrieve template.",
-            required = true,
-            example = "pid_graph:566C01F6",
-            schema = @Schema(type = SchemaType.STRING))
-                                            @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
+                                        @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                        @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for unpublished Motivation with the following id:", isPublishedPermitted = true)
+                                        String motivationId,
+
+
+                                        @Parameter(
+                                                description = "The Actor to retrieve template.",
+                                                required = true,
+                                                example = "pid_graph:566C01F6",
+                                                schema = @Schema(type = SchemaType.STRING))
+                                        @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
 
         var template = templateService.buildTemplate(motivationId, actorId);
 

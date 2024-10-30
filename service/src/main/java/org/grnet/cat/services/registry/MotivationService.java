@@ -213,10 +213,9 @@ public class MotivationService {
      * @param uriInfo The Uri Info.
      * @return A list of MotivationResponse objects representing the submitted Motivations in the requested page.
      */
-    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String status, String sort, String order, int page, int size, UriInfo uriInfo) {
+    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search,String status, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
-
+        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status,sort, order, page, size);
         return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
     }
 

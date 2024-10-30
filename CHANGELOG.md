@@ -35,6 +35,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Added
 - [#338](https://github.com/FC4E-CAT/fc4e-cat-api/pull/338) CAT-599 Add published as status in a Motivation
+- [#339](https://github.com/FC4E-CAT/fc4e-cat-api/pull/339) CAT-600 Permit actions depending on Motivation publish status
 
 ### Fix
 
