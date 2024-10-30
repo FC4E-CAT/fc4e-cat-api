@@ -4,9 +4,27 @@
 -- Description: Migration that deletes all motivations except for specified IDs and their relations
 -- --
 
-SET @keep1 = 'pid_graph:3E109BBA';
-SET @keep2 = 'pid_graph:5EB0885A';
-SET @keep3 = 'pid_graph:34A9189F';
+SET @table_collation = (
+    SELECT COLLATION_NAME
+    FROM information_schema.columns
+    WHERE TABLE_NAME = 'p_Metric_Test'
+    AND COLUMN_NAME = 'motivation_lodMTV'
+);
+
+SET @sql = CONCAT('SET @keep1 = ''pid_graph:3E109BBA'' COLLATE ', @table_collation, ';');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql = CONCAT('SET @keep2 = ''pid_graph:5EB0885A'' COLLATE ', @table_collation, ';');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @sql = CONCAT('SET @keep3 = ''pid_graph:34A9189F'' COLLATE ', @table_collation, ';');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Delete related entries in all relation tables
 DELETE FROM p_Metric_Test WHERE motivation_lodMTV NOT IN (@keep1, @keep2, @keep3);
@@ -19,4 +37,3 @@ DELETE FROM p_Motivation_Principle WHERE motivation_lodMTV NOT IN (@keep1, @keep
 
 -- Delete the motivations themselves
 DELETE FROM t_Motivation WHERE lodMTV NOT IN (@keep1, @keep2, @keep3);
-
