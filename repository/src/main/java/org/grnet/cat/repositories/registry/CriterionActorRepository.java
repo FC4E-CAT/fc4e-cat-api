@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories.registry;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -65,6 +66,30 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
         return panache.list();
 
     }
+
+    /**
+     * Retrieves all Criterion IDs associated with a specific Motivation and Actor.
+     *
+     * @param motivationId The ID of the Motivation.
+     * @param actorId      The ID of the Actor.
+     * @return A list of Criterion IDs.
+     */
+    @Transactional
+    public List<String> getCriterionIdsByMotivationAndActor(String motivationId, String actorId) {
+
+        //var panache = find("SELECT ca.criterion.id FROM CriterionActorJunction ca WHERE ca.motivation.id = ?1 AND ca.id.actorId = ?2 ", motivationId, actorId);
+
+        var db = "SELECT ca.criterion.id FROM CriterionActorJunction ca WHERE ca.motivation.id = :motivationId AND ca.actor.id = :actorId";
+
+        var query = getEntityManager().createQuery(db, String.class)
+                .setParameter("motivationId", motivationId)
+                .setParameter("actorId", actorId);
+
+        return query.getResultList();
+    }
+
+
+
 
     public Optional<CriterionActorJunction> findByMotivationAndActorAndCriterion(String motivationId, String actorId, String criterionId, Integer lodMAV) {
         return find(

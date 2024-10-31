@@ -2,6 +2,7 @@ package org.grnet.cat.repositories.registry;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
@@ -26,7 +27,7 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
    }
 
     @Transactional
-    public PageQuery<PrincipleCriterionJunction> fetchCriterionMetricWithSearch(String search, String sort, String order, int page, int size) {
+    public PageQuery<PrincipleCriterionJunction> fetchPrincipleCriterionWithSearch(String search, String sort, String order, int page, int size) {
 
         var joiner = new StringJoiner(StringUtils.SPACE);
 
@@ -102,6 +103,26 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
         delete("FROM PrincipleCriterionJunction pc WHERE pc.motivation.id =?1 and pc.criterion.id =?2 and pc.principle.id =?3", pc.getMotivation().getId(), pc.getCriterion().getId(), pc.getPrinciple().getId());
     }
 
+    /**
+     * Counts the number of Principle-Criterion relationships for a given Motivation and list of Criterion IDs.
+     *
+     * @param motivationId The ID of the Motivation.
+     * @param criterionIds The list of Criterion IDs to check.
+     * @return The count of existing Principle-Criterion relationships.
+     */
+    @Transactional
+    public long countPrincipleCriterionByMotivationAndCriterionIds(String motivationId, List<String> criterionIds) {
+
+        if (criterionIds == null || criterionIds.isEmpty()) { return 0; }
+
+        var db = "SELECT COUNT(pc) FROM PrincipleCriterionJunction pc WHERE pc.motivation.id = :motivationId AND pc.criterion.id IN :criterionIds";
+
+        var query = getEntityManager().createQuery(db, Long.class)
+                .setParameter("motivationId", motivationId)
+                .setParameter("criterionIds", criterionIds);
+
+        return query.getSingleResult();
+    }
 }
 
 

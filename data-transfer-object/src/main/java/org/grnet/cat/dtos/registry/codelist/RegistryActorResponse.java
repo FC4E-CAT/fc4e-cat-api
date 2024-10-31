@@ -68,6 +68,25 @@ public class RegistryActorResponse{
     public String lodMTV;
 
     @Schema(
+            type = SchemaType.BOOLEAN,
+            description = "Flag indicating whether any Principle-Criterion relationships exist for this actor.",
+            example = "true"
+    )
+    @JsonProperty("exists_principle_criterion")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public boolean existsPrincipleCriterion;
+
+    @Schema(
+            type = SchemaType.INTEGER,
+            description = "Number of Principle-Criterion relationships associated with this actor.",
+            example = "5"
+    )
+    @JsonProperty("principle_criterion_count")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public int principleCriterionCount;
+
+
+    @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The user who has populated the Actor.",
@@ -85,4 +104,14 @@ public class RegistryActorResponse{
     )
     @JsonProperty("last_touch")
     public String lastTouch;
+
+    public void setExistsPrincipleCriterion(boolean existsPrincipleCriterion) {
+        this.existsPrincipleCriterion = existsPrincipleCriterion;
+    }
+
+    public void setPrincipleCriterionCount(int principleCriterionCount) {
+        this.principleCriterionCount = principleCriterionCount;
+    }
+
 }
+
