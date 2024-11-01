@@ -11,19 +11,14 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
-import org.grnet.cat.entities.registry.Criterion;
-import org.grnet.cat.entities.registry.Motivation;
-import org.grnet.cat.entities.registry.MotivationType;
-import org.grnet.cat.entities.registry.Principle;
-import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
-import org.grnet.cat.entities.registry.RegistryActor;
-import org.grnet.cat.entities.registry.Relation;
+import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.repositories.registry.*;
 
@@ -189,9 +184,21 @@ public class MotivationService {
      */
     public MotivationResponse getMotivationById(String id) {
 
-        var motivation = motivationRepository.fetchById(id);
+        var motivation = MotivationMapper.INSTANCE.motivationToDto(motivationRepository.fetchById(id));
 
-        return MotivationMapper.INSTANCE.motivationToDto(motivation);
+        if (motivation.actors != null) {
+
+            motivation.actors.forEach(actor -> {
+
+                var criterionIds = criterionActorRepository.getCriterionIdsByMotivationAndActor(id, actor.id);
+                var count = principleCriterionRepository.countPrincipleCriterionByMotivationAndCriterionIds(id, criterionIds);
+
+                actor.setExistsPrincipleCriterion(count > 0);
+                actor.setPrincipleCriterionCount((int) count);
+            });
+        }
+
+        return motivation;
     }
 
 

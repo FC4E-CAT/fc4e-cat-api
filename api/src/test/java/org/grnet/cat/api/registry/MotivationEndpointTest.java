@@ -8,6 +8,7 @@ import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MotivationEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
@@ -95,6 +96,37 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         assertEquals(response.motivationType.id, "pid_graph:5EB0883B");
     }
+
+//    @Test
+//    public void testGetMotivationWithPrincipleCriterionDetails() {
+//
+//        register("admin");
+//
+//        var response = given()
+//                .auth()
+//                .oauth2(getAccessToken("admin"))
+//                .contentType(ContentType.JSON)
+//                .get("/{id}", "pid_graph:3E109BBA")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .extract()
+//                .as(MotivationResponse.class);
+//
+//        assertEquals("pid_graph:3E109BBA", response.id);
+//        assertEquals("pid_graph:5EB0883B", response.motivationType.id);
+//
+//        response.actors.forEach(actor -> {
+//            System.out.println(actor.id);
+//            System.out.println(actor.existsPrincipleCriterion);
+//            System.out.println(actor.principleCriterionCount);
+//
+//            if ("pid_graph:566C01F6".equals(actor.id)) {
+//                assertEquals(true, actor.existsPrincipleCriterion);
+//                assertEquals(51, actor.principleCriterionCount);
+//            }
+//        });
+//    }
 
     @Test
     public void createMotivation() {

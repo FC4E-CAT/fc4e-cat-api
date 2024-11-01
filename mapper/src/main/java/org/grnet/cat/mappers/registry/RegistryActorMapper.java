@@ -8,6 +8,7 @@ import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
@@ -22,6 +23,8 @@ public interface RegistryActorMapper {
     RegistryActorMapper INSTANCE = Mappers.getMapper(RegistryActorMapper.class);
 
     @Named("map")
+    @Mapping(target = "principleCriterionCount", ignore = true)
+    @Mapping(target = "existsPrincipleCriterion", ignore = true)
     RegistryActorResponse actorToDto(RegistryActor actor);
 
     @IterableMapping(qualifiedByName = "map")

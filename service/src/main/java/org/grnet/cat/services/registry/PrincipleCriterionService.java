@@ -16,7 +16,7 @@ public class PrincipleCriterionService {
 
     public PageResource<PrincipleCriterionResponseDto> getPrincipleCriterionWithSearch(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var principleCriterions = principleCriterionRepository.fetchCriterionMetricWithSearch(search, sort, order, page, size);
+        var principleCriterions = principleCriterionRepository.fetchPrincipleCriterionWithSearch(search, sort, order, page, size);
         var principleCriterionDtos = PrincipleCriterionMapper.INSTANCE.principleCriterionToResponseDtos(principleCriterions.list());
 
         return new PageResource<>(principleCriterions, principleCriterionDtos, uriInfo);
