@@ -86,6 +86,16 @@ public class MotivationResponse {
     public String lodMtvP;
 
     @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The published status of the motivation.",
+            example = "FALSE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("published")
+    public Boolean published;
+
+    @Schema(
             type = SchemaType.ARRAY,
             implementation = RegistryActorResponse.class,
             description = "The Motivation actors"

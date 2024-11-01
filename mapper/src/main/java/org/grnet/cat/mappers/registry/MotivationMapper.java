@@ -41,6 +41,7 @@ public interface MotivationMapper {
     @Named("map")
     @Mapping(source = "actors", target = "actors", qualifiedByName = "actors")
     @Mapping(source = "principles", target = "principles", qualifiedByName = "principles")
+
     MotivationResponse motivationToDto(Motivation motivation);
 
     @IterableMapping(qualifiedByName="map")
