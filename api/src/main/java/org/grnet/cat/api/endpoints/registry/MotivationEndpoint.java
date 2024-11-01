@@ -27,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
+import org.grnet.cat.constraints.CheckPublished;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -272,8 +273,6 @@ public class MotivationEndpoint {
 
             throw new BadRequestException("The value " + status + " is not a valid status. Valid status values are: " + Arrays.toString(validStatuses));
         }
-
-
         var subjects = motivationService.getMotivationsByPage(actor, search, status, sort, order, page - 1, size, uriInfo);
 
         return Response.ok().entity(subjects).build();
@@ -325,7 +324,7 @@ public class MotivationEndpoint {
             example = "1",
             schema = @Schema(type = SchemaType.STRING))
                                      @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                     @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
                                      @Valid @NotNull(message = "The request body is empty.") UpdateMotivationRequest request) {
 
         var motivation = motivationService.update(id, request, utility.getUserUniqueIdentifier());
@@ -424,12 +423,15 @@ public class MotivationEndpoint {
     @Path("/{id}/actors")
     @Produces(MediaType.APPLICATION_JSON)
     public Response assignActorToMotivation(@Parameter(
-            description = "The ID of the Motivation to assign actors.",
+            description = "The ID of the Motivation to update.",
             required = true,
-            example = "pid_graph:3E109BBA",
+            example = "1",
             schema = @Schema(type = SchemaType.STRING))
                                             @PathParam("id")
-                                            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                            @Valid
+                                            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                            String id,
                                             @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request) {
 
         var messages = motivationService.assignActors(id, request, utility.getUserUniqueIdentifier());
@@ -486,26 +488,26 @@ public class MotivationEndpoint {
     @Path("/{id}/actors/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response removeActorFromMotivation(
-            @Parameter(
-                    description = "The ID of the Motivation from which to remove actors.",
-                    required = true,
-                    example = "pid_graph:3E109BBA",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id")
-            @Valid @NotFoundEntity(repository = MotivationRepository.class,
-                    message = "There is no Motivation with the following id: ")
-            String id,
-            @Parameter(
-                    description = "The actor to be deleted.",
-                    required = true,
-                    example = "pid_graph:0E00C332",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("actor-id")
-            @Valid @NotFoundEntity(
-                    repository = RegistryActorRepository.class,
-                    message = "There is no Actor with the following id: ")
-            String actorId) {
+    public Response removeActorFromMotivation(@Parameter(
+            description = "The ID of the Motivation to update.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.STRING))
+                                              @PathParam("id")
+                                              @Valid
+                                              @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                  @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:",
+                                                          isPublishedPermitted = false)                                              String id,
+                                              @Parameter(
+                                                      description = "The actor to be deleted.",
+                                                      required = true,
+                                                      example = "pid_graph:0E00C332",
+                                                      schema = @Schema(type = SchemaType.STRING))
+                                              @PathParam("actor-id")
+                                              @Valid @NotFoundEntity(
+                                                      repository = RegistryActorRepository.class,
+                                                      message = "There is no Actor with the following id: ")
+                                              String actorId) {
 
         var messages = motivationService.deleteActorFromMotivation(id, actorId);
 
@@ -555,12 +557,15 @@ public class MotivationEndpoint {
     @Path("/{id}/principles")
     @Produces(MediaType.APPLICATION_JSON)
     public Response assignPrinciplesToMotivation(@Parameter(
-            description = "The ID of the Motivation to assign Principles.",
+            description = "The ID of the Motivation to update.",
             required = true,
-            example = "pid_graph:3E109BBA",
+            example = "1",
             schema = @Schema(type = SchemaType.STRING))
                                                  @PathParam("id")
-                                                 @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                 @Valid
+                                                 @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                 @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                 String id,
                                                  @NotEmpty(message = "Principles list can not be empty.") Set<@Valid MotivationPrincipleRequest> request) {
 
         var messages = motivationService.assignPrinciples(id, request, utility.getUserUniqueIdentifier());
@@ -702,12 +707,15 @@ public class MotivationEndpoint {
     @Path("/{id}/actors/{actor-id}/criteria")
     @Produces(MediaType.APPLICATION_JSON)
     public Response addCriterionToMotivationActor(@Parameter(
-            description = "The ID of the Motivation to add actors.",
+            description = "The ID of the Motivation to update.",
             required = true,
-            example = "pid_graph:3E109BBA",
+            example = "1",
             schema = @Schema(type = SchemaType.STRING))
                                                   @PathParam("id")
-                                                  @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                  @Valid
+                                                  @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                  @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                  String id,
                                                   @Parameter(
                                                           description = "The ID of the Actor to add criterion to.",
                                                           required = true,
@@ -954,20 +962,23 @@ public class MotivationEndpoint {
     @PUT
     @Path("/{id}/actors/{actor-id}/criteria")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateCriterionToMotivationActor(
-            @Parameter(description = "The ID of the Motivation to add actors.",
-                    required = true,
-                    example = "pid_graph:3E109BBA",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id")
-            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
-            @Parameter(description = "The ID of the Actor to add criterion to.",
-                    required = true,
-                    example = "pid_graph:234B60D8",
-                    schema = @Schema(type = SchemaType.STRING))
-            @PathParam("actor-id")
-            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
-            Set<@Valid CriterionActorRequest> request) {
+    public Response updateCriterionToMotivationActor(@Parameter(
+            description = "The ID of the Motivation to update.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.STRING))
+                                                     @PathParam("id")
+                                                     @Valid
+                                                     @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                     @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                     String id,
+                                                     @Parameter(description = "The ID of the Actor to add criterion to.",
+                                                             required = true,
+                                                             example = "pid_graph:234B60D8",
+                                                             schema = @Schema(type = SchemaType.STRING))
+                                                     @PathParam("actor-id")
+                                                     @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+                                                     Set<@Valid CriterionActorRequest> request) {
 
         if (Objects.isNull(request)) {
 
@@ -1022,12 +1033,15 @@ public class MotivationEndpoint {
     @Path("/{id}/principles-criteria")
     @Produces(MediaType.APPLICATION_JSON)
     public Response createNewPrinciplesCriteriaRelationship(@Parameter(
-            description = "The ID of the Motivation to assign Principles.",
+            description = "The ID of the Motivation to update.",
             required = true,
-            example = "pid_graph:3E109BBA",
+            example = "1",
             schema = @Schema(type = SchemaType.STRING))
                                                             @PathParam("id")
-                                                            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                            @Valid
+                                                            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                            String id,
                                                             @NotEmpty(message = "Principles-Criteria list can not be empty.") Set<@Valid PrincipleCriterionRequest> request) {
 
         var messages = motivationService.createNewPrinciplesCriteriaRelationship(id, request, utility.getUserUniqueIdentifier());
@@ -1078,12 +1092,15 @@ public class MotivationEndpoint {
     @Path("/{id}/principles-criteria")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updatePrinciplesCriteriaRelationship(@Parameter(
-            description = "The ID of the Motivation to assign Principles.",
+            description = "The ID of the Motivation to update.",
             required = true,
-            example = "pid_graph:3E109BBA",
+            example = "1",
             schema = @Schema(type = SchemaType.STRING))
                                                          @PathParam("id")
-                                                         @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                         @Valid
+                                                         @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false )
+                                                         String id,
                                                          Set<@Valid PrincipleCriterionRequest> request) {
 
         if (Objects.isNull(request)) {
@@ -1356,7 +1373,9 @@ public class MotivationEndpoint {
                     example = "pid_graph:3E109BBA",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id
     ) {
 
         motivationService.publish(id);
