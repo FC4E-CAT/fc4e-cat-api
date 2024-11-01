@@ -42,6 +42,11 @@ public class CheckPublishedValidator implements ConstraintValidator<CheckPublish
         builder.append(message);
         builder.append(StringUtils.SPACE);
         builder.append(value);
+        // Disable the default constraint violation message
+        context.disableDefaultConstraintViolation();
+        // Add a new constraint violation message with the dynamic value
+        context.buildConstraintViolationWithTemplate(builder.toString())
+                .addConstraintViolation();
         return isPermitted;
     }
 }
