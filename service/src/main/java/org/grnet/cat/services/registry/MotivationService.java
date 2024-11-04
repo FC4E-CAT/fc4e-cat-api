@@ -382,7 +382,6 @@ public class MotivationService {
      * Publish a  Motivation.
      *
      * @param id The id of the  Motivation  to be published.
-     * @return A message to signify success or failure.
      */
     @Transactional
     public void publish(String id) {
@@ -392,5 +391,17 @@ public class MotivationService {
 
     }
 
+    /**
+     * Unpublish a  Motivation.
+     *
+     * @param id The id of the  Motivation  to be unpublished.
+     */
+    @Transactional
+    public void unpublish(String id) {
+
+        var motivation = motivationRepository.fetchById(id);
+        motivation.setPublished(Boolean.FALSE);
+
+    }
 
 }

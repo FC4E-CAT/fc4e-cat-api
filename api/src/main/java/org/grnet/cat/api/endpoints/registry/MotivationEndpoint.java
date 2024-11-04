@@ -1374,7 +1374,7 @@ public class MotivationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            @CheckPublished(repository = MotivationRepository.class, message = "Action is not permitted as Motivation is already published with the following id:", isPublishedPermitted = false)
             String id
     ) {
 
@@ -1383,6 +1383,71 @@ public class MotivationEndpoint {
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
         informativeResponse.message="Successful publish";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Unpublish Motivation",
+            description = "Unpublish the motivation")
+    @APIResponse(
+            responseCode = "201",
+            description = "Motivation is Unpublished.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/unpublish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response unpublishMotivation(
+            @Parameter(description = "The ID of the Motivation to publish",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "Action is not permitted as Motivation is already unpublished with the following id:", isPublishedPermitted = true)
+            String id
+    ) {
+
+        motivationService.unpublish(id);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message="Successful unpublish";
 
         return Response.ok().entity(informativeResponse).build();
     }
