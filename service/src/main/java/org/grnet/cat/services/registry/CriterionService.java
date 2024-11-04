@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
@@ -109,11 +110,17 @@ public class CriterionService {
     @Transactional
     public CriterionResponse update(String id, CriterionUpdate criteriaUpdateDto, String userId) {
 
-        if (!Objects.isNull(criteriaUpdateDto.cri) && criteriaRepository.notUnique("cri", criteriaUpdateDto.cri.toUpperCase())) {
-            throw new UniqueConstraintViolationException("cri", criteriaUpdateDto.cri.toUpperCase());
-        }
-
         var criteria = criteriaRepository.findById(id);
+
+        var currentCri = criteria.getCri();
+        var updateCri = StringUtils.isNotEmpty(criteriaUpdateDto.cri) ? criteriaUpdateDto.cri.toUpperCase() : currentCri;
+
+        if(StringUtils.isNotEmpty(updateCri) && !updateCri.equals(currentCri)) {
+
+            if (criteriaRepository.notUnique("cri", updateCri)) {
+                throw new UniqueConstraintViolationException("cri", updateCri);
+            }
+        }
 
         CriteriaMapper.INSTANCE.updateCriteria(criteriaUpdateDto, criteria);
 

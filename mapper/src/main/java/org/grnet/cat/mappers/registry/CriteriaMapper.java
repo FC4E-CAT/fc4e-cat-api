@@ -39,7 +39,7 @@ public interface CriteriaMapper {
     @Mapping(target = "actors", ignore = true)
     Criterion criteriaToEntity(CriterionRequest criteriaRequestDto);
 
-    @Mapping(target = "cri", expression = "java(StringUtils.isNotEmpty(request.cri) ? request.cri : criterion.getCri())")
+    @Mapping(target = "cri", expression = "java(StringUtils.isNotEmpty(request.cri) ? request.cri.toUpperCase() : criterion.getCri().toUpperCase())")
     @Mapping(target = "label", expression = "java(StringUtils.isNotEmpty(request.label) ? request.label : criterion.getLabel())")
     @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : criterion.getDescription())")
     @Mapping(target = "imperative", ignore = true)

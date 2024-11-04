@@ -50,7 +50,7 @@ public class CriterionRequest {
             implementation = String.class,
             description = "The imperative ID of the Criterion.",
             required = true,
-            example = "pid_graph:4A47BB1A"
+            example = "pid_graph:34F8B2A9"
     )
     @NotEmpty(message = "Imperative may not be empty.")
     @JsonProperty("imperative")
@@ -82,7 +82,7 @@ public class CriterionRequest {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The Criterion parent identifier.",
-            example = "pid_graph:986123FA"
+            example = "pid_graph:A8EA1C61"
     )
     @JsonProperty(value = "criterion_parent_id")
     @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:")

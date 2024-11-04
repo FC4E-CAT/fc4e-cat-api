@@ -39,6 +39,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#329](https://github.com/FC4E-CAT/fc4e-cat-api/pull/329) CAT-573 Jenkins warnings
 - [#332](https://github.com/FC4E-CAT/fc4e-cat-api/pull/332) CAT-590 Fix CriterionActorJunction key to keep Motivation id
 - [#333](https://github.com/FC4E-CAT/fc4e-cat-api/pull/333) CAT-586 Principles are displayed multiple times in motivation/actor/criteria selection
+- [#342](https://github.com/FC4E-CAT/fc4e-cat-api/pull/342) CAT-604 CRI duplicate warning on criterion update with same CRI
 
 ### Removed
 
@@ -50,7 +51,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Removed
 
 - [#320](https://github.com/FC4E-CAT/fc4e-cat-api/pull/320) CAT-579 Remove criteria ordering logic based on unique names.
-
+- [#335](https://github.com/FC4E-CAT/fc4e-cat-api/pull/335) CAT-592 Delete All Motivations Except Specific Entries
 
 
 ## 1.8.0 - 2024-10-16

@@ -44,7 +44,7 @@ public class CriterionUpdate {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The imperative ID of the Criterion.",
-            example = "pid_graph:4A47BB1A"
+            example = "pid_graph:34F8B2A9"
     )
     @JsonProperty("imperative")
     public String imperative;
