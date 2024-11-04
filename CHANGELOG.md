@@ -27,10 +27,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 - [#330](https://github.com/FC4E-CAT/fc4e-cat-api/pull/330) CAT-432 Add demo data to local installation.
 - [#334](https://github.com/FC4E-CAT/fc4e-cat-api/pull/334) CAT-593 Add registry_actor_id Column and Perform Update in Validation Table.
-- [#336](https://github.com/FC4E-CAT/fc4e-cat-api/pull/336) CAT-595 Delete Actor from Motivation
-- [#338](https://github.com/FC4E-CAT/fc4e-cat-api/pull/338) CAT-599 Add published as status in a Motivation
-- [#339](https://github.com/FC4E-CAT/fc4e-cat-api/pull/339) CAT-600 Permit actions depending on Motivation publish status
-- [#340](https://github.com/FC4E-CAT/fc4e-cat-api/pull/340) CAT-603 Unpublish a published motivation
+- [#336](https://github.com/FC4E-CAT/fc4e-cat-api/pull/336) CAT-595 Delete Actor from Motivation.
+- [#338](https://github.com/FC4E-CAT/fc4e-cat-api/pull/338) CAT-599 Add published as status in a Motivation.
+- [#339](https://github.com/FC4E-CAT/fc4e-cat-api/pull/339) CAT-600 Permit actions depending on Motivation publish status.
+- [#340](https://github.com/FC4E-CAT/fc4e-cat-api/pull/340) CAT-603 Unpublish a published motivation.
+- [#343](https://github.com/FC4E-CAT/fc4e-cat-api/pull/343) CAT-605 Unpublish a published motivation.
 
 ### Fix
 
@@ -43,7 +44,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Removed
 
-- [#335](https://github.com/FC4E-CAT/fc4e-cat-api/pull/335) CAT-592 Delete All Motivations Except Specific Entries
+- [#335](https://github.com/FC4E-CAT/fc4e-cat-api/pull/335) CAT-592 Delete All Motivations Except Specific Entries.
 
 ## 1.8.1 - 2024-10-17
 ---
@@ -157,7 +158,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Changed
 - [#212](https://github.com/FC4E-CAT/fc4e-cat-api/pull/212) CAT-402 Duplicate test in assessment template.
-- [#213](https://github.com/FC4E-CAT/fc4e-cat-api/pull/213) CAT-418 Fix Service Provider template to support thresholds in tests
+- [#213](https://github.com/FC4E-CAT/fc4e-cat-api/pull/213) CAT-418 Fix Service Provider template to support thresholds in tests.
 - [#214](https://github.com/FC4E-CAT/fc4e-cat-api/pull/214) CAT-419 Flag thresholds as locked when having a required default value.
 
 
@@ -238,7 +239,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Fixed
 
-- Assign validated role to user upon auto-approve validation
+- Assign validated role to user upon auto-approve validation.
 
 ## 1.2.1 - 2024-02-12
 
