@@ -86,10 +86,10 @@ public class PrincipleService {
         var principle = principleRepository.findById(id);
 
         var currentPri = principle.getPri();
-        var updatePri = principleUpdateDto.pri.toUpperCase();
+        var updatePri = StringUtils.isNotEmpty(principleUpdateDto.pri) ? principleUpdateDto.pri.toUpperCase() : currentPri;
 
 
-        if(!updatePri.equals(currentPri) && StringUtils.isNotEmpty(updatePri)){
+        if(StringUtils.isNotEmpty(updatePri) && !updatePri.equals(currentPri)){
 
             if (principleRepository.notUnique("pri", updatePri)) {
                 throw new UniqueConstraintViolationException("pri", updatePri);

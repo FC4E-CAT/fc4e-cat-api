@@ -33,7 +33,7 @@ public interface PrincipleMapper {
     @Mapping(target = "criteria", ignore = true)
     Principle principleToEntity(PrincipleRequestDto principleRequestDto);
 
-    @Mapping(target = "pri", expression = "java(StringUtils.isNotEmpty(request.pri) ? request.pri : principle.getPri())")
+    @Mapping(target = "pri", expression = "java(StringUtils.isNotEmpty(request.pri) ? request.pri.toUpperCase() : principle.getPri().toUpperCase())")
     @Mapping(target = "label", expression = "java(StringUtils.isNotEmpty(request.label) ? request.label : principle.getLabel())")
     @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : principle.getDescription())")
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
