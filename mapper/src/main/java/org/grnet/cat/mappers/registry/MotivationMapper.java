@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
+import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.entities.registry.Motivation;
@@ -81,4 +82,13 @@ public interface MotivationMapper {
 
         return PrincipleMapper.INSTANCE.principleToDtos(principles);
     }
+
+    @Named("mapPartialMotivation")
+    @Mapping(target = "id",  expression = "java(motivation.getId())")
+    @Mapping(target = "mtv", expression = "java(motivation.getMtv())")
+    @Mapping(target = "label", expression = "java(motivation.getLabel())")
+    PartialMotivationResponse mapPartialMotivation(Motivation motivation);
+
+    @IterableMapping(qualifiedByName="mapPartialMotivation")
+    List<PartialMotivationResponse> mapPartialMotivations(List<Motivation> motivations);
 }

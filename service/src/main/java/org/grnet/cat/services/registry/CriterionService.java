@@ -17,20 +17,18 @@ import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.dtos.registry.template.TestNode;
+import org.grnet.cat.entities.registry.Criterion;
 import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.TypeCriterion;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.CriteriaMapper;
+import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
-import org.grnet.cat.repositories.registry.CriterionMetricRepository;
-import org.grnet.cat.repositories.registry.CriterionRepository;
-import org.grnet.cat.repositories.registry.ImperativeRepository;
-import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
-import org.grnet.cat.repositories.registry.TypeCriterionRepository;
+import org.grnet.cat.repositories.registry.*;
 import org.jboss.logging.Logger;
 
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class CriterionService {
@@ -60,10 +58,14 @@ public class CriterionService {
      * @param uriInfo The Uri Info.
      * @return A PageResource containing the criteria items in the requested page.
      */
-    public PageResource<CriterionResponse> listAll(int page, int size, UriInfo uriInfo) {
+    public PageResource<CriterionResponse> listAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var criteriaPage = criteriaRepository.fetchCriteriaByPage(page, size);
-        var criteriaDTOs = CriteriaMapper.INSTANCE.criteriaToDtos(criteriaPage.list());
+        var criteriaPage = criteriaRepository.fetchCriteriaByPage(search, sort, order, page, size);
+
+        var criteriaDTOs = criteriaPage.list().stream()
+                .map(this::criterionResponseWithMotivations)
+                .collect(Collectors.toList());
+
         return new PageResource<>(criteriaPage, criteriaDTOs, uriInfo);
     }
 
@@ -75,8 +77,9 @@ public class CriterionService {
      */
     public CriterionResponse findById(String id) {
 
-        var criteria = criteriaRepository.findById(id);
-        return CriteriaMapper.INSTANCE.criteriaToDto(criteria);
+        var criterion = criteriaRepository.findById(id);
+
+        return criterionResponseWithMotivations(criterion);
     }
 
     /**
@@ -218,4 +221,27 @@ public class CriterionService {
 
         return detailed;
     }
+
+
+    /**
+     * This method takes a Criterion entity, converts it to a CriterionResponse, retrieves and maps
+     * any associated motivations, and then sets the motivations in the response.
+     *
+     * @param criterion The Criterion entity to be converted and enhanced.
+     * @return A CriterionResponse with associated motivations.
+     */
+    private CriterionResponse criterionResponseWithMotivations(Criterion criterion) {
+
+        var criterionResponse = CriteriaMapper.INSTANCE.criteriaToDto(criterion);
+
+        var motivations = principleCriterionRepository.getMotivationIdsByCriterion(criterion.getId());
+        var motivationResponses = motivations.stream()
+                .map(MotivationMapper.INSTANCE::mapPartialMotivation)
+                .collect(Collectors.toList());
+
+        criterionResponse.setMotivations(motivationResponses);
+
+        return criterionResponse;
+    }
+
 }

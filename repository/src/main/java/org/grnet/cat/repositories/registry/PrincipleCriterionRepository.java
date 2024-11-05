@@ -2,14 +2,12 @@ package org.grnet.cat.repositories.registry;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.CriterionActorJunction;
-import org.grnet.cat.entities.registry.CriterionMetricJunction;
+import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.repositories.Repository;
 
@@ -134,7 +132,28 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
                 .setParameter("criterionIds", criterionIds);
 
         return query.getSingleResult();
+   }
+    @Transactional
+    public List<Motivation> getMotivationIdsByCriterion(String criterionId) {
+
+        var db = "SELECT DISTINCT pc.motivation FROM PrincipleCriterionJunction pc WHERE pc.criterion.id = :criterionId";
+
+        return getEntityManager().createQuery(db, Motivation.class)
+                .setParameter("criterionId", criterionId)
+                .getResultList();
     }
+
+    @Transactional
+    public List<Motivation> getMotivationIdsByPrinciple(String principleId) {
+
+        var db = "SELECT DISTINCT pc.motivation FROM PrincipleCriterionJunction pc WHERE pc.principle.id = :principleId";
+
+        return getEntityManager().createQuery(db, Motivation.class)
+                .setParameter("principleId", principleId)
+                .getResultList();
+    }
+
+
 }
 
 

@@ -24,6 +24,7 @@ public interface CriteriaMapper {
     @Named("mapWithExpression")
     @Mapping(target = "imperative", expression = "java(criterion.getImperative().getId())")
     @Mapping(target = "typeCriterion", expression = "java(criterion.getTypeCriterion().getId())")
+    @Mapping(target = "motivations", ignore = true)
     CriterionResponse criteriaToDto(Criterion criterion);
 
     @Mapping(target = "cri", expression = "java(criteriaRequestDto.cri.toUpperCase())")
