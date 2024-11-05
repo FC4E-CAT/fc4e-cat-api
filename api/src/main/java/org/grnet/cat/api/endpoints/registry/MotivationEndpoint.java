@@ -44,9 +44,11 @@ import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
+import org.grnet.cat.services.TemplateService;
 import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
 import org.grnet.cat.validators.SortAndOrderValidator;
@@ -66,6 +68,8 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         in = SecuritySchemeIn.HEADER)
 public class MotivationEndpoint {
 
+    @Inject
+    TemplateService templateService;
     @Inject
     private MotivationService motivationService;
 
@@ -496,8 +500,8 @@ public class MotivationEndpoint {
                                               @PathParam("id")
                                               @Valid
                                               @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                  @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:",
-                                                          isPublishedPermitted = false)                                              String id,
+                                              @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:",
+                                                      isPublishedPermitted = false) String id,
                                               @Parameter(
                                                       description = "The actor to be deleted.",
                                                       required = true,
@@ -1099,7 +1103,7 @@ public class MotivationEndpoint {
                                                          @PathParam("id")
                                                          @Valid
                                                          @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false )
+                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                                          String id,
                                                          Set<@Valid PrincipleCriterionRequest> request) {
 
@@ -1116,6 +1120,67 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(informativeResponse).build();
     }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Retrieve registry template for a specific motivation and actor.",
+            description = "This endpoint retrieves a registry template for a specific motivation and actor.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of assessment templates.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RegistryTemplateDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/by-actor/{actor-id}/template")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getRegistryTemplate(@Parameter(
+            description = "The Motivation to retrieve template.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                        @PathParam("id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                        String id,
+
+
+                                        @Parameter(
+                                                description = "The Actor to retrieve template.",
+                                                required = true,
+                                                example = "pid_graph:566C01F6",
+                                                schema = @Schema(type = SchemaType.STRING))
+                                        @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
+
+        var template = templateService.buildTemplate(id, actorId);
+
+        return Response.ok().entity(template).build();
+    }
+
 
     @Tag(name = "Motivation")
     @Operation(
@@ -1382,7 +1447,7 @@ public class MotivationEndpoint {
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.message="Successful publish";
+        informativeResponse.message = "Successful publish";
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -1447,7 +1512,7 @@ public class MotivationEndpoint {
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.message="Successful unpublish";
+        informativeResponse.message = "Successful unpublish";
 
         return Response.ok().entity(informativeResponse).build();
     }
