@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
+import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
 import org.jboss.logging.Logger;
 
@@ -44,6 +46,9 @@ public class CriterionService {
 
     @Inject
     CriterionMetricRepository criterionMetricRepository;
+
+    @Inject
+    PrincipleCriterionRepository principleCriterionRepository;
 
     private static final Logger LOG = Logger.getLogger(CriterionService.class);
 
@@ -148,6 +153,11 @@ public class CriterionService {
      */
     @Transactional
     public boolean delete(String id) {
+
+        if(principleCriterionRepository.existsByCriterion(id)){
+
+            throw new ForbiddenException("This Criterion cannot be deleted because it is linked to a Motivation.");
+        }
 
         return criteriaRepository.deleteById(id);
     }

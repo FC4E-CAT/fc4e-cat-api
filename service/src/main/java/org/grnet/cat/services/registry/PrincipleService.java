@@ -3,6 +3,7 @@ package org.grnet.cat.services.registry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
@@ -12,6 +13,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
+import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
 
@@ -20,6 +22,9 @@ public class PrincipleService {
 
     @Inject
     PrincipleRepository principleRepository;
+
+    @Inject
+    PrincipleCriterionRepository principleCriterionRepository;
 
     private static final Logger LOG = Logger.getLogger(PrincipleService.class);
 
@@ -110,6 +115,12 @@ public class PrincipleService {
      */
     @Transactional
     public boolean delete(String id) {
+
+        if(principleCriterionRepository.existsByCriterion(id)){
+
+            throw new ForbiddenException("This Principle cannot be deleted because it is linked to a Motivation.");
+        }
+
         return principleRepository.deleteById(id);
     }
 

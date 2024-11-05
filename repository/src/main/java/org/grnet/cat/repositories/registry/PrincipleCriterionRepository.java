@@ -26,6 +26,18 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
        return find("FROM PrincipleCriterionJunction pri WHERE pri.criterion.id = ?1 and pri.motivation.id =?2 ",criterionId,motivationId).firstResultOptional();
    }
 
+    public boolean existsByCriterion(String criterionId) {
+        return find("SELECT 1 FROM PrincipleCriterionJunction pc WHERE pc.id.criterionId = ?1", criterionId)
+                .firstResultOptional()
+                .isPresent();
+    }
+
+    public boolean existsByPrinciple(String principleId) {
+        return find("SELECT 1 FROM PrincipleCriterionJunction pc WHERE pc.id.principleId = ?1", principleId)
+                .firstResultOptional()
+                .isPresent();
+    }
+
     @Transactional
     public PageQuery<PrincipleCriterionJunction> fetchPrincipleCriterionWithSearch(String search, String sort, String order, int page, int size) {
 

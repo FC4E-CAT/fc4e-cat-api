@@ -328,7 +328,7 @@ public class CriteriaEndpoint {
     public Response deleteCriteria(@Parameter(
             description = "The ID of the Criterion to delete.",
             required = true,
-            example = "1",
+            example = "pid_graph:07BEDE5D",
             schema = @Schema(type = SchemaType.STRING))
                                    @PathParam("id")
                                        @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String id) {

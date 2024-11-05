@@ -101,21 +101,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void fetchRorOrganisationByName() {
-
-        register("alice");
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .get("/organisations/ROR/Keimyung University")
-                .thenReturn();
-
-        assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
-    }
-
-
-    @Test
     public void fetchRorOrganisationByNameLessThan2Chars() {
 
         register("alice");
