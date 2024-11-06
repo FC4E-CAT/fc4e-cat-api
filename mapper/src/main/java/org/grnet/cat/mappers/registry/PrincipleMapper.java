@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
+
 /**
  * The PrincipleMapper is responsible for mapping Principle entities to DTOs and vice versa.
  */
@@ -21,6 +22,7 @@ public interface PrincipleMapper {
     List<PrincipleResponseDto> principleToDtos(List<Principle> principles);
 
     @Named("mapWithExpression")
+    @Mapping(target = "motivations", ignore = true)
     PrincipleResponseDto principleToDto(Principle principle);
 
     @Mapping(target = "pri", expression = "java(principleRequestDto.pri.toUpperCase())")

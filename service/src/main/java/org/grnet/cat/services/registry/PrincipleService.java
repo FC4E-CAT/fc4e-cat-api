@@ -10,12 +10,15 @@ import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.entities.registry.Principle;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
+import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
+
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class PrincipleService {
@@ -36,10 +39,14 @@ public class PrincipleService {
      * @param uriInfo The Uri Info.
      * @return A PageResource containing the principle items in the requested page.
      */
-    public PageResource<PrincipleResponseDto> listAll(int page, int size, UriInfo uriInfo) {
+    public PageResource<PrincipleResponseDto> listAll(String search, String sort, String order,int page, int size, UriInfo uriInfo) {
 
-        var principlePage = principleRepository.fetchPrincipleByPage(page, size);
-        var principleDTOs = PrincipleMapper.INSTANCE.principleToDtos(principlePage.list());
+        var principlePage = principleRepository.fetchPrincipleByPage(search, sort, order, page, size);
+
+        var principleDTOs = principlePage.list().stream()
+                .map(this::principleResponseWithMotivations)
+                .collect(Collectors.toList());
+
         return new PageResource<>(principlePage, principleDTOs, uriInfo);
     }
 
@@ -52,7 +59,8 @@ public class PrincipleService {
     public PrincipleResponseDto findById(String id) {
 
         var principle = principleRepository.findById(id);
-        return PrincipleMapper.INSTANCE.principleToDto(principle);
+
+        return principleResponseWithMotivations(principle);
     }
 
     /**
@@ -130,7 +138,7 @@ public class PrincipleService {
     public PageResource<PrincipleResponseDto> listPrinciplesByMotivation(String motivationId, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
         var principlePage = principleRepository.fetchPrincipleByMotivation(motivationId, search, sort, order, page, size);
-        var principleDto = PrincipleCriterionMapper.INSTANCE.principleToDtos(principlePage.list());
+        var principleDto = PrincipleMapper.INSTANCE.principleToDtos(principlePage.list());
 
         return new PageResource<>(principlePage, principleDto, uriInfo);
 
@@ -142,5 +150,27 @@ public class PrincipleService {
     @Transactional
     public void deleteAll() {
         principleRepository.deleteAll();
+    }
+
+
+    /**
+     * This method takes a Principle entity, converts it to a PrincipleResponseDto, retrieves and maps
+     * any associated motivations, and then sets the motivations in the response.
+     *
+     * @param principle The Principle entity to be converted and enhanced.
+     * @return A PrincipleResponseDto with associated motivations.
+     */
+    private PrincipleResponseDto principleResponseWithMotivations(Principle principle) {
+
+        var principleResponse = PrincipleMapper.INSTANCE.principleToDto(principle);
+
+        var motivations = principleCriterionRepository.getMotivationIdsByPrinciple(principle.getId());
+        var motivationResponses = motivations.stream()
+                .map(MotivationMapper.INSTANCE::mapPartialMotivation)
+                .collect(Collectors.toList());
+
+        principleResponse.setMotivations(motivationResponses);
+
+        return principleResponse;
     }
 }

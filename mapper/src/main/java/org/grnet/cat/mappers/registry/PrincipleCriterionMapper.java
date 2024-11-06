@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
-import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.entities.registry.*;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -12,7 +11,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,9 +25,6 @@ public interface PrincipleCriterionMapper {
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<PrincipleCriterionResponse> criteriaToDtos(List<Criterion> criteria);
-
-    //@IterableMapping(qualifiedByName = "mapWithExpression")
-    List<PrincipleResponseDto> principleToDtos(List<Principle> principle);
 
     List<PrincipleCriterionResponseDto> principleCriterionToResponseDtos(List<PrincipleCriterionJunction> entities);
 

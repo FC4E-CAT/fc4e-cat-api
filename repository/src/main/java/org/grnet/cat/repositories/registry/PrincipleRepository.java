@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories.registry;
 
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -23,9 +22,24 @@ public class PrincipleRepository implements Repository<Principle, String> {
      * @param size   The maximum number of guidance items to include in a page.
      * @return A PageQuery of guidance items.
      */
-    public PageQuery<Principle> fetchPrincipleByPage(int page, int size) {
+    public PageQuery<Principle> fetchPrincipleByPage(String search, String sort, String order, int page, int size) {
 
-        var panache = find("from Principle", Sort.descending("lastTouch").and("id", Sort.Direction.Ascending)).page(page, size);
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Principle p");
+
+        var map = new HashMap<String, Object>();
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("where (p.id like :search")
+                    .add("or p.label like :search")
+                    .add("or p.pri like :search)");
+
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by p." + sort + " " + order + ", p.id ASC");
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Principle>();
         pageable.list = panache.list();
