@@ -45,4 +45,13 @@ public class MotivationActorResponse {
     @JsonProperty("version")
     public Integer lodMAV;
 
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The published status of the motivation actor.",
+            example = "FALSE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("published")
+    public Boolean published;
 }

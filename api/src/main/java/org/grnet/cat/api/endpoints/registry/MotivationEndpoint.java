@@ -1517,6 +1517,142 @@ public class MotivationEndpoint {
         return Response.ok().entity(informativeResponse).build();
     }
 
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Publish Motivation Actor relationship",
+            description = "Publish the motivation actor relationship")
+    @APIResponse(
+            responseCode = "201",
+            description = "Motivation is Published.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/actors/{actor-id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response publishMotivationActor(
+            @Parameter(description = "The ID of the Motivation to publish",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            String id, @Parameter(
+            description = "The ID of the Actor to add criterion to.",
+            required = true,
+            example = "pid_graph:234B60D8",
+            schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId
+    ) {
 
+        motivationService.publishActor(id,actorId);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "Successful publish";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Publish Motivation Actor relationship",
+            description = "Publish the motivation actor relationship")
+    @APIResponse(
+            responseCode = "201",
+            description = "Motivation is Published.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/actors/{actor-id}/unpublish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response unpublishMotivationActor(
+            @Parameter(description = "The ID of the Motivation to publish",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            String id, @Parameter(
+            description = "The ID of the Actor to add criterion to.",
+            required = true,
+            example = "pid_graph:234B60D8",
+            schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId
+    ) {
+
+        motivationService.unpublishActor(id,actorId);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "Successful unpublish";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
 }
 

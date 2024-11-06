@@ -22,10 +22,7 @@ import org.grnet.cat.repositories.registry.*;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @ApplicationScoped
 public class MotivationService {
@@ -401,6 +398,40 @@ public class MotivationService {
 
         var motivation = motivationRepository.fetchById(id);
         motivation.setPublished(Boolean.FALSE);
+
+    }
+
+    /**
+     * Publish a  Motivation Actor.
+     *
+     * @param id The id of the  Motivation .
+     * @param actorId The id of the  Actor .
+     */
+    @Transactional
+    public void publishActor(String id,String actorId) {
+
+       Optional<MotivationActorJunction> motivationActorJunctionOpt= motivationActorRepository.fetchByMotivationAndActorAndVersion(id,actorId,1);
+        if(!motivationActorJunctionOpt.isEmpty()) {
+            MotivationActorJunction motivationActorJunction=motivationActorJunctionOpt.get();
+            motivationActorJunction.setPublished(Boolean.TRUE);
+        }
+    }
+
+    /**
+     * Unpublish a  Motivation Actor.
+     *
+     * @param id The id of the  Motivation .
+     * @param actorId The id of the  Actor .
+
+     */
+    @Transactional
+    public void unpublishActor(String id,String actorId) {
+
+        Optional<MotivationActorJunction> motivationActorJunctionOpt= motivationActorRepository.fetchByMotivationAndActorAndVersion(id,actorId,1);
+        if(motivationActorJunctionOpt.isPresent()) {
+            MotivationActorJunction motivationActorJunction=motivationActorJunctionOpt.get();
+            motivationActorJunction.setPublished(Boolean.FALSE);
+        }
 
     }
 

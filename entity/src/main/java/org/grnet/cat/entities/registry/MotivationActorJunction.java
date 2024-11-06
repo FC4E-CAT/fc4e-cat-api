@@ -35,7 +35,10 @@ public class MotivationActorJunction extends Registry{
     @NotNull
     private String motivationX;
 
-    public MotivationActorJunction(Motivation motivation, RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
+    @Column
+    private Boolean  published;
+
+    public MotivationActorJunction(Motivation motivation, RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch,Boolean published) {
 
         this.motivation = motivation;
         this.actor = actor;
@@ -43,6 +46,7 @@ public class MotivationActorJunction extends Registry{
         this.relation = relation;
         this.setLastTouch(lastTouch);
         this.setPopulatedBy(populatedBy);
+        this.published=published;
         this.id = new MotivationActorId(motivation.getId(), actor.getId(), lodMAV);
     }
 
