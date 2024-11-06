@@ -1,0 +1,1 @@
+INSERT INTO p_Criterion_Actor(actor_lodActor,criterion_lodCRI,imperative_lodIMP,motivation_lodMTV,lodMTV_X,lodC_A_V) VALUES ( 'pid_graph:E92B9B49', 'pid_graph:145C7355', 'pid_graph:293B1DEE','pid_graph:5EB0885A','pid_graph:5EB0885A',1);
