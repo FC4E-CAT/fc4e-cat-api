@@ -1,0 +1,1 @@
+UPDATE p_Test_Definition set  testParams ='urlCheck' , testQuestion='Url to check if it under https', toolTip='Please provide a valid url that is used by the service' where lodTDF='pid_graph:C4CF824E';
