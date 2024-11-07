@@ -74,8 +74,9 @@ public class Motivation extends Registry {
 
     public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
 
-        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch);
+        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch,Boolean.FALSE);
         actors.add(actorMotivation);
+
         actorMotivation.getMotivation().actors.add(actorMotivation);
 
     }
