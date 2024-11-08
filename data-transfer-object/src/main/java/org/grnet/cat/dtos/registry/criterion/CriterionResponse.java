@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
+import org.grnet.cat.dtos.registry.template.MetricNode;
 
 import java.util.List;
 
@@ -110,8 +112,20 @@ public class CriterionResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<PartialMotivationResponse> motivations;
 
+
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = MetricResponseDto.class,
+            description = "List of metrics related to this criterion."
+    )
+    @JsonProperty("metrics")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<MetricNode> metrics;
+
     public void setMotivations(List<PartialMotivationResponse> motivations) {
         this.motivations = motivations;
     }
 
+    public void setMetrics(List<MetricNode> metrics) { this.metrics = metrics;}
 }

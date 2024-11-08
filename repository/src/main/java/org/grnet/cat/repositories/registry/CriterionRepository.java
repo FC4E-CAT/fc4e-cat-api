@@ -117,7 +117,9 @@ public class CriterionRepository implements Repository<Criterion, String> {
                         "        tm.labelTestMethod,\n"+
                         "        td.testQuestion,\n"+
                         "        td.testParams,\n"+
-                        "        td.toolTip\n"+
+                        "        td.toolTip,\n"+
+                        "        ta.labelAlgorithmType,\n" +
+                        "        tmt.labelTypeMetric\n" +
                         "    FROM\n" +
                         "        t_Type_Benchmark tb \n" +
                         "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
@@ -127,6 +129,8 @@ public class CriterionRepository implements Repository<Criterion, String> {
                         "        INNER JOIN t_TestMethod tm ON td.lodTME = tm.lodTME\n" +
                         "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
                         "        INNER JOIN p_Criterion_Metric cm ON m.lodMTR = cm.metric_lodMTR\n" +
+                        "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
+                        "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
                         "    WHERE\n" +
                         "        md.motivation_lodMTV = :motivationId\n" +
                         "        AND mt.motivation_lodMTV = :motivationId\n" +

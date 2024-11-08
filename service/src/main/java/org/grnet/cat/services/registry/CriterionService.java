@@ -205,7 +205,7 @@ public class CriterionService {
 
         for (var row : cri) {
 
-            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric().trim(), row.getLabelBenchmarkType(), Double.parseDouble(row.getValueBenchmark())));
+            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new MetricNode(k, row.getLabelMetric().trim(), row.getLabelBenchmarkType(), Double.parseDouble(row.getValueBenchmark()), row.getLabelAlgorithmType(), row.getLabelTypeMetric()));
             Node testNode = testMap.computeIfAbsent(row.getTES(), k -> new TestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), row.getTestQuestion(), row.getTestParams(), row.getToolTip()));
 
             if (!mtrNode.getChildren().contains(testNode)) {
@@ -240,6 +240,43 @@ public class CriterionService {
                 .collect(Collectors.toList());
 
         criterionResponse.setMotivations(motivationResponses);
+
+        var metrics = criterionMetricRepository.findMetricsByCriterionId(criterion.getId());
+
+        Map<String, MetricNode> metricNodeMap = new HashMap<>();
+
+        for (var row : metrics) {
+            var metricNode = metricNodeMap.computeIfAbsent(
+                    row.getMTR(),
+                    key -> new MetricNode(
+                            row.getMTR(),
+                            row.getLabelMetric().trim(),
+                            row.getLabelBenchmarkType(),
+                            Double.parseDouble(row.getValueBenchmark()),
+                            row.getLabelAlgorithmType(),
+                            row.getLabelTypeMetric()
+                    )
+            );
+
+            var uniqueTestIds = metricNode.getChildren().stream()
+                    .map(child -> ((TestNode) child).getId())
+                    .collect(Collectors.toSet());
+
+            if (!uniqueTestIds.contains(row.getTES())) {
+                var testNode = new TestNode(
+                        row.getTES(),
+                        row.getLabelTest().trim(),
+                        row.getDescTest().trim(),
+                        row.getLabelTestMethod(),
+                        row.getTestQuestion(),
+                        row.getTestParams(),
+                        row.getToolTip()
+                );
+                metricNode.addChild(testNode);
+            }
+        }
+
+        criterionResponse.setMetrics(new ArrayList<>(metricNodeMap.values()));
 
         return criterionResponse;
     }

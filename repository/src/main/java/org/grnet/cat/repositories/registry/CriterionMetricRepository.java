@@ -7,8 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.CriterionActorJunction;
 import org.grnet.cat.entities.registry.CriterionMetricJunction;
+import org.grnet.cat.entities.registry.CriterionProjection;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
@@ -85,5 +85,41 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
 
     public Optional<CriterionMetricJunction> fetchCriterionMetricByMotivationAndCriterion(String motivationId, String criterionId) {
         return find("SELECT c FROM CriterionMetricJunction c WHERE c.id.motivationId = ?1 AND c.id.criterionId = ?2", motivationId, criterionId).firstResultOptional();
+    }
+
+    public List<CriterionProjection> findMetricsByCriterionId(String criterionId){
+        return (List<CriterionProjection>) getEntityManager()
+                .createNativeQuery("SELECT\n" +
+                        "        m.lodMTR,\n" +
+                        "        m.MTR,\n" +
+                        "        m.labelMetric,\n" +
+                        "        t.TES,\n" +
+                        "        t.labelTest,\n" +
+                        "        t.descTest,\n" +
+                        "        md.valueBenchmark,\n" +
+                        "        tb.labelBenchmarkType,\n" +
+                        "        tm.labelTestMethod,\n"+
+                        "        td.testQuestion,\n"+
+                        "        td.testParams,\n"+
+                        "        td.toolTip,\n"+
+                        "        ta.labelAlgorithmType,\n" +
+                        "        tmt.labelTypeMetric\n" +
+                        "    FROM\n" +
+                        "        t_Type_Benchmark tb \n" +
+                        "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
+                        "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                        "        INNER JOIN p_Metric_Test mt ON m.lodMTR = mt.metric_lodMTR\n" +
+                        "        INNER JOIN p_Test_Definition td ON mt.test_definition_lodTDF = td.lodTDF\n" +
+                        "        INNER JOIN t_TestMethod tm ON td.lodTME = tm.lodTME\n" +
+                        "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
+                        "        INNER JOIN p_Criterion_Metric cm ON m.lodMTR = cm.metric_lodMTR\n" +
+                        "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
+                        "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
+                        "    WHERE\n" +
+                        "        cm.criterion_lodCRI = :criterionId\n" +
+                        "    ORDER BY\n" +
+                        "        m.MTR", "detailed-criterion")
+                .setParameter("criterionId", criterionId)
+                .getResultList();
     }
 }

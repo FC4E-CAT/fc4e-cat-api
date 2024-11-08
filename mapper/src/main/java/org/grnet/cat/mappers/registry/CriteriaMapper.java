@@ -5,6 +5,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
 import org.grnet.cat.entities.registry.Criterion;
+import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * The CriteriaMapper is responsible for mapping Criteria entities to DTOs and vice versa.
  */
-@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class})
+@Mapper(imports = {StringUtils.class, java.sql.Timestamp.class, java.time.Instant.class}, uses = {MetricMapper.class})
 public interface CriteriaMapper {
 
     CriteriaMapper INSTANCE = Mappers.getMapper(CriteriaMapper.class);
@@ -25,6 +26,7 @@ public interface CriteriaMapper {
     @Mapping(target = "imperative", expression = "java(criterion.getImperative().getId())")
     @Mapping(target = "typeCriterion", expression = "java(criterion.getTypeCriterion().getId())")
     @Mapping(target = "motivations", ignore = true)
+    @Mapping(target = "metrics", ignore = true)
     CriterionResponse criteriaToDto(Criterion criterion);
 
     @Mapping(target = "cri", expression = "java(criteriaRequestDto.cri.toUpperCase())")
