@@ -21,9 +21,9 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //TODO We have to remove this reference as we have created a relationship with Motivation Assessment
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assessment_id")
-    @NotNull
     private Assessment assessment;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -41,4 +41,9 @@ public class Comment {
     @Column(name = "text")
     @NotNull
     private String text;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "motivation_assessment_id")
+    @NotNull
+    private MotivationAssessment motivationAssessment;
 }

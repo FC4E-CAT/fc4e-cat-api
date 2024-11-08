@@ -11,6 +11,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @AllArgsConstructor
 public class RegistryTemplateMotivationDto {
 
+    public RegistryTemplateMotivationDto() {
+    }
+
     @Schema(
             type = SchemaType.STRING,
             implementation = Long.class,

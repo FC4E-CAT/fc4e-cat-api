@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pivovarit.function.ThrowingFunction;
+import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -20,12 +21,16 @@ import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
+import org.grnet.cat.entities.MotivationAssessment;
+import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.UserType;
@@ -36,6 +41,7 @@ import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.TemplateMapper;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.repositories.AssessmentRepository;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
@@ -86,6 +92,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Inject
     MailerService mailerService;
 
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
+
     @Transactional
     @SneakyThrows
     @Override
@@ -107,7 +116,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         validateTemplateJson(request.assessmentDoc);
 
-        handleSubjectDatabaseId(userId, request);
+        handleSubjectDatabaseId(userId, request.assessmentDoc.subject);
 
         validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template.get()).templateDoc));
 
@@ -136,6 +145,42 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(storedAssessment);
     }
 
+    @Transactional
+    @SneakyThrows
+    public UserJsonRegistryAssessmentResponse createV2Assessment(String userId, JsonRegistryAssessmentRequest request) {
+
+        var validation = validationRepository.fetchValidationByUserAndRegistryActorAndOrganisation(userId, request.assessmentDoc.actor.getId(), request.assessmentDoc.organisation.id);
+
+        if (!validation.getStatus().equals(ValidationStatus.APPROVED)) {
+
+            throw new ForbiddenException("The validation request hasn't been approved yet!");
+        }
+
+        handleSubjectDatabaseId(userId, request.assessmentDoc.subject);
+
+        //validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template.get()).templateDoc));
+
+        var timestamp = Timestamp.from(Instant.now());
+        request.assessmentDoc.timestamp = timestamp.toString();
+        request.assessmentDoc.organisation.name = validation.getOrganisationName();
+
+        var assessment = new MotivationAssessment();
+        assessment.setCreatedOn(timestamp);
+        assessment.setValidation(validation);
+        assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
+        assessment.setShared(Boolean.FALSE);
+        assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
+        motivationAssessmentRepository.persist(assessment);
+
+        request.assessmentDoc.id = assessment.getId();
+
+        assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
+
+        keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
+
+        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+    }
+
     /**
      * The API should provide flexibility for clients to either use an existing Subject by specifying its id in the db_id property
      * or create a new one by leaving db_id empty and filling in the other three properties (name, type and id).
@@ -143,39 +188,37 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * its associated Subject should be retrieved, and the values of name, type, and id in the Assessment should be overwritten
      * with the corresponding values from the existing  database Subject.
      */
+    public void handleSubjectDatabaseId(String userId, TemplateSubjectDto subject) {
 
-    @Override
-    public void handleSubjectDatabaseId(String userId, JsonAssessmentRequest request) {
-
-        if (Objects.isNull(request.assessmentDoc.subject.dbId)) {
+        if (Objects.isNull(subject.dbId)) {
 
             var optional = subjectService
-                    .getSubjectByNameAndTypeAndSubjectId(request.assessmentDoc.subject.name, request.assessmentDoc.subject.type, request.assessmentDoc.subject.id, userId);
+                    .getSubjectByNameAndTypeAndSubjectId(subject.name, subject.type, subject.id, userId);
 
             if (optional.isEmpty()) {
 
                 var newSubject = new SubjectRequest();
-                newSubject.name = request.assessmentDoc.subject.name;
-                newSubject.type = request.assessmentDoc.subject.type;
-                newSubject.id = request.assessmentDoc.subject.id;
+                newSubject.name = subject.name;
+                newSubject.type = subject.type;
+                newSubject.id = subject.id;
 
                 var response = subjectService.createSubject(newSubject, userId);
-                request.assessmentDoc.subject.dbId = response.id;
+               subject.dbId = response.id;
             } else {
 
-                request.assessmentDoc.subject.dbId = optional.get().getId();
+               subject.dbId = optional.get().getId();
             }
         } else {
 
-            var subject = subjectService.getSubjectById(request.assessmentDoc.subject.dbId);
+            var dbSubject = subjectService.getSubjectById(subject.dbId);
 
-            if (!subject.getCreatedBy().equals(userId)) {
-                throw new ForbiddenException("User not authorized to manage subject with ID " + request.assessmentDoc.subject.dbId);
+            if (!dbSubject.getCreatedBy().equals(userId)) {
+                throw new ForbiddenException("User not authorized to manage subject with ID " + subject.dbId);
             }
 
-            request.assessmentDoc.subject.name = subject.getName();
-            request.assessmentDoc.subject.type = subject.getType();
-            request.assessmentDoc.subject.id = subject.getSubjectId();
+            subject.name = dbSubject.getName();
+            subject.type = dbSubject.getType();
+            subject.id = dbSubject.getSubjectId();
         }
     }
 
@@ -334,6 +377,34 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     }
 
     /**
+     * Retrieves a specific registry assessment if it belongs to the user.
+     *
+     * @param assessmentId The ID of the assessment to retrieve.
+     * @return The assessment if it belongs to the user.
+     * @throws ForbiddenException If the user is not authorized to access the assessment.
+     */
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
+    public UserJsonRegistryAssessmentResponse getRegistryDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
+
+        var assessment = motivationAssessmentRepository.findById(assessmentId);
+
+        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+    }
+
+    /**
+     * Deletes a registry assessment if it is not published and belongs to the authenticated user.
+     *
+     * @param assessmentId The ID of the assessment to be deleted.
+     * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published or doesn't belong to them).
+     */
+    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
+    @Transactional
+    public void deleteRegistryAssessmentBelongsToUser(String assessmentId){
+
+     motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
+    }
+
+    /**
      * Retrieves a specific public assessment.
      *
      * @param assessmentId The ID of the assessment to retrieve.
@@ -357,6 +428,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Transactional
     public void deleteAll() {
         assessmentRepository.deleteAll();
+        motivationAssessmentRepository.deleteAll();
     }
 
     /**
@@ -420,6 +492,33 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var fullAssessments = AssessmentMapper.INSTANCE.userAssessmentsToJsonAssessments(assessments.list());
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.userAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+    }
+
+    /**
+     * Retrieves a page of registry assessments submitted by the specified user.
+     *
+     * @param page        The index of the page to retrieve (starting from 0).
+     * @param size        The maximum number of assessments to include in a page.
+     * @param uriInfo     The Uri Info.
+     * @param userID      The ID of the user who requests their assessments.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
+     * @param actorId     Actor ID to search for.
+     * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
+     */
+    public PageResource<UserPartialJsonAssessmentResponse> getDtoRegistryAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, String actorId) {
+
+        var sharableIds = keycloakAdminService
+                .getUserEntitlements(userID)
+                .stream()
+                .map(entitlement -> keycloakAdminService.getLastPartOfEntitlement(entitlement, ENTITLEMENTS_DELIMITER))
+                .collect(Collectors.toList());
+
+        var assessments = motivationAssessmentRepository.fetchRegistryAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId, sharableIds);
+
+        var fullAssessments = AssessmentMapper.INSTANCE.userRegistryAssessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.userRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
     /**

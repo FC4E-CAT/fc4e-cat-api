@@ -25,7 +25,7 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The actor of the template.")
+            description = "The actor.")
     @JsonProperty("actor")
     public String actor;
 

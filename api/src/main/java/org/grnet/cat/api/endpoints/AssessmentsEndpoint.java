@@ -31,6 +31,7 @@ import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.repositories.CommentRepository;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
@@ -169,9 +170,9 @@ public class AssessmentsEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        var validations = assessmentService.getDtoAssessmentIfBelongsOrSharedToUser(id);
+        var assessment = assessmentService.getDtoAssessmentIfBelongsOrSharedToUser(id);
 
-        return Response.ok().entity(validations).build();
+        return Response.ok().entity(assessment).build();
     }
 
     @Tag(name = "Assessment")
@@ -790,7 +791,7 @@ public class AssessmentsEndpoint {
                     example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(
-                    repository = AssessmentRepository.class,
+                    repository = MotivationAssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
             String id,
             @Valid @NotNull(
@@ -847,7 +848,7 @@ public class AssessmentsEndpoint {
                     example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(
-                    repository = AssessmentRepository.class,
+                    repository = MotivationAssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
             String id,
             @QueryParam("page") @DefaultValue("1") int page,
@@ -902,7 +903,7 @@ public class AssessmentsEndpoint {
                     example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(
-                    repository = AssessmentRepository.class,
+                    repository = MotivationAssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
             String assessmentId,
             @Parameter(
@@ -916,7 +917,7 @@ public class AssessmentsEndpoint {
                     Long commentId,
             @Valid @NotNull CommentRequestDto commentRequestDto) {
 
-        var updatedComment = commentService.updateComment(assessmentId, commentId,commentRequestDto, utility.getUserUniqueIdentifier());
+        var updatedComment = commentService.updateComment(commentId,commentRequestDto, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(updatedComment).build();
     }
@@ -963,7 +964,7 @@ public class AssessmentsEndpoint {
                     example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id") @Valid @NotFoundEntity(
-                    repository = AssessmentRepository.class,
+                    repository = MotivationAssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
                     String assessmentId,
             @Parameter(
@@ -976,7 +977,7 @@ public class AssessmentsEndpoint {
                     message = "Comment with the given ID not found.")
                     Long commentId){
 
-        commentService.deleteComment(assessmentId, commentId, utility.getUserUniqueIdentifier());
+        commentService.deleteComment(commentId, utility.getUserUniqueIdentifier());
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
