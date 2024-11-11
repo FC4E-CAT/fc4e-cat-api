@@ -56,9 +56,10 @@ public class PrincipleRepository implements Repository<Principle, String> {
 
         var joiner = new StringJoiner(StringUtils.SPACE);
 
-        joiner.add("select DISTINCT pri FROM PrincipleCriterionJunction cm")
-                .add("join cm.principle pri")
-                .add("where cm.motivation.id = :motivationId");
+        joiner.add("select DISTINCT pri FROM Principle pri")
+                .add("where (exists (select 1 from PrincipleCriterionJunction cm where cm.principle.id = pri.id and cm.motivation.id = :motivationId)")
+                .add("or exists (select 1 from MotivationPrincipleJunction mp where mp.principle.id = pri.id and mp.motivation.id = :motivationId))");
+
 
         var map = new HashMap<String, Object>();
         map.put("motivationId", motivationId);

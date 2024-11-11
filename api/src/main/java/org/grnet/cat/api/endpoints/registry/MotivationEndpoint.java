@@ -42,7 +42,9 @@ import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
+import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
 import org.grnet.cat.repositories.registry.CriterionRepository;
@@ -520,6 +522,69 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(informativeResponse).build();
     }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Create a Principle for a Motivation.",
+            description = "Create a Principle for a single motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Principles successfully created for the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/principle")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createPrinciple(
+            @Parameter(
+            description = "The ID of the Motivation to create a principle for.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+            MotivationPrincipleExtendedRequestDto request) {
+
+        var messages = motivationService.createPrincipleForMotivation(id, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.messages = messages;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+
+
 
     @Tag(name = "Motivation")
     @Operation(

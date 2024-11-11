@@ -15,7 +15,9 @@ import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
+import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.services.registry.RelationsService;
 import org.junit.jupiter.api.Test;
 
@@ -899,4 +901,67 @@ public class MotivationEndpointTest extends KeycloakTest {
         assertEquals(response.code, 404);
         assertEquals(response.message, "There is no Principle with the following id: lalala");
     }
+
+    @Test
+    public void createPrincipleForMotivationAlreadyExist() {
+
+        register("admin");
+
+        var motivation = new MotivationRequest();
+        motivation.mtv = "testMtv";
+        motivation.label = "testLabelMotivation";
+        motivation.description = "testDecMotivation";
+        motivation.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivation)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        var principleRequestDto = new PrincipleRequestDto();
+        principleRequestDto.pri = "PRITEST";
+        principleRequestDto.label = "New Principle";
+        principleRequestDto.description = "A test principle for motivation.";
+
+        var request = new MotivationPrincipleExtendedRequestDto();
+        request.principleRequestDto = principleRequestDto;
+        request.annotationText = "Test Annotation";
+        request.annotationUrl = "http://example.com";
+        request.relation = "isSupportedBy";
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principle", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+
+        var errorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principle", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("A principle with the identifier 'PRITEST' already exists.", errorResponse.messages.get(0));
+    }
+
 }
