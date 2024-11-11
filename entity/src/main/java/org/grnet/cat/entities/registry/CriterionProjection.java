@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
 public class CriterionProjection {
 
@@ -33,4 +33,8 @@ public class CriterionProjection {
     private String testParams;
 
     private String toolTip;
+
+    private String labelAlgorithmType;
+
+    private String labelTypeMetric;
 }

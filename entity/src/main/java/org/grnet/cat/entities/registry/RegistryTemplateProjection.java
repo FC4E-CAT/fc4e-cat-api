@@ -28,6 +28,10 @@ public class RegistryTemplateProjection {
 
     private String labelMetric;
 
+    private String labelAlgorithmType;
+
+    private String labelTypeMetric;
+
     private String TES;
 
     private String labelTest;

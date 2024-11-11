@@ -28,8 +28,9 @@ import java.util.Set;
                         @ColumnResult(name = "labelTestMethod", type = String.class),
                         @ColumnResult(name = "testQuestion", type = String.class),
                         @ColumnResult(name = "testParams", type = String.class),
-                        @ColumnResult(name = "toolTip", type = String.class)
-
+                        @ColumnResult(name = "toolTip", type = String.class),
+                        @ColumnResult(name = "labelAlgorithmType", type = String.class),
+                        @ColumnResult(name = "labelTypeMetric", type = String.class)
                 }
         )
 )

@@ -34,6 +34,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#343](https://github.com/FC4E-CAT/fc4e-cat-api/pull/343) CAT-605 Unpublish a published motivation.
 - [#345](https://github.com/FC4E-CAT/fc4e-cat-api/pull/345) CAT-608 Implement Search and Retrieve Associated Motivations for Principles and Criteria
 - [#346](https://github.com/FC4E-CAT/fc4e-cat-api/pull/346) CAT-613 Publish/Unpublish motivation actor relationship
+- [#350](https://github.com/FC4E-CAT/fc4e-cat-api/pull/350) CAT-612 Include Related Metrics in Criterion Response
+
 ### Fix
 
 - [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
