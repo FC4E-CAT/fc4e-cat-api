@@ -113,6 +113,8 @@ public class TemplateRepository implements Repository<Template, Long> {
                 "        m.lodMTR,\n" +
                 "        m.MTR,\n" +
                 "        m.labelMetric,\n" +
+                "        ta.labelAlgorithmType,\n" +
+                "        ttm.labelTypeMetric,\n" +
                 "        t.TES,\n" +
                 "        t.labelTest,\n" +
                 "        t.descTest,\n" +
@@ -129,6 +131,8 @@ public class TemplateRepository implements Repository<Template, Long> {
                 "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
                 "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
                 "        INNER JOIN p_Metric_Test mt ON m.lodMTR = mt.metric_lodMTR\n" +
+                "        INNER JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
+                "        INNER JOIN t_Type_Metric ttm ON m.lodTMT = ttm.lodTMT\n" +
                 "        INNER JOIN p_Test_Definition td ON mt.test_definition_lodTDF = td.lodTDF\n" +
                 "        INNER JOIN t_TestMethod tm ON td.lodTME = tm.lodTME\n" +
                 "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +

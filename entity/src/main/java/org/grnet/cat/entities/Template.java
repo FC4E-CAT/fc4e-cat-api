@@ -25,6 +25,8 @@ import java.sql.Timestamp;
                         @ColumnResult(name = "lodMTR", type = String.class),
                         @ColumnResult(name = "MTR", type = String.class),
                         @ColumnResult(name = "labelMetric", type = String.class),
+                        @ColumnResult(name = "labelAlgorithmType", type = String.class),
+                        @ColumnResult(name = "labelTypeMetric", type = String.class),
                         @ColumnResult(name = "TES", type = String.class),
                         @ColumnResult(name = "labelTest", type = String.class),
                         @ColumnResult(name = "descTest", type = String.class),
