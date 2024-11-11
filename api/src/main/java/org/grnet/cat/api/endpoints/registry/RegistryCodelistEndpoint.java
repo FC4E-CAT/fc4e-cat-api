@@ -448,52 +448,6 @@ public class RegistryCodelistEndpoint {
         return Response.ok().entity(actor).build();
     }
 
-    @Tag(name = "Registry Codelist")
-    @Operation(
-            summary = "Get list of Actor.",
-            description = "This endpoint retrieves all Actors" +
-                    "By default, the first page of 10 Actor will be returned. You can tune the default values by using the query parameters page and size.")
-    @APIResponse(
-            responseCode = "200",
-            description = "List of Type Criterion.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableRegistryActorResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    @Path("/actors")
-    public Response getActorList(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                         @Parameter(name = "size", in = QUERY,
-                                                 description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                         @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                         @Context UriInfo uriInfo) {
-
-        var actorList = registryActorService.getActorListByPage(page - 1, size, uriInfo);
-
-        return Response.ok().entity(actorList).build();
-    }
-
     public static class PageableRegistryActorResponse extends PageResource<RegistryActorResponse> {
 
         private List<RegistryActorResponse> content;

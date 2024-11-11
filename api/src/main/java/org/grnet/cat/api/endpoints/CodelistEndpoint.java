@@ -21,6 +21,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.cat.api.endpoints.registry.RegistryCodelistEndpoint;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.dtos.ActorDto;
 import org.grnet.cat.dtos.assessment.AssessmentTypeDto;
@@ -28,6 +29,7 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.services.ActorService;
 import org.grnet.cat.services.AssessmentTypeService;
+import org.grnet.cat.services.registry.RegistryActorService;
 
 import java.util.List;
 
@@ -41,6 +43,9 @@ public class CodelistEndpoint {
 
     @Inject
     AssessmentTypeService assessmentTypeService;
+
+    @Inject
+    RegistryActorService registryActorService;
 
     @Tag(name = "Codelist")
     @Operation(
@@ -90,6 +95,50 @@ public class CodelistEndpoint {
         var actors = actorService.getActorsByPage(page-1, size, uriInfo);
 
         return Response.ok().entity(actors).build();
+    }
+
+    @Tag(name = "Codelist")
+    @Operation(
+            summary = "Get list of Registry Actors.",
+            description = "This endpoint retrieves all Registry Actors" +
+                    "By default, the first page of 10 Registry Actor will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Registry Actors.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = RegistryCodelistEndpoint.PageableRegistryActorResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/registry-actors")
+    public Response getRegistryActors(@Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                 @Parameter(name = "size", in = QUERY,
+                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                 @Context UriInfo uriInfo) {
+
+        var actorList = registryActorService.getActorListByPage(page - 1, size, uriInfo);
+
+        return Response.ok().entity(actorList).build();
     }
 
     @Tag(name = "Codelist")
