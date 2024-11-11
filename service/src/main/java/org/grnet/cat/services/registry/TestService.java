@@ -3,12 +3,14 @@ package org.grnet.cat.services.registry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
 import org.grnet.cat.dtos.registry.test.TestUpdateDto;
 import org.grnet.cat.mappers.registry.TestMapper;
+import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.jboss.logging.Logger;
@@ -20,6 +22,8 @@ public class TestService {
 
     @Inject
     TestRepository testRepository;
+    @Inject
+    MetricTestRepository metricTestRepository;
 
     private static final Logger LOG = Logger.getLogger(TestService.class);
 
@@ -39,7 +43,7 @@ public class TestService {
     /**
      * Creates a new Test item.
      *
-     * @param userId The user creating the Test.
+     * @param userId         The user creating the Test.
      * @param testRequestDto The Test request data.
      * @return The created Test DTO.
      */
@@ -58,13 +62,17 @@ public class TestService {
     /**
      * Updates an existing Test item.
      *
-     * @param id The unique ID of the Test to update.
-     * @param userId The user performing the update.
+     * @param id      The unique ID of the Test to update.
+     * @param userId  The user performing the update.
      * @param request The Test update data.
      * @return The updated Test DTO.
      */
     @Transactional
     public TestResponseDto updateTest(String id, String userId, TestUpdateDto request) {
+
+        if (metricTestRepository.existTestInStatus(id, Boolean.TRUE)) {
+            throw new ForbiddenException("No action permitted, test exists in a published motivation");
+        }
 
         var test = testRepository.findById(id);
 
@@ -81,6 +89,9 @@ public class TestService {
      */
     @Transactional
     public boolean deleteTest(String id) {
+        if (metricTestRepository.existTestInStatus(id, Boolean.TRUE)) {
+            throw new ForbiddenException("No action permitted, test exists in a published motivation");
+        }
 
         return testRepository.deleteById(id);
     }
@@ -88,8 +99,8 @@ public class TestService {
     /**
      * Retrieves a page of Test items.
      *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of Test items to include in a page.
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of Test items to include in a page.
      * @param uriInfo The Uri Info for pagination links.
      * @return A PageResource containing the Test items in the requested page.
      */

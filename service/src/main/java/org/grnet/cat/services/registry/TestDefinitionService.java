@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -12,6 +13,7 @@ import org.grnet.cat.dtos.registry.test.TestDefinitionResponseDto;
 import org.grnet.cat.dtos.registry.test.TestDefinitionUpdateDto;
 import org.grnet.cat.entities.registry.TestMethod;
 import org.grnet.cat.mappers.registry.TestDefinitionMapper;
+import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestDefinitionRepository;
 import org.grnet.cat.repositories.registry.TestMethodRepository;
 import org.jboss.logging.Logger;
@@ -26,6 +28,9 @@ public class TestDefinitionService {
     
     @Inject
     TestMethodRepository testMethodRepository;
+
+    @Inject
+    MetricTestRepository metricTestRepository;
     private static final Logger LOG = Logger.getLogger(TestDefinitionService.class);
 
     /**
@@ -71,6 +76,9 @@ public class TestDefinitionService {
      */
     @Transactional
     public TestDefinitionResponseDto updateTestDefinition(String id, String userId, TestDefinitionUpdateDto request) {
+        if (metricTestRepository.existTestDefinitionInStatus(id, Boolean.TRUE)) {
+            throw new ForbiddenException("No action permitted, test definition exists in a published motivation");
+        }
 
         var testDefinition = testDefinitionRepository.findById(id);
 
@@ -92,7 +100,9 @@ public class TestDefinitionService {
      */
     @Transactional
     public boolean deleteTestDefinition(String id) {
-
+        if (metricTestRepository.existTestDefinitionInStatus(id, Boolean.TRUE)) {
+            throw new ForbiddenException("No action permitted, test definition exists in a published motivation");
+        }
         return testDefinitionRepository.deleteById(id);
     }
 

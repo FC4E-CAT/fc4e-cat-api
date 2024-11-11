@@ -122,4 +122,12 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
                 .setParameter("criterionId", criterionId)
                 .getResultList();
     }
+
+    public boolean existMetricInStatus(String metricId,boolean status) {
+        return find("SELECT 1 FROM CriterionMetricJunction cm INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE cm.id.metricId= ?1 AND ma.published= ?2", metricId,status)
+                .firstResultOptional()
+                .isPresent();
+
+    }
+
 }

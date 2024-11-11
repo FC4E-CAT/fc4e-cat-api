@@ -47,7 +47,6 @@ import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.TemplateService;
-import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
@@ -446,8 +445,6 @@ public class TemplatesEndpoint {
                                         @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
                                         //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for unpublished Motivation with the following id:", isPublishedPermitted = true)
                                         String motivationId,
-
-
                                         @Parameter(
                                                 description = "The Actor to retrieve template.",
                                                 required = true,

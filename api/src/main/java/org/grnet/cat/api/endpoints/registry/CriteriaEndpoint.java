@@ -322,6 +322,7 @@ public class CriteriaEndpoint {
     @Path("/{id}")
     @Registration
     @Produces(MediaType.APPLICATION_JSON)
+ //   @CheckPublishedRelation(type = PublishEntityType.CRITERION,permittedStatus = false)
     public Response updateCriteria(@Parameter(
             description = "The ID of the criteria item to update.",
             required = true,
@@ -370,13 +371,17 @@ public class CriteriaEndpoint {
     @Path("/{id}")
     @Registration
     @Produces(MediaType.APPLICATION_JSON)
+    //@CheckPublishedRelation(type = PublishEntityType.CRITERION,permittedStatus = false)
+
     public Response deleteCriteria(@Parameter(
             description = "The ID of the Criterion to delete.",
             required = true,
             example = "pid_graph:07BEDE5D",
             schema = @Schema(type = SchemaType.STRING))
                                    @PathParam("id")
-                                       @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String id) {
+                                       @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:")
+
+                                       String id) {
 
         boolean deleted = criterionService.delete(id);
 

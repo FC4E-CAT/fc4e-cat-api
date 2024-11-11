@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateActorDto;
@@ -30,6 +31,7 @@ import org.grnet.cat.dtos.registry.template.TemplateMetricNode;
 import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.dtos.registry.template.PriNode;
 import org.grnet.cat.dtos.registry.template.TemplateTestNode;
+import org.grnet.cat.repositories.registry.MotivationActorRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 
@@ -60,6 +62,10 @@ public class TemplateService {
     
     @Inject
     MotivationRepository motivationRepository;
+
+
+    @Inject
+    MotivationActorRepository motivationActorRepository;
 
     public TemplateResponse getTemplateByActorAndType(Long actorId, Long typeId) {
 
@@ -174,7 +180,10 @@ public class TemplateService {
     }
 
     public RegistryTemplateDto buildTemplate(String motivationId, String actorId) {
-        
+
+       if( motivationActorRepository.existsByStatus(motivationId,actorId,Boolean.FALSE)){
+           throw new ForbiddenException("No action is permitted , template exists in an unpublished motivation-actor relation");
+       }
         var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(()->new NotFoundException("There is no Motivation with the following id : "+motivationId));
         var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(()->new NotFoundException("There is no Actor with the following id : "+actorId));
         

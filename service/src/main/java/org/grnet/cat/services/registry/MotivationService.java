@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -210,9 +211,9 @@ public class MotivationService {
      * @param uriInfo The Uri Info.
      * @return A list of MotivationResponse objects representing the submitted Motivations in the requested page.
      */
-    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search,String status, String sort, String order, int page, int size, UriInfo uriInfo) {
+    public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String status, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status,sort, order, page, size);
+        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
         return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
     }
 
@@ -265,6 +266,7 @@ public class MotivationService {
      */
     @Transactional
     public List<String> createNewPrinciplesCriteriaRelationship(String motivationId, Set<PrincipleCriterionRequest> request, String userId) {
+
 
         var resultMessages = new ArrayList<String>();
 
@@ -384,6 +386,7 @@ public class MotivationService {
     public void publish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
+        motivation.getActors().forEach(actor-> actor.setPublished(Boolean.TRUE));
         motivation.setPublished(Boolean.TRUE);
 
     }
@@ -393,10 +396,13 @@ public class MotivationService {
      *
      * @param id The id of the  Motivation  to be unpublished.
      */
+    //@CheckPublishedRelation(permittedStatus = true, type = PublishEntityType.ACTOR)
+    // Only proceed if `published` is false
     @Transactional
     public void unpublish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
+        motivation.getActors().forEach(actor-> actor.setPublished(Boolean.FALSE));
         motivation.setPublished(Boolean.FALSE);
 
     }
@@ -404,15 +410,20 @@ public class MotivationService {
     /**
      * Publish a  Motivation Actor.
      *
-     * @param id The id of the  Motivation .
+     * @param id      The id of the  Motivation .
      * @param actorId The id of the  Actor .
      */
+    //@CheckPublishedRelation(permittedStatus = false,type = PublishEntityType.ACTOR)  // Only proceed if `published` is false
     @Transactional
-    public void publishActor(String id,String actorId) {
+    public void publishActor(String id, String actorId) {
 
-       Optional<MotivationActorJunction> motivationActorJunctionOpt= motivationActorRepository.fetchByMotivationAndActorAndVersion(id,actorId,1);
-        if(!motivationActorJunctionOpt.isEmpty()) {
-            MotivationActorJunction motivationActorJunction=motivationActorJunctionOpt.get();
+        Optional<MotivationActorJunction> motivationActorJunctionOpt = motivationActorRepository.fetchByMotivationAndActorAndVersion(id, actorId, 1);
+        if (motivationActorJunctionOpt.isPresent()) {
+            MotivationActorJunction motivationActorJunction = motivationActorJunctionOpt.get();
+
+            if (motivationActorJunction.getPublished() == Boolean.TRUE) {
+                throw new ForbiddenException("Action not permitted, motivation-actor relation is already published");
+            }
             motivationActorJunction.setPublished(Boolean.TRUE);
         }
     }
@@ -420,16 +431,20 @@ public class MotivationService {
     /**
      * Unpublish a  Motivation Actor.
      *
-     * @param id The id of the  Motivation .
+     * @param id      The id of the  Motivation .
      * @param actorId The id of the  Actor .
-
      */
+    //@CheckPublishedRelation(permittedStatus = false,type = PublishEntityType.ACTOR)
     @Transactional
-    public void unpublishActor(String id,String actorId) {
+    public void unpublishActor(String id, String actorId) {
 
-        Optional<MotivationActorJunction> motivationActorJunctionOpt= motivationActorRepository.fetchByMotivationAndActorAndVersion(id,actorId,1);
-        if(motivationActorJunctionOpt.isPresent()) {
-            MotivationActorJunction motivationActorJunction=motivationActorJunctionOpt.get();
+        Optional<MotivationActorJunction> motivationActorJunctionOpt = motivationActorRepository.fetchByMotivationAndActorAndVersion(id, actorId, 1);
+        if (motivationActorJunctionOpt.isPresent()) {
+            MotivationActorJunction motivationActorJunction = motivationActorJunctionOpt.get();
+
+            if (motivationActorJunction.getPublished() == Boolean.FALSE) {
+                throw new ForbiddenException("Action not permitted, motivation-actor relation is already unpublished");
+            }
             motivationActorJunction.setPublished(Boolean.FALSE);
         }
 

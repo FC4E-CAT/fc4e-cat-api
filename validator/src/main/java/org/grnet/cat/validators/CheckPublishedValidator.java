@@ -20,7 +20,7 @@ public class CheckPublishedValidator implements ConstraintValidator<CheckPublish
     public void initialize(CheckPublished constraintAnnotation) {
         this.message = constraintAnnotation.message();
         this.repository = constraintAnnotation.repository();
-        this.isPublishedPermitted=constraintAnnotation.isPublishedPermitted();
+        this.isPublishedPermitted = constraintAnnotation.isPublishedPermitted();
     }
 
     @Override
@@ -34,8 +34,8 @@ public class CheckPublishedValidator implements ConstraintValidator<CheckPublish
         // If motivation is found and is published, the action is not permitted
 
         boolean isPermitted = true;
-        if(motivation!=null && motivation.getPublished()!=isPublishedPermitted){
-            isPermitted=false;
+        if (motivation != null && motivation.getPublished() != isPublishedPermitted) {
+            isPermitted = false;
         }
         StringBuilder builder = new StringBuilder();
 

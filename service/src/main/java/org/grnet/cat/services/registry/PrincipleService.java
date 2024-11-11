@@ -29,6 +29,7 @@ public class PrincipleService {
     @Inject
     PrincipleCriterionRepository principleCriterionRepository;
 
+
     private static final Logger LOG = Logger.getLogger(PrincipleService.class);
 
     /**
@@ -93,8 +94,12 @@ public class PrincipleService {
      * @param userId              The ID of the user updating the principle.
      * @return The updated principle item.
      */
+    //@CheckPublishedRelation(type = PublishEntityType.PRINCIPLE,permittedStatus = false)
     @Transactional
     public PrincipleResponseDto update(String id, PrincipleUpdateDto principleUpdateDto, String userId) {
+        if(principleCriterionRepository.existPrincipleInStatus(id, Boolean.TRUE)){
+            throw new ForbiddenException("No action permitted , principle exists in a published motivation");
+        }
 
         var principle = principleRepository.findById(id);
 
@@ -123,6 +128,9 @@ public class PrincipleService {
      */
     @Transactional
     public boolean delete(String id) {
+        if(principleCriterionRepository.existPrincipleInStatus(id, Boolean.TRUE)){
+            throw new ForbiddenException("No action permitted , principle exists in a published motivation");
+        }
 
         if(principleCriterionRepository.existsByCriterion(id)){
 

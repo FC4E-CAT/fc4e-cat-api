@@ -25,16 +25,11 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.metric.*;
-import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
+import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
+import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
-import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
-import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
-import org.grnet.cat.repositories.registry.metric.TypeReproducibilityRepository;
 import org.grnet.cat.services.registry.metric.MetricService;
-import org.grnet.cat.services.registry.metric.TypeAlgorithmService;
-import org.grnet.cat.services.registry.metric.TypeMetricService;
-import org.grnet.cat.services.registry.metric.TypeReproducibilityService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
@@ -189,6 +184,7 @@ public class MetricEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id,
+
             @Valid MetricUpdateDto metricUpdateDto) {
 
         var updatedDto = metricService.updateMetric(id, utility.getUserUniqueIdentifier(), metricUpdateDto);
