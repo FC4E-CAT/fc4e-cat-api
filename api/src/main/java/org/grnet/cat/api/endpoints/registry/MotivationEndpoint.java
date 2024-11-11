@@ -434,7 +434,7 @@ public class MotivationEndpoint {
                                             @PathParam("id")
                                             @Valid
                                             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                            //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                             String id,
                                             @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request) {
 
@@ -500,8 +500,8 @@ public class MotivationEndpoint {
                                               @PathParam("id")
                                               @Valid
                                               @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                              @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:",
-                                                      isPublishedPermitted = false) String id,
+                                              //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                  String id,
                                               @Parameter(
                                                       description = "The actor to be deleted.",
                                                       required = true,
@@ -568,7 +568,7 @@ public class MotivationEndpoint {
                                                  @PathParam("id")
                                                  @Valid
                                                  @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                 @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                 //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                                  String id,
                                                  @NotEmpty(message = "Principles list can not be empty.") Set<@Valid MotivationPrincipleRequest> request) {
 
@@ -718,7 +718,7 @@ public class MotivationEndpoint {
                                                   @PathParam("id")
                                                   @Valid
                                                   @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                  @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                  //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                                   String id,
                                                   @Parameter(
                                                           description = "The ID of the Actor to add criterion to.",
@@ -974,7 +974,7 @@ public class MotivationEndpoint {
                                                      @PathParam("id")
                                                      @Valid
                                                      @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                     @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                     //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                                      String id,
                                                      @Parameter(description = "The ID of the Actor to add criterion to.",
                                                              required = true,
@@ -1044,7 +1044,7 @@ public class MotivationEndpoint {
                                                             @PathParam("id")
                                                             @Valid
                                                             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                            //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                                             String id,
                                                             @NotEmpty(message = "Principles-Criteria list can not be empty.") Set<@Valid PrincipleCriterionRequest> request) {
 
@@ -1103,7 +1103,7 @@ public class MotivationEndpoint {
                                                          @PathParam("id")
                                                          @Valid
                                                          @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+                                                         //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
                                                          String id,
                                                          Set<@Valid PrincipleCriterionRequest> request) {
 
@@ -1439,7 +1439,7 @@ public class MotivationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-            @CheckPublished(repository = MotivationRepository.class, message = "Action is not permitted as Motivation is already published with the following id:", isPublishedPermitted = false)
+            //@CheckPublished(repository = MotivationRepository.class, message = "Action is not permitted as Motivation is already published with the following id:", isPublishedPermitted = false)
             String id
     ) {
 
@@ -1504,7 +1504,7 @@ public class MotivationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-            @CheckPublished(repository = MotivationRepository.class, message = "Action is not permitted as Motivation is already unpublished with the following id:", isPublishedPermitted = true)
+            //@CheckPublished(repository = MotivationRepository.class, message = "Action is not permitted as Motivation is already unpublished with the following id:", isPublishedPermitted = true)
             String id
     ) {
 
