@@ -55,8 +55,6 @@ public abstract class JsonAbstractAssessmentService<Request extends JsonAssessme
         delete(assessmentId);
     }
 
-    public abstract void handleSubjectDatabaseId(String userId, Request request);
-
     public abstract void validateAssessmentAgainstTemplate(String jsonRequest, String jsonTemplate);
 
     public void validateTemplateJson(TemplateDto assessmentDoc){

@@ -1,4 +1,4 @@
-package org.grnet.cat.dtos.registry.template;
+package org.grnet.cat.dtos.assessment.registry;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -12,7 +12,10 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public class PriNode extends Node{
+public class PriNodeDto{
+
+    public PriNodeDto() {
+    }
 
     private String id;
     
@@ -21,7 +24,5 @@ public class PriNode extends Node{
     private String description;
 
     @JsonProperty("criteria")
-    public List<Node> getChildren() {
-        return super.getChildren();
-    }
+    public List<CriNodeDto> criteria;
 }

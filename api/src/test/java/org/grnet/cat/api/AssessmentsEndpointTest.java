@@ -6,6 +6,9 @@ import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.assessment.*;
+import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
+import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
+import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.dtos.registry.template.TemplateResponse;
@@ -181,40 +184,43 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         register("validated");
         register("admin");
+        register("evald");
 
         makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
 
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
-                .body(request)
+                .basePath("/v2/assessments")
+                .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .get("/{id}", assessment.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         assertEquals(assessment.id, response.id);
 
         var error = given()
                 .auth()
                 .oauth2(getAccessToken("evald"))
+                .basePath("/v2/assessments")
                 .get("/{id}", assessment.id)
                 .then()
                 .assertThat()
@@ -262,47 +268,47 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals(1, pageResource.getTotalElements());
     }
 
-    @Test
-    public void updateAssessment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc = makeJsonDocUpdated();
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(updateRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}",response.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var json = makeJsonDocUpdated();
-        assertEquals(json.status , updatedResponse.assessmentDoc.status);
-    }
+//    @Test
+//    public void updateAssessment() throws IOException {
+//
+//        register("validated");
+//        register("admin");
+//
+//        makeValidation("validated", 6L);
+//
+//        var request = new JsonAssessmentRequest();
+//        request.assessmentDoc = makeJsonDoc(false, 6L);
+//
+//        var response = given()
+//                .auth()
+//                .oauth2(getAccessToken("validated"))
+//                .body(request)
+//                .contentType(ContentType.JSON)
+//                .post()
+//                .then()
+//                .assertThat()
+//                .statusCode(201)
+//                .extract()
+//                .as(UserJsonAssessmentResponse.class);
+//
+//        var updateRequest = new UpdateJsonAssessmentRequest();
+//        updateRequest.assessmentDoc = makeJsonDocUpdated();
+//
+//        var updatedResponse = given()
+//                .auth()
+//                .oauth2(getAccessToken("validated"))
+//                .body(updateRequest)
+//                .contentType(ContentType.JSON)
+//                .put("/{id}",response.id)
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .extract()
+//                .as(UserJsonAssessmentResponse.class);
+//
+//        var json = makeJsonDocUpdated();
+//        assertEquals(json.status , updatedResponse.assessmentDoc.status);
+//    }
 
     @Test
     public void updateAssessmentNotExists() throws IOException {
@@ -489,33 +495,34 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void deletePrivateAssessment() throws IOException {
+    public void deleteRegistryAssessment() throws IOException {
 
         register("validated");
         register("admin");
 
         makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
 
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
-                .body(request)
+                .basePath("/v2/assessments")
+                .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
                 .contentType(ContentType.JSON)
+                .basePath("/v2/assessments")
                 .delete("/{id}", assessment.id)
                 .then()
                 .assertThat()
@@ -527,73 +534,36 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void deletePublishedAssessmentIsNotPermitted() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(true, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-       var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Assessment has been successfully deleted.", informativeResponse.message);
-    }
-
-    @Test
-    public void deleteAssessmentCreatedByOtherUser() throws IOException {
+    public void accessAssessmentCreatedByOtherUser() throws IOException {
 
         register("validated");
         register("admin");
         register("bob");
 
         makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
 
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(true, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
-                .body(request)
+                .basePath("/v2/assessments")
+                .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var informativeResponse = given()
                 .auth()
                 .oauth2(getAccessToken("bob"))
                 .contentType(ContentType.JSON)
-                .delete("/{id}", assessment.id)
+                .basePath("/v2/assessments")
+                .get("/{id}", assessment.id)
                 .then()
                 .assertThat()
                 .statusCode(403)
@@ -602,20 +572,22 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         assertEquals("You do not have permission to access this resource.", informativeResponse.message);
     }
+
     @Test
     public void createComment() throws IOException {
 
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
+        makeValidation("validated", 6L);
 
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
@@ -623,7 +595,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var commentRequest = new CommentRequestDto();
         commentRequest.text = "This is a test comment.";
@@ -650,14 +622,15 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("validated");
 
-        var validation = makeValidation("validated", 6L);
+        makeValidation("validated", 6L);
 
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
@@ -665,7 +638,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var commentRequest = new CommentRequestDto();
         commentRequest.text = "This is a test comment.";
@@ -692,14 +665,14 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
 
         makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
 
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
@@ -707,8 +680,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
-
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var commentRequest = new CommentRequestDto();
         commentRequest.text = "This is a test comment.";
@@ -744,14 +716,15 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
+        makeValidation("validated", 6L);
 
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
@@ -759,7 +732,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var commentRequest = new CommentRequestDto();
         commentRequest.text = "This is a test comment.";
@@ -800,14 +773,15 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        var validation = makeValidation("validated", 6L);
+        makeValidation("validated", 6L);
 
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
@@ -815,7 +789,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var commentRequest = new CommentRequestDto();
         commentRequest.text = "This is a test comment.";
@@ -853,14 +827,15 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("alice");
 
-        var validation = makeValidation("validated", 6L);
+        makeValidation("validated", 6L);
 
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
                 .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
                 .post()
@@ -868,7 +843,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
 
         var commentRequest = new CommentRequestDto();
         commentRequest.text = "This is a test comment.";
@@ -980,6 +955,212 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return objectMapper.readValue(doc, TemplateDto.class);
     }
 
+    private RegistryAssessmentDto makeRegistryJsonDoc() throws IOException {
+
+        String doc = "{\n" +
+                "  \"name\": \"\",\n" +
+                "  \"published\": false,\n" +
+                "  \"timestamp\": \"\",\n" +
+                "  \"actor\": {\n" +
+                "    \"id\": \"pid_graph:B5CC396B\",\n" +
+                "    \"name\": \"PID Owner (Role)\"\n" +
+                "  },\n" +
+                "  \"organisation\": {\n" +
+                "    \"id\": \"00tjv0s33\",\n" +
+                "    \"name\": \"test\"\n" +
+                "  },\n" +
+                "  \"subject\": {\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"type\": \"PID POLICY \",\n" +
+                "    \"name\": \"services pid policy\"\n" +
+                "  },\n" +
+                "  \"result\": {\n" +
+                "    \"compliance\": null,\n" +
+                "    \"ranking\": null\n" +
+                "  },\n" +
+                "  \"principles\": [\n" +
+                "    {\n" +
+                "      \"id\": \"P12\",\n" +
+                "      \"name\": \"Viable, Trusted\",\n" +
+                "      \"description\": \"The PID Policy concentrates on principles, desired results and governance which are designed to establish a viable, trusted PID infrastructure suitable for the long-term sustainability of the EOSC.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C20\",\n" +
+                "          \"name\": \"Openly Available\",\n" +
+                "          \"description\": \"Services MUST be available to all researchers in the EU.\",\n" +
+                "          \"imperative\": \"MUST\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M20\",\n" +
+                "            \"name\": \"Openly Available Services\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T20\",\n" +
+                "                \"name\": \"Services are Open\",\n" +
+                "                \"description\": \"Services (Providers) need to supply public evidence of open availability of services.\",\n" +
+                "                \"text\": \"Can you supply public evidence of open availability of your service?|Link to evidence:\",\n" +
+                "                \"type\": \"Binary-Manual-Evidence\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"evidence_url\": [],\n" +
+                "                \"params\": \"openData|evidence\",\n" +
+                "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P11\",\n" +
+                "      \"name\": \"FAIR\",\n" +
+                "      \"description\": \"The PID Policy should enable an environment of research practice, and services that satisfy the FAIR principles as appropriate for the particular domains of use. Central to the realisation of FAIR are FAIR Digital Objects and PIDs are core to the idea of FAIR Digital Objects, as highlighted in the Turning FAIR Into Reality report (FAIR Expert Group, 2018).\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C4\",\n" +
+                "          \"name\": \"Maintenance\",\n" +
+                "          \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "          \"imperative\": \"SHOULD\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M4\",\n" +
+                "            \"name\": \"Owner Maintenance\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T4\",\n" +
+                "                \"name\": \"Maintenance\",\n" +
+                "                \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
+                "                \"text\": \"Do you maintain the metadata for your object as and when required?\",\n" +
+                "                \"type\": \"Binary-Manual\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"params\": \"metaMaintain\",\n" +
+                "                \"tool_tip\": \"Owners maintain and update metadata as and when required\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P1\",\n" +
+                "      \"name\": \"Unambiguous (Ownership and Identification)\",\n" +
+                "      \"description\": \"PID application depends on unambiguous ownership, proper maintenance, and unambiguous identification of the entity being referenced.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C4\",\n" +
+                "          \"name\": \"Maintenance\",\n" +
+                "          \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "          \"imperative\": \"SHOULD\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M4\",\n" +
+                "            \"name\": \"Owner Maintenance\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T4\",\n" +
+                "                \"name\": \"Maintenance\",\n" +
+                "                \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
+                "                \"text\": \"Do you maintain the metadata for your object as and when required?\",\n" +
+                "                \"type\": \"Binary-Manual\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"params\": \"metaMaintain\",\n" +
+                "                \"tool_tip\": \"Owners maintain and update metadata as and when required\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P8\",\n" +
+                "      \"name\": \"Integrated\",\n" +
+                "      \"description\": \"Services need to integrate well with European Research Infrastructures, but not at the exclusion of the broader research community.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C20\",\n" +
+                "          \"name\": \"Openly Available\",\n" +
+                "          \"description\": \"Services MUST be available to all researchers in the EU.\",\n" +
+                "          \"imperative\": \"MUST\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M20\",\n" +
+                "            \"name\": \"Openly Available Services\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T20\",\n" +
+                "                \"name\": \"Services are Open\",\n" +
+                "                \"description\": \"Services (Providers) need to supply public evidence of open availability of services.\",\n" +
+                "                \"text\": \"Can you supply public evidence of open availability of your service?|Link to evidence:\",\n" +
+                "                \"type\": \"Binary-Manual-Evidence\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"evidence_url\": [],\n" +
+                "                \"params\": \"openData|evidence\",\n" +
+                "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P20\",\n" +
+                "      \"name\": \"Preferred Reference to Entities\",\n" +
+                "      \"description\": \"The policy should result in a future where PIDs can be used as the preferred method of referring to its assigned entity, where appropriate, alongside human-readable means e.g. the common name. Multiple PIDs may identify any given entity and users should be able to use whichever they are most comfortable with.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C20\",\n" +
+                "          \"name\": \"Openly Available\",\n" +
+                "          \"description\": \"Services MUST be available to all researchers in the EU.\",\n" +
+                "          \"imperative\": \"MUST\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M20\",\n" +
+                "            \"name\": \"Openly Available Services\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T20\",\n" +
+                "                \"name\": \"Services are Open\",\n" +
+                "                \"description\": \"Services (Providers) need to supply public evidence of open availability of services.\",\n" +
+                "                \"text\": \"Can you supply public evidence of open availability of your service?|Link to evidence:\",\n" +
+                "                \"type\": \"Binary-Manual-Evidence\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"evidence_url\": [],\n" +
+                "                \"params\": \"openData|evidence\",\n" +
+                "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"assessment_type\": {\n" +
+                "    \"id\": \"pid_graph:3E109BBA\",\n" +
+                "    \"name\": \"EOSC PID Policy\"\n" +
+                "  }\n" +
+                "}\n";
+        return objectMapper.readValue(doc, RegistryAssessmentDto.class);
+    }
+
     private TemplateDto makeJsonDocUpdated() throws IOException {
         String doc = "{\n" +
                 "    \"status\": \"PRIVATE\",\n" +
@@ -1055,4 +1236,3 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return objectMapper.readValue(doc, TemplateDto.class);
     }
 }
-

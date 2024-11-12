@@ -11,6 +11,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @AllArgsConstructor
 public class RegistryTemplateActorDto {
 
+    public RegistryTemplateActorDto() {
+    }
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

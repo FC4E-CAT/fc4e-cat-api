@@ -8,8 +8,8 @@ import org.grnet.cat.dtos.template.TemplateDto;
 public class AssessmentDoc extends TemplateDto {
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The ID of Assessment.",
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0"
     )

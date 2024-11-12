@@ -227,6 +227,23 @@ public class ValidationRepository implements Repository<Validation, Long> {
     }
 
     /**
+     * Retrieves the validation for a specific user's validation request on a specified registry actor and organization.
+     *
+     * @param userID         The unique identifier of the user initiating the validation request.
+     * @param actorID        The unique identifier of the registry actor involved in the validation process.
+     * @param organisationID The unique identifier of the organization associated with the validation request.
+     * @return The validation for the specified user, registry actor, and organization.
+     * @throws NotFoundException If the validation request is not found.
+     */
+    public Validation fetchValidationByUserAndRegistryActorAndOrganisation(String userID, String actorID, String organisationID) {
+
+        var optional = find("organisationId = :organisationID and user.id = : userID and registryActor.id = : actorID and status = : status",
+                Parameters.with("organisationID", organisationID).and("userID", userID).and("actorID", actorID).and("status", ValidationStatus.APPROVED)).firstResultOptional();
+
+        return optional.orElseThrow(() -> new NotFoundException("There is no approved validation request."));
+    }
+
+    /**
      * Retrieves the list of assessment types and actors for which the user is eligible to create assessments.
      *
      * @param page   The index of the page to retrieve (starting from 0).
