@@ -4,7 +4,7 @@ import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
@@ -14,6 +14,7 @@ import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
+import org.grnet.cat.repositories.registry.CriterionMetricRepository;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
@@ -32,6 +33,8 @@ public class MetricService {
 
     @Inject
     TypeMetricRepository typeMetricRepository;
+    @Inject
+    CriterionMetricRepository criterionMetricRepository;
 
     private static final Logger LOG = Logger.getLogger(MetricService.class);
 
@@ -77,10 +80,16 @@ public class MetricService {
      * @param request The Metric update data.
      * @return The updated Metric DTO.
      */
+    //@CheckPublishedRelation(type = PublishEntityType.METRIC,permittedStatus = false)
     @Transactional
     public MetricResponseDto updateMetric(String id, String userId, MetricUpdateDto request) {
 
         var metric = metricRepository.findById(id);
+
+        if(criterionMetricRepository.existMetricInStatus(id,Boolean.TRUE)){
+            throw new ForbiddenException("No action permitted, metric exists in a published motivation");
+        }
+
 
         MetricMapper.INSTANCE.updateMetricFromDto(request, metric);
         metric.setPopulatedBy(userId);
@@ -105,8 +114,12 @@ public class MetricService {
      *
      * @param id The unique ID of the Metric item.
      */
+    //@CheckPublishedRelation(type = PublishEntityType.METRIC,permittedStatus = false)
     @Transactional
     public boolean deleteMetric(String id) {
+        if(criterionMetricRepository.existMetricInStatus(id,Boolean.TRUE)){
+            throw new ForbiddenException("No action permitted, metric exists in a published motivation");
+        }
 
         return metricRepository.deleteById(id);
     }

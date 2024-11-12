@@ -152,6 +152,11 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
                 .setParameter("principleId", principleId)
                 .getResultList();
     }
+    public boolean existPrincipleInStatus(String principleId,boolean status) {
+        return find("SELECT 1 FROM PrincipleCriterionJunction pc INNER JOIN MotivationActorJunction ma ON pc.motivation.id=ma.motivation.id   WHERE pc.id.principleId = ?1 AND ma.published= ?2", principleId,status)
+                .firstResultOptional()
+                .isPresent();
+    }
 
 
 }

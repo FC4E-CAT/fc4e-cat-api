@@ -3,15 +3,16 @@ package org.grnet.cat.services.registry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
-import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.mappers.registry.CriterionActorMapper;
 import org.grnet.cat.mappers.registry.RegistryActorMapper;
@@ -21,6 +22,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
@@ -78,6 +80,8 @@ public class RegistryActorService {
      * @param userId                The user who requests to add criteria to  the Actor.
      * @return The added relation.
      */
+   // @CheckPublishedRelation(permittedStatus = false, type = PublishEntityType.ACTOR)
+    // Only proceed if `published` is false
     @Transactional
     public List<String> addCriteria(String motivationId, String actorId, Set<CriterionActorRequest> criterionActorRequest, String userId) {
 
@@ -86,6 +90,13 @@ public class RegistryActorService {
         if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
             throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
         }
+        Optional<MotivationActorJunction> motivationActorJunctionOpt =
+                motivationActorRepository.fetchByMotivationAndActorAndVersion(motivationId, actorId, 1);
+
+        if (motivationActorJunctionOpt.get().getPublished() == Boolean.TRUE) {
+            throw new ForbiddenException("No action is permitted as motivation-actor relation is published");
+        }
+
         Motivation motivation = motivationRepository.findById(motivationId);
         RegistryActor actor = registryActorRepository.findById(actorId);
 
@@ -136,12 +147,20 @@ public class RegistryActorService {
      * @param userId                The user who requests to add criteria to  the Actor.
      * @return The added relation.
      */
+    //@CheckPublishedRelation(permittedStatus = false, type = PublishEntityType.ACTOR)
+    // Only proceed if `published` is false
     @Transactional
     public List<String> updateCriteria(String motivationId, String actorId, Set<CriterionActorRequest> criterionActorRequest, String userId) {
         var resultMessages = new ArrayList<String>();
 
         if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
             throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
+        }
+        Optional<MotivationActorJunction> motivationActorJunctionOpt =
+                motivationActorRepository.fetchByMotivationAndActorAndVersion(motivationId, actorId, 1);
+
+        if (motivationActorJunctionOpt.get().getPublished() == Boolean.TRUE) {
+            throw new ForbiddenException("No action is permitted as motivation-actor relation is published");
         }
 
         var motivation = motivationRepository.findById(motivationId);

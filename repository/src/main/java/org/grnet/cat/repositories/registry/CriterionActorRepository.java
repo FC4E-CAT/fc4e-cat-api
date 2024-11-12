@@ -88,8 +88,29 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
         return query.getResultList();
     }
 
+//    @Transactional
+//    public boolean existCriterionInStatus(String criterionId,boolean status) {
+//
+//
+//        var db = "SELECT COUNT(*) ca.criterion.id FROM CriterionActorJunction ca inner join RegistryActor act on act.id=ca.actor.id inner join MotivationActorJunction ma on ma.actor.id=act.id WHERE ca.criterion.id = :criterionId AND ma.actor.published = :status";
+//
+//        var query = getEntityManager().createQuery(db, Integer.class)
+//                .setParameter("criterionId", criterionId)
+//                .setParameter("status",status);
+//
+//        int count = query.getSingleResult();
+//        if (count > 0) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
-
+    public boolean existCriterionInStatus(String criterionId,boolean status) {
+        return find("SELECT 1 FROM CriterionActorJunction ca INNER JOIN MotivationActorJunction ma ON ca.motivation.id=ma.motivation.id   WHERE ca.id.criterionId = ?1 AND ma.published= ?2", criterionId,status)
+                .firstResultOptional()
+                .isPresent();
+    }
 
     public Optional<CriterionActorJunction> findByMotivationAndActorAndCriterion(String motivationId, String actorId, String criterionId, Integer lodMAV) {
         return find(
@@ -105,7 +126,7 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
         ).firstResultOptional().isPresent();
     }
 
-   // @Transactional
+    // @Transactional
     public void delete(CriterionActorJunction ac) {
         delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 and c.actor.id =?2 and c.criterion.id =?3", ac.getMotivation().getId(), ac.getActor().getId(), ac.getCriterion().getId());
     }

@@ -262,6 +262,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void addActor() {
 
         register("admin");
+        var request = new MotivationRequest();
+        request.mtv = "mtv";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
+        request.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var motivationActor = new MotivationActorRequest();
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
@@ -272,7 +290,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors", "pid_graph:3E109BBA")
+                .post("/{id}/actors", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -286,6 +304,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void addCriterion() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var request = new CriterionRequest();
 
         request.cri = "C100";
@@ -318,7 +354,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors", "pid_graph:3E109BBA")
+                .post("/{id}/actors", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -335,7 +371,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", "pid_graph:3E109BBA","pid_graph:1A718108")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -414,6 +450,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void addCriterionNoActor() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var request = new CriterionRequest();
 
         request.cri = "C100";
@@ -446,7 +500,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors", "pid_graph:3E109BBA")
+                .post("/{id}/actors", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -463,7 +517,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", "pid_graph:3E109BBA","pid_graph:1A718109")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718109")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -477,6 +531,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void addCriterionNoImperative() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var request = new CriterionRequest();
 
         request.cri = "C100";
@@ -509,7 +581,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors", "pid_graph:3E109BBA")
+                .post("/{id}/actors", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -526,7 +598,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", "pid_graph:3E109BBA","pid_graph:1A718108")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -541,6 +613,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void addCriterionNoMotivationActor() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var request = new CriterionRequest();
 
         request.cri = "C100";
@@ -572,7 +662,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", "pid_graph:C2FBFF44","pid_graph:1A718108")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -585,6 +675,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void updateCriterionImperativeNotFound() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var request = new CriterionRequest();
 
         request.cri = "C100";
@@ -617,7 +725,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors", "pid_graph:3E109BBA")
+                .post("/{id}/actors", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -634,7 +742,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .put("/{id}/actors/{actor-id}/criteria", "pid_graph:3E109BBA","pid_graph:1A718108")
+                .put("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -648,6 +756,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void addPrinciple() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var mpr = new MotivationPrincipleRequest();
         mpr.principleId = "pid_graph:F9141635";
         mpr.relation = "isSupportedBy";
@@ -660,7 +786,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
-                .post("/{id}/principles", "pid_graph:3E109BBA")
+                .post("/{id}/principles", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -675,6 +801,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void duplicatePrinciple() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var mpr = new MotivationPrincipleRequest();
         mpr.principleId = "pid_graph:E7C00DBA";
         mpr.relation = "isSupportedBy";
@@ -687,7 +831,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
-                .post("/{id}/principles", "pid_graph:3E109BBA")
+                .post("/{id}/principles", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -701,7 +845,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
-                .post("/{id}/principles", "pid_graph:3E109BBA")
+                .post("/{id}/principles", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -715,6 +859,24 @@ public class MotivationEndpointTest extends KeycloakTest {
     public void principleNotFound() {
 
         register("admin");
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv";
+        motivationRequest.label = "labelMotivation";
+        motivationRequest.description = "decMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
         var mpr = new MotivationPrincipleRequest();
         mpr.principleId = "lalala";
         mpr.relation = "isSupportedBy";
@@ -727,7 +889,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(request)
                 .contentType(ContentType.JSON)
-                .post("/{id}/principles", "pid_graph:3E109BBA")
+                .post("/{id}/principles", motivationResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(404)
