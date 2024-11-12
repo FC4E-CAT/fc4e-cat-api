@@ -45,7 +45,6 @@ import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
-import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
@@ -1171,7 +1170,7 @@ public class MotivationEndpoint {
                                                 schema = @Schema(type = SchemaType.STRING))
                                         @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
 
-        var template = templateService.buildTemplate(id, actorId);
+        var template = templateService.buildTemplateForAdmin(id, actorId);
 
         return Response.ok().entity(template).build();
     }
