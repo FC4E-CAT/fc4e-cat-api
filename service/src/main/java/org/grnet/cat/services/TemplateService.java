@@ -241,4 +241,63 @@ public class TemplateService {
 
         return template;
     }
+    public RegistryTemplateDto buildTemplateForAdmin(String motivationId, String actorId) {
+
+        var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(()->new NotFoundException("There is no Motivation with the following id : "+motivationId));
+        var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(()->new NotFoundException("There is no Actor with the following id : "+actorId));
+
+        var template = new RegistryTemplateDto();
+
+        var list = templateRepository.fetchTemplateByMotivationAndActor(motivationId, actorId);
+
+        var priMap = new HashMap<String, PriNode>();
+        var criMap = new HashMap<String, CriNode>();
+        var mtrMap = new HashMap<String, TemplateMetricNode>();
+        var testMap = new HashMap<String, TemplateTestNode>();
+
+        for (var row : list) {
+
+            Node priNode = priMap.computeIfAbsent(row.getPRI(), k -> new PriNode(k, row.getLabelPrinciple(), row.getDescPrinciple()));
+            Node criNode = criMap.computeIfAbsent(row.getCRI(), k -> new CriNode(k, row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
+            Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new TemplateMetricNode(k, row.getLabelMetric().trim(), row.getLabelBenchmarkType().trim(), Double.parseDouble(row.getValueBenchmark()), row.getLabelAlgorithmType(), row.getLabelTypeMetric()));
+            Node testNode = testMap.computeIfAbsent(row.getTES(), k -> {
+
+                TemplateTestNode tn;
+
+                if(row.getLabelTestMethod().contains("Evidence")){
+
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), row.getTestParams(), row.getToolTip());
+                } else {
+
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), row.getTestParams(), row.getToolTip());
+                }
+
+                return tn;
+            });
+
+            if (!priNode.getChildren().contains(criNode)) {
+                priNode.addChild(criNode);
+            }
+            if (!criNode.getChildren().contains(mtrNode)) {
+                criNode.addChild(mtrNode);
+            }
+            if (!mtrNode.getChildren().contains(testNode)) {
+                mtrNode.addChild(testNode);
+            }
+        }
+
+        template.principles = new ArrayList<>(priMap.values());
+
+        template.actor = new RegistryTemplateActorDto(actor.getId(), actor.getLabelActor());
+
+        template.motivation = new RegistryTemplateMotivationDto(motivation.getId(), motivation.getLabel());
+
+        template.organisation = new TemplateOrganisationDto();
+
+        template.result = new TemplateResultDto();
+
+        template.subject = new TemplateSubjectDto();
+
+        return template;
+    }
 }
