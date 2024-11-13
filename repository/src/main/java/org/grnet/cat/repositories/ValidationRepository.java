@@ -280,8 +280,8 @@ public class ValidationRepository implements Repository<Validation, Long> {
 
         var panache = find("select v.organisationId, v.organisationName, v.organisationSource, v.organisationRole, " +
                         "ra.id as actorId, ra.labelActor as actorName, m.id as assessmentTypeId, m.label as assessmentTypeName from Validation v inner join MotivationActorJunction ma on v.registryActor.id = ma.id.actorId inner join RegistryActor ra on ma.id.actorId = ra.id inner join Motivation m on ma.id.motivationId = m.id " +
-                        "where v.user.id = : userID and v.status = : status order by v.createdOn and ma.published = true",
-                Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED)).project(UserRegistryAssessmentEligibility.class).page(page, size);
+                        "where v.user.id = : userID and v.status = : status and ma.published = : published order by v.createdOn ",
+                Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED).and("published",Boolean.TRUE)).project(UserRegistryAssessmentEligibility.class).page(page, size);
 
         var pageable = new PageQueryImpl<UserRegistryAssessmentEligibility>();
         pageable.list = panache.list();
