@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
@@ -13,6 +14,7 @@ import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
 
+import org.grnet.cat.services.clients.HttpsTestClient;
 import org.jboss.logging.Logger;
 
 import java.util.Objects;
@@ -24,6 +26,9 @@ public class TestService {
     TestRepository testRepository;
     @Inject
     MetricTestRepository metricTestRepository;
+    @Inject
+    @RestClient
+    HttpsTestClient httpsTestClient;
 
     private static final Logger LOG = Logger.getLogger(TestService.class);
 
@@ -110,5 +115,8 @@ public class TestService {
         var testDtos = TestMapper.INSTANCE.testToDtos(testPage.list());
 
         return new PageResource<>(testPage, testDtos, uriInfo);
+    }
+    public String testHttpsConnection(String url) {
+        return httpsTestClient.checkStatus();
     }
 }

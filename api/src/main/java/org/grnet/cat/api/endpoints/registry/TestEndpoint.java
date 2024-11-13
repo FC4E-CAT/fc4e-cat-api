@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -30,6 +31,7 @@ import org.grnet.cat.dtos.registry.test.TestResponseDto;
 import org.grnet.cat.dtos.registry.test.TestUpdateDto;
 import org.grnet.cat.repositories.registry.TestRepository;
 
+import org.grnet.cat.services.clients.HttpsService;
 import org.grnet.cat.services.registry.TestService;
 import org.grnet.cat.utils.Utility;
 
@@ -45,8 +47,13 @@ public class TestEndpoint {
 
     @Inject
     TestService testService;
+    @Inject
+    HttpsService httpsService;
+
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
+
+
     @Tag(name = "Test")
     @Operation(
             summary = "Get Test by ID",
@@ -345,5 +352,56 @@ public class TestEndpoint {
         public void setContent(List<TestResponseDto> content) {
             this.content = content;
         }
+    }
+
+
+
+    @Tag(name = "Test")
+    @Operation(
+            summary = "Validate Automated Test",
+            description = "Validates  the https automated test."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Test successfully checked.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = Response.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Registration
+    @GET
+    @Path("/check-automated-test")
+    public Response testHttps(@QueryParam("url") String url) {
+        if (url == null || url.isEmpty()) {
+            throw new BadRequestException("Please provide a URL as a query parameter, e.g., /test-https?url=https://example.com");
+        }
+        var response = httpsService.isValidHttpsUrl(url);
+        return Response.ok().entity(response).build();
     }
 }
