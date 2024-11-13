@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -23,6 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.dtos.AutomatedTestDto;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
@@ -45,8 +47,11 @@ public class TestEndpoint {
 
     @Inject
     TestService testService;
+
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
+
+
     @Tag(name = "Test")
     @Operation(
             summary = "Get Test by ID",
@@ -95,8 +100,7 @@ public class TestEndpoint {
                     example = "pid_graph:9F1A6267",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id)
-    {
+            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
         var response = testService.getTestById(id);
 
@@ -105,7 +109,7 @@ public class TestEndpoint {
 
     @Tag(name = "Test")
     @Operation(
-            summary     = "Create new Test",
+            summary = "Create new Test",
             description = "Creates a new Test item."
     )
     @APIResponse(
@@ -146,7 +150,7 @@ public class TestEndpoint {
     public Response createTest(
             @Valid @NotNull(message = "The request body is empty.") TestRequestDto testRequestDto, @Context UriInfo uriInfo) {
 
-        var test = testService.createTest(utility.getUserUniqueIdentifier(),testRequestDto);
+        var test = testService.createTest(utility.getUserUniqueIdentifier(), testRequestDto);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.id)).build()).entity(test).build();
@@ -256,13 +260,13 @@ public class TestEndpoint {
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
-        var deleted =  testService.deleteTest(id);
+        var deleted = testService.deleteTest(id);
 
         InformativeResponse informativeResponse = new InformativeResponse();
 
         if (!deleted) {
 
-            informativeResponse.code =500;
+            informativeResponse.code = 500;
             informativeResponse.message = "Test hasn't been deleted. An error occurred.";
         } else {
 
@@ -345,5 +349,60 @@ public class TestEndpoint {
         public void setContent(List<TestResponseDto> content) {
             this.content = content;
         }
+    }
+
+
+    @Tag(name = "Test")
+    @Operation(
+            summary = "Validate Automated Test",
+            description = "Validates  the https automated test."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Test successfully checked.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AutomatedTestDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Registration
+    @GET
+    @Path("/check-automated-test/https-url")
+    public Response testHttps(@Parameter(
+            description = "The url of the Test to checkValidity.",
+            required = true,
+            example = "https://google.com",
+            schema = @Schema(type = SchemaType.STRING))
+                              @QueryParam("url")
+                              @NotEmpty String url) {
+
+        var response = testService.isValidHttpsUrl(url);
+
+        return Response.ok().entity(response).build();
     }
 }
