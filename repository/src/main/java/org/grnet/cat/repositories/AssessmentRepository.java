@@ -20,17 +20,15 @@ public class AssessmentRepository implements Repository<Assessment, String> {
      * @param page   The index of the page to retrieve (starting from 0).
      * @param size   The maximum number of assessments to include in a page.
      * @param userID The ID of the user.
-     * @param shareableIds The IDs shared to the User.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
-    public PageQuery<Assessment> fetchAssessmentsByUserAndPage(int page, int size, String userID, String subjectName, String subjectType, Long actorID, List<String> shareableIds) {
+    public PageQuery<Assessment> fetchAssessmentsByUserAndPage(int page, int size, String userID, String subjectName, String subjectType, Long actorID) {
 
         var joiner = new StringJoiner(StringUtils.SPACE);
-        joiner.add("from Assessment a where (a.validation.user.id = :userID or a.id IN :shareableIds)");
+        joiner.add("from Assessment a where a.validation.user.id = :userID");
 
         var map = new HashMap<String, Object>();
         map.put("userID", userID);
-        map.put("shareableIds", shareableIds);
 
         if (StringUtils.isNotEmpty(subjectName)) {
 

@@ -11,6 +11,7 @@ import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.entities.Assessment;
+import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
@@ -112,7 +113,7 @@ public class MailerService {
         }
     }
 
-    public void sendMails(Assessment assessment, String name, MailType type, List<String> mailAddrs) {
+    public void sendMails(MotivationAssessment assessment, String name, MailType type, List<String> mailAddrs) {
 
         HashMap<String, String> templateParams = new HashMap<>();
         templateParams.put("contactMail", contactMail);
