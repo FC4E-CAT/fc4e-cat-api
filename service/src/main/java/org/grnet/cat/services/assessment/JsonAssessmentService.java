@@ -30,7 +30,6 @@ import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.MotivationAssessment;
-import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.UserType;
@@ -368,7 +367,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return The assessment if it belongs to the user.
      * @throws ForbiddenException If the user is not authorized to access the assessment.
      */
-    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     public UserJsonAssessmentResponse getDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
 
         var assessment = assessmentRepository.findById(assessmentId);
@@ -481,13 +479,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Override
     public PageResource<UserPartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId) {
 
-        var sharableIds = keycloakAdminService
-                .getUserEntitlements(userID)
-                .stream()
-                .map(entitlement -> keycloakAdminService.getLastPartOfEntitlement(entitlement, ENTITLEMENTS_DELIMITER))
-                .collect(Collectors.toList());
-
-        var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId, sharableIds);
+        var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId);
 
         var fullAssessments = AssessmentMapper.INSTANCE.userAssessmentsToJsonAssessments(assessments.list());
 
@@ -684,7 +676,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         keycloakAdminService.addEntitlementsToUser(user.getId(), ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
 
-        var assessment  = assessmentRepository.findById(assessmentId);
+        var assessment  = motivationAssessmentRepository.findById(assessmentId);
         var activeUser  = userRepository.fetchActiveUserByEmail(email);
         var userName    = activeUser.get().getName();
         assessment.setShared(true);

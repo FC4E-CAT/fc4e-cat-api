@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.grnet.cat.dtos.registry.template.Node;
 
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class TestNodeDto {
 
     private String params;
 
-    private Number value;
+    private Boolean value;
 
     private Number result;
 
@@ -41,5 +40,4 @@ public class TestNodeDto {
     @JsonProperty("evidence_url")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<String> urls;
-
 }

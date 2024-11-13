@@ -22,7 +22,6 @@ public abstract class JsonAbstractAssessmentService<Request extends JsonAssessme
      * @param assessmentId The ID of the assessment to be deleted.
      * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published or doesn't belong to them).
      */
-    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
     public void deletePrivateAssessmentBelongsToUser(String assessmentId){
 
         deletePrivateAssessment(assessmentId);
@@ -36,7 +35,6 @@ public abstract class JsonAbstractAssessmentService<Request extends JsonAssessme
      * @return The updated assessment
      * @throws ForbiddenException If the user does not have permission to update this assessment (e.g., it's published or doesn't belong to them).
      */
-    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
     public Response updatePrivateAssessmentBelongsToUser(String id, Update request) {
 
         return update(id, request);
