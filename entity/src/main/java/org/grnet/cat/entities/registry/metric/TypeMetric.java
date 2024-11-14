@@ -59,4 +59,7 @@ public class TypeMetric {
 
     @Column(name = "lodTMT_V")
     private String lodTMT_V;
+
+    @Column
+    private Boolean  verified;
 }

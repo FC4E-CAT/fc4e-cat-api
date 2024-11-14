@@ -105,6 +105,16 @@ public class RegistryActorResponse{
     @JsonProperty("last_touch")
     public String lastTouch;
 
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "The verified status of the registry actor.",
+            example = "TRUE"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("verified")
+    public Boolean verified;
+
     public void setExistsPrincipleCriterion(boolean existsPrincipleCriterion) {
         this.existsPrincipleCriterion = existsPrincipleCriterion;
     }

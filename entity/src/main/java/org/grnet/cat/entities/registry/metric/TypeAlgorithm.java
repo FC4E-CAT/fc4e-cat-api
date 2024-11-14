@@ -51,4 +51,8 @@ public class TypeAlgorithm {
 
     @Column(name = "lodTAL_V")
     private String lodTAL_V;
+
+    @Column
+    private Boolean  verified;
+
 }

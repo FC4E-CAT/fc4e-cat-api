@@ -31,4 +31,7 @@ public class Imperative extends Registry {
     @Column(name = "descImperative")
     @NotNull
     private String descImperative;
+
+    @Column
+    private Boolean  verified;
 }
