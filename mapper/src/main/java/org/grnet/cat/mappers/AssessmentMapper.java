@@ -9,6 +9,7 @@ import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.statistics.AssessmentPerActorDto;
@@ -81,7 +82,6 @@ public interface AssessmentMapper {
     @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
     @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
     @Mapping(target = "shared", expression = "java(assessment.shared)")
-
     AdminPartialJsonAssessmentResponse adminAssessmentToPartialJsonAssessment(AdminJsonAssessmentResponse assessment);
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
@@ -111,8 +111,38 @@ public interface AssessmentMapper {
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
     @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
     @Mapping(target = "shared", expression = "java(assessment.getShared())")
-
     AdminJsonAssessmentResponse adminAssessmentToJsonAssessment(Assessment assessment);
+
+    @Named("adminMapRegistryWithExpression")
+    @Mapping(target = "assessmentDoc", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()))")
+    @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
+    @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
+    @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
+    @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
+    @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
+    @Mapping(target = "shared", expression = "java(assessment.getShared())")
+    AdminJsonRegistryAssessmentResponse adminRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
+
+
+    @Named("adminPartialRegistryMapWithExpression")
+    @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
+    @Mapping(target = "type", expression = "java(assessment.assessmentDoc.motivation.getName())")
+    @Mapping(target = "actor", expression = "java(assessment.assessmentDoc.actor.getName())")
+    @Mapping(target = "organisation", expression = "java(assessment.assessmentDoc.organisation.name)")
+    @Mapping(target = "published", expression = "java(assessment.assessmentDoc.published)")
+    @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
+    @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
+    @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
+    @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
+    @Mapping(target = "shared", expression = "java(assessment.shared)")
+    AdminPartialJsonAssessmentResponse adminRegistryAssessmentToPartialJsonAssessment(AdminJsonRegistryAssessmentResponse assessment);
+
+    @IterableMapping(qualifiedByName = "adminPartialRegistryMapWithExpression")
+    List<AdminPartialJsonAssessmentResponse> adminRegistryAssessmentsToPartialJsonAssessments(List<AdminJsonRegistryAssessmentResponse> assessments);
+
+
+    @IterableMapping(qualifiedByName = "adminMapRegistryWithExpression")
+    List<AdminJsonRegistryAssessmentResponse> adminRegistryAssessmentsToJsonAssessments(List<MotivationAssessment> assessments);
 
     @Mapping(target = "id", ignore = true)
     AssessmentDoc templateDocToAssessmentDoc(TemplateDto template);
