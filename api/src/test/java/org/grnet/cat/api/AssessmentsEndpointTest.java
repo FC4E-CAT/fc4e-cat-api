@@ -1005,7 +1005,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                \"type\": \"Binary-Manual-Evidence\",\n" +
                 "                \"value\": null,\n" +
                 "                \"result\": null,\n" +
-                "                \"evidence_url\": [],\n" +
+                "                \"evidence_url\": [" +
+                "                 {\n" +
+                "                    \"url\": \"http://google.gr\",\n" +
+                "                    \"description\": \"search engine\"\n" +
+                "                  }],\n" +
                 "                \"params\": \"openData|evidence\",\n" +
                 "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
                 "              }\n" +
@@ -1072,7 +1076,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "                \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
                 "                \"text\": \"Do you maintain the metadata for your object as and when required?\",\n" +
                 "                \"type\": \"Binary-Manual\",\n" +
-                "                \"value\": null,\n" +
+                "                \"value\": false,\n" +
                 "                \"result\": null,\n" +
                 "                \"params\": \"metaMaintain\",\n" +
                 "                \"tool_tip\": \"Owners maintain and update metadata as and when required\"\n" +
