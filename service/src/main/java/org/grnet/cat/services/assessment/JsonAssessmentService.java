@@ -204,10 +204,10 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
                 newSubject.id = subject.id;
 
                 var response = subjectService.createSubject(newSubject, userId);
-               subject.dbId = response.id;
+                subject.dbId = response.id;
             } else {
 
-               subject.dbId = optional.get().getId();
+                subject.dbId = optional.get().getId();
             }
         } else {
 
@@ -397,11 +397,11 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @param assessmentId The ID of the assessment to be deleted.
      * @throws ForbiddenException If the user does not have permission to delete this assessment (e.g., it's published or doesn't belong to them).
      */
-    @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public void deleteRegistryAssessmentBelongsToUser(String assessmentId){
+    public void deleteRegistryAssessmentBelongsToUser(String assessmentId) {
 
-     motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
+        motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
     }
 
     /**
@@ -713,10 +713,10 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         var types = userRepository.findUserTypesById(user.getId());
 
-        if(types.contains(UserType.Deny_Access)){
+        if (types.contains(UserType.Deny_Access)) {
 
             throw new ForbiddenException("You cannot share an assessment with a banned user.");
-        } else if (!types.contains(UserType.Validated)){
+        } else if (!types.contains(UserType.Validated)) {
 
             throw new ForbiddenException("You cannot share an assessment with a user who has not been validated.");
         }
@@ -732,9 +732,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         keycloakAdminService.addEntitlementsToUser(user.getId(), ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
 
-        var assessment  = motivationAssessmentRepository.findById(assessmentId);
-        var activeUser  = userRepository.fetchActiveUserByEmail(email);
-        var userName    = activeUser.get().getName();
+        var assessment = motivationAssessmentRepository.findById(assessmentId);
+        var activeUser = userRepository.fetchActiveUserByEmail(email);
+        var userName = activeUser.get().getName();
         assessment.setShared(true);
 
         mailerService.sendMails(assessment, userName, MailType.USER_ALERT_SHARED_ASSESSMENT, Collections.singletonList(email));
@@ -752,5 +752,24 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var ids = keycloakAdminService.getIdsOfSharedUsers(ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessmentId));
         var dbUsers = userRepository.fetchUsers(ids);
         return UserMapper.INSTANCE.usersProfileToDto(dbUsers);
+    }
+
+    /**
+     * Retrieves a specific public assessment.
+     *
+     * @param assessmentId The ID of the assessment to retrieve.
+     * @return The assessment if it's public.
+     */
+    public UserJsonRegistryAssessmentResponse getPublicDtoRegistryAssessment(String assessmentId) {
+
+        var assessment = motivationAssessmentRepository.findById(assessmentId);
+
+        var assessmentDto = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+
+        if (!assessmentDto.assessmentDoc.published) {
+            throw new ForbiddenException("Not Permitted.");
+        }
+
+        return assessmentDto;
     }
 }
