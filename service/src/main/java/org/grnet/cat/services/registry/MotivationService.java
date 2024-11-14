@@ -185,13 +185,13 @@ public class MotivationService {
 
         if (motivation.actors != null) {
 
-            motivation.actors.forEach(actor -> {
+            motivation.actors.forEach(actorjunction -> {
 
-                var criterionIds = criterionActorRepository.getCriterionIdsByMotivationAndActor(id, actor.id);
+                var criterionIds = criterionActorRepository.getCriterionIdsByMotivationAndActor(id, actorjunction.id);
                 var count = principleCriterionRepository.countPrincipleCriterionByMotivationAndCriterionIds(id, criterionIds);
 
-                actor.setExistsPrincipleCriterion(count > 0);
-                actor.setPrincipleCriterionCount((int) count);
+                actorjunction.setExistsPrincipleCriterion(count > 0);
+                actorjunction.setPrincipleCriterionCount((int) count);
             });
         }
 

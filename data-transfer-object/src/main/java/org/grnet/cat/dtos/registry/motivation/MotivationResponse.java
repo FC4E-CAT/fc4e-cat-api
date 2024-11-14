@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
+import org.grnet.cat.dtos.registry.actor.PartialMotivationActorResponse;
 import org.grnet.cat.dtos.registry.codelist.MotivationTypeResponse;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
@@ -97,11 +99,11 @@ public class MotivationResponse {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = RegistryActorResponse.class,
+            implementation = MotivationActorResponse.class,
             description = "The Motivation actors"
     )
     @JsonProperty(value = "actors")
-    public List<RegistryActorResponse> actors;
+    public List<PartialMotivationActorResponse> actors;
 
     @Schema(
             type = SchemaType.ARRAY,
