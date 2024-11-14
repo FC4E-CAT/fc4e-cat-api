@@ -106,4 +106,84 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return pageable;
     }
+
+    /**
+     * Retrieves a page of published assessments categorized by type and actor, created by all users.
+     *
+     * @param page        The index of the page to retrieve (starting from 0).
+     * @param size        The maximum number of assessments to include in a page.
+     * @param motivationId      The ID of the Assessment Type.
+     * @param actorId     The Actor's id.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    @SuppressWarnings("unchecked")
+    public PageQuery<MotivationAssessment> fetchPublishedAssessmentsByMotivationAndActorAndPage(int page, int size, String motivationId, String actorId, String subjectName, String subjectType) {
+
+        var em = Panache.getEntityManager();
+
+        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by , a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true ORDER BY a.created_on DESC", MotivationAssessment.class)
+                .setParameter("actorId", actorId)
+                .setParameter("motivationId", motivationId);
+
+        var countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true", Long.class)
+                .setParameter("actorId", actorId)
+                .setParameter("motivationId", motivationId);
+
+
+        if (StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)) {
+
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by , a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("motivationId", motivationId)
+                    .setParameter("name", subjectName)
+                    .setParameter("type", subjectType);
+
+            countQuery = em.createNativeQuery("SELECT count(a.id)  FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("motivationId", motivationId)
+                    .setParameter("name", subjectName)
+                    .setParameter("type", subjectType);
+
+
+        } else if (StringUtils.isNotEmpty(subjectName)) {
+
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("motivationId", motivationId)
+                    .setParameter("name", subjectName);
+
+            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.name') = :name", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("motivationId", motivationId)
+                    .setParameter("name", subjectName);
+
+        } else if (StringUtils.isNotEmpty(subjectType)) {
+
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.template_id, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("motivationId", motivationId)
+                    .setParameter("type", subjectType);
+
+            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true AND JSON_EXTRACT(a.assessment_doc, '$.subject.type') = :type", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("motivationId", motivationId)
+                    .setParameter("type", subjectType);
+        }
+
+        var list = (List<MotivationAssessment>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<MotivationAssessment>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
 }
