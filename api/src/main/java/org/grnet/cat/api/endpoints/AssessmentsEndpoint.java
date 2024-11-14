@@ -378,6 +378,7 @@ public class AssessmentsEndpoint {
     @GET
     @Path("public-objects/by-type/{type-id}/by-actor/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Deprecated
     public Response objectsByTypeAndActor(@Parameter(
             description = "The Type of Assessment.",
             required = true,

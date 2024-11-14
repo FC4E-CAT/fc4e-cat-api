@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -69,11 +70,40 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
         return pageable;
     }
 
-    @Transactional
-    public MotivationAssessment updateAssessment(String assessmentId, String updatedBy, String assessmentDoc) {
+    /**
+     * Retrieves a page of public assessment objects by motivation and actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param motivationId  The ID of the Motivation.
+     * @param actorId The Actor's id.
+     * @return A list of string objects representing the public assessment objects in the requested page.
+     */
+    @SuppressWarnings("unchecked")
+    public PageQuery<String> fetchPublishedAssessmentObjectsByMotivationAndActorAndPage(int page, int size, String motivationId, String actorId) {
 
-        update("assessmentDoc = ?1 , updatedOn = ?2 , updatedBy = ?3  where id = ?4", assessmentDoc, Timestamp.from(Instant.now()), updatedBy, assessmentId);
+        var em = Panache.getEntityManager();
 
-        return findById(assessmentId);
+        var query = em.createNativeQuery("SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true")
+                .setParameter("actorId", actorId)
+                .setParameter("motivationId", motivationId);
+
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND JSON_EXTRACT(a.assessment_doc, '$.published') = true")
+                .setParameter("actorId", actorId)
+                .setParameter("motivationId", motivationId);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
     }
 }
