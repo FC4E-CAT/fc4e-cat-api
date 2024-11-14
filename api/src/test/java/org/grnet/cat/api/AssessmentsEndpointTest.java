@@ -331,7 +331,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-       assertEquals(404,updatedResponse.code);
+       assertEquals(404, updatedResponse.code);
     }
 
     @Test
@@ -961,6 +961,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "  \"name\": \"\",\n" +
                 "  \"published\": false,\n" +
                 "  \"timestamp\": \"\",\n" +
+                "  \"status\": \"PRIVATE\",\n" +
+                "  \"version\": \"\",\n" +
                 "  \"actor\": {\n" +
                 "    \"id\": \"pid_graph:B5CC396B\",\n" +
                 "    \"name\": \"PID Owner (Role)\"\n" +

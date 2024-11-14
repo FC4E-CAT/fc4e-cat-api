@@ -1,6 +1,7 @@
 package org.grnet.cat.repositories;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.MotivationAssessment;
@@ -8,6 +9,8 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -64,5 +67,13 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    @Transactional
+    public MotivationAssessment updateAssessment(String assessmentId, String updatedBy, String assessmentDoc) {
+
+        update("assessmentDoc = ?1 , updatedOn = ?2 , updatedBy = ?3  where id = ?4", assessmentDoc, Timestamp.from(Instant.now()), updatedBy, assessmentId);
+
+        return findById(assessmentId);
     }
 }
