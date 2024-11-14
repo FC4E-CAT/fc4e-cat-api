@@ -739,7 +739,7 @@ public class AssessmentsEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                   @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+                                   @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
         var sharedUsers = assessmentService.getSharedUsers(id);
 

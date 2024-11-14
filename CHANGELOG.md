@@ -48,6 +48,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#342](https://github.com/FC4E-CAT/fc4e-cat-api/pull/342) CAT-604 CRI duplicate warning on criterion update with same CRI
 - [#344](https://github.com/FC4E-CAT/fc4e-cat-api/pull/344) CAT-607 Template's view issue when unpublished motivation , during preview motivation
 - [#352](https://github.com/FC4E-CAT/fc4e-cat-api/pull/352) CAT-619 Permit actions on published/unpublished relation motivation-actor #352
+- [#365](https://github.com/FC4E-CAT/fc4e-cat-api/pull/365) CAT-628 Shared Users.
 
 
 ### Removed
