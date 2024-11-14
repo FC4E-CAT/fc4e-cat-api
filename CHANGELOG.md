@@ -52,6 +52,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#367](https://github.com/FC4E-CAT/fc4e-cat-api/pull/367) CAT-633 Public Objects.
 - [#369](https://github.com/FC4E-CAT/fc4e-cat-api/pull/369) CAT-627 public assessments.
 - [#366](https://github.com/FC4E-CAT/fc4e-cat-api/pull/366) CAT-632 Change GET motivation response to show the published status of motivation-actor
+- [#370](https://github.com/FC4E-CAT/fc4e-cat-api/pull/370) CAT-626 Show subjects per assessment
 
 ### Removed
 

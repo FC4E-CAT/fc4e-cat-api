@@ -664,7 +664,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @param actorID The actor ID.
      * @return A list of TemplateSubjectDto objects representing the submitted assessment objects in the requested page.
      */
-    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUserAndActor(int page, int size, UriInfo uriInfo, String userID, Long actorID) {
+    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUserAndActor(int page, int size, UriInfo uriInfo, String userID, String actorID) {
 
         var objects = assessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
 

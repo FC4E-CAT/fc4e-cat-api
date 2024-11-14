@@ -225,14 +225,26 @@ public class AssessmentRepository implements Repository<Assessment, String> {
      * @param actorID The Actor id.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
-    public PageQuery<String> fetchAssessmentsObjectsByUserAndActor(int page, int size, String userID, Long actorID) {
+    public PageQuery<String> fetchAssessmentsObjectsByUserAndActor(int page, int size, String userID, String actorID) {
 
 
-        var query = Panache.getEntityManager().createNativeQuery("SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN User u ON u.id = v.user_id WHERE actor.id = :actorId AND u.id = :userId")
+        var query = Panache.getEntityManager().createNativeQuery(
+                        "SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') " +
+                                "FROM MotivationAssessment a " +
+                                "INNER JOIN Validation v ON a.validation_id = v.id " +
+                                "INNER JOIN t_Actor ma ON v.registry_actor_id = ma.lodActor " +
+                                "WHERE ma.lodActor = :actorId AND v.user_id = :userId"
+                )
                 .setParameter("actorId", actorID)
                 .setParameter("userId", userID);
 
-        var countQuery = Panache.getEntityManager().createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM Assessment a INNER JOIN Template t ON a.template_id = t.id INNER JOIN Actor actor ON t.actor_id = actor.id INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN User u ON u.id = v.user_id WHERE actor.id = :actorId AND u.id = :userId")
+        var countQuery = Panache.getEntityManager().createNativeQuery(
+                        "SELECT COUNT(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) " +
+                                "FROM MotivationAssessment a " +
+                                "INNER JOIN Validation v ON a.validation_id = v.id " +
+                                "INNER JOIN t_Actor ma ON v.registry_actor_id = ma.lodActor " +
+                                "WHERE ma.lodActor = :actorId AND v.user_id = :userId"
+                )
                 .setParameter("actorId", actorID)
                 .setParameter("userId", userID);
 

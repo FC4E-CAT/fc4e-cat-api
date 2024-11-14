@@ -32,6 +32,8 @@ import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.AssessmentTypeRepository;
 import org.grnet.cat.repositories.CommentRepository;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
+import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
@@ -505,18 +507,26 @@ public class AssessmentsEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Authenticated
     @Registration
-    public Response getAssessmentsObjectsByActor(@Parameter(
+    public Response getAssessmentsObjectsByActor(
+            @Parameter(
             description = "The Actor to retrieve assessment objects.",
             required = true,
-            example = "6",
-            schema = @Schema(type = SchemaType.NUMBER))
-                                                 @PathParam("actor-id") @Valid @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:") Long actorId,
-                                                 @Parameter(name = "page", in = QUERY,
-                                                         description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                                 @Parameter(name = "size", in = QUERY,
-                                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                                 @Context UriInfo uriInfo) {
+            example = "pid_graph:0E00C332",
+            schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:")
+            String actorId,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+            @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page")
+            int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.") @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size")
+            int size,
+            @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAssessmentsObjectsByUserAndActor(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), actorId);
 
