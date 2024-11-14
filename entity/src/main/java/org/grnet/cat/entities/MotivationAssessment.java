@@ -12,6 +12,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.grnet.cat.entities.registry.Motivation;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Timestamp;
@@ -61,4 +62,9 @@ public class MotivationAssessment {
     private List<Comment> comments = new ArrayList<>();
 
     private Boolean shared;
+
+    @ManyToOne
+    @JoinColumn(name = "motivation_id", referencedColumnName = "lodMTV")
+    @NotNull
+    private Motivation motivation;
 }

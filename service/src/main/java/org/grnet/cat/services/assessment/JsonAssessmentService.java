@@ -30,6 +30,7 @@ import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.MotivationAssessment;
+import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.UserType;
@@ -166,6 +167,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var assessment = new MotivationAssessment();
         assessment.setCreatedOn(timestamp);
         assessment.setValidation(validation);
+        assessment.setMotivation(Panache.getEntityManager().getReference(Motivation.class, request.assessmentDoc.motivation.getId()));
         assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
         assessment.setShared(Boolean.FALSE);
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
