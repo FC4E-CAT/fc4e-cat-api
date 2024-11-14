@@ -216,6 +216,7 @@ public class AssessmentRepository implements Repository<Assessment, String> {
         return pageable;
     }
 
+
     /**
      * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
      *
@@ -324,6 +325,5 @@ public class AssessmentRepository implements Repository<Assessment, String> {
 
         return find(" SELECT DISTINCT act.name as actor_name, COUNT(*) as total FROM Assessment a inner join Validation v on v.id=a.validation.id inner join Actor act on v.actor.id=act.id GROUP BY actor_name").project(AssessmentPerActor.class).stream().collect(Collectors.toList());
     }
-
 
 }

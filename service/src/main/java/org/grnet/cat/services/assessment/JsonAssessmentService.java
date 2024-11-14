@@ -21,6 +21,7 @@ import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
 import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
@@ -202,10 +203,10 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
                 newSubject.id = subject.id;
 
                 var response = subjectService.createSubject(newSubject, userId);
-               subject.dbId = response.id;
+                subject.dbId = response.id;
             } else {
 
-               subject.dbId = optional.get().getId();
+                subject.dbId = optional.get().getId();
             }
         } else {
 
@@ -399,7 +400,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Transactional
     public void deleteRegistryAssessmentBelongsToUser(String assessmentId){
 
-     motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
+        motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
     }
 
     /**
@@ -422,6 +423,24 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return assessmentDto;
     }
 
+    /**
+     * Retrieves a specific public assessment.
+     *
+     * @param assessmentId The ID of the assessment to retrieve.
+     * @return The assessment if it's public.
+     */
+    public UserJsonRegistryAssessmentResponse getPublicDtoRegistryAssessment(String assessmentId) {
+
+        var assessment = motivationAssessmentRepository.findById(assessmentId);
+
+        var assessmentDto = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+
+        if (!assessmentDto.assessmentDoc.published) {
+            throw new ForbiddenException("Not Permitted.");
+        }
+
+        return assessmentDto;
+    }
     @Override
     @Transactional
     public void deleteAll() {
@@ -462,37 +481,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var assessment = assessmentRepository.updateAssessmentDocById(id, utility.getUserUniqueIdentifier(), objectMapper.writeValueAsString(assessmentDoc));
 
         return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessment);
-    }
-
-    /**
-     * Updates the Assessment's json document. This method also handles the subjects that were inserted in the assessment document.
-     *
-     * @param id      The ID of the assessment whose json doc is being updated.
-     * @param request The update request.
-     * @return The updated assessment
-     */
-    @SneakyThrows
-    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
-    @Transactional
-    public UserJsonRegistryAssessmentResponse update(String id, JsonRegistryAssessmentRequest request) {
-
-        var dbAssessment = motivationAssessmentRepository.findById(id);
-
-        var dbAssessmentToJson = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);
-
-        request.assessmentDoc.id = dbAssessment.getId();
-        request.assessmentDoc.version = dbAssessmentToJson.assessmentDoc.version;
-        request.assessmentDoc.status = dbAssessmentToJson.assessmentDoc.status;
-        request.assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor;
-        request.assessmentDoc.subject = dbAssessmentToJson.assessmentDoc.subject;
-        request.assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
-        request.assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
-
-        dbAssessment.setUpdatedBy(utility.getUserUniqueIdentifier());
-        dbAssessment.setUpdatedOn(Timestamp.from(Instant.now()));
-        dbAssessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
-
-        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);
     }
 
     /**
@@ -577,6 +565,30 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
      */
     public PageResource<TemplateSubjectDto> getPublishedDtoAssessmentObjectsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo) {
+
+        var objects = assessmentRepository.fetchPublishedAssessmentObjectsByTypeAndActorAndPage(page, size, typeId, actorId);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
+    }
+
+
+    /**
+     * Retrieves a page of public assessment objects by type and actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param typeId  The ID of the Assessment Type.
+     * @param actorId The Actor's id.
+     * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getPublishedDtoMotivationAssessmentObjectsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo) {
 
         var objects = assessmentRepository.fetchPublishedAssessmentObjectsByTypeAndActorAndPage(page, size, typeId, actorId);
 

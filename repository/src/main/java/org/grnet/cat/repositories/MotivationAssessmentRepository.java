@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -76,4 +77,5 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return findById(assessmentId);
     }
+
 }
