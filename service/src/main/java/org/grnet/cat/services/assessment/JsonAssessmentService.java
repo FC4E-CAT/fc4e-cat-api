@@ -465,6 +465,37 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     }
 
     /**
+     * Updates the Assessment's json document. This method also handles the subjects that were inserted in the assessment document.
+     *
+     * @param id      The ID of the assessment whose json doc is being updated.
+     * @param request The update request.
+     * @return The updated assessment
+     */
+    @SneakyThrows
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
+    @Transactional
+    public UserJsonRegistryAssessmentResponse update(String id, JsonRegistryAssessmentRequest request) {
+
+        var dbAssessment = motivationAssessmentRepository.findById(id);
+
+        var dbAssessmentToJson = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);
+
+        request.assessmentDoc.id = dbAssessment.getId();
+        request.assessmentDoc.version = dbAssessmentToJson.assessmentDoc.version;
+        request.assessmentDoc.status = dbAssessmentToJson.assessmentDoc.status;
+        request.assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor;
+        request.assessmentDoc.subject = dbAssessmentToJson.assessmentDoc.subject;
+        request.assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
+        request.assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
+
+        dbAssessment.setUpdatedBy(utility.getUserUniqueIdentifier());
+        dbAssessment.setUpdatedOn(Timestamp.from(Instant.now()));
+        dbAssessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
+
+        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);
+    }
+
+    /**
      * Retrieves a page of assessments submitted by the specified user.
      *
      * @param page        The index of the page to retrieve (starting from 0).

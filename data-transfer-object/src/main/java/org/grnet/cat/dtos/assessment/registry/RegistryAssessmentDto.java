@@ -31,6 +31,10 @@ public class RegistryAssessmentDto {
     )
     public String name = "";
 
+    public String version = "";
+
+    public String status = "";
+
     @JsonProperty(value = "assessment_type")
     public RegistryTemplateMotivationDto motivation;
 

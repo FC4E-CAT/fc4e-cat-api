@@ -70,7 +70,6 @@ public interface AssessmentMapper {
     @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
     UserPartialJsonAssessmentResponse userRegistryAssessmentToPartialJsonAssessment(UserJsonRegistryAssessmentResponse assessment);
 
-
     @Named("adminPartialMapWithExpression")
     @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
     @Mapping(target = "type", expression = "java(assessment.assessmentDoc.assessmentType.name)")
@@ -85,13 +84,11 @@ public interface AssessmentMapper {
 
     AdminPartialJsonAssessmentResponse adminAssessmentToPartialJsonAssessment(AdminJsonAssessmentResponse assessment);
 
-
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<UserJsonAssessmentResponse> userAssessmentsToJsonAssessments(List<Assessment> assessments);
 
     @IterableMapping(qualifiedByName = "adminMapWithExpression")
     List<AdminJsonAssessmentResponse> adminAssessmentsToJsonAssessments(List<Assessment> assessments);
-
 
     @Named("mapWithExpression")
     @Mapping(target = "assessmentDoc", expression = "java(stringJsonToDto(assessment.getAssessmentDoc()))")
@@ -153,12 +150,11 @@ public interface AssessmentMapper {
     AssessmentPerActorDto assessmentPerActorToAssessmentPerActorDto(AssessmentPerActor assessmentPerActor);
 
     default Boolean isSharedByUser(Assessment assessment, String userId) {
+
         var utility = CDI.current().select(Utility.class).get();
         var currentUser = utility.getUserUniqueIdentifier();
-        var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment
-
-        return assessment.getShared() && sameUser; //if the assessment is shared and the user is the owner, the assessment is shared by the user
-
+        var sameUser = currentUser.equals(userId);
+        return assessment.getShared() && sameUser;
     }
 
     default Boolean isRegistryAssessmentSharedByUser(MotivationAssessment assessment, String userId) {
@@ -191,5 +187,4 @@ public interface AssessmentMapper {
 
         return !currentUser.equals(userId);
     }
-
 }

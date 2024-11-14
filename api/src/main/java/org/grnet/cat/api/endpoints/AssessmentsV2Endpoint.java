@@ -10,6 +10,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -33,7 +34,6 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
-import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
@@ -278,5 +278,65 @@ public class AssessmentsV2Endpoint {
         informativeResponse.message = "Assessment has been successfully deleted.";
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Update Registry Assessment Request.",
+            description = "Updates the registry assessment if it belongs or shared to the authenticated user.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment's registry json document updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = UserJsonRegistryAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Path("/{id}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response updateAssessment(@Parameter(
+            description = "The ID of the assessment to update.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING))
+                                     @PathParam("id")
+                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id,
+                                     @Valid @NotNull(message = "The request body is empty.") JsonRegistryAssessmentRequest request) {
+
+        var assessment = assessmentService.update(id, request);
+
+        return Response.ok().entity(assessment).build();
     }
 }
