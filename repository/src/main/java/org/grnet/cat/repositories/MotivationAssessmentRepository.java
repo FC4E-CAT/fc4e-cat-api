@@ -186,4 +186,20 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return pageable;
     }
+    /**
+     * Retrieves a page of  assessment objects.
+     *
+     * @return A list of string objects representing the  assessment objects.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> fetchAssessmentObjects() {
+
+        var em = Panache.getEntityManager();
+
+        var query = em.createNativeQuery("SELECT DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject') FROM MotivationAssessment a");
+
+        return (List<String>) query.getResultList();
+
+       }
+
 }

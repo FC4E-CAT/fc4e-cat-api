@@ -793,4 +793,16 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
         return assessmentDto;
     }
+
+    /**
+     * Retrieves a list of assessment objects.
+     *
+     * @return The list.
+     */
+    public List getObjects() {
+
+        var objects = motivationAssessmentRepository.fetchAssessmentObjects();
+
+        return objects;
+    }
 }
