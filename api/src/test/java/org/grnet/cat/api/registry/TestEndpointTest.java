@@ -3,8 +3,10 @@ package org.grnet.cat.api.registry;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.ws.rs.core.Response;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.TestEndpoint;
+import org.grnet.cat.dtos.AutomatedTestDto;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
@@ -96,7 +98,7 @@ public class TestEndpointTest extends KeycloakTest {
                 .extract()
                 .as(TestResponseDto.class);
 
-        assertEquals(response.TES , "T12");
+        assertEquals(response.TES, "T12");
     }
 
     @Test
@@ -202,5 +204,80 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(404);
     }
+
+    @Test
+    public void testValidHttpsUrl() {
+        register("admin");
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .queryParam("url", "https://google.com")
+                .get("/check-automated-test/https-url")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AutomatedTestDto.class);
+
+        assertEquals(200,response.code);
+
+    }
+
+    @Test
+    public void testInvalidHttpUrl() {
+        // Mock the response for invalid URL
+        register("admin");
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .queryParam("url", "http://example.com")
+                .get("/check-automated-test/https-url")
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals("Failed to connect to the URL: http://example.com. The URL is not a secure HTTPS connection.", error.message);
+    }
+    @Test
+    public void testUnauthenticatedUser() {
+        // register("alice");
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .queryParam("url", "https://google.com")
+                .get("/check-automated-test/https-url")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(403, error.code);
+    }
+
+    @Test
+    public void testForbiddenUser() {
+        register("alice");
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .queryParam("url", "https://google.com")
+                .get("/check-automated-test/https-url")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(403, error.code);
+    }
+
 
 }
