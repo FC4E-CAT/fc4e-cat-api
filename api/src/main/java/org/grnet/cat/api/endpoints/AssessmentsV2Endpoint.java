@@ -40,6 +40,8 @@ import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
 
+import java.util.List;
+
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/v2/assessments")
@@ -498,5 +500,43 @@ public class AssessmentsV2Endpoint {
         var validations = assessmentService.getPublicDtoRegistryAssessment(id);
 
         return Response.ok().entity(validations).build();
+    }
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get list of objects.",
+            description = "Returns  list of objects in  assessments.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding list of objects.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = List.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/objects")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getObjects() {
+
+        var objects = assessmentService.getObjects();
+
+        return Response.ok().entity(objects).build();
     }
 }
