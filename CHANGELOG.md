@@ -54,6 +54,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#366](https://github.com/FC4E-CAT/fc4e-cat-api/pull/366) CAT-632 Change GET motivation response to show the published status of motivation-actor
 - [#370](https://github.com/FC4E-CAT/fc4e-cat-api/pull/370) CAT-626 Show subjects per assessment
 - [#373](https://github.com/FC4E-CAT/fc4e-cat-api/pull/373) CAT-635 Subject (objects) filters for non-public assessments
+- [#374](https://github.com/FC4E-CAT/fc4e-cat-api/pull/374) CAT-636 Error when filtering public assessment per subject
 
 ### Removed
 
