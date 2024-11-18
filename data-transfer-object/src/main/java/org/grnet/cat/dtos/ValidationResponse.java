@@ -101,24 +101,6 @@ public class ValidationResponse {
     public String organisationWebsite;
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
-            description = "The ID of Actor.",
-            example = "5"
-    )
-    @JsonProperty("actor_id")
-    public Long actorId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Name of Actor.",
-            example = "End User"
-    )
-    @JsonProperty("actor_name")
-    public String actorName;
-
-    @Schema(
             type = SchemaType.STRING,
             implementation = ValidationStatus.class,
             description = "The status of the validation request.",
@@ -182,5 +164,4 @@ public class ValidationResponse {
     )
     @JsonProperty("registry_actor_name")
     public String registryActorName;
-
 }

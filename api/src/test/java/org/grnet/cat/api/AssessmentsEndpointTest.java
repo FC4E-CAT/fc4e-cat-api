@@ -11,7 +11,6 @@ import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
-import org.grnet.cat.dtos.registry.template.TemplateResponse;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -24,169 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AssessmentsEndpointTest extends KeycloakTest {
 
     @Test
-    public void createAssessment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var validation = makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        assertEquals(validation.id, response.validationId);
-    }
-
-    @Test
-    public void createAssessmentNotAuthorizedNotOwner() throws IOException {
-
-        register("alice");
-        register("admin");
-        register("validated");
-
-        makeValidation("alice", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotAuthorizedNotApproved() throws IOException {
-
-        register("alice");
-        register("admin");
-        register("validated");
-
-        makeValidationRequest("alice", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(403, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotExistValidation() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotExistTemplate() throws  IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 200L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404, response.code);
-    }
-
-    @Test
-    public void createAssessmentMismatch() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 1L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no approved validation request.", informativeResponse.message);
-    }
-
-    @Test
     public void getAssessment() throws IOException {
 
         register("validated");
         register("admin");
         register("evald");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -231,169 +74,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
-    @Test
-    public void getAssessments() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var pageResource = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get()
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(PageResource.class);
-
-        assertEquals(1, pageResource.getTotalElements());
-    }
-
-//    @Test
-//    public void updateAssessment() throws IOException {
-//
-//        register("validated");
-//        register("admin");
-//
-//        makeValidation("validated", 6L);
-//
-//        var request = new JsonAssessmentRequest();
-//        request.assessmentDoc = makeJsonDoc(false, 6L);
-//
-//        var response = given()
-//                .auth()
-//                .oauth2(getAccessToken("validated"))
-//                .body(request)
-//                .contentType(ContentType.JSON)
-//                .post()
-//                .then()
-//                .assertThat()
-//                .statusCode(201)
-//                .extract()
-//                .as(UserJsonAssessmentResponse.class);
-//
-//        var updateRequest = new UpdateJsonAssessmentRequest();
-//        updateRequest.assessmentDoc = makeJsonDocUpdated();
-//
-//        var updatedResponse = given()
-//                .auth()
-//                .oauth2(getAccessToken("validated"))
-//                .body(updateRequest)
-//                .contentType(ContentType.JSON)
-//                .put("/{id}",response.id)
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .extract()
-//                .as(UserJsonAssessmentResponse.class);
-//
-//        var json = makeJsonDocUpdated();
-//        assertEquals(json.status , updatedResponse.assessmentDoc.status);
-//    }
-
-    @Test
-    public void updateAssessmentNotExists() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc =makeJsonDocUpdated();
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(updateRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}",1L)
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-       assertEquals(404, updatedResponse.code);
-    }
-
-    @Test
-    public void updateAssessmentNotAuthorizedUser() throws IOException {
-
-        register("validated");
-        register("admin");
-        register("alice");
-
-        makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc =makeJsonDocUpdated();
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(updateRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}",response.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(403,updatedResponse.code);
-    }
-
-    @Test
-    public void getAssessmentNotExist() {
-
-        register("validated");
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get("/{id}", 8L)
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Assessment with the following id: "+8, response.message);
-    }
-
     private ValidationResponse approveValidation(Long valId) {
 
         var updateStatus = new UpdateValidationStatus();
@@ -415,7 +95,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     }
 
-    private ValidationResponse makeValidationRequest(String username, Long actorId) {
+    private ValidationResponse makeValidationRequest(String username, String actorId) {
 
         var request = new ValidationRequest();
         request.organisationRole = "Manager";
@@ -423,7 +103,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = actorId;
+        request.registryActorId = actorId;
 
         var response = given()
                 .auth()
@@ -440,67 +120,13 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return response;
     }
 
-    public TemplateResponse fetchTemplateByActorAndType() {
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v1/templates")
-                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 6L)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(TemplateResponse.class);
-        return response;
-    }
-
-    @Test
-    public void getPublishedAssessments() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(true, 6L);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 6L)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(PageResource.class);
-
-        assertEquals(1, response.getTotalElements());
-    }
-
     @Test
     public void deleteRegistryAssessment() throws IOException {
 
         register("validated");
         register("admin");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -540,7 +166,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("bob");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -579,7 +205,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -622,7 +248,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("validated");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -664,7 +290,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -716,7 +342,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -773,7 +399,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("validated");
         register("admin");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -827,7 +453,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         register("admin");
         register("alice");
 
-        makeValidation("validated", 6L);
+        makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
@@ -874,7 +500,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals("You do not have permission to access this resource.", informativeResponse.message);
     }
 
-    private ValidationResponse makeValidation(String username, Long actorId) {
+    private ValidationResponse makeValidation(String username, String actorId) {
 
         var response = makeValidationRequest(username, actorId);
         return approveValidation(response.id);

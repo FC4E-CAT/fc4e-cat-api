@@ -8,6 +8,8 @@ import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.repositories.Repository;
 
+import java.util.Optional;
+
 @ApplicationScoped
 public class RegistryActorRepository implements Repository<RegistryActor, String> {
 
@@ -30,5 +32,10 @@ public class RegistryActorRepository implements Repository<RegistryActor, String
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    public Optional<RegistryActor> fetchActorByName(String name) {
+
+        return find("from RegistryActor actor where labelActor = ?1", name).stream().findFirst();
     }
 }

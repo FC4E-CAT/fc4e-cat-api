@@ -32,7 +32,6 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
-import org.grnet.cat.dtos.UserAssessmentEligibilityResponse;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.UserRegistryAssessmentEligibilityResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -196,50 +195,6 @@ public class UsersEndpoint {
 
     @Tag(name = "User")
     @Operation(
-            summary = "Get user eligibility for creating new assessments.",
-            description = "Returns a structured list of organizations, assessment types, and actors for which the user is eligible to create new assessments.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Successful response.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableAssessmentEligibility.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @Path("/assessment-eligibility")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Registration
-    public Response userAssessmentEligibility(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                              @Parameter(name = "size", in = QUERY,
-                                                      description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
-                                                  @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
-
-        var userProfile = userService.getUserAssessmentEligibility(page-1, size, utility.getUserUniqueIdentifier(), uriInfo);
-
-        return Response.ok().entity(userProfile).build();
-    }
-
-    @Tag(name = "User")
-    @Operation(
             summary = "Get user registry eligibility for creating new assessments.",
             description = "Returns a structured list of organizations, assessment types, and registry actors for which the user is eligible to create new assessments.")
     @APIResponse(
@@ -293,21 +248,6 @@ public class UsersEndpoint {
 
         @Override
         public void setContent(List<UserProfileDto> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageableAssessmentEligibility extends PageResource<UserAssessmentEligibilityResponse> {
-
-        private List<UserAssessmentEligibilityResponse> content;
-
-        @Override
-        public List<UserAssessmentEligibilityResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<UserAssessmentEligibilityResponse> content) {
             this.content = content;
         }
     }

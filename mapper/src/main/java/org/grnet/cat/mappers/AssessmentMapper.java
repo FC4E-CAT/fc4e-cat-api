@@ -5,16 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.inject.spi.CDI;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.assessment.AssessmentDoc;
-import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.statistics.AssessmentPerActorDto;
-import org.grnet.cat.dtos.template.TemplateDto;
-import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.AssessmentPerActor;
 import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.utils.Utility;
@@ -37,27 +33,9 @@ public interface AssessmentMapper {
 
     AssessmentMapper INSTANCE = Mappers.getMapper(AssessmentMapper.class);
 
-    @IterableMapping(qualifiedByName = "partialMapWithExpression")
-    List<UserPartialJsonAssessmentResponse> userAssessmentsToPartialJsonAssessments(List<UserJsonAssessmentResponse> assessments);
-
-    @IterableMapping(qualifiedByName = "adminPartialMapWithExpression")
-    List<AdminPartialJsonAssessmentResponse> adminAssessmentsToPartialJsonAssessments(List<AdminJsonAssessmentResponse> assessments);
-
-    @Named("partialMapWithExpression")
-    @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
-    @Mapping(target = "type", expression = "java(assessment.assessmentDoc.assessmentType.name)")
-    @Mapping(target = "actor", expression = "java(assessment.assessmentDoc.actor.name)")
-    @Mapping(target = "organisation", expression = "java(assessment.assessmentDoc.organisation.name)")
-    @Mapping(target = "published", expression = "java(assessment.assessmentDoc.published)")
-    @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
-    @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
-    @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
-    @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
-    UserPartialJsonAssessmentResponse userAssessmentToPartialJsonAssessment(UserJsonAssessmentResponse assessment);
 
     @IterableMapping(qualifiedByName = "partialMapWithRegistryExpression")
     List<UserPartialJsonAssessmentResponse> userRegistryAssessmentsToPartialJsonAssessments(List<UserJsonRegistryAssessmentResponse> assessments);
-
 
     @Named("partialMapWithRegistryExpression")
     @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
@@ -71,48 +49,6 @@ public interface AssessmentMapper {
     @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
     UserPartialJsonAssessmentResponse userRegistryAssessmentToPartialJsonAssessment(UserJsonRegistryAssessmentResponse assessment);
 
-    @Named("adminPartialMapWithExpression")
-    @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
-    @Mapping(target = "type", expression = "java(assessment.assessmentDoc.assessmentType.name)")
-    @Mapping(target = "actor", expression = "java(assessment.assessmentDoc.actor.name)")
-    @Mapping(target = "organisation", expression = "java(assessment.assessmentDoc.organisation.name)")
-    @Mapping(target = "published", expression = "java(assessment.assessmentDoc.published)")
-    @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
-    @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
-    @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
-    @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
-    @Mapping(target = "shared", expression = "java(assessment.shared)")
-    AdminPartialJsonAssessmentResponse adminAssessmentToPartialJsonAssessment(AdminJsonAssessmentResponse assessment);
-
-    @IterableMapping(qualifiedByName = "mapWithExpression")
-    List<UserJsonAssessmentResponse> userAssessmentsToJsonAssessments(List<Assessment> assessments);
-
-    @IterableMapping(qualifiedByName = "adminMapWithExpression")
-    List<AdminJsonAssessmentResponse> adminAssessmentsToJsonAssessments(List<Assessment> assessments);
-
-    @Named("mapWithExpression")
-    @Mapping(target = "assessmentDoc", expression = "java(stringJsonToDto(assessment.getAssessmentDoc()))")
-    @Mapping(target = "templateId", expression = "java(assessment.getTemplate().getId())")
-    @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
-    @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
-    @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
-    @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
-    @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
-    @Mapping(target = "sharedToUser", expression = "java(isSharedToUser(assessment.getValidation().getUser().getId()))")
-    @Mapping(target = "sharedByUser", expression = "java(isSharedByUser(assessment,assessment.getValidation().getUser().getId()))")
-    UserJsonAssessmentResponse userAssessmentToJsonAssessment(Assessment assessment);
-
-    @Named("adminMapWithExpression")
-    @Mapping(target = "assessmentDoc", expression = "java(stringJsonToDto(assessment.getAssessmentDoc()))")
-    @Mapping(target = "templateId", expression = "java(assessment.getTemplate().getId())")
-    @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
-    @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
-    @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
-    @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
-    @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
-    @Mapping(target = "shared", expression = "java(assessment.getShared())")
-    AdminJsonAssessmentResponse adminAssessmentToJsonAssessment(Assessment assessment);
-
     @Named("adminMapRegistryWithExpression")
     @Mapping(target = "assessmentDoc", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()))")
     @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
@@ -122,7 +58,6 @@ public interface AssessmentMapper {
     @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
     @Mapping(target = "shared", expression = "java(assessment.getShared())")
     AdminJsonRegistryAssessmentResponse adminRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
-
 
     @Named("adminPartialRegistryMapWithExpression")
     @Mapping(target = "name", expression = "java(assessment.assessmentDoc.name)")
@@ -143,19 +78,6 @@ public interface AssessmentMapper {
 
     @IterableMapping(qualifiedByName = "adminMapRegistryWithExpression")
     List<AdminJsonRegistryAssessmentResponse> adminRegistryAssessmentsToJsonAssessments(List<MotivationAssessment> assessments);
-
-    @Mapping(target = "id", ignore = true)
-    AssessmentDoc templateDocToAssessmentDoc(TemplateDto template);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "assessmentType", ignore = true)
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "timestamp", ignore = true)
-    @Mapping(target = "actor", ignore = true)
-    @Mapping(target = "organisation", ignore = true)
-    @Mapping(target = "subject", ignore = true)
-    AssessmentDoc updateAssessmentDocFromTemplateDoc(TemplateDto template);
 
     @Named("mapWithRegistryExpression")
     @Mapping(target = "assessmentDoc", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()))")
@@ -179,15 +101,8 @@ public interface AssessmentMapper {
     @Mapping(target = "actor", expression = "java(assessmentPerActor.getActor_name())")
     AssessmentPerActorDto assessmentPerActorToAssessmentPerActorDto(AssessmentPerActor assessmentPerActor);
 
-    default Boolean isSharedByUser(Assessment assessment, String userId) {
-
-        var utility = CDI.current().select(Utility.class).get();
-        var currentUser = utility.getUserUniqueIdentifier();
-        var sameUser = currentUser.equals(userId);
-        return assessment.getShared() && sameUser;
-    }
-
     default Boolean isRegistryAssessmentSharedByUser(MotivationAssessment assessment, String userId) {
+
         var utility = CDI.current().select(Utility.class).get();
         var currentUser = utility.getUserUniqueIdentifier();
         var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment

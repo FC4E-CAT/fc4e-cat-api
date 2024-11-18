@@ -11,24 +11,18 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.UserProfileDto;
-import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.AssessmentResponse;
-import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
-import org.grnet.cat.dtos.assessment.UserJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
-import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.enums.MailType;
@@ -38,11 +32,8 @@ import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
-import org.grnet.cat.mappers.TemplateMapper;
 import org.grnet.cat.mappers.UserMapper;
-import org.grnet.cat.repositories.AssessmentRepository;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
-import org.grnet.cat.repositories.TemplateRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.services.KeycloakAdminService;
@@ -63,13 +54,7 @@ import static org.grnet.cat.services.KeycloakAdminService.ENTITLEMENTS_DELIMITER
  */
 @ApplicationScoped
 @Named("json-assessment-service")
-public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAssessmentRequest, JsonAssessmentRequest, AssessmentResponse, Assessment> {
-
-    @Inject
-    AssessmentRepository assessmentRepository;
-
-    @Inject
-    TemplateRepository templateRepository;
+public class JsonAssessmentService {
 
     @Inject
     ObjectMapper objectMapper;
@@ -94,56 +79,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
 
     @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
-
-    @Transactional
-    @SneakyThrows
-    @Override
-    public UserJsonAssessmentResponse createAssessment(String userId, JsonAssessmentRequest request) {
-
-        var validation = validationRepository.fetchValidationByUserAndActorAndOrganisation(userId, request.assessmentDoc.actor.id, request.assessmentDoc.organisation.id);
-
-        if (!validation.getStatus().equals(ValidationStatus.APPROVED)) {
-
-            throw new ForbiddenException("The validation request hasn't been approved yet!");
-        }
-
-        var template = templateRepository.fetchTemplateByActorAndType(request.assessmentDoc.actor.id, request.assessmentDoc.assessmentType.id);
-
-        if (template.isEmpty()) {
-
-            throw new BadRequestException(String.format("Not Found Template for Actor [%s] and Assessment Type [%s].", request.assessmentDoc.actor.name, request.assessmentDoc.assessmentType.name));
-        }
-
-        validateTemplateJson(request.assessmentDoc);
-
-        handleSubjectDatabaseId(userId, request.assessmentDoc.subject);
-
-        validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template.get()).templateDoc));
-
-        var timestamp = Timestamp.from(Instant.now());
-        request.assessmentDoc.timestamp = timestamp.toString();
-        request.assessmentDoc.organisation.name = validation.getOrganisationName();
-
-        Assessment assessment = new Assessment();
-        assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
-        assessment.setCreatedOn(timestamp);
-        assessment.setTemplate(template.get());
-        assessment.setValidation(validation);
-        assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
-        assessment.setShared(Boolean.FALSE);
-        assessmentRepository.persist(assessment);
-
-        //assign assessment id to json
-        var storedAssessment = assessmentRepository.findById(assessment.getId());
-
-        var assessmentDoc = AssessmentMapper.INSTANCE.templateDocToAssessmentDoc(request.assessmentDoc);
-        assessmentDoc.id = assessment.getId();
-        storedAssessment.setAssessmentDoc(objectMapper.writeValueAsString(assessmentDoc));
-
-        keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
-
-        return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(storedAssessment);
-    }
 
     @Transactional
     @SneakyThrows
@@ -220,30 +155,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
             subject.name = dbSubject.getName();
             subject.type = dbSubject.getType();
             subject.id = dbSubject.getSubjectId();
-        }
-    }
-
-    @Override
-    public void validateAssessmentAgainstTemplate(String request, String template) {
-
-        boolean isValid;
-
-        var listOfMismatchedFields = new ArrayList<String>();
-
-        try {
-            var cmp = new JsonFieldComparator();
-
-            var expected = (ObjectNode) objectMapper.readTree(template);
-            var actual = (ObjectNode) objectMapper.readTree(request);
-
-            isValid = equals(cmp, actual, expected, listOfMismatchedFields);
-        } catch (JsonProcessingException e) {
-            throw new InternalServerErrorException("Server Error.", 500);
-        }
-
-        if (!isValid) {
-
-            throw new BadRequestException("A field in Assessment Request mismatches a field in Template. Mismatches : " + listOfMismatchedFields);
         }
     }
 
@@ -349,34 +260,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     }
 
     /**
-     * Retrieves a specific assessment if it belongs to the user.
-     *
-     * @param assessmentId The ID of the assessment to retrieve.
-     * @return The assessment.
-     */
-    @Override
-    public AdminJsonAssessmentResponse getDtoAssessment(String assessmentId) {
-
-        var assessment = assessmentRepository.findById(assessmentId);
-
-        return AssessmentMapper.INSTANCE.adminAssessmentToJsonAssessment(assessment);
-    }
-
-    /**
-     * Retrieves a specific assessment if it belongs to the user.
-     *
-     * @param assessmentId The ID of the assessment to retrieve.
-     * @return The assessment if it belongs to the user.
-     * @throws ForbiddenException If the user is not authorized to access the assessment.
-     */
-    public UserJsonAssessmentResponse getDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
-
-        var assessment = assessmentRepository.findById(assessmentId);
-
-        return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessment);
-    }
-
-    /**
      * Retrieves a specific registry assessment if it belongs to the user.
      *
      * @param assessmentId The ID of the assessment to retrieve.
@@ -385,6 +268,11 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      */
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     public UserJsonRegistryAssessmentResponse getRegistryDtoAssessmentIfBelongsOrSharedToUser(String assessmentId) {
+
+        return getRegistryDtoAssessment(assessmentId);
+    }
+
+    public UserJsonRegistryAssessmentResponse getRegistryDtoAssessment(String assessmentId) {
 
         var assessment = motivationAssessmentRepository.findById(assessmentId);
 
@@ -401,69 +289,13 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     @Transactional
     public void deleteRegistryAssessmentBelongsToUser(String assessmentId) {
 
-        motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
+        delete(assessmentId);
     }
 
-    /**
-     * Retrieves a specific public assessment.
-     *
-     * @param assessmentId The ID of the assessment to retrieve.
-     * @return The assessment if it's public.
-     */
-    @Override
-    public AdminJsonAssessmentResponse getPublicDtoAssessment(String assessmentId) {
-
-        var assessment = assessmentRepository.findById(assessmentId);
-
-        var assessmentDto = AssessmentMapper.INSTANCE.adminAssessmentToJsonAssessment(assessment);
-
-        if (!assessmentDto.assessmentDoc.published) {
-            throw new ForbiddenException("Not Permitted.");
-        }
-
-        return assessmentDto;
-    }
-
-    @Override
     @Transactional
     public void deleteAll() {
-        assessmentRepository.deleteAll();
+
         motivationAssessmentRepository.deleteAll();
-    }
-
-    /**
-     * Updates the Assessment's json document. This method also handles the subjects that were inserted in the assessment document.
-     *
-     * @param id      The ID of the assessment whose json doc is being updated.
-     * @param request The update request.
-     * @return The updated assessment
-     */
-    @Override
-    @SneakyThrows
-    public UserJsonAssessmentResponse update(String id, JsonAssessmentRequest request) {
-
-        validateTemplateJson(request.assessmentDoc);
-
-        var template = templateRepository.fetchTemplateByActorAndType(request.assessmentDoc.actor.id, request.assessmentDoc.assessmentType.id);
-
-        validateAssessmentAgainstTemplate(objectMapper.writeValueAsString(request.assessmentDoc), objectMapper.writeValueAsString(TemplateMapper.INSTANCE.templateToDto(template.get()).templateDoc));
-
-        var dbAssessmentToJson = AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessmentRepository.findById(id));
-
-        var assessmentDoc = AssessmentMapper.INSTANCE.updateAssessmentDocFromTemplateDoc(request.assessmentDoc);
-
-        assessmentDoc.id = id;
-        assessmentDoc.version = dbAssessmentToJson.assessmentDoc.version;
-        assessmentDoc.assessmentType = dbAssessmentToJson.assessmentDoc.assessmentType;
-        assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor;
-        assessmentDoc.status = dbAssessmentToJson.assessmentDoc.status;
-        assessmentDoc.subject = dbAssessmentToJson.assessmentDoc.subject;
-        assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
-        assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
-
-        var assessment = assessmentRepository.updateAssessmentDocById(id, utility.getUserUniqueIdentifier(), objectMapper.writeValueAsString(assessmentDoc));
-
-        return AssessmentMapper.INSTANCE.userAssessmentToJsonAssessment(assessment);
     }
 
     /**
@@ -475,6 +307,13 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      */
     @SneakyThrows
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
+    @Transactional
+    public UserJsonRegistryAssessmentResponse updatePrivateAssessment(String id, JsonRegistryAssessmentRequest request) {
+
+       return update(id, request);
+    }
+
+    @SneakyThrows
     @Transactional
     public UserJsonRegistryAssessmentResponse update(String id, JsonRegistryAssessmentRequest request) {
 
@@ -495,28 +334,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         dbAssessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
 
         return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);
-    }
-
-    /**
-     * Retrieves a page of assessments submitted by the specified user.
-     *
-     * @param page        The index of the page to retrieve (starting from 0).
-     * @param size        The maximum number of assessments to include in a page.
-     * @param uriInfo     The Uri Info.
-     * @param userID      The ID of the user who requests their assessments.
-     * @param subjectName Subject name to search for.
-     * @param subjectType Subject Type to search for.
-     * @param actorId     Actor ID to search for.
-     * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
-     */
-    @Override
-    public PageResource<UserPartialJsonAssessmentResponse> getDtoAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, Long actorId) {
-
-        var assessments = assessmentRepository.fetchAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId);
-
-        var fullAssessments = AssessmentMapper.INSTANCE.userAssessmentsToJsonAssessments(assessments.list());
-
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.userAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 
     /**
@@ -547,28 +364,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
     }
 
     /**
-     * Retrieves a page of published assessments categorized by type and actor, created by all users.
-     *
-     * @param page        The index of the page to retrieve (starting from 0).
-     * @param size        The maximum number of assessments to include in a page.
-     * @param uriInfo     The Uri Info.
-     * @param typeId      The ID of the Assessment Type.
-     * @param actorId     The Actor's id.
-     * @param subjectName Subject name to search for.
-     * @param subjectType Subject Type to search for.
-     * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
-     */
-    @Override
-    public PageResource<AdminPartialJsonAssessmentResponse> getPublishedDtoAssessmentsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo, String subjectName, String subjectType) {
-
-        var assessments = assessmentRepository.fetchPublishedAssessmentsByTypeAndActorAndPage(page, size, typeId, actorId, subjectName, subjectType);
-
-        var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
-
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
-    }
-
-    /**
      * Retrieves a page of published assessments categorized by motivation and actor, created by all users.
      *
      * @param page        The index of the page to retrieve (starting from 0).
@@ -587,29 +382,6 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
-    }
-
-    /**
-     * Retrieves a page of public assessment objects by type and actor.
-     *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of assessment objects to include in a page.
-     * @param uriInfo The Uri Info.
-     * @param typeId  The ID of the Assessment Type.
-     * @param actorId The Actor's id.
-     * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
-     */
-    public PageResource<TemplateSubjectDto> getPublishedDtoAssessmentObjectsByTypeAndActorAndPage(int page, int size, Long typeId, Long actorId, UriInfo uriInfo) {
-
-        var objects = assessmentRepository.fetchPublishedAssessmentObjectsByTypeAndActorAndPage(page, size, typeId, actorId);
-
-        var jsonToObjects = objects
-                .list()
-                .stream()
-                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
-                .collect(Collectors.toList());
-
-        return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 
     /**
@@ -635,44 +407,9 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
         return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 
-    @Override
-    public Assessment getAssessment(String assessmentId) {
-
-        return assessmentRepository.findById(assessmentId);
-    }
-
-    @Override
-    public void forbidActionsToPublicAssessment(Assessment assessment) {
-
-        //        if (AssessmentMapper.INSTANCE.assessmentToJsonAssessment(assessment).assessmentDoc.published) {
-//            throw new ForbiddenException("It is not allowed to manage a published assessment.");
-//        }
-    }
-
-    /**
-     * Deletes an assessment.
-     *
-     * @param assessmentId The ID of the assessment to be deleted.
-     */
-    @Override
     public void delete(String assessmentId) {
 
-        assessmentRepository.deleteAssessmentById(assessmentId);
-    }
-
-    /**
-     * Retrieve all assessments.
-     *
-     * @return List of all assessments
-     */
-    @Override
-    public PageResource<AdminPartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo) {
-
-        var assessments = assessmentRepository.fetchAllAssessmentsByPage(page, size, search);
-        var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
-        var partialAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments);
-
-        return new PageResource<>(assessments, partialAssessments, uriInfo);
+        motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
     }
 
     /**
@@ -687,29 +424,7 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      */
     public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUserAndActor(int page, int size, UriInfo uriInfo, String userID, String actorID) {
 
-        var objects = assessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
-
-        var jsonToObjects = objects
-                .list()
-                .stream()
-                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
-                .collect(Collectors.toList());
-
-        return new PageResource<>(objects, jsonToObjects, uriInfo);
-    }
-
-    /**
-     * Retrieves a page of assessment objects submitted by the specified user.
-     *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of assessment objects to include in a page.
-     * @param uriInfo The Uri Info.
-     * @param userID  The ID of the user who requests their assessments.
-     * @return A list of TemplateSubjectDto objects representing the submitted assessment objects in the requested page.
-     */
-    public PageResource<TemplateSubjectDto> getAssessmentsObjectsByUser(int page, int size, UriInfo uriInfo, String userID) {
-
-        var objects = assessmentRepository.fetchAssessmentsObjectsByUser(page, size, userID);
+        var objects = motivationAssessmentRepository.fetchAssessmentsObjectsByUserAndActor(page, size, userID, actorID);
 
         var jsonToObjects = objects
                 .list()
@@ -812,5 +527,18 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieve all assessments.
+     *
+     * @return List of all assessments
+     */
+    public PageResource<AdminPartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo) {
+
+        var assessments = motivationAssessmentRepository.fetchAllAssessmentsByPage(page, size, search);
+        var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
     }
 }

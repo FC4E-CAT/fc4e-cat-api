@@ -7,7 +7,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.RoleDto;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.statistics.*;
-import org.grnet.cat.entities.Role;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.RoleMapper;
 import org.grnet.cat.repositories.*;
@@ -27,7 +26,7 @@ public class KeycloakAdminRoleService implements RoleService {
     @Inject
     ValidationRepository validationRepository;
     @Inject
-    AssessmentRepository assessmentRepository;
+    MotivationAssessmentRepository assessmentRepository;
     @Inject
     SubjectRepository subjectRepository;
 

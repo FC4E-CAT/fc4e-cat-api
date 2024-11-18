@@ -50,7 +50,6 @@ public class CriteriaEndpointTest extends KeycloakTest {
         assertEquals(request.typeCriterion, response.typeCriterion);
     }
 
-
     @Test
     public void createCriteriaWithInvalidImperative() {
 
