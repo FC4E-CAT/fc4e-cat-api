@@ -27,6 +27,8 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.AutomatedTestDto;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
+import org.grnet.cat.dtos.registry.test.CheckUrlRequestDto;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
 import org.grnet.cat.dtos.registry.test.TestUpdateDto;
@@ -391,17 +393,11 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Registration
-    @GET
+    @POST
     @Path("/check-automated-test/https-url")
-    public Response testHttps(@Parameter(
-            description = "The url of the Test to checkValidity.",
-            required = true,
-            example = "https://google.com",
-            schema = @Schema(type = SchemaType.STRING))
-                              @QueryParam("url")
-                              @NotEmpty String url) {
+    public Response testHttps(@Valid @NotNull(message = "The request body is empty.") CheckUrlRequestDto request) {
 
-        var response = testService.isValidHttpsUrl(url);
+        var response = testService.isValidHttpsUrl(request);
 
         return Response.ok().entity(response).build();
     }
