@@ -3,6 +3,7 @@ package org.grnet.cat.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import org.grnet.cat.enums.UserType;
 
@@ -14,6 +15,7 @@ import java.util.List;
  *
  */
 @Entity
+@Table(name = "CatUser")
 public class User {
 
     /**

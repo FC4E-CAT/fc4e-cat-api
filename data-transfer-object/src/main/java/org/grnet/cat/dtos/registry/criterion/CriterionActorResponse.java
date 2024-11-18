@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.dtos.ActorDto;
 import org.grnet.cat.dtos.registry.codelist.ImperativePartialResponse;
 import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
 

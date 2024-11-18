@@ -20,7 +20,7 @@ public interface CommentMapper {
 
     @Named("mapWithExpression")
     @Mapping(source = "id", target = "id")
-    @Mapping(source = "assessment.id", target = "assessmentId")
+    @Mapping(source = "motivationAssessment.id", target = "assessmentId")
     @Mapping(source = "text", target = "text")
     @Mapping(source = "createdOn", target = "createdOn")
     @Mapping(source = "user", target = "user")
@@ -28,7 +28,7 @@ public interface CommentMapper {
 
     @Mapping(source = "text", target = "text")
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "assessment", ignore = true)
+    @Mapping(target = "motivationAssessment", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "createdOn", ignore = true)
     @Mapping(target = "modifiedOn", ignore = true)

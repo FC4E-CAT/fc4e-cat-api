@@ -57,16 +57,7 @@ public class UserService {
     ValidationRepository validationRepository;
 
     @Inject
-    AssessmentRepository assessmentRepository;
-
-    @Inject
     JsonAssessmentService jsonAssessmentService;
-
-    /**
-     * Injection point for the Actor repository
-     */
-    @Inject
-    ActorRepository actorRepository;
 
     /**
      * Injection point for the Role repository
@@ -87,6 +78,9 @@ public class UserService {
 
     @Inject
     RegistryActorRepository registryActorRepository;
+
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
 
     @ConfigProperty(name = "api.cat.validations.approve.auto")
     boolean autoApprove;
@@ -132,7 +126,7 @@ public class UserService {
         info.validatedOn = userProfile.validatedOn;
         info.updatedOn = userProfile.updatedOn;
         info.totalValidationsCount = validationRepository.countValidationsByUserId(info.id);
-        info.totalAssessmentsCount = assessmentRepository.countAllAssessmentsByUser(info.id);
+        info.totalAssessmentsCount = motivationAssessmentRepository.countAllAssessmentsByUser(info.id);
 
         return info;
     }
@@ -219,31 +213,7 @@ public class UserService {
 
         var validation = new Validation();
 
-        if(StringUtils.isNotEmpty(validationRequest.registryActorId)){
-
-            validationService.hasPromotionRequestWithRegistryActor(id, validationRequest.organisationId, validationRequest.organisationSource, validationRequest.registryActorId);
-
-            var possibleActor = validationService.transformRegistryActorToActor(validationRequest.registryActorId);
-
-            possibleActor.ifPresent(value -> {
-
-                validationService.hasPromotionRequestWithActor(id, validationRequest.organisationId, validationRequest.organisationSource, value.getId());
-                validation.setActor(value);
-            });
-
-            validation.setRegistryActor(registryActorRepository.findById(validationRequest.registryActorId));
-        } else if (!Objects.isNull(validationRequest.actorId)){
-
-            var actor = actorRepository.findById(validationRequest.actorId);
-            validation.setActor(actor);
-            validationService.hasPromotionRequestWithActor(id, validationRequest.organisationId, validationRequest.organisationSource, validationRequest.actorId);
-            var registryActor = utility.transformActorToRegistryActor(actor.getName());
-            validationService.hasPromotionRequestWithRegistryActor(id, validationRequest.organisationId, validationRequest.organisationSource, registryActor.getId());
-            validation.setRegistryActor(registryActor);
-        } else{
-
-            throw new BadRequestException("Actor or Registry Actor may not be empty.");
-        }
+        validationService.hasPromotionRequestWithRegistryActor(id, validationRequest.organisationId, validationRequest.organisationSource, validationRequest.registryActorId);
 
         if (autoApprove) {
             status = ValidationStatus.APPROVED;
@@ -262,7 +232,9 @@ public class UserService {
         validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
         validation.setOrganisationWebsite(validationRequest.organisationWebsite);
         validation.setOrganisationRole(validationRequest.organisationRole);
+        validation.setRegistryActor(registryActorRepository.findById(validationRequest.registryActorId));
         validationService.store(validation);
+
 
         CompletableFuture.supplyAsync(() ->
                 mailerService.retrieveAdminEmails()
@@ -325,13 +297,6 @@ public class UserService {
         userToBeBanned.setBanned(Boolean.FALSE);
         historyRepository.persist(history);
         roleRepository.removeRoles(userId, List.of("deny_access"));
-    }
-
-    public PageResource<UserAssessmentEligibilityResponse> getUserAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo) {
-
-        var list = validationService.getUserAssessmentEligibility(page, size, userID);
-
-        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserAssessmentEligibilityToDto(list.list()), uriInfo);
     }
 
     public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo) {

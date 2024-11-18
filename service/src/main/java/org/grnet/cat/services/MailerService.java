@@ -1,6 +1,5 @@
 package org.grnet.cat.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -10,7 +9,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.MailType;

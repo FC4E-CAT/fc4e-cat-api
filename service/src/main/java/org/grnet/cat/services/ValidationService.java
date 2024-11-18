@@ -10,18 +10,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.ValidationRequest;
 import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.entities.Actor;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Validation;
-import org.grnet.cat.entities.projections.UserAssessmentEligibility;
 import org.grnet.cat.entities.projections.UserRegistryAssessmentEligibility;
-import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.ValidationMapper;
-import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.validators.ValidationRequestValidator;
@@ -32,7 +28,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /**
@@ -46,15 +41,9 @@ public class ValidationService {
     MailerService mailerService;
     @Inject
     ValidationRepository validationRepository;
-
-    @Inject
-    ActorRepository actorRepository;
     @Inject
     @Named("keycloak-service")
     RoleService roleService;
-
-    @Inject
-    ActorService actorService;
 
     @Inject
     RegistryActorRepository registryActorRepository;
@@ -75,27 +64,12 @@ public class ValidationService {
     };
 
     /**
-     * Checks if there is a promotion request for a specific user, organization and actor.
-     *
-     * @param userId  The ID of the user.
-     * @param request The promotion request information.
-     * @throws ConflictException if a promotion request exists for the user, organization and actor.
-     */
-    public void hasPromotionRequestWithActor(String userId, String organisationId, String organisationSource, Long actorId) {
-
-        // Call the repository method to check if a promotion request exists
-        var exists = validationRepository.hasPromotionRequestWithActor(userId, organisationId, organisationSource, actorId);
-
-        if (exists) {
-            throw new ConflictException("There is a promotion request for this user and organisation.");
-        }
-    }
-
-    /**
      * Checks if there is a promotion request for a specific user, organization and registry actor.
      *
      * @param userId  The ID of the user.
-     * @param request The promotion request information.
+     * @param organisationId The organisation id.
+     * @param organisationSource The organisation source.
+     * @param registryActorId The actor id.
      * @throws ConflictException if a promotion request exists for the user, organization and registry actor.
      */
     public void hasPromotionRequestWithRegistryActor(String userId, String organisationId, String organisationSource, String registryActorId) {
@@ -242,19 +216,6 @@ public class ValidationService {
     }
 
     /**
-     * Retrieves the list of assessment types and actors for which the user is eligible to create assessments.
-     *
-     * @param page   The index of the page to retrieve (starting from 0).
-     * @param size   The maximum number of validation requests to include in a page.
-     * @param userID the ID of the user
-     * @return a structured list of organizations, assessment types, and actors
-     */
-    public PageQuery<UserAssessmentEligibility> getUserAssessmentEligibility(int page, int size, String userID){
-
-        return validationRepository.fetchUserAssessmentEligibility(page, size, userID);
-    }
-
-    /**
      * Retrieves the list of assessment types and registry actors for which the user is eligible to create assessments.
      *
      * @param page   The index of the page to retrieve (starting from 0).
@@ -270,40 +231,5 @@ public class ValidationService {
     @Transactional
     public void deleteAll() {
         validationRepository.deleteAll();
-    }
-
-    public Optional<Actor> transformRegistryActorToActor(String registryActorId){
-
-        if(registryActorId.equals("pid_graph:0E00C332")){
-
-            return actorRepository.fetchActorByName("PID Scheme");
-        } else if (registryActorId.equals("pid_graph:1A718108")) {
-
-            return actorRepository.fetchActorByName("PID Authority");
-        } else if (registryActorId.equals("pid_graph:20A7A125")) {
-
-            return actorRepository.fetchActorByName("End User");
-        } else if (registryActorId.equals("pid_graph:234B60D8")) {
-
-            return actorRepository.fetchActorByName("Compliance Monitoring");
-        } else if (registryActorId.equals("pid_graph:B5CC396B")) {
-
-            return actorRepository.fetchActorByName("PID Owner");
-        } else if (registryActorId.equals("pid_graph:D42428D7")) {
-
-            return actorRepository.fetchActorByName("PID Manager");
-        } else if (registryActorId.equals("pid_graph:E92B9B49")) {
-
-            return actorRepository.fetchActorByName("PID Service Provider");
-        } else if (registryActorId.equals("pid_graph:7835EF43")) {
-
-            return actorRepository.fetchActorByName("Multi-Primary Administrator");
-        } else if (registryActorId.equals("pid_graph:566C01F6")){
-
-            return actorRepository.fetchActorByName("PID Standards Body");
-        } else {
-
-            return Optional.empty();
-        }
     }
 }
