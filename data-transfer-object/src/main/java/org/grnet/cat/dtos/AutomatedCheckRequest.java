@@ -1,11 +1,11 @@
-package org.grnet.cat.dtos.registry.test;
+package org.grnet.cat.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-public class CheckUrlRequestDto {
+public class AutomatedCheckRequest {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
