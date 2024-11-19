@@ -16,10 +16,13 @@ import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
+import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.repositories.registry.*;
+import org.keycloak.common.util.DelegatingSerializationFilter;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -448,6 +451,40 @@ public class MotivationService {
             motivationActorJunction.setPublished(Boolean.FALSE);
         }
 
+    }
+
+    @Transactional
+    public List<String> createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
+
+        var resultMessage = new ArrayList<String>();
+
+        if (!principleRepository.notUnique("pri", request.principleRequestDto.pri.toUpperCase())) {
+
+            var principle = PrincipleMapper.INSTANCE.principleToEntity(request.principleRequestDto);
+
+            principle.setLodMTV(id);
+            principle.setPopulatedBy(userID);
+            principleRepository.persist(principle);
+
+            var motivationPrincipleJunction = new MotivationPrincipleJunction(
+                    Panache.getEntityManager().getReference(Motivation.class, id),
+                    Panache.getEntityManager().getReference(Principle.class, principle.getId()),
+                    request.annotationText,
+                    request.annotationUrl,
+                    Panache.getEntityManager().getReference(Relation.class, request.relation),
+                    id,
+                    1,
+                    userID,
+                    Timestamp.from(Instant.now())
+            );
+
+            motivationPrincipleRepository.persist(motivationPrincipleJunction);
+
+            resultMessage.add("Principle successfully created and linked to the specified motivation.");
+    } else {
+            resultMessage.add("A principle with the identifier '" + request.principleRequestDto.pri.toUpperCase() + "' already exists.");
+        }
+        return resultMessage;
     }
 
 }

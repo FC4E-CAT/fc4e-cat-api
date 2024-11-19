@@ -35,6 +35,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#345](https://github.com/FC4E-CAT/fc4e-cat-api/pull/345) CAT-608 Implement Search and Retrieve Associated Motivations for Principles and Criteria
 - [#346](https://github.com/FC4E-CAT/fc4e-cat-api/pull/346) CAT-613 Publish/Unpublish motivation actor relationship
 - [#350](https://github.com/FC4E-CAT/fc4e-cat-api/pull/350) CAT-612 Include Related Metrics in Criterion Response
+- [#355](https://github.com/FC4E-CAT/fc4e-cat-api/pull/355) CAT-617 API Create a principle under motivation
 - [#351](https://github.com/FC4E-CAT/fc4e-cat-api/pull/351) CAT-616 Create New Version Endpoint for Generating Assessments Based on Motivation Actor Templates.
 - [#361](https://github.com/FC4E-CAT/fc4e-cat-api/pull/361) CAT-628 Assessment Update.
 - [#360](https://github.com/FC4E-CAT/fc4e-cat-api/pull/360) CAT-622 Create an endpoint to check if a url is a valid https
