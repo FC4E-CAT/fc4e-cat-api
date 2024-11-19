@@ -1286,7 +1286,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\",\"Automated Check Resource\"]",
+              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1310,7 +1310,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\",\"Automated Check Resource\"]",
+              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           },
