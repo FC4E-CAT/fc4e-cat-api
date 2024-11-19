@@ -59,6 +59,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#374](https://github.com/FC4E-CAT/fc4e-cat-api/pull/374) CAT-636 Error when filtering public assessment per subject
 - [#375](https://github.com/FC4E-CAT/fc4e-cat-api/pull/375) CAT-638 Change call GET /v1/registry/tests/check-automated-test/https-url definition
 - [#378](https://github.com/FC4E-CAT/fc4e-cat-api/pull/378) CAT-640 Auto-Check-Url-Binary Test value - allow to be string
+- [#376](https://github.com/FC4E-CAT/fc4e-cat-api/pull/376) CAT-643 Strange json response in /v2/assessments/objects #376
 
 
 ### Removed
