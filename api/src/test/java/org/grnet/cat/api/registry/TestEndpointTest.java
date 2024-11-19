@@ -3,19 +3,17 @@ package org.grnet.cat.api.registry;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.ws.rs.core.Response;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.TestEndpoint;
-import org.grnet.cat.dtos.AutomatedTestDto;
+import org.grnet.cat.dtos.AutomatedCheckResponse;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.registry.test.CheckUrlRequestDto;
+import org.grnet.cat.dtos.AutomatedCheckRequest;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
 import org.grnet.cat.dtos.registry.test.TestUpdateDto;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.urlEncodingEnabled;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
@@ -206,128 +204,5 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(404);
     }
-
-    @Test
-    public void testValidHttpsUrl() {
-        register("admin");
-
-        var request=new CheckUrlRequestDto();
-        request.url="https://google.com";
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/check-automated-test/https-url")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(AutomatedTestDto.class);
-
-        assertEquals(200,response.code);
-
-    }
-
-    @Test
-    public void testInvalidHttpsUrl() {
-        // Mock the response for invalid URL
-        register("admin");
-        var request=new CheckUrlRequestDto();
-        request.url="https://google1.com";
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/check-automated-test/https-url")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-        assertEquals("Failed to connect to the URL: "+request.url+". IOException: "+request.url.replace("https://",""), error.message);
-    }
-    @Test
-    public void testEmptyUrl() {
-        // Mock the response for invalid URL
-        register("admin");
-        var request=new CheckUrlRequestDto();
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/check-automated-test/https-url")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-        assertEquals("url may not be empty.", error.message);
-    }
-
-    @Test
-    public void testNoHttpsUrl() {
-        // Mock the response for invalid URL
-        register("admin");
-        var request=new CheckUrlRequestDto();
-        request.url="http://google.com";
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/check-automated-test/https-url")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-        assertEquals("Failed to connect to the URL: "+request.url+". The URL is not a secure HTTPS connection.", error.message);
-    }
-    @Test
-    public void testUnauthenticatedUser() {
-        // register("alice");
-        var request=new CheckUrlRequestDto();
-        request.url="https://google.com";
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/check-automated-test/https-url")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-        assertEquals(403, error.code);
-    }
-
-    @Test
-    public void testForbiddenUser() {
-        register("alice");
-        var request=new CheckUrlRequestDto();
-        request.url="https://google.com";
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .body(request)
-                .post("/check-automated-test/https-url")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-        assertEquals(403, error.code);
-    }
-
 
 }

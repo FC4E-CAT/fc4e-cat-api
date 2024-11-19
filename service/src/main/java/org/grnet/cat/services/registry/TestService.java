@@ -3,12 +3,9 @@ package org.grnet.cat.services.registry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
-import org.grnet.cat.dtos.AutomatedTestDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.test.CheckUrlRequestDto;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
 import org.grnet.cat.dtos.registry.test.TestUpdateDto;
@@ -17,13 +14,6 @@ import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.jboss.logging.Logger;
-
-import javax.net.ssl.HttpsURLConnection;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Objects;
 
 @ApplicationScoped
 public class TestService {
@@ -119,45 +109,4 @@ public class TestService {
 
         return new PageResource<>(testPage, testDtos, uriInfo);
     }
-    /**
-     * Checks if a url is a valid https url.
-     * @return AutomatedTestDto if url is a valid http check else an exception
-     */
-    public AutomatedTestDto isValidHttpsUrl(CheckUrlRequestDto urlRequest) {
-        try {
-            URL url = new URL(urlRequest.url);
-
-            // Open a connection and ensure it is an HTTPS connection
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            if (!(connection instanceof HttpsURLConnection)) {
-                throw new ConnectException("Failed to connect to the URL: " + url + ". The URL is not a secure HTTPS connection.");
-            }
-
-            // Try to connect (without fully reading the response)
-            connection.setConnectTimeout(5000); // 5 seconds timeout
-            connection.setReadTimeout(5000); // 5 seconds timeout
-            connection.setRequestMethod("HEAD"); // Only need headers to check connection
-
-            try {
-                int responseCode = connection.getResponseCode(); // This line can throw IOException
-
-                // Return true only if response code is 200 (OK)
-                if (responseCode == 200) {
-                    var response = new AutomatedTestDto();
-                    response.code = responseCode;
-                    response.isValidHttps = true;
-                    return response;
-                } else {
-                    throw new BadRequestException("Failed to connect to the URL: " + url + ". Received status code " + responseCode);
-                }
-            } catch (IOException ioException) {
-                throw new BadRequestException("Failed to connect to the URL: " + url + ". IOException: " + ioException.getMessage());
-            }
-
-        } catch (Exception e) {
-            // If any exception occurs, wrap it in a BadRequestException with a message
-            throw new BadRequestException(e.getMessage());
-        }
-    }
-
 }

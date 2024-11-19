@@ -952,6 +952,28 @@
             "icon_uri": ""
           },
           {
+            "name": "Automated Check Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Automated Check Resource",
+            "attributes": {},
+            "_id": "92j19ls10a-ded3-43de-99cc-24d6d8169653",
+            "uris": [
+              "/v1/automated/*"
+            ],
+            "scopes": [
+              {
+                "name": "cat.create"
+              },
+              {
+                "name": "cat.update"
+              },
+              {
+                "name": "cat.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Motivation Assessment Resource",
             "ownerManagedAccess": false,
             "displayName": "Motivation Assessment Resource",
@@ -1264,7 +1286,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\",\"Automated Check Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1288,7 +1310,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\"]",
+              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\",\"Automated Check Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           },
