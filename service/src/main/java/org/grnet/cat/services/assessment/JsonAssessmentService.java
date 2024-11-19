@@ -799,10 +799,18 @@ public class JsonAssessmentService extends JsonAbstractAssessmentService<JsonAss
      *
      * @return The list.
      */
-    public List getObjects() {
-
+    public List<Object> getObjects() {
         var objects = motivationAssessmentRepository.fetchAssessmentObjects();
+        var objectMapper = new ObjectMapper();
 
-        return objects;
+        return objects.stream()
+                .map(jsonString -> {
+                    try {
+                        return objectMapper.readValue(jsonString, Object.class);
+                    } catch (JsonProcessingException e) {
+                        throw new InternalServerErrorException("Server Error: Failed to parse JSON.", 500);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 }
