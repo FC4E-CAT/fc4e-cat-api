@@ -30,7 +30,7 @@ public class TestNodeDto {
 
     private String params;
 
-    private Boolean value;
+    private Object value;
 
     private Number result;
 
