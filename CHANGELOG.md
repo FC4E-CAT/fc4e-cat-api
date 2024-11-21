@@ -61,6 +61,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#378](https://github.com/FC4E-CAT/fc4e-cat-api/pull/378) CAT-640 Auto-Check-Url-Binary Test value - allow to be string
 - [#376](https://github.com/FC4E-CAT/fc4e-cat-api/pull/376) CAT-643 Strange json response in /v2/assessments/objects #376
 - [#377](https://github.com/FC4E-CAT/fc4e-cat-api/pull/377) CAT-645 Create AutomatedCheck resource
+- [#381](https://github.com/FC4E-CAT/fc4e-cat-api/pull/381) CAT-644 Fix Test T14 to Value-Based Percentage Test
+- [#383](https://github.com/FC4E-CAT/fc4e-cat-api/pull/383) CAT-652 Principles created under a motivation dont show the motivation item in used_by_motivation field
 
 
 ### Removed

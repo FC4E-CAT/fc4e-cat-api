@@ -14,6 +14,7 @@ import org.grnet.cat.entities.registry.Principle;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
+import org.grnet.cat.repositories.registry.MotivationPrincipleRepository;
 import org.grnet.cat.repositories.registry.PrincipleCriterionRepository;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.jboss.logging.Logger;
@@ -28,6 +29,9 @@ public class PrincipleService {
 
     @Inject
     PrincipleCriterionRepository principleCriterionRepository;
+
+    @Inject
+    MotivationPrincipleRepository motivationPrincipleRepository;
 
 
     private static final Logger LOG = Logger.getLogger(PrincipleService.class);
@@ -97,7 +101,7 @@ public class PrincipleService {
     //@CheckPublishedRelation(type = PublishEntityType.PRINCIPLE,permittedStatus = false)
     @Transactional
     public PrincipleResponseDto update(String id, PrincipleUpdateDto principleUpdateDto, String userId) {
-        if(principleCriterionRepository.existPrincipleInStatus(id, Boolean.TRUE)){
+        if(principleCriterionRepository.existPrincipleInStatus(id, Boolean.TRUE) || motivationPrincipleRepository.existPrincipleInStatus(id, Boolean.TRUE)){
             throw new ForbiddenException("No action permitted , principle exists in a published motivation");
         }
 
@@ -132,7 +136,7 @@ public class PrincipleService {
             throw new ForbiddenException("No action permitted , principle exists in a published motivation");
         }
 
-        if(principleCriterionRepository.existsByCriterion(id)){
+        if(principleCriterionRepository.existsByPrinciple(id) || motivationPrincipleRepository.existsByPrinciple(id)) {
 
             throw new ForbiddenException("This Principle cannot be deleted because it is linked to a Motivation.");
         }
