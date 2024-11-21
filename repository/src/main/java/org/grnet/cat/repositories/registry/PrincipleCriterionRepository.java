@@ -146,7 +146,10 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
     @Transactional
     public List<Motivation> getMotivationIdsByPrinciple(String principleId) {
 
-        var db = "SELECT DISTINCT pc.motivation FROM PrincipleCriterionJunction pc WHERE pc.principle.id = :principleId";
+        var db = "SELECT DISTINCT m FROM Motivation m " +
+                "LEFT JOIN PrincipleCriterionJunction pc ON pc.motivation.id = m.id " +
+                "LEFT JOIN MotivationPrincipleJunction mp ON mp.motivation.id = m.id " +
+                "WHERE pc.principle.id = :principleId OR mp.principle.id = :principleId";
 
         return getEntityManager().createQuery(db, Motivation.class)
                 .setParameter("principleId", principleId)
