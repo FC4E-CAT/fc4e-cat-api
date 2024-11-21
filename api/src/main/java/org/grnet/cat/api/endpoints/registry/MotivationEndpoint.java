@@ -1562,7 +1562,7 @@ public class MotivationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = true) String id
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for unpublished Motivation with the following id:", isPublishedPermitted = true) String id
     ) {
 
         motivationService.unpublish(id);

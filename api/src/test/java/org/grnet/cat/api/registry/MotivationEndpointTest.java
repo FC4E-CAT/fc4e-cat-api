@@ -1,6 +1,5 @@
 package org.grnet.cat.api.registry;
 
-import com.mysql.cj.log.Log;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -8,7 +7,6 @@ import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MotivationEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
-import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
@@ -18,16 +16,12 @@ import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
-import org.grnet.cat.services.registry.RelationsService;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
-import java.util.logging.Logger;
 
 import static io.restassured.RestAssured.given;
-import static io.smallrye.common.constraint.Assert.assertTrue;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -43,7 +37,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         var error = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
+                 .contentType(ContentType.JSON)
                 .get("/{id}", "pid_graph:3E109BBA")
                 .then()
                 .assertThat()
@@ -349,7 +343,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
         MotivationActorRequest[] array = new MotivationActorRequest[1];
-        array[0]=motivationActor;
+        array[0] = motivationActor;
 
         given()
                 .auth()
@@ -367,20 +361,20 @@ public class MotivationEndpointTest extends KeycloakTest {
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
         CriterionActorRequest[] array1 = new CriterionActorRequest[1];
-        array1[0]=criterionActor;
+        array1[0] = criterionActor;
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(response.code,  200);
+        assertEquals(response.code, 200);
     }
 
 //    @Test
@@ -495,7 +489,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
         MotivationActorRequest[] array = new MotivationActorRequest[1];
-        array[0]=motivationActor;
+        array[0] = motivationActor;
 
         given()
                 .auth()
@@ -513,20 +507,20 @@ public class MotivationEndpointTest extends KeycloakTest {
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
         CriterionActorRequest[] array1 = new CriterionActorRequest[1];
-        array1[0]=criterionActor;
+        array1[0] = criterionActor;
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718109")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718109")
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(response.code,  404);
+        assertEquals(response.code, 404);
     }
 
     @Test
@@ -576,7 +570,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
         MotivationActorRequest[] array = new MotivationActorRequest[1];
-        array[0]=motivationActor;
+        array[0] = motivationActor;
 
         given()
                 .auth()
@@ -594,20 +588,20 @@ public class MotivationEndpointTest extends KeycloakTest {
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEEE";
         CriterionActorRequest[] array1 = new CriterionActorRequest[1];
-        array1[0]=criterionActor;
+        array1[0] = criterionActor;
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(response.code,  404);
+        assertEquals(response.code, 404);
     }
 
 
@@ -658,21 +652,22 @@ public class MotivationEndpointTest extends KeycloakTest {
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "pid_graph:293B1DEE";
         CriterionActorRequest[] array1 = new CriterionActorRequest[1];
-        array1[0]=criterionActor;
+        array1[0] = criterionActor;
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
+                .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(response.code,  404);
+        assertEquals(response.code, 404);
     }
+
     @Test
     public void updateCriterionImperativeNotFound() {
 
@@ -720,7 +715,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         motivationActor.actorId = "pid_graph:1A718108";
         motivationActor.relation = "dcterms:isRequiredBy";
         MotivationActorRequest[] array = new MotivationActorRequest[1];
-        array[0]=motivationActor;
+        array[0] = motivationActor;
 
         given()
                 .auth()
@@ -738,20 +733,20 @@ public class MotivationEndpointTest extends KeycloakTest {
         criterionActor.criterionId = criterionResponse.id;
         criterionActor.imperativeId = "notfound";
         CriterionActorRequest[] array1 = new CriterionActorRequest[1];
-        array1[0]=criterionActor;
+        array1[0] = criterionActor;
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(array1)
                 .contentType(ContentType.JSON)
-                .put("/{id}/actors/{actor-id}/criteria", motivationResponse.id,"pid_graph:1A718108")
+                .put("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals ("There is no Imperative  with the following id: notfound", response.message);
+        assertEquals("There is no Imperative  with the following id: notfound", response.message);
     }
 
     @Test
@@ -854,7 +849,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Principle with id :: pid_graph:E7C00DBA already exists to motivation.",  duplicate.messages.get(0));
+        assertEquals("Principle with id :: pid_graph:E7C00DBA already exists to motivation.", duplicate.messages.get(0));
     }
 
     @Test
@@ -964,4 +959,450 @@ public class MotivationEndpointTest extends KeycloakTest {
         assertEquals("A principle with the identifier 'PRITEST' already exists.", errorResponse.messages.get(0));
     }
 
+
+    @Test
+    public void testPublish() {
+        register("admin");
+
+
+        MotivationResponse motivationResponse = testCreateMotivation();
+        CriterionResponse criterionResponse = testCreateCriterion();
+        PrincipleResponseDto principleResponse = testCreatePrinciple();
+
+        testPublishMotivation(motivationResponse.id);
+        testCreateMotivationPrinciplePublished(motivationResponse.id, principleResponse.id);
+
+        testUnpublishMotivation(motivationResponse.id);
+
+        testCreateMotivationActor(motivationResponse.id);
+
+        testPublishMotivationActor(motivationResponse.id);
+        testCreateMotivationActorCriteriaInPublishedActor(motivationResponse.id, "pid_graph:1A718108", criterionResponse.id);
+        testUnpublishMotivationActor(motivationResponse.id, "pid_graph:1A718108");
+        testCreateMotivationActorCriteriaInUnpublishedActor(motivationResponse.id, "pid_graph:1A718108", criterionResponse.id);
+
+        testPublishMotivation(motivationResponse.id);
+        // Attempt to update the published motivation
+        testUpdateMotivationPublished(motivationResponse.id);
+
+        testCreateMotivationActorPublishedMotivation(motivationResponse.id, "pid_graph:1A718108");
+        testCreateMotivationActorCriteriaPublishedMotivation(motivationResponse.id, "pid_graph:1A718108", criterionResponse.id);
+
+        given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/registry/principles")
+                .contentType(ContentType.JSON)
+                .delete("{id}", principleResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200);
+    }
+
+
+    private MotivationResponse testCreateMotivation() {
+
+        //    register("admin");
+
+        var request = new MotivationRequest();
+        request.mtv = "mtv";
+        request.label = "labelMotivation";
+        request.description = "decMotivation";
+        request.motivationTypeId = "pid_graph:8882700E";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        assertEquals("decMotivation", response.description);
+        assertEquals("pid_graph:8882700E", response.motivationType.id);
+        return response;
+    }
+
+    private CriterionResponse testCreateCriterion() {
+
+        var request = new CriterionRequest();
+
+        request.cri = "C100";
+        request.label = "Minimum Operations";
+        request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
+        request.imperative = "pid_graph:BED209B9";
+        request.typeCriterion = "pid_graph:A2719B92";
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/registry/criteria")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CriterionResponse.class);
+
+        assertEquals("pid_graph:A2719B92", response.typeCriterion);
+        return response;
+
+    }
+
+    private PrincipleResponseDto testCreatePrinciple() {
+        var principle = new PrincipleRequestDto();
+        principle.description = "principle description";
+        principle.pri = "P30-test";
+        principle.label = "Principle 1-test";
+
+        var principleResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v1/registry/principles")
+                .body(principle)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(PrincipleResponseDto.class);
+
+
+        return principleResponse;
+    }
+
+    private void testPublishMotivation(String motivationId) {
+
+        /******* Test UnAuthorized **********/
+     var   response = given()
+                .auth().oauth2("alice")
+                .contentType(ContentType.JSON)
+                .put("/{id}/publish", motivationId)
+                .then()
+                .statusCode(401)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(401, response.code);
+//
+//        /******* No motivation found *************/
+        response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/publish", "pid_graph:")
+                .then()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals("There is no Motivation with the following id: pid_graph:", response.message);
+
+        /**************/
+
+        var publishResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/publish", motivationId)
+                .then()
+                .assertThat()
+                .statusCode(200) // Expect HTTP 200 response
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(200, publishResponse.code);
+/**** Publish published motivation ****/
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/publish", motivationId)
+                .then()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("No action permitted for published Motivation with the following id: " + motivationId, informativeResponse.message);
+
+    }
+
+    private void testUnpublishMotivation(String motivationId) {
+        var response =
+                given().auth().
+                        oauth2(getAccessToken("admin")).
+                        contentType(ContentType.JSON)
+                        .put("/{id}/unpublish", "pid_graph:")
+                        .then().
+                        statusCode(404).
+                        extract().
+                        as(InformativeResponse.class);
+
+        assertEquals("There is no Motivation with the following id: pid_graph:", response.message);
+
+        var unpublishResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/unpublish", motivationId)
+                .then()
+                .assertThat()
+                .statusCode(200) // Expect HTTP 200 response
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Step 4: Validate the response
+        assertEquals(200, unpublishResponse.code);
+        assertEquals("Successful unpublish", unpublishResponse.message);
+
+        unpublishResponse =
+                given().
+                        auth().
+                        oauth2(getAccessToken("admin")).
+                        contentType(ContentType.JSON).
+                        put("/{id}/unpublish", motivationId).
+                        then().
+                        statusCode(400).
+                        extract().
+                        as(InformativeResponse.class);
+
+        assertEquals("No action permitted for unpublished Motivation with the following id: "+motivationId, unpublishResponse.message);
+    }
+
+    private void testCreateMotivationActor(String motivationId) {
+        var motivationActor = new MotivationActorRequest();
+        motivationActor.actorId = "pid_graph:1A718108";
+        motivationActor.relation = "dcterms:isRequiredBy";
+        MotivationActorRequest[] array = new MotivationActorRequest[1];
+        array[0] = motivationActor;
+
+        var actorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors", motivationId)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(200, actorResponse.code);
+
+    }
+
+    private void testPublishMotivationActor(String motivationId) {
+        var actorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/actors/{actor-id}/publish", motivationId, "pid_graph:1A718108")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Assert
+        assertEquals(200, actorResponse.code);
+
+        actorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/actors/{actor-id}/publish", motivationId, "pid_graph:1A718108")
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(403, actorResponse.code);
+        assertEquals("Action not permitted, motivation-actor relation is already published", actorResponse.message);
+
+    }
+
+    private void testCreateMotivationActorCriteriaInPublishedActor(String motivationId, String actorId, String criterionId) {
+
+        var criterionActor = new CriterionActorRequest();
+        criterionActor.criterionId = criterionId;
+        criterionActor.imperativeId = "pid_graph:293B1DEE";
+        CriterionActorRequest[] array1 = new CriterionActorRequest[1];
+        array1[0] = criterionActor;
+
+        var criterionActorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array1)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("No action is permitted as motivation-actor relation is published", criterionActorResponse.message);
+
+        criterionActorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array1)
+                .contentType(ContentType.JSON)
+                .put("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("No action is permitted as motivation-actor relation is published", criterionActorResponse.message);
+
+
+    }
+
+    private void testCreateMotivationActorCriteriaInUnpublishedActor(String motivationId, String actorId, String criterionId) {
+
+        var criterionActor = new CriterionActorRequest();
+        criterionActor.criterionId = criterionId;
+        criterionActor.imperativeId = "pid_graph:293B1DEE";
+        CriterionActorRequest[] array1 = new CriterionActorRequest[1];
+        array1[0] = criterionActor;
+
+        var criterionActorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array1)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(200, criterionActorResponse.code);
+
+    }
+
+
+    private void testUnpublishMotivationActor(String motivationId, String actorId) {
+        var actorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .put("/{id}/actors/{actor-id}/unpublish", motivationId, actorId)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Assert
+        assertEquals(200, actorResponse.code);
+
+    }
+
+    private void testUpdateMotivationPublished(String motivationId) {
+        var update = new UpdateMotivationRequest();
+        update.description = "updated_description";
+        update.motivationTypeId = "pid_graph:DFE640B9";
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(update)
+                .contentType(ContentType.JSON)
+                .patch("/{id}", motivationId)
+                .then()
+                .assertThat()
+                .statusCode(400) // Expecting 403 Forbidden due to @CheckPublished
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Assert the failure message
+        assertEquals(400, informativeResponse.code);
+        assertEquals("No action permitted for published Motivation with the following id: " + motivationId, informativeResponse.message);
+    }
+
+    private void testCreateMotivationActorPublishedMotivation(String motivationId, String actorId) {
+        var motivationActor = new MotivationActorRequest();
+        motivationActor.actorId = actorId;
+        motivationActor.relation = "dcterms:isRequiredBy";
+        MotivationActorRequest[] array = new MotivationActorRequest[1];
+        array[0] = motivationActor;
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors", motivationId)
+                .then()
+                .assertThat()
+                .statusCode(400) // Expect 403 Forbidden due to @CheckPublished
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Assert the failure message
+        assertEquals(400, informativeResponse.code);
+        assertEquals("No action permitted for published Motivation with the following id: " + motivationId,
+                informativeResponse.message);
+
+    }
+
+    private void testCreateMotivationActorCriteriaPublishedMotivation(String motivationId, String actorId, String criterionId) {
+        var criterionActor = new CriterionActorRequest();
+        criterionActor.criterionId = criterionId;
+        criterionActor.imperativeId = "pid_graph:293B1DEE";
+        CriterionActorRequest[] array = new CriterionActorRequest[1];
+        array[0] = criterionActor;
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(array)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
+                .then()
+                .assertThat()
+                .statusCode(400) // Expect 403 Forbidden
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Step 5: Validate the failure message
+        assertEquals(400, informativeResponse.code);
+        assertEquals("No action permitted for published Motivation with the following id: " + motivationId,
+                informativeResponse.message);
+
+    }
+
+    private void testCreateMotivationPrinciplePublished(String motivationId, String principleId) {
+        var mpr = new MotivationPrincipleRequest();
+        mpr.principleId = principleId;
+        mpr.relation = "isSupportedBy";
+
+        var request = new HashSet<MotivationPrincipleRequest>();
+        request.add(mpr);
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/principles", motivationId)
+                .then()
+                .assertThat()
+                .statusCode(400) // Expect 403 Forbidden
+                .extract()
+                .as(InformativeResponse.class);
+
+        // Step 5: Validate the failure message
+        assertEquals(400, informativeResponse.code);
+        assertEquals("No action permitted for published Motivation with the following id: " + motivationId, informativeResponse.message);
+
+    }
 }
