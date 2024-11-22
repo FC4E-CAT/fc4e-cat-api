@@ -8,6 +8,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
@@ -389,7 +390,7 @@ public class MotivationService {
     public void publish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
-        motivation.getActors().forEach(actor-> actor.setPublished(Boolean.TRUE));
+        motivation.getActors().forEach(actor -> actor.setPublished(Boolean.TRUE));
         motivation.setPublished(Boolean.TRUE);
 
     }
@@ -405,7 +406,7 @@ public class MotivationService {
     public void unpublish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
-        motivation.getActors().forEach(actor-> actor.setPublished(Boolean.FALSE));
+        motivation.getActors().forEach(actor -> actor.setPublished(Boolean.FALSE));
         motivation.setPublished(Boolean.FALSE);
 
     }
@@ -454,9 +455,9 @@ public class MotivationService {
     }
 
     @Transactional
-    public List<String> createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
+    public InformativeResponse createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
 
-        var resultMessage = new ArrayList<String>();
+        var response = new InformativeResponse();
 
         if (!principleRepository.notUnique("pri", request.principleRequestDto.pri.toUpperCase())) {
 
@@ -480,11 +481,13 @@ public class MotivationService {
 
             motivationPrincipleRepository.persist(motivationPrincipleJunction);
 
-            resultMessage.add("Principle successfully created and linked to the specified motivation.");
-    } else {
-            resultMessage.add("A principle with the identifier '" + request.principleRequestDto.pri.toUpperCase() + "' already exists.");
+            response.code = 200;
+            response.message = "Principle successfully created and linked to the specified motivation.";
+        } else {
+            response.code = 409;
+            response.message = "A principle with the identifier '" + request.principleRequestDto.pri.toUpperCase() + "' already exists.";
         }
-        return resultMessage;
-    }
 
+        return response;
+    }
 }

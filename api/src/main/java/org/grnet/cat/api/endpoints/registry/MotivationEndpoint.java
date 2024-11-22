@@ -552,6 +552,12 @@ public class MotivationEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -574,13 +580,10 @@ public class MotivationEndpoint {
             String id,
             MotivationPrincipleExtendedRequestDto request) {
 
-        var messages = motivationService.createPrincipleForMotivation(id, request, utility.getUserUniqueIdentifier());
+        var response = motivationService.createPrincipleForMotivation(id, request, utility.getUserUniqueIdentifier());
 
-        var informativeResponse = new InformativeResponse();
-        informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        return Response.status(response.code).entity(response).build();
 
-        return Response.ok().entity(informativeResponse).build();
     }
 
 
