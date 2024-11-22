@@ -2,6 +2,7 @@ package org.grnet.cat.api.endpoints.registry;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
+import jakarta.json.JsonObject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -54,6 +55,7 @@ import org.grnet.cat.services.TemplateService;
 import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
 import org.grnet.cat.validators.SortAndOrderValidator;
+import org.json.simple.JSONObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -441,10 +443,11 @@ public class MotivationEndpoint {
                                             @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request) {
 
         var messages = motivationService.assignActors(id, request, utility.getUserUniqueIdentifier());
+        String result = String.join("\n", messages);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -515,10 +518,11 @@ public class MotivationEndpoint {
                                               String actorId) {
 
         var messages = motivationService.deleteActorFromMotivation(id, actorId);
+        String result = String.join("\n", messages);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -640,9 +644,11 @@ public class MotivationEndpoint {
 
         var messages = motivationService.assignPrinciples(id, request, utility.getUserUniqueIdentifier());
 
+        String result = String.join("\n", messages);
+
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -797,9 +803,11 @@ public class MotivationEndpoint {
 
         var messages = registryActorService.addCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
 
+        String result = String.join("\n", messages);
+
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -1054,10 +1062,11 @@ public class MotivationEndpoint {
         }
 
         var messages = registryActorService.updateCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
+        String result = String.join("\n", messages);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -1112,10 +1121,11 @@ public class MotivationEndpoint {
                                                             @NotEmpty(message = "Principles-Criteria list can not be empty.") Set<@Valid PrincipleCriterionRequest> request) {
 
         var messages = motivationService.createNewPrinciplesCriteriaRelationship(id, request, utility.getUserUniqueIdentifier());
+        String result = String.join("\n", messages);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -1176,9 +1186,11 @@ public class MotivationEndpoint {
 
         var messages = motivationService.updatePrinciplesCriteriaRelationship(id, request, utility.getUserUniqueIdentifier());
 
+        String result = String.join("\n", messages);
+
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.messages = messages;
+        informativeResponse.message = result;
 
         return Response.ok().entity(informativeResponse).build();
     }

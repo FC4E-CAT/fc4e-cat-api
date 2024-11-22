@@ -791,7 +791,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertEquals(response.code, 200);
-        assertEquals("Principle with id :: pid_graph:F9141635 successfully added to motivation.", response.messages.get(0));
+        assertEquals("Principle with id :: pid_graph:F9141635 successfully added to motivation.", response.message);
     }
 
     @Test
@@ -849,7 +849,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Principle with id :: pid_graph:E7C00DBA already exists to motivation.", duplicate.messages.get(0));
+        assertEquals("Principle with id :: pid_graph:E7C00DBA already exists to motivation.",  duplicate.message);
     }
 
     @Test
