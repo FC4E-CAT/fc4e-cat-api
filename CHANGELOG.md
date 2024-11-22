@@ -64,6 +64,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#381](https://github.com/FC4E-CAT/fc4e-cat-api/pull/381) CAT-644 Fix Test T14 to Value-Based Percentage Test
 - [#383](https://github.com/FC4E-CAT/fc4e-cat-api/pull/383) CAT-652 Principles created under a motivation dont show the motivation item in used_by_motivation field
 - [#384](https://github.com/FC4E-CAT/fc4e-cat-api/pull/384) CAT-662 Missing junit tests for publish/unpublish motivation/motivation-actor to be added
+- [#386](https://github.com/FC4E-CAT/fc4e-cat-api/pull/386) CAT-660: A principle with the identifier '...' already exists should return conflict 409 not 200
 
 
 ### Removed

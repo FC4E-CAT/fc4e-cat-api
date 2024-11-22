@@ -952,11 +952,11 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .post("/{id}/principle", motivationResponse.id)
                 .then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(409)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("A principle with the identifier 'PRITEST' already exists.", errorResponse.messages.get(0));
+        assertEquals("A principle with the identifier 'PRITEST' already exists.", errorResponse.message);
     }
 
 
