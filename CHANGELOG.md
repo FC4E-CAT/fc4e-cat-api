@@ -66,6 +66,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#384](https://github.com/FC4E-CAT/fc4e-cat-api/pull/384) CAT-662 Missing junit tests for publish/unpublish motivation/motivation-actor to be added
 - [#386](https://github.com/FC4E-CAT/fc4e-cat-api/pull/386) CAT-660: A principle with the identifier '...' already exists should return conflict 409 not 200
 - [#387](https://github.com/FC4E-CAT/fc4e-cat-api/pull/387) CAT-661 Consistency in backend responses
+- [3388](https://github.com/FC4E-CAT/fc4e-cat-api/pull/388) CAT-651: REJECTED Validation email should follow the other emails
 
 
 ### Removed

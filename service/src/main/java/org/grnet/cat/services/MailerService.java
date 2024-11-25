@@ -14,6 +14,7 @@ import org.grnet.cat.entities.Assessment;
 import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.enums.MailType;
+import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.jboss.logging.Logger;
@@ -91,6 +92,10 @@ public class MailerService {
         templateParams.put("cat", uiBaseUrl);
         templateParams.put("valId", String.valueOf(val.getId()));
         templateParams.put("title", apiName.toUpperCase());
+        templateParams.put("actor", val.getRegistryActor().getLabelActor());
+        templateParams.put("organization", val.getOrganisationName());
+        templateParams.put("rejectionReason", val.getStatus() == ValidationStatus.REJECTED ? val.getRejectionReason() : null);
+
 
         switch (type) {
             case ADMIN_ALERT_NEW_VALIDATION:
@@ -100,12 +105,12 @@ public class MailerService {
                 break;
             case VALIDATED_ALERT_CHANGE_VALIDATION_STATUS:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
-                templateParams.put("userrole", "User");
+                templateParams.put("userrole", val.getUser().getName());
                 notifyUser(validationStatusUpdateTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             case VALIDATED_ALERT_CREATE_VALIDATION:
                 templateParams.put("valUrl", uiBaseUrl + "/validations/" + val.getId());
-                templateParams.put("userrole", "User");
+                templateParams.put("userrole", val.getUser().getName());
                 notifyUser(userCreatedValitionTemplate, templateParams, Arrays.asList(val.getUser().getEmail()), type);
                 break;
             default:

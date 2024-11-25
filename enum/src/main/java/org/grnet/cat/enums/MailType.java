@@ -47,6 +47,14 @@ public enum MailType {
                 throw new RuntimeException(e);
             }
 
+            //String rejectionReason = templateParams.get("rejectionReason");
+            var rejectionReason = "";
+
+            if ("REJECTED".equalsIgnoreCase(templateParams.get("status"))) {
+                rejectionReason = "Reason for Rejection: " + (templateParams.get("rejectionReason") != null
+                        ? templateParams.get("rejectionReason") : "N/A");
+            }
+
             String body = emailTemplate.data("urlpath", url.toString())
                     .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
@@ -57,7 +65,11 @@ public enum MailType {
                     .data("cat", templateParams.get("cat"))
                     .data("userrole", templateParams.get("userrole"))
                     .data("contactMail", templateParams.get("contactMail"))
-                    .data("status", templateParams.get("status")).render();
+                    .data("status", templateParams.get("status"))
+                    .data("rejectionReason", rejectionReason)
+                    .data("actor", templateParams.get("actor"))
+                    .data("organization", templateParams.get("organization"))
+                    .render();
             return new MailTemplate("["+templateParams.get("title")+"] - Validation Request updated status with id: "+templateParams.get("valId"), body);
         }
 
