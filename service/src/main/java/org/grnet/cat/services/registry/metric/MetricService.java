@@ -6,12 +6,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
+import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
@@ -61,6 +63,10 @@ public class MetricService {
     @Transactional
     public MetricResponseDto createMetric(String userId, MetricRequestDto metricRequestDto) {
 
+        if (metricRepository.notUnique("MTR", metricRequestDto.MTR.toUpperCase())) {
+            throw new UniqueConstraintViolationException("MTR", metricRequestDto.MTR.toUpperCase());
+        }
+
         var metric = MetricMapper.INSTANCE.metricToEntity(metricRequestDto);
 
         metric.setPopulatedBy(userId);
@@ -90,6 +96,16 @@ public class MetricService {
             throw new ForbiddenException("No action permitted, metric exists in a published motivation");
         }
 
+        var currentMtr = metric.getMTR();
+        var updateMtr = StringUtils.isNotEmpty(request.MTR) ? request.MTR.toUpperCase() : currentMtr;
+
+
+        if(StringUtils.isNotEmpty(updateMtr) && !updateMtr.equals(currentMtr)){
+
+            if (metricRepository.notUnique("MTR", updateMtr)) {
+                throw new UniqueConstraintViolationException("MTR", updateMtr);
+            }
+        }
 
         MetricMapper.INSTANCE.updateMetricFromDto(request, metric);
         metric.setPopulatedBy(userId);

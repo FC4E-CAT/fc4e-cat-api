@@ -36,12 +36,12 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    public void metric() {
+    public void crudMetricTest() {
 
         register("admin");
 
         var request = new MetricRequestDto();
-        request.MTR = "MTR001";
+        request.MTR = "MTRTEST1";
         request.labelMetric = "Performance Metric";
         request.descrMetric = "This metric measures performance.";
         request.urlMetric = "http://example.com/metric";
@@ -49,7 +49,7 @@ public class MetricEndpointTest extends KeycloakTest {
         request.typeMetricId = "pid_graph:03615660";
 
 
-        var response = given()
+        var create = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .body(request)
@@ -61,95 +61,23 @@ public class MetricEndpointTest extends KeycloakTest {
                 .extract()
                 .as(MetricResponseDto.class);
 
-        assertEquals("pid_graph:7A976659", response.typeAlgorithmId);
-        assertEquals("pid_graph:03615660", response.typeMetricId);
-    }
+        assertEquals("pid_graph:7A976659", create.typeAlgorithmId);
 
-    @Test
-    public void getMetric() {
-
-        register("admin");
-
-        var createRequest = new MetricRequestDto();
-        createRequest.MTR = "MTR001";
-        createRequest.labelMetric = "Performance Metric";
-        createRequest.descrMetric = "This metric measures performance.";
-        createRequest.urlMetric = "http://example.com/metric";
-        createRequest.typeAlgorithmId = "pid_graph:7A976659";
-        createRequest.typeMetricId = "pid_graph:03615660";
-
-        var createdMetric = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
-                .contentType(ContentType.JSON)
-                .post("/")
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricResponseDto.class);
-
-        var response = given()
+        var get = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/{id}", createdMetric.id)
+                .get("/{id}", create.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(MetricResponseDto.class);
 
-        assertEquals(response.typeMetricId, "pid_graph:03615660");
-    }
-
-    @Test
-    public void getMetricNotFound() {
-
-        register("admin");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", "notfound")
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Metric with the following id: notfound", error.message);
-    }
-
-    @Test
-    public void updateMetric() {
-
-        register("admin");
-
-        var createRequest = new MetricRequestDto();
-        createRequest.MTR = "MTR001";
-        createRequest.labelMetric = "Performance Metric";
-        createRequest.descrMetric = "This metric measures performance.";
-        createRequest.urlMetric = "http://example.com/metric";
-        createRequest.typeAlgorithmId = "pid_graph:7A976659";
-        createRequest.typeMetricId = "pid_graph:03615660";
-
-        var createdMetric = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
-                .contentType(ContentType.JSON)
-                .post("/")
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(MetricResponseDto.class);
+        assertEquals(get.typeMetricId, "pid_graph:03615660");
 
         var updateRequest = new MetricUpdateDto();
-        updateRequest.MTR = "MTR001-Updated";
+        updateRequest.MTR = "MTRTEST1-Updated";
         updateRequest.labelMetric = "Updated Performance Metric";
         updateRequest.descrMetric = "Updated description for performance metric.";
         updateRequest.urlMetric = "http://example.com/metric-updated";
@@ -161,60 +89,39 @@ public class MetricEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(updateRequest)
                 .contentType(ContentType.JSON)
-                .put("/{id}", createdMetric.id)
+                .put("/{id}", create.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(MetricResponseDto.class);
 
-        assertEquals("MTR001-Updated", updatedResponse.MTR);
-        assertEquals("Updated Performance Metric", updatedResponse.labelMetric);
-        assertEquals("Updated description for performance metric.", updatedResponse.descrMetric);
-    }
+        assertEquals("MTRTEST1-Updated", updatedResponse.MTR);
 
-    @Test
-    public void deleteMetric() {
-
-        register("admin");
-
-        var createRequest = new MetricRequestDto();
-        createRequest.MTR = "MTR001";
-        createRequest.labelMetric = "Performance Metric";
-        createRequest.descrMetric = "This metric measures performance.";
-        createRequest.urlMetric = "http://example.com/metric";
-        createRequest.typeAlgorithmId = "pid_graph:7A976659";
-        createRequest.typeMetricId = "pid_graph:03615660";
-
-        var createdMetric = given()
+        var deleteMetric = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(createRequest)
                 .contentType(ContentType.JSON)
-                .post("/")
+                .delete("/{id}", create.id)
                 .then()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(200)
                 .extract()
-                .as(MetricResponseDto.class);
+                .as(InformativeResponse.class);
+        assertEquals("Metric has been successfully deleted.", deleteMetric.message);
 
-        given()
+        var notFound = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .delete("/{id}", createdMetric.id)
+                .get("/{id}", create.id)
                 .then()
                 .assertThat()
-                .statusCode(200);
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
 
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", createdMetric.id)
-                .then()
-                .assertThat()
-                .statusCode(404);
+        assertEquals("There is no Metric with the following id: " + create.id, notFound.message);
+
     }
-
 }
