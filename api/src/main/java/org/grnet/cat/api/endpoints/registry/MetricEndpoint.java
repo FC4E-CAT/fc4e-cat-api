@@ -117,6 +117,12 @@ public class MetricEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -161,6 +167,12 @@ public class MetricEndpoint {
     @APIResponse(
             responseCode = "404",
             description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))

@@ -31,4 +31,21 @@ public class MetricRepository implements Repository<Metric, String> {
 
         return pageable;
     }
+
+    /**
+     * Checks if the specified value for a given field in the Metric entity is not unique.
+     *
+     * @param name  The name of the field to check (e.g., "mtr").
+     * @param value The value to verify for uniqueness.
+     * @return true if the value already exists, false otherwise.
+     */
+    public boolean notUnique(String name, String value) {
+        String query = "SELECT COUNT(m) FROM Metric m WHERE LOWER(m." + name + ") = LOWER(?1)";
+        long count = getEntityManager().createQuery(query, Long.class)
+                .setParameter(1, value)
+                .getSingleResult();
+        return count > 0;
+    }
+
+
 }
