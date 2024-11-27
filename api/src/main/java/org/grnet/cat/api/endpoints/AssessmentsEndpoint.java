@@ -916,7 +916,7 @@ public class AssessmentsEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(
                     repository = MotivationAssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
-            String assessmentId,
+            String motivationAssessmentId,
             @Parameter(
                     description = "The unique identifier of the comment.",
                     required = true,
@@ -924,7 +924,7 @@ public class AssessmentsEndpoint {
                     schema = @Schema(type = SchemaType.NUMBER))
             @PathParam("comment-id") @Valid @NotFoundEntity(
                     repository = CommentRepository.class,
-                    message = "Comment with the given ID not found.")
+                    message = "There is no Comment with the following id:")
                     Long commentId,
             @Valid @NotNull CommentRequestDto commentRequestDto) {
 
@@ -977,7 +977,7 @@ public class AssessmentsEndpoint {
             @PathParam("id") @Valid @NotFoundEntity(
                     repository = MotivationAssessmentRepository.class,
                     message = "There is no Assessment with the following id:")
-                    String assessmentId,
+                    String motivationAssessmentId,
             @Parameter(
                     description = "The unique identifier of the comment.",
                     required = true,
@@ -985,7 +985,7 @@ public class AssessmentsEndpoint {
                     schema = @Schema(type = SchemaType.NUMBER))
             @PathParam("comment-id") @Valid @NotFoundEntity(
                     repository = CommentRepository.class,
-                    message = "Comment with the given ID not found.")
+                    message = "There is no Comment with the following id:")
                     Long commentId){
 
         commentService.deleteComment(commentId, utility.getUserUniqueIdentifier());
