@@ -23,8 +23,8 @@ public class CommentResponseDto {
             description = "The ID of the assessment the comment is related to.",
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0"
     )
-    @JsonProperty("assessment_id")
-    public String assessmentId;
+    @JsonProperty("motivation_assessment_id")
+    public String motivationAssessmentId;
 
     @Schema(
             type = SchemaType.STRING,
