@@ -18,8 +18,6 @@ import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.registry.CriterionService;
-import org.grnet.cat.services.registry.metric.MetricService;
-import org.intellij.lang.annotations.JdkConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 

@@ -40,7 +40,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         var error = given()
                 .auth()
                 .oauth2(getAccessToken("alice"))
-                 .contentType(ContentType.JSON)
+                .contentType(ContentType.JSON)
                 .get("/{id}", "pid_graph:3E109BBA")
                 .then()
                 .assertThat()
@@ -1146,7 +1146,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     private void testPublishMotivation(String motivationId) {
 
         /******* Test UnAuthorized **********/
-     var   response = given()
+        var   response = given()
                 .auth().oauth2("alice")
                 .contentType(ContentType.JSON)
                 .put("/{id}/publish", motivationId)

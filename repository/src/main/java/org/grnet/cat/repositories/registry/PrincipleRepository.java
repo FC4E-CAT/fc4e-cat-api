@@ -94,5 +94,6 @@ public class PrincipleRepository implements Repository<Principle, String> {
                 .getSingleResult();
         return count > 0;
     }
+
 }
 

@@ -10,22 +10,24 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.*;
+import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
+import org.grnet.cat.dtos.registry.MetricDefinitionRequest;
+import org.grnet.cat.dtos.registry.MetricTestResponseDto;
+import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
-import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
-import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
-import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
-import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
+import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.grnet.cat.repositories.registry.*;
@@ -34,6 +36,7 @@ import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @ApplicationScoped
 public class MotivationService {
@@ -402,9 +405,7 @@ public class MotivationService {
     public void publish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
-   //     motivation.getActors().forEach(actor -> actor.setPublished(Boolean.TRUE));
         motivation.setPublished(Boolean.TRUE);
-
     }
 
     /**
@@ -418,7 +419,6 @@ public class MotivationService {
     public void unpublish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
-     //   motivation.getActors().forEach(actor -> actor.setPublished(Boolean.FALSE));
         motivation.setPublished(Boolean.FALSE);
 
     }
@@ -586,6 +586,36 @@ public class MotivationService {
                 resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully added to Motivation.");
             }
         });
+    return  resultMessages;
+    }
+
+    public List<String> deletePrincipleFromMotivation(String motivationId, String principleId) {
+        var resultMessages = new ArrayList<String>();
+
+        // Start the deletion process asynchronously, within the transaction scope
+        CompletableFuture<Void> deletionFuture = CompletableFuture.runAsync(() -> {
+            // Ensure these methods are invoked within the transaction scope
+            deletePrincipleFromMotivationInTransaction(motivationId, principleId, resultMessages);
+        });
+
+        // Wait for the deletion to finish before doing further checks
+        deletionFuture.join(); // This ensures the deletions are complete before proceeding
+
+        // Perform the checks after deletion has been completed
+        if (principleCriterionRepository.isUsedWithCriterionInOtherMotivation(motivationId, principleId, 1)) {
+
+            resultMessages.add(String.format("Principle with id: %s can not be deleted, as it is used by criterion existing in another motivation.", principleId));
+            throw new ForbiddenException(String.join("\n", resultMessages));
+
+        }
+
+        if (motivationPrincipleRepository.isUsedInOtherMotivation(motivationId, principleId, 1)) {
+            resultMessages.add(String.format("Principle with id: %s can not be deleted, as it is used in another motivation. Messages: %s", principleId));
+            throw new ForbiddenException(String.join("\n", resultMessages));
+        }
+
+        // Proceed with final deletion if needed
+        principleRepository.deleteById(principleId);
 
         return resultMessages;
     }
@@ -737,6 +767,63 @@ public class MotivationService {
                 });
     }
 
+    // This method is transactional and encapsulates the delete logic
+    @Transactional
+    public void deletePrincipleFromMotivationInTransaction(String motivationId, String principleId, List<String> resultMessages) {
+        motivationPrincipleRepository.deleteByPrincipleId(motivationId, principleId, 1);
+        resultMessages.add(String.format("Principle with ID: %s  has been removed from motivation: %s.", principleId, motivationId));
 
+        principleCriterionRepository.deleteByMotivationPrincipleId(motivationId, principleId);
+        resultMessages.add(String.format("Principle with ID: %s  has been removed from all criterion relations of motivation %s.", principleId, motivationId));
+    }
 
+    /**
+     * Deletes an existing relationship between principle, criterion, and motivation.
+     *
+     * @param motivationId the ID of the motivation.
+     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param userId       the ID of the user performing the action.
+     */
+    @Transactional
+    public List<String> deletePrinciplesCriteriaRelationship(String motivationId, DeletePrincipleCriterionRequest request, String userId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        try {
+            principleCriterionRepository.deletePrincipleCriterionMotivationRelation(motivationId, request.principleId, request.criterionId);
+            resultMessages.add(String.format("Successfully deleted  relationship for Motivation ID: %s.", motivationId));
+
+        } catch (Exception e) {
+            resultMessages.add("Failed to delete relationships due to an unexpected error: " + e.getMessage());
+            // Log the
+        }
+        return resultMessages;
+    }
+
+    @Transactional
+    public PrincipleResponseDto updatePrincipleFromMotivation(String motivationId, String principleId, PrincipleUpdateDto requestDto) {
+
+        if (principleCriterionRepository.isUsedWithCriterionInOtherMotivation(motivationId, principleId, 1)) {
+            throw new ForbiddenException(String.format("Principle with id: %s can not be updated, as it is used by criterion existing in another motivation", principleId));
+        }
+
+        if (motivationPrincipleRepository.isUsedInOtherMotivation(motivationId, principleId, 1)) {
+            throw new ForbiddenException(String.format("Principle with id: %s can not be updated, as it is used in another motivation", principleId));
+        }
+
+        var principle = principleRepository.findById(principleId);
+        var currentPri = principle.getPri();
+        var updatePri = StringUtils.isNotEmpty(requestDto.pri) ? requestDto.pri.toUpperCase() : currentPri;
+
+        if (StringUtils.isNotEmpty(updatePri) && !updatePri.equals(currentPri)) {
+
+            if (principleRepository.notUnique("pri", updatePri)) {
+                throw new UniqueConstraintViolationException("pri", updatePri);
+            }
+        }
+
+        PrincipleMapper.INSTANCE.updatePrinciple(requestDto, principle);
+        return PrincipleMapper.INSTANCE.principleToDto(principle);
+
+    }
 }
