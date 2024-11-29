@@ -307,9 +307,9 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         var em = Panache.getEntityManager();
 
-        var query = em.createNativeQuery(joiner.toString());
+        var query = em.createNativeQuery(joiner.toString(), MotivationAssessment.class);
 
-        var countQuery = em.createNativeQuery(counter.toString());
+        var countQuery = em.createNativeQuery(counter.toString(), Long.class);
 
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             query.setParameter(entry.getKey(), entry.getValue());
