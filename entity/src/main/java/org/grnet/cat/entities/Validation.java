@@ -62,10 +62,7 @@ public class Validation {
     private String organisationWebsite;
 
     @OneToOne
-    @JoinColumn(name = "actor_id", referencedColumnName = "id")
-    private Actor actor;
-
-    @OneToOne
+    @NotNull
     @JoinColumn(name = "registry_actor_id", referencedColumnName = "lodActor")
     private RegistryActor registryActor;
 

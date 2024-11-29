@@ -26,7 +26,7 @@ public class RegistryTemplateActorDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The name of Actor.",
-            example = "Compliance Monitoring (Role)"
+            example = "PID Owner (Role)"
     )
     private String name;
 }

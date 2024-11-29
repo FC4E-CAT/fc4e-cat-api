@@ -16,8 +16,6 @@ import org.grnet.cat.services.KeycloakAdminRoleService;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static io.smallrye.common.constraint.Assert.assertNotNull;
-import static io.smallrye.common.constraint.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -60,7 +58,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationSource = "ROR";
         request.organisationName = "Keimyung University";
         request.organisationId = "https://ror.org/00tjv0s33";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -86,7 +84,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationRole = "Manager";
         request.organisationSource = "ROR";
         request.organisationId = "https://ror.org/00tjv0s33";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -112,7 +110,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationRole = "Manager";
         request.organisationSource = "ROR";
         request.organisationName = "Keimyung University";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -138,7 +136,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationRole = "Manager";
         request.organisationId = "https://ror.org/00tjv0s33";
         request.organisationName = "Keimyung University";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -165,7 +163,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationId = "https://ror.org/00tjv0s33";
         request.organisationName = "Keimyung University";
         request.organisationSource = "NOT_VALID";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -193,7 +191,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "EOSC";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -221,7 +219,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "RE3DATA";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 5L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -262,7 +260,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("Actor or Registry Actor may not be empty.", response.message);
+        assertEquals("registry_actor_id may not be empty.", response.message);
     }
 
     @Test
@@ -276,7 +274,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 18L;
+        request.registryActorId = "actor";
 
         var response = given()
                 .auth()
@@ -290,7 +288,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("There is no Actor with the following id: "+18, response.message);
+        assertEquals("There is no Registry Actor with the following id: actor", response.message);
     }
 
     @Test
@@ -304,7 +302,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 4L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -332,7 +330,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 4L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         given()
                 .auth()
@@ -368,7 +366,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 1L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var validation = given()
                 .auth()
@@ -388,7 +386,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         updateRequest.organisationName = "NTUA";
         updateRequest.organisationSource = "ROR";
         updateRequest.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        updateRequest.actorId = 3L;
+        updateRequest.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -405,7 +403,6 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         assertEquals("Project Manager", response.organisationRole);
         assertEquals("NTUA", response.organisationName);
-        assertEquals(1L, response.actorId);
         assertEquals("ROR", updateRequest.organisationSource);
         assertEquals("00tjv0s33", updateRequest.organisationId);
     }
@@ -424,7 +421,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 2L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var validation = given()
                 .auth()
@@ -468,7 +465,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 4L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -509,7 +506,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 4L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -549,7 +546,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 2L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var validation = given()
                 .auth()
@@ -590,7 +587,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 2L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         given()
                 .auth()
@@ -610,7 +607,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request1.organisationName = "Keimyung University";
         request1.organisationSource = "ROR";
         request1.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request1.actorId = 5L;
+        request1.registryActorId = "pid_graph:566C01F6";
 
         var validation = given()
                 .auth()
@@ -684,7 +681,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 2L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var validation = given()
                 .auth()
@@ -731,7 +728,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 1L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -748,7 +745,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         assertEquals("Προϊστάμενος", response.organisationRole);
         assertEquals("Keimyung University", response.organisationName);
-        assertEquals(1L, response.actorId);
+        assertEquals("pid_graph:B5CC396B", response.registryActorId);
         assertEquals("ROR", response.organisationSource);
         assertEquals("00tjv0s33", response.organisationId);
     }
@@ -763,7 +760,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         request.organisationName = "Gdańskie Seminarium Duchowne";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = 1L;
+        request.registryActorId = "pid_graph:B5CC396B";
 
         var response = given()
                 .auth()
@@ -780,7 +777,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
 
         assertEquals("Manager", response.organisationRole);
         assertEquals("Gdańskie Seminarium Duchowne", response.organisationName);
-        assertEquals(1L, response.actorId);
+        assertEquals("pid_graph:B5CC396B", response.registryActorId);
         assertEquals("ROR", response.organisationSource);
         assertEquals("05884rv02", response.organisationId);
     }

@@ -213,4 +213,9 @@ public class RegistryActorService {
             }
         });
     }
+
+    public void doesActorWithGivenNameExist(String name) {
+
+        registryActorRepository.fetchActorByName(name).orElseThrow(() -> new NotFoundException("There is no Actor : " + name));
+    }
 }

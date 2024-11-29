@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories.registry;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -32,8 +34,8 @@ public class MotivationRepository implements Repository<Motivation, String> {
         // Base query with required joins
         joiner.add("from Motivation m")
                 .add("left join fetch m.motivationType mt")
-                .add("left join fetch m.actors act")
-                .add("left join fetch act.actor")
+                .add("left join fetch m.actors actors")
+                .add("left join fetch actors.actor actor")
                 .add("left join fetch m.principles pri")
                 .add("left join fetch pri.principle");
 
@@ -49,7 +51,7 @@ public class MotivationRepository implements Repository<Motivation, String> {
 
         // Condition for actor
         if (StringUtils.isNotEmpty(actor)) {
-            joiner.add("and act.actor.labelActor = :actor");
+            joiner.add("and actor.labelActor = :actor");
             parameters.put("actor", actor);
         }
 
@@ -76,12 +78,15 @@ public class MotivationRepository implements Repository<Motivation, String> {
         return pageable;
     }
 
-
     private long countQuery(String actor,String status, String search) {
         var count_joiner = new StringJoiner(StringUtils.SPACE);
         var count_map = new HashMap<String, Object>();
 
-        count_joiner.add("from Motivation m");
+        count_joiner
+                .add("select count(distinct m) from Motivation m")
+                .add("left join m.motivationType mt")
+                .add("left join m.actors actors")
+                .add("left join actors.actor actor");
 
         if (StringUtils.isNotEmpty(status)) {
             Boolean booleanStatus = "TRUE".equalsIgnoreCase(status) ? Boolean.TRUE : Boolean.FALSE;
@@ -95,7 +100,7 @@ public class MotivationRepository implements Repository<Motivation, String> {
 
         // Condition for actor
         if (StringUtils.isNotEmpty(actor)) {
-            count_joiner.add("and act.actor.labelActor = :actor");
+            count_joiner.add("and actor.labelActor = :actor");
             count_map.put("actor", actor);
         }
 
@@ -104,7 +109,14 @@ public class MotivationRepository implements Repository<Motivation, String> {
             count_joiner.add("and (m.mtv like :search or m.label like :search)");
             count_map.put("search", "%" + search + "%");
         }
-        return count(count_joiner.toString(), count_map);
+
+        var query = Panache.getEntityManager().createQuery(count_joiner.toString(), Long.class);
+
+        for (Map.Entry<String, Object> entry : count_map.entrySet()) {
+            query.setParameter(entry.getKey(), entry.getValue());
+        }
+
+        return query.getSingleResult();
     }
 
     @Transactional

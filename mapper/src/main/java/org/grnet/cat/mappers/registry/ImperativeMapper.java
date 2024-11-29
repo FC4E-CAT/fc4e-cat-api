@@ -1,10 +1,7 @@
 package org.grnet.cat.mappers.registry;
 
-import jdk.jfr.Name;
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.dtos.guidance.GuidanceUpdateDto;
 import org.grnet.cat.dtos.registry.codelist.ImperativePartialResponse;
-import org.grnet.cat.entities.Guidance;
 import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
 import org.mapstruct.*;

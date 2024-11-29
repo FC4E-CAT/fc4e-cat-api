@@ -339,7 +339,7 @@ public class AssessmentsV2Endpoint {
                                      @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id,
                                      @Valid @NotNull(message = "The request body is empty.") JsonRegistryAssessmentRequest request) {
 
-        var assessment = assessmentService.update(id, request);
+        var assessment = assessmentService.updatePrivateAssessment(id, request);
 
         return Response.ok().entity(assessment).build();
     }
