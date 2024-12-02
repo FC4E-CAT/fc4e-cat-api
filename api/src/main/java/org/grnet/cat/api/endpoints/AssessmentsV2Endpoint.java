@@ -40,8 +40,6 @@ import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.utils.Utility;
 
-import java.util.List;
-
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
 @Path("/v2/assessments")
@@ -509,8 +507,8 @@ public class AssessmentsV2Endpoint {
             responseCode = "200",
             description = "The corresponding list of objects.",
             content = @Content(schema = @Schema(
-                    type = SchemaType.ARRAY,
-                    implementation = List.class)))
+                    type = SchemaType.OBJECT,
+                    implementation = AssessmentsEndpoint.PageableObjects.class)))
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
@@ -533,9 +531,14 @@ public class AssessmentsV2Endpoint {
     @GET
     @Path("/objects")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getObjects() {
+    public Response getObjects(  @Parameter(name = "page", in = QUERY,
+            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                 @Parameter(name = "size", in = QUERY,
+                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                     @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                 @Context UriInfo uriInfo) {
 
-        var objects = assessmentService.getObjects();
+        var objects = assessmentService.getObjects(page-1, size, uriInfo);
 
         return Response.ok().entity(objects).build();
     }

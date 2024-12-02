@@ -223,15 +223,29 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
      * @return A list of string objects representing the  assessment objects.
      */
     @SuppressWarnings("unchecked")
-    public List<String> fetchAssessmentObjects() {
+    public PageQuery<String> fetchAssessmentObjects(int page, int size) {
 
         var em = Panache.getEntityManager();
 
         var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a");
 
-        return (List<String>) query.getResultList();
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
 
-       }
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a");
+
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
 
     /**
      * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
