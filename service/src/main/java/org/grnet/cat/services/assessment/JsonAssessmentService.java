@@ -1,6 +1,5 @@
 package org.grnet.cat.services.assessment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -30,7 +29,6 @@ import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.UserType;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
-import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
@@ -407,6 +405,7 @@ public class JsonAssessmentService {
         return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 
+    @Transactional
     public void delete(String assessmentId) {
 
         motivationAssessmentRepository.delete(Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId));
@@ -514,19 +513,19 @@ public class JsonAssessmentService {
      *
      * @return The list.
      */
-    public List<Object> getObjects() {
-        var objects = motivationAssessmentRepository.fetchAssessmentObjects();
+    public PageResource<TemplateSubjectDto> getObjects(int page, int size, UriInfo uriInfo) {
+
+        var objects = motivationAssessmentRepository.fetchAssessmentObjects(page, size);
+
         var objectMapper = new ObjectMapper();
 
-        return objects.stream()
-                .map(jsonString -> {
-                    try {
-                        return objectMapper.readValue(jsonString, Object.class);
-                    } catch (JsonProcessingException e) {
-                        throw new InternalServerErrorException("Server Error: Failed to parse JSON.", 500);
-                    }
-                })
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
                 .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
     }
 
     /**
