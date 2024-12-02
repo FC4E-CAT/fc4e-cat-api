@@ -217,25 +217,27 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return pageable;
     }
+
     /**
      * Retrieves a page of  assessment objects.
      *
      * @return A list of string objects representing the  assessment objects.
      */
     @SuppressWarnings("unchecked")
-    public PageQuery<String> fetchAssessmentObjects(int page, int size) {
+    public PageQuery<String> fetchAssessmentObjects(int page, int size, String userID) {
 
         var em = Panache.getEntityManager();
 
-        var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a");
+        var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN CatUser u ON u.id = v.user_id WHERE u.id = :userId")
+                .setParameter("userId", userID);
 
         var list = (List<String>) query
                 .setFirstResult(page * size)
                 .setMaxResults(size)
                 .getResultList();
 
-        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a");
-
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN CatUser u ON u.id = v.user_id WHERE u.id = :userId")
+                .setParameter("userId", userID);
 
         var pageable = new PageQueryImpl<String>();
         pageable.list = list;
@@ -375,5 +377,4 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return count("from MotivationAssessment a where a.validation.user.id = ?1", userId);
     }
-
 }

@@ -513,9 +513,9 @@ public class JsonAssessmentService {
      *
      * @return The list.
      */
-    public PageResource<TemplateSubjectDto> getObjects(int page, int size, UriInfo uriInfo) {
+    public PageResource<TemplateSubjectDto> getObjects(int page, int size, UriInfo uriInfo, String userID) {
 
-        var objects = motivationAssessmentRepository.fetchAssessmentObjects(page, size);
+        var objects = motivationAssessmentRepository.fetchAssessmentObjects(page, size, userID);
 
         var objectMapper = new ObjectMapper();
 

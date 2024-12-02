@@ -502,7 +502,7 @@ public class AssessmentsV2Endpoint {
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get list of objects.",
-            description = "Returns  list of objects in  assessments.")
+            description = "Returns list of objects in assessments.")
     @APIResponse(
             responseCode = "200",
             description = "The corresponding list of objects.",
@@ -538,7 +538,7 @@ public class AssessmentsV2Endpoint {
                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
                                  @Context UriInfo uriInfo) {
 
-        var objects = assessmentService.getObjects(page-1, size, uriInfo);
+        var objects = assessmentService.getObjects(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(objects).build();
     }
