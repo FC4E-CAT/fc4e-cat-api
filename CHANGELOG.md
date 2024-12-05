@@ -69,7 +69,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#388](https://github.com/FC4E-CAT/fc4e-cat-api/pull/388) CAT-651: REJECTED Validation email should follow the other emails
 - [#389](https://github.com/FC4E-CAT/fc4e-cat-api/pull/389) CAT-669 Fix 404 Error Response for Assessment Comments API Endpoint
 - [#391](https://github.com/FC4E-CAT/fc4e-cat-api/pull/391) CAT-671 Fix Uniqueness Constraint on MTR field in Metric
-
+- [#395](https://github.com/FC4E-CAT/fc4e-cat-api/pull/395) CAT-679 Script to delete secondary principles from EOSC PID POLICY motivation
 
 ### Removed
 
