@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -32,6 +33,7 @@ import org.grnet.cat.constraints.CheckPublished;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.RelationsResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
@@ -39,6 +41,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
+import org.grnet.cat.dtos.registry.motivation.CriterionMetricRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
@@ -88,8 +91,12 @@ public class MotivationEndpoint {
 
     @Inject
     private CriterionService criterionService;
+
     @Inject
     private PrincipleService principleService;
+
+    @Inject
+    private CriterionMetricService criterionMetricService;
 
 
     /**
@@ -1042,7 +1049,7 @@ public class MotivationEndpoint {
     public Response updateCriterionToMotivationActor(@Parameter(
             description = "The ID of the Motivation to update.",
             required = true,
-            example = "1",
+            example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
                                                      @PathParam("id")
                                                      @Valid
@@ -1112,7 +1119,7 @@ public class MotivationEndpoint {
     public Response createNewPrinciplesCriteriaRelationship(@Parameter(
             description = "The ID of the Motivation to update.",
             required = true,
-            example = "1",
+            example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
                                                             @PathParam("id")
                                                             @Valid
@@ -1171,7 +1178,7 @@ public class MotivationEndpoint {
     public Response updatePrinciplesCriteriaRelationship(@Parameter(
             description = "The ID of the Motivation to update.",
             required = true,
-            example = "1",
+            example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
                                                          @PathParam("id")
                                                          @Valid
@@ -1254,7 +1261,6 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(template).build();
     }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -1370,97 +1376,6 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(response).build();
     }
-
-    public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
-
-        private List<MotivationResponse> content;
-
-        @Override
-        public List<MotivationResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<MotivationResponse> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageableCriterionActorJunctionResponse extends PageResource<CriterionActorResponse> {
-
-        private List<CriterionActorResponse> content;
-
-        @Override
-        public List<CriterionActorResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<CriterionActorResponse> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageableMotivationActorJunctionResponse extends PageResource<MotivationActorResponse> {
-
-        private List<MotivationActorResponse> content;
-
-        @Override
-        public List<MotivationActorResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<MotivationActorResponse> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageableRelationsResponse extends PageResource<RelationsResponseDto> {
-
-        private List<RelationsResponseDto> content;
-
-        @Override
-        public List<RelationsResponseDto> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<RelationsResponseDto> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageablePrincipleCriteriaJunctionResponse extends PageResource<PrincipleCriterionResponse> {
-
-        private List<PrincipleCriterionResponse> content;
-
-        @Override
-        public List<PrincipleCriterionResponse> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<PrincipleCriterionResponse> content) {
-            this.content = content;
-        }
-    }
-
-    public static class PageablePrincipleResponse extends PageResource<PrincipleResponseDto> {
-
-        private List<PrincipleResponseDto> content;
-
-        @Override
-        public List<PrincipleResponseDto> getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(List<PrincipleResponseDto> content) {
-            this.content = content;
-        }
-    }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -1717,8 +1632,7 @@ public class MotivationEndpoint {
             example = "pid_graph:234B60D8",
             schema = @Schema(type = SchemaType.STRING))
             @PathParam("actor-id")
-            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId
-    ) {
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
 
         motivationService.unpublishActor(id, actorId);
 
@@ -1727,6 +1641,292 @@ public class MotivationEndpoint {
         informativeResponse.message = "Successful unpublish";
 
         return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Create a new relationship between motivation, principles and criteria.",
+            description = "Create a new relationship between motivation, principles and criteria.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/criteria-metrics")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createNewCriteriaMetricsRelationship(@Parameter(
+            description = "The ID of the Motivation to create a relationship.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                            @PathParam("id")
+                                                            @Valid
+                                                            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+                                                            @NotEmpty(message = "Criteria-Metrics list can not be empty.") Set<@Valid CriterionMetricRequest> request) {
+
+        var messages = criterionMetricService.createNewCriteriaMetricsRelationship(id, request, utility.getUserUniqueIdentifier());
+        String result = String.join(StringUtils.LF, messages);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = result;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update an existing relationship between motivation, criteria and metrics.",
+            description = "Update an existing relationship between motivation, criteria and metrics.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/criteria-metrics")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCriteriaMetricsRelationship(@Parameter(
+            description = "The ID of the Motivation to update a relationship.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("id")
+                                                         @Valid
+                                                         @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+                                                         Set<@Valid CriterionMetricRequest> request) {
+
+        if (Objects.isNull(request)) {
+
+            request = new HashSet<>();
+        }
+
+        var messages = criterionMetricService.updateCriteriaMetricsRelationship(id, request, utility.getUserUniqueIdentifier());
+
+        String result = String.join(StringUtils.LF, messages);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = result;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get a list of relationships between motivation, criteria and metrics.",
+            description = "Get a list of relationships between motivation, criteria and metrics.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of relationships between motivation, criteria and metrics.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableCriteriaMetricJunctionResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/criteria-metrics")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCriteriaMetricsRelationship(@Parameter(
+            description = "The ID of the Motivation to assign Principles.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                      @PathParam("id")
+                                                      @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                      @Parameter(name = "page", in = QUERY,
+                                                              description = "Indicates the page number. Page number must be >= 1.")
+                                                      @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.")
+                                                      @QueryParam("page") int page,
+                                                      @Parameter(name = "size", in = QUERY,
+                                                              description = "The page size.")
+                                                      @DefaultValue("10")
+                                                      @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                      @Max(value = 100, message = "Page size must be between 1 and 100.")
+                                                      @QueryParam("size") int size,
+                                                      @Context UriInfo uriInfo) {
+
+
+        var response = criterionMetricService.getCriteriaMetricsRelationship(id, page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
+
+        private List<MotivationResponse> content;
+
+        @Override
+        public List<MotivationResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MotivationResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableCriterionActorJunctionResponse extends PageResource<CriterionActorResponse> {
+
+        private List<CriterionActorResponse> content;
+
+        @Override
+        public List<CriterionActorResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<CriterionActorResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableMotivationActorJunctionResponse extends PageResource<MotivationActorResponse> {
+
+        private List<MotivationActorResponse> content;
+
+        @Override
+        public List<MotivationActorResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MotivationActorResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableRelationsResponse extends PageResource<RelationsResponseDto> {
+
+        private List<RelationsResponseDto> content;
+
+        @Override
+        public List<RelationsResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<RelationsResponseDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageablePrincipleCriteriaJunctionResponse extends PageResource<PrincipleCriterionResponse> {
+
+        private List<PrincipleCriterionResponse> content;
+
+        @Override
+        public List<PrincipleCriterionResponse> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<PrincipleCriterionResponse> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageablePrincipleResponse extends PageResource<PrincipleResponseDto> {
+
+        private List<PrincipleResponseDto> content;
+
+        @Override
+        public List<PrincipleResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<PrincipleResponseDto> content) {
+            this.content = content;
+        }
+    }
+
+    public static class PageableCriteriaMetricJunctionResponse extends PageResource<PrincipleCriterionResponseDto> {
+
+        private List<PrincipleCriterionResponseDto> content;
+
+        @Override
+        public List<PrincipleCriterionResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<PrincipleCriterionResponseDto> content) {
+            this.content = content;
+        }
     }
 }
 

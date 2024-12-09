@@ -9,6 +9,7 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.CriterionProjection;
+import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
@@ -127,7 +128,21 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
         return find("SELECT 1 FROM CriterionMetricJunction cm INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE cm.id.metricId= ?1 AND ma.published= ?2", metricId,status)
                 .firstResultOptional()
                 .isPresent();
-
     }
 
+    public boolean existsByMotivationAndCriterionAndMetricAndVersion(String motivationId, String criterionId, String metricId, Integer lodPcV) {
+        return find("SELECT 1 FROM CriterionMetricJunction cm WHERE cm.id.motivationId = ?1 AND cm.id.criterionId = ?2 AND cm.id.metricId = ?3 AND cm.id.lodMcV = ?4", motivationId, criterionId, metricId, lodPcV)
+                .firstResultOptional()
+                .isPresent();
+    }
+
+    @Transactional
+    public List<CriterionMetricJunction> fetchCriterionMetricByMotivation(String motivationId) {
+        return find("SELECT cm FROM CriterionMetricJunction cm WHERE cm.motivation.id = ?1", motivationId).list();
+    }
+
+    public Optional<CriterionMetricJunction> findByMotivationCriterionAndMetricAndVersion(String motivationId, String criterionId, String metricId, Integer lodPcV) {
+        return find("FROM CriterionMetricJunction cm WHERE c,.id.motivationId = ?1 AND cm.id.criterionId = ?2 AND cm.id.metricId = ?3 AND pc.id.lodPcV = ?4", motivationId, criterionId, metricId, lodPcV)
+                .firstResultOptional();
+    }
 }
