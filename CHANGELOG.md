@@ -40,6 +40,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#361](https://github.com/FC4E-CAT/fc4e-cat-api/pull/361) CAT-628 Assessment Update.
 - [#360](https://github.com/FC4E-CAT/fc4e-cat-api/pull/360) CAT-622 Create an endpoint to check if a url is a valid https
 - [#396](https://github.com/FC4E-CAT/fc4e-cat-api/pull/396) CAT-680 Create an API endpoint to establish a relationship between a criterion and a metric
+
 ### Fix
 
 - [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
@@ -70,6 +71,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#389](https://github.com/FC4E-CAT/fc4e-cat-api/pull/389) CAT-669 Fix 404 Error Response for Assessment Comments API Endpoint
 - [#391](https://github.com/FC4E-CAT/fc4e-cat-api/pull/391) CAT-671 Fix Uniqueness Constraint on MTR field in Metric
 - [#395](https://github.com/FC4E-CAT/fc4e-cat-api/pull/395) CAT-679 Script to delete secondary principles from EOSC PID POLICY motivation
+- [#397](https://github.com/FC4E-CAT/fc4e-cat-api/pull/397) CAT-570 DB: Cannot find user friendly that describe the parameters for tests
 - [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status
 
 ### Removed
