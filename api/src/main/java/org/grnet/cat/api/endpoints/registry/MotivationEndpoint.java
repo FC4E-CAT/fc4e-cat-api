@@ -2,7 +2,6 @@ package org.grnet.cat.api.endpoints.registry;
 
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
-import jakarta.json.JsonObject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -41,6 +40,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricExtenderRequest;
 import org.grnet.cat.dtos.registry.motivation.CriterionMetricRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
@@ -48,7 +48,6 @@ import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
-import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
 import org.grnet.cat.repositories.registry.CriterionRepository;
@@ -58,7 +57,6 @@ import org.grnet.cat.services.TemplateService;
 import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
 import org.grnet.cat.validators.SortAndOrderValidator;
-import org.json.simple.JSONObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1822,6 +1820,69 @@ public class MotivationEndpoint {
         var response = criterionMetricService.getCriteriaMetricsRelationship(id, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Create a Metric - Definition relation for a Motivation.",
+            description = "Create a Metric Definition for a single motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric successfully created for the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/metric-definition")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createMetric(
+            @Parameter(
+                    description = "The ID of the Motivation to create a metric for.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+            MotivationMetricExtenderRequest request) {
+
+        var response = motivationService.createMetricDefinitionForMotivation(id, request, utility.getUserUniqueIdentifier());
+
+        return Response.status(response.code).entity(response).build();
+
     }
 
     public static class PageableMotivationResponse extends PageResource<MotivationResponse> {

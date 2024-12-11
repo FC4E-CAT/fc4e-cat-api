@@ -13,18 +13,21 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
-import org.grnet.cat.dtos.registry.motivation.CriterionMetricRequest;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricExtenderRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
-import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.entities.registry.*;
+import org.grnet.cat.entities.registry.metric.Metric;
+import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
+import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.mappers.registry.*;
+import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.grnet.cat.repositories.registry.*;
-import org.keycloak.common.util.DelegatingSerializationFilter;
+import org.grnet.cat.repositories.registry.metric.MetricRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -59,6 +62,12 @@ public class MotivationService {
 
     @Inject
     CriterionActorRepository criterionActorRepository;
+
+    @Inject
+    MetricRepository metricRepository;
+
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
 
     /**
      * Creates a new Motivation.
@@ -484,6 +493,48 @@ public class MotivationService {
         } else {
             response.code = 409;
             response.message = "A principle with the identifier '" + request.principleRequestDto.pri.toUpperCase() + "' already exists.";
+        }
+
+        return response;
+    }
+
+    @Transactional
+    public InformativeResponse createMetricDefinitionForMotivation(String id, MotivationMetricExtenderRequest request, String userId) {
+
+        var response = new InformativeResponse();
+
+        if (!metricRepository.notUnique("MTR", request.metricRequestDto.MTR.toUpperCase())) {
+
+            var metric = MetricMapper.INSTANCE.metricToEntity(request.metricRequestDto);
+
+            metric.setLodMTV(id);
+            metric.setPopulatedBy(userId);
+            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, request.metricRequestDto.typeAlgorithmId));
+            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.metricRequestDto.typeMetricId));
+            metric.setPopulatedBy(userId);
+            metricRepository.persist(metric);
+
+            var metricDefinitionJunction = new MetricDefinitionJunction(
+                    Panache.getEntityManager().getReference(Metric.class, metric.getId()),
+                    Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId),
+                    Panache.getEntityManager().getReference(Motivation.class, id),
+                    request.valueBenchmark,
+                    request.metricDefinition,
+                    id,
+                    1,
+                    request.upload,
+                    request.dataType,
+                    userId,
+                    Timestamp.from(Instant.now())
+            );
+
+            metricDefinitionRepository.persist(metricDefinitionJunction);
+
+            response.code = 200;
+            response.message = "A metric and a Metric Definition successfully created and linked to the specified motivation.";
+        } else {
+            response.code = 409;
+            response.message = "A metric with the identifier '" + request.metricRequestDto.MTR.toUpperCase() + "' already exists.";
         }
 
         return response;
