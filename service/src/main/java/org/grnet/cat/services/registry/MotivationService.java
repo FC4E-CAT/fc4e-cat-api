@@ -13,6 +13,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
+import org.grnet.cat.dtos.registry.motivation.CriterionMetricRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
@@ -271,7 +272,6 @@ public class MotivationService {
     @Transactional
     public List<String> createNewPrinciplesCriteriaRelationship(String motivationId, Set<PrincipleCriterionRequest> request, String userId) {
 
-
         var resultMessages = new ArrayList<String>();
 
         request.stream().iterator().forEachRemaining(req -> {
@@ -361,8 +361,7 @@ public class MotivationService {
 
     private void removePrincipleCriterionRelationship(String motivationId, Set<PrincipleCriterionRequest> request, List<String> resultMessages) {
 
-        var pcList = principleCriterionRepository
-                .fetchPrincipleCriterionByMotivation(motivationId);
+        var pcList = principleCriterionRepository.fetchPrincipleCriterionByMotivation(motivationId);
 
         pcList
                 .iterator()
@@ -378,7 +377,6 @@ public class MotivationService {
                         resultMessages.add("principle-criterion with ids :: " + temp.principleId + " - " + temp.criterionId + " removed from Motivation.");
                     }
                 });
-
     }
 
     /**

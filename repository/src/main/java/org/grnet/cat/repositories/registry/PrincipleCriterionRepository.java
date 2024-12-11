@@ -75,9 +75,6 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
         return pageable;
     }
 
-
-
-
     @Transactional
     public PageQuery<PrincipleCriterionJunction> fetchPrincipleCriterionByMotivation(String motivationId, int page, int size) {
 
@@ -93,7 +90,7 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
         return pageable;
     }
 
-   @Transactional
+    @Transactional
     public List<PrincipleCriterionJunction> fetchPrincipleCriterionByMotivation(String motivationId) {
         return find("SELECT pc FROM PrincipleCriterionJunction pc WHERE pc.motivation.id = ?1", motivationId).list();
     }
