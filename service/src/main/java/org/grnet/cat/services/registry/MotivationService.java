@@ -388,7 +388,7 @@ public class MotivationService {
     public void publish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
-        motivation.getActors().forEach(actor -> actor.setPublished(Boolean.TRUE));
+   //     motivation.getActors().forEach(actor -> actor.setPublished(Boolean.TRUE));
         motivation.setPublished(Boolean.TRUE);
 
     }
@@ -404,7 +404,7 @@ public class MotivationService {
     public void unpublish(String id) {
 
         var motivation = motivationRepository.fetchById(id);
-        motivation.getActors().forEach(actor -> actor.setPublished(Boolean.FALSE));
+     //   motivation.getActors().forEach(actor -> actor.setPublished(Boolean.FALSE));
         motivation.setPublished(Boolean.FALSE);
 
     }
