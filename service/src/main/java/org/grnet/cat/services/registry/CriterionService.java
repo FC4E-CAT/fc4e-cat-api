@@ -17,6 +17,7 @@ import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.dtos.registry.template.TestNode;
+import org.grnet.cat.utils.TestParamsTransformer;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.CriteriaMapper;
@@ -275,13 +276,16 @@ public class CriterionService {
                     .collect(Collectors.toSet());
 
             if (!uniqueTestIds.contains(row.getTES())) {
+
+                var transformedParams = TestParamsTransformer.transformTestParams(row.getTestParams());
+
                 var testNode = new TestNode(
                         row.getTES(),
                         row.getLabelTest().trim(),
                         row.getDescTest().trim(),
                         row.getLabelTestMethod(),
                         row.getTestQuestion(),
-                        row.getTestParams(),
+                        transformedParams,
                         row.getToolTip()
                 );
                 metricNode.addChild(testNode);
