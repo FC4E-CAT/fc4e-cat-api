@@ -10,14 +10,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.CriterionMetricJunction;
-import org.grnet.cat.entities.registry.MetricDefinitionJunction;
-import org.grnet.cat.entities.registry.MetricTestId;
-import org.grnet.cat.entities.registry.MetricTestJunction;
+import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -81,6 +79,17 @@ public class MetricTestRepository  implements Repository<MetricTestJunction, Str
 
     public List<MetricTestJunction> fetchMetricTestByMotivation(String motivationId) {
         return find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1", motivationId).list();
+    }
+
+    public Optional<MetricTestJunction> findByMotivationAndMetricAndTestAndVersion(String motivationId, String metricId, String testId, String testDefinitionId, Integer lodMTTDV) {
+        return find("FROM MetricTestJunction mt WHERE mt.id.motivationId = ?1 AND mt.id.metricId = ?2 AND mt.id.testId = ?3 AND mt.id.testDefinitionId = ?4 AND mt.id.lodMTTDV = ?5", motivationId, metricId, testId, testDefinitionId, lodMTTDV)
+                .firstResultOptional();
+    }
+
+    public boolean existsByMotivationAndMetricAndTestAndVersion(String motivationId, String metricId, String testId, String testDefinitionId, Integer lodMTTDV) {
+        return find("SELECT 1 FROM MetricTestJunction mt WHERE mt.id.motivationId = ?1 AND mt.id.metricId = ?2 AND mt.id.testId = ?3 AND mt.id.testDefinitionId = ?4 AND mt.id.lodMTTDV = ?5", motivationId, metricId, testId, testDefinitionId, lodMTTDV)
+                .firstResultOptional()
+                .isPresent();
     }
 
     public boolean existTestInStatus(String testId,boolean status) {

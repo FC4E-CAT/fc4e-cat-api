@@ -46,7 +46,7 @@ public class MetricTestJunction extends Registry{
     @NotNull
     private Relation relation;
 
-    public MetricTestJunction(Metric metric, Test test, TestDefinition testDefinition, Motivation motivation, Relation relation, String motivationX, Integer lodMTTDV) {
+    public MetricTestJunction(Motivation motivation, Metric metric, Test test, TestDefinition testDefinition, Relation relation, String motivationX, Integer lodMTTDV) {
 
         this.motivation = motivation;
         this.metric = metric;

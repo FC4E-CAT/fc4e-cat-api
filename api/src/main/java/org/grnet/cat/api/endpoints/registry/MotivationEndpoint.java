@@ -32,6 +32,7 @@ import org.grnet.cat.constraints.CheckPublished;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.MetricTestResponseDto;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.RelationsResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
@@ -41,11 +42,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
-import org.grnet.cat.dtos.registry.motivation.CriterionMetricRequest;
-import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
-import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
-import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
-import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
@@ -1824,6 +1821,193 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
+            summary = "Create a new relations between motivation, metric and tests.",
+            description = "Create a new relations between motivation, metric and tests.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relations created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/metric-test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createMetricTestRelation(
+            @Parameter(
+                    description = "The ID of the Motivation to update.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+            @NotEmpty(message = "Metric-Test list can not be empty.")
+            Set<@Valid MetricTestRequest> request) {
+
+        var messages = motivationService.createMetricTestRelation(id, request, utility.getUserUniqueIdentifier());
+
+        String result = String.join("\n", messages);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = result;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get a list of relations between motivation, metric and tests.",
+            description = "Get a list of relations between motivation, metric and tests.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A list of relations between motivation, metric and tests.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableMetricTestJunctionResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/metric-test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMetricTestsRelation(
+            @Parameter(description = "The ID of the Motivation to assign Metric-Test relation.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class,
+                    message = "There is no Motivation with the following id:")
+            String id,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+            @DefaultValue("1")
+            @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
+
+        var response = motivationService.getMetricTestRelation(id, page - 1, size, uriInfo);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update an existing relationship between motivation, metric and tests.",
+            description = "Update an existing relationship between motivation, metric and tests.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/metric-test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateMetricTestsRelation(
+            @Parameter(description = "The ID of the Motivation to update.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+            Set<@Valid MetricTestRequest> request) {
+
+        if (Objects.isNull(request)) {
+            request = new HashSet<>();
+        }
+
+        var messages = motivationService.updateTestMetricRelation(id, request, utility.getUserUniqueIdentifier());
+
+        String result = String.join("\n", messages);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = result;
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+
+    @Tag(name = "Motivation")
+    @Operation(
             summary = "Create a Metric - Definition relation for a Motivation.",
             description = "Create a Metric Definition for a single motivation.")
     @APIResponse(
@@ -1986,6 +2170,22 @@ public class MotivationEndpoint {
 
         @Override
         public void setContent(List<PrincipleCriterionResponseDto> content) {
+            this.content = content;
+        }
+    }
+
+
+    public static class PageableMetricTestJunctionResponse extends PageResource<MetricTestResponseDto> {
+
+        private List<MetricTestResponseDto> content;
+
+        @Override
+        public List<MetricTestResponseDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<MetricTestResponseDto> content) {
             this.content = content;
         }
     }
