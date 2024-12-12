@@ -19,11 +19,9 @@ public class MetricDefinitionEndpointTest extends KeycloakTest {
     @Test
     public void getMetricTestNotPermitted() {
 
-        register("alice");
-
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
                 .get("/")
                 .then()
