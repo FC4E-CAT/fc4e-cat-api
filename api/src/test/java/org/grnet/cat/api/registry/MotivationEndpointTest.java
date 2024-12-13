@@ -10,6 +10,8 @@ import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
+import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricExtenderRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
@@ -19,6 +21,7 @@ import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;
@@ -959,7 +962,77 @@ public class MotivationEndpointTest extends KeycloakTest {
         assertEquals("A principle with the identifier 'PRITEST' already exists.", errorResponse.message);
     }
 
+    @Test
+    public void createMetricDefinitionForMotivationAlreadyExist() {
 
+        register("admin");
+
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "testMtv";
+        motivationRequest.label = "testLabelMotivation";
+        motivationRequest.description = "testDecMotivation";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        var metricRequestDto = new MetricRequestDto();
+        metricRequestDto.MTR = "MTRTEST";
+        metricRequestDto.labelMetric = "Performance Metric";
+        metricRequestDto.descrMetric = "This metric measures performance.";
+        metricRequestDto.urlMetric = "http://example.com/metric";
+        metricRequestDto.typeAlgorithmId = "pid_graph:2050775C";
+        metricRequestDto.typeMetricId = "pid_graph:35966E2B";
+
+        var metricDefinitionRequest = new MotivationMetricExtenderRequest();
+        metricDefinitionRequest.metricRequestDto = metricRequestDto;
+        metricDefinitionRequest.typeBenchmarkId = "pid_graph:0917EC0D";
+        metricDefinitionRequest.motivationId = motivationResponse.id;
+        metricDefinitionRequest.motivationX = "pid_graph:EBCEBED1";
+        metricDefinitionRequest.valueBenchmark = "3";
+        metricDefinitionRequest.metricDefinition = "3";
+        metricDefinitionRequest.upload = LocalDate.of(2024, 12, 11);
+        metricDefinitionRequest.dataType = "data_type";
+
+        var informativeResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(metricDefinitionRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/metric-definition", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(200, informativeResponse.code);
+        assertEquals("A metric and a Metric Definition successfully created and linked to the specified motivation.", informativeResponse.message);
+
+        var errorResponse = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(metricDefinitionRequest)
+                .contentType(ContentType.JSON)
+                .post("/{id}/metric-definition", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(409)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(409, errorResponse.code);
+        assertEquals("A metric with the identifier 'MTRTEST' already exists.", errorResponse.message);
+    }
     @Test
     public void testPublish() {
         register("admin");
