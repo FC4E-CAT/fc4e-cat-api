@@ -105,4 +105,22 @@ public class MetricDefinitionResponseDto {
     )
     @JsonProperty("last_touch")
     public String lastTouch;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The upload timestamp.",
+            example = "2024-07-30"
+    )
+    @JsonProperty("upload")
+    public String upload;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The data type of the metric.",
+            example = "data"
+    )
+    @JsonProperty("data_type")
+    public String dataType;
 }

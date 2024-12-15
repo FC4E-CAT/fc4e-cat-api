@@ -40,7 +40,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
-import org.grnet.cat.dtos.registry.metric.MotivationMetricExtenderRequest;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
 import org.grnet.cat.dtos.registry.motivation.CriterionMetricRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
@@ -1877,7 +1877,7 @@ public class MotivationEndpoint {
             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
             @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
             String id,
-            MotivationMetricExtenderRequest request) {
+            MotivationMetricExtendedRequest request) {
 
         var response = motivationService.createMetricDefinitionForMotivation(id, request, utility.getUserUniqueIdentifier());
 

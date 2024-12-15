@@ -11,7 +11,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
-import org.grnet.cat.dtos.registry.metric.MotivationMetricExtenderRequest;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
@@ -985,23 +985,15 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(MotivationResponse.class);
 
-        var metricRequestDto = new MetricRequestDto();
-        metricRequestDto.MTR = "MTRTEST";
-        metricRequestDto.labelMetric = "Performance Metric";
-        metricRequestDto.descrMetric = "This metric measures performance.";
-        metricRequestDto.urlMetric = "http://example.com/metric";
-        metricRequestDto.typeAlgorithmId = "pid_graph:2050775C";
-        metricRequestDto.typeMetricId = "pid_graph:35966E2B";
-
-        var metricDefinitionRequest = new MotivationMetricExtenderRequest();
-        metricDefinitionRequest.metricRequestDto = metricRequestDto;
+        var metricDefinitionRequest = new MotivationMetricExtendedRequest();
+        metricDefinitionRequest.MTR = "MTRTEST";
+        metricDefinitionRequest.labelMetric = "Performance Metric";
+        metricDefinitionRequest.descrMetric = "This metric measures performance.";
+        metricDefinitionRequest.urlMetric = "http://example.com/metric";
+        metricDefinitionRequest.typeAlgorithmId = "pid_graph:2050775C";
+        metricDefinitionRequest.typeMetricId = "pid_graph:35966E2B";
         metricDefinitionRequest.typeBenchmarkId = "pid_graph:0917EC0D";
-        metricDefinitionRequest.motivationId = motivationResponse.id;
-        metricDefinitionRequest.motivationX = "pid_graph:EBCEBED1";
         metricDefinitionRequest.valueBenchmark = "3";
-        metricDefinitionRequest.metricDefinition = "3";
-        metricDefinitionRequest.upload = LocalDate.of(2024, 12, 11);
-        metricDefinitionRequest.dataType = "data_type";
 
         var informativeResponse = given()
                 .auth()

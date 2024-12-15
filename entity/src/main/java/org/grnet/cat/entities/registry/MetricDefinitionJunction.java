@@ -59,16 +59,14 @@ public class MetricDefinitionJunction extends Registry{
     private String dataType;
 
 
-    public MetricDefinitionJunction(Metric metric, TypeBenchmark typeBenchmark, Motivation motivation, String valueBenchmark, String metricDefinition, String motivationX, Integer lodMTBV, LocalDate upload, String dataType, String populatedBy, Timestamp lastTouch) {
+    public MetricDefinitionJunction(Motivation motivation, Metric metric, TypeBenchmark typeBenchmark,  String valueBenchmark, String motivationX, Integer lodMTBV, LocalDate upload, String populatedBy, Timestamp lastTouch) {
 
         this.motivation = motivation;
         this.metric = metric;
         this.typeBenchmark = typeBenchmark;
-        this.metricDefinition = metricDefinition;
         this.valueBenchmark = valueBenchmark;
         this.motivationX = motivationX;
         this.upload = upload;
-        this.dataType = dataType;
         this.id = new MetricDefinitionId(metric.getId(), typeBenchmark.getId(), motivation.getId(), lodMTBV);
         this.setPopulatedBy(populatedBy);
         this.setLastTouch(lastTouch);

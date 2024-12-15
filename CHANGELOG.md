@@ -75,6 +75,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#395](https://github.com/FC4E-CAT/fc4e-cat-api/pull/395) CAT-679 Script to delete secondary principles from EOSC PID POLICY motivation
 - [#397](https://github.com/FC4E-CAT/fc4e-cat-api/pull/397) CAT-570 DB: Cannot find user friendly that describe the parameters for tests
 - [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status
+- [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix)
 
 ### Removed
 

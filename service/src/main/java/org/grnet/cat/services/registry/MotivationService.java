@@ -13,7 +13,8 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
-import org.grnet.cat.dtos.registry.metric.MotivationMetricExtenderRequest;
+import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
@@ -499,31 +500,37 @@ public class MotivationService {
     }
 
     @Transactional
-    public InformativeResponse createMetricDefinitionForMotivation(String id, MotivationMetricExtenderRequest request, String userId) {
+    public InformativeResponse createMetricDefinitionForMotivation(String id, MotivationMetricExtendedRequest request, String userId) {
 
         var response = new InformativeResponse();
 
-        if (!metricRepository.notUnique("MTR", request.metricRequestDto.MTR.toUpperCase())) {
+        if (!metricRepository.notUnique("MTR", request.MTR.toUpperCase())) {
 
-            var metric = MetricMapper.INSTANCE.metricToEntity(request.metricRequestDto);
+            var metricRequest = new MetricRequestDto();
+            metricRequest.MTR = request.MTR;
+            metricRequest.urlMetric = request.urlMetric;
+            metricRequest.typeMetricId = request.typeMetricId;
+            metricRequest.typeAlgorithmId = request.typeAlgorithmId;
+            metricRequest.labelMetric = request.labelMetric;
+            metricRequest.descrMetric = request.descrMetric;
+
+            var metric = MetricMapper.INSTANCE.metricToEntity(metricRequest);
 
             metric.setLodMTV(id);
             metric.setPopulatedBy(userId);
-            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, request.metricRequestDto.typeAlgorithmId));
-            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.metricRequestDto.typeMetricId));
+            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
+            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
             metric.setPopulatedBy(userId);
             metricRepository.persist(metric);
 
             var metricDefinitionJunction = new MetricDefinitionJunction(
+                    Panache.getEntityManager().getReference(Motivation.class, id),
                     Panache.getEntityManager().getReference(Metric.class, metric.getId()),
                     Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId),
-                    Panache.getEntityManager().getReference(Motivation.class, id),
                     request.valueBenchmark,
-                    request.metricDefinition,
                     id,
                     1,
-                    request.upload,
-                    request.dataType,
+                    (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
                     userId,
                     Timestamp.from(Instant.now())
             );
@@ -534,7 +541,7 @@ public class MotivationService {
             response.message = "A metric and a Metric Definition successfully created and linked to the specified motivation.";
         } else {
             response.code = 409;
-            response.message = "A metric with the identifier '" + request.metricRequestDto.MTR.toUpperCase() + "' already exists.";
+            response.message = "A metric with the identifier '" + request.MTR.toUpperCase() + "' already exists.";
         }
 
         return response;
