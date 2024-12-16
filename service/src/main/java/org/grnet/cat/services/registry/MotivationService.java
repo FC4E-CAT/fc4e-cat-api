@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.MetricTestResponseDto;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
@@ -19,12 +20,14 @@ import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.PrincipleCriterionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
+import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.grnet.cat.repositories.registry.*;
@@ -69,6 +72,9 @@ public class MotivationService {
 
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
+
+    @Inject
+    MetricTestRepository metricTestRepository;
 
     /**
      * Creates a new Motivation.
@@ -545,5 +551,121 @@ public class MotivationService {
         }
 
         return response;
+    }
+
+
+    /**
+     * Creates a new relationship between principle, criterion, and motivation.
+     *
+     * @param motivationId the ID of the motivation.
+     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param userId       the ID of the user performing the action.
+     */
+    @Transactional
+    public List<String> createMetricTestRelation(String motivationId, Set<MetricTestRequest> request, String userId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        request.stream().iterator().forEachRemaining(req -> {
+
+            if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, req.metricId, req.testId, req.testDefinitionId, 1)) {
+
+                var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                        Panache.getEntityManager().getReference(Metric.class, req.metricId),
+                        Panache.getEntityManager().getReference(Test.class, req.testId),
+                        Panache.getEntityManager().getReference(TestDefinition.class, req.testDefinitionId),
+                        Panache.getEntityManager().getReference(Relation.class, req.relation),
+                        motivationId,
+                        1);
+
+                metricTest.setPopulatedBy(userId);
+                metricTest.setLastTouch(Timestamp.from(Instant.now()));
+
+                metricTestRepository.persist(metricTest);
+                resultMessages.add("metric-test with ids :: " + req.metricId + " - " + req.testId + " successfully added to Motivation.");
+            } else {
+                resultMessages.add("metric-test with ids :: " + req.metricId + " - " + req.testId + " already exists to Motivation.");
+            }
+        });
+
+        return resultMessages;
+    }
+
+    public PageResource<MetricTestResponseDto> getMetricTestRelation(String motivationId, int page, int size, UriInfo uriInfo) {
+
+        var metricTest = metricTestRepository.fetchMetricTestByMotivation(motivationId, page, size);
+
+        var principleCriteriaResponse = MetricTestMapper.INSTANCE.metricTestToDtos(metricTest.list());
+
+        return new PageResource<>(metricTest, principleCriteriaResponse, uriInfo);
+    }
+
+
+    /**
+     * Updates an existing relationship between principle, criterion, and motivation.
+     *
+     * @param motivationId the ID of the motivation.
+     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param userId       the ID of the user performing the action.
+     */
+    @Transactional
+    public List<String> updateTestMetricRelation(String motivationId, Set<MetricTestRequest> request, String userId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        removeMetricTestRelation(motivationId, request, resultMessages);
+
+        request.stream().iterator().forEachRemaining(req -> {
+
+            var junction = metricTestRepository.findByMotivationAndMetricAndTestAndVersion(motivationId, req.metricId, req.testId, req.testDefinitionId, 1);
+
+            if (junction.isPresent()) {
+
+                var existingJunction = junction.get();
+                existingJunction.setLastTouch(Timestamp.from(Instant.now()));
+                existingJunction.setPopulatedBy(userId);
+                existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
+
+                resultMessages.add("metric-test with ids :: " + req.metricId + " - " + req.testId + " successfully updated.");
+            } else {
+
+                var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                        Panache.getEntityManager().getReference(Metric.class, req.metricId),
+                        Panache.getEntityManager().getReference(Test.class, req.testId),
+                        Panache.getEntityManager().getReference(TestDefinition.class, req.testDefinitionId),
+                        Panache.getEntityManager().getReference(Relation.class, req.relation),
+                        motivationId,
+                        1);
+
+                metricTest.setPopulatedBy(userId);
+                metricTest.setLastTouch(Timestamp.from(Instant.now()));
+
+                metricTestRepository.persist(metricTest);
+                resultMessages.add("principle-criterion with ids :: " + req.metricId + " - " + req.testId + " successfully added to Motivation.");
+            }
+        });
+
+        return resultMessages;
+    }
+
+    private void removeMetricTestRelation(String motivationId, Set<MetricTestRequest> request, List<String> resultMessages) {
+
+        var mtList = metricTestRepository.fetchMetricTestByMotivation(motivationId);
+
+        mtList
+                .iterator()
+                .forEachRemaining(mt -> {
+
+                    var temp = new MetricTestRequest();
+                    temp.metricId = mt.getId().getMetricId();
+                    temp.testId = mt.getId().getTestId();
+                    temp.testDefinitionId = mt.getId().getTestDefinitionId();
+
+                    if (!request.contains(temp)) {
+
+                        metricTestRepository.delete(mt);
+                        resultMessages.add("metric-test with ids :: " + temp.metricId + " - " + temp.testId + " removed from Motivation.");
+                    }
+                });
     }
 }
