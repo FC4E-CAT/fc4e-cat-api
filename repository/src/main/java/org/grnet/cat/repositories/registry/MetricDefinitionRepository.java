@@ -77,4 +77,8 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return find("SELECT md FROM MetricDefinitionJunction md WHERE md.motivation.id = ?1", motivationId).list();
     }
 
+    @Transactional
+    public long removeAll(){
+        return deleteAll();
+    }
 }

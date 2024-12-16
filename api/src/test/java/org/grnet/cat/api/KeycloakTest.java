@@ -10,6 +10,7 @@ import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.repositories.registry.MetricDefinitionRepository;
 import org.grnet.cat.repositories.registry.MotivationPrincipleRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.KeycloakAdminService;
@@ -17,6 +18,8 @@ import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.registry.CriterionService;
+import org.grnet.cat.services.registry.metric.MetricService;
+import org.intellij.lang.annotations.JdkConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
@@ -51,6 +54,9 @@ public class KeycloakTest {
     @Inject
     MotivationPrincipleRepository motivationPrincipleRepository;
 
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
     @BeforeEach
     public void setup() {
 
@@ -66,6 +72,7 @@ public class KeycloakTest {
         userService.deleteAll();
         criterionService.deleteAll();
         motivationPrincipleRepository.removeAll();
+        metricDefinitionRepository.removeAll();
     }
 
     protected UserProfileDto register(String username) {
