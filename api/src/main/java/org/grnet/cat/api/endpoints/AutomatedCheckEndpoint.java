@@ -1,6 +1,5 @@
 package org.grnet.cat.api.endpoints;
 
-
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -19,9 +18,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
-import org.grnet.cat.dtos.AutomatedCheckRequest;
-import org.grnet.cat.dtos.AutomatedCheckResponse;
-import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.*;
+import org.grnet.cat.services.ArccValidationService;
 import org.grnet.cat.services.AutomatedCheckService;
 
 @Authenticated
@@ -30,6 +28,9 @@ public class AutomatedCheckEndpoint {
 
     @Inject
     AutomatedCheckService automatedCheckService;
+
+    @Inject
+    ArccValidationService arccValidationService;
 
     @Tag(name = "Automated Check")
     @Operation(
@@ -76,6 +77,44 @@ public class AutomatedCheckEndpoint {
     public Response checkHttpsUrl(@Valid @NotNull(message = "The request body is empty.") AutomatedCheckRequest request) {
 
         var response = automatedCheckService.isValidHttpsUrl(request);
+
+        return Response.ok().entity(response).build();
+    }
+
+
+    @Tag(name = "Automated Check")
+    @Operation(
+            summary = "Validate SAML Metadata",
+            description = "Validates the provided SAML Metadata XML URL against the schema and required fields."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Metadata validated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ArccValidationResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Validation failed.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("/validate-metadata")
+    @Authenticated
+    @Registration
+    public Response validateMetadata(@Valid @NotNull(message = "The request body is empty.") ArccValidationRequest request) {
+
+        var response = arccValidationService.validateMetadataByTestId(request);
 
         return Response.ok().entity(response).build();
     }

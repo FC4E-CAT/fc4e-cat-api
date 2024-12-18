@@ -44,6 +44,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship
 - [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695: Implement GET and PUT /metric - definition by Motivation API Endpoint
 - [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation
+- [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650: Automated Tests for ARCC-G071
 
 ### Fix
 
@@ -79,9 +80,6 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status
 - [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix)
 - [#406](https://github.com/FC4E-CAT/fc4e-cat-api/pull/406) CAT-698 Support test-metric relations of a specific metric in a motivation #406
-
-
-
 
 ### Removed
 
