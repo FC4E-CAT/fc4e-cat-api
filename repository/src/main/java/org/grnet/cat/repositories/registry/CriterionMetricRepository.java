@@ -88,6 +88,10 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
         return find("SELECT c FROM CriterionMetricJunction c WHERE c.id.motivationId = ?1 AND c.id.criterionId = ?2", motivationId, criterionId).firstResultOptional();
     }
 
+    public List<CriterionMetricJunction> listByMotivationAndCriterion(String motivationId, String criterionId) {
+        return find("SELECT c FROM CriterionMetricJunction c WHERE c.id.motivationId = ?1 AND c.id.criterionId = ?2", motivationId, criterionId).list();
+    }
+
     public List<CriterionProjection> findMetricsByCriterionId(String criterionId){
         return (List<CriterionProjection>) getEntityManager()
                 .createNativeQuery("SELECT\n" +
@@ -136,13 +140,19 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
                 .isPresent();
     }
 
+    public boolean existsByMotivationAndCriterionAndVersion(String motivationId, String criterionId, Integer lodPcV) {
+        return find("SELECT 1 FROM CriterionMetricJunction cm WHERE cm.id.motivationId = ?1 AND cm.id.criterionId = ?2 AND cm.id.lodMcV = ?3", motivationId, criterionId, lodPcV)
+                .firstResultOptional()
+                .isPresent();
+    }
+
     @Transactional
     public List<CriterionMetricJunction> fetchCriterionMetricByMotivation(String motivationId) {
         return find("SELECT cm FROM CriterionMetricJunction cm WHERE cm.motivation.id = ?1", motivationId).list();
     }
 
     public Optional<CriterionMetricJunction> findByMotivationCriterionAndMetricAndVersion(String motivationId, String criterionId, String metricId, Integer lodPcV) {
-        return find("FROM CriterionMetricJunction cm WHERE c,.id.motivationId = ?1 AND cm.id.criterionId = ?2 AND cm.id.metricId = ?3 AND pc.id.lodPcV = ?4", motivationId, criterionId, metricId, lodPcV)
+        return find("FROM CriterionMetricJunction cm WHERE cm.id.motivationId = ?1 AND cm.id.criterionId = ?2 AND cm.id.metricId = ?3 AND cm.id.lodMcV = ?4", motivationId, criterionId, metricId, lodPcV)
                 .firstResultOptional();
     }
 }

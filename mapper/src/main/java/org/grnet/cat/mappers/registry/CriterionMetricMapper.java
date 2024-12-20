@@ -25,6 +25,4 @@ public interface CriterionMetricMapper {
     @Mapping(target = "relationId", expression = "java(criterionMetric.getRelation().getId())")
     CriterionMetricResponseDto criterionMetricToDto(CriterionMetricJunction criterionMetric);
 
-
-
 }

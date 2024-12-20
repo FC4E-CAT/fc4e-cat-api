@@ -6,27 +6,12 @@ import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.RelationRepository;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 
-@Schema(name="CriterionMetricRequest", description="This object represents a request for creating a new relationship between criterion and metric.")
+@Schema(name="CriterionMetricRequest", description="This object uses for creating a new relationship between criterion and metric.")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CriterionMetricRequest {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Criterion.",
-            required = true,
-            example = "pid_graph:A5A41F03"
-    )
-
-    @NotEmpty(message = "criterion_id may not be empty.")
-    @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:")
-    @JsonProperty(value = "criterion_id")
-    @EqualsAndHashCode.Include
-    public String criterionId;
 
     @Schema(
             type = SchemaType.STRING,
@@ -38,6 +23,7 @@ public class CriterionMetricRequest {
     @NotEmpty(message = "metric_id may not be empty.")
     @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:")
     @JsonProperty(value = "metric_id")
+    @EqualsAndHashCode.Include
     public String metricId;
 
     @Schema(
