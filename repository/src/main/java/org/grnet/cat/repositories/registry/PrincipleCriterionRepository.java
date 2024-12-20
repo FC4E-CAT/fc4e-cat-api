@@ -158,7 +158,25 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
                 .isPresent();
     }
 
+    public boolean existsByMotivationAndPrincipleAndVersion(String motivationId, String principleId, Integer lodMpV) {
+        return find("SELECT 1 FROM PrincipleCriterionJunction p WHERE p.id.motivationId = ?1 AND p.id.principleId = ?2 AND p.id.lodPcV = ?3", motivationId, principleId, lodMpV)
+                .firstResultOptional()
+                .isPresent();
+    }
 
+    public void deleteByMotivationPrincipleId(String motivationId, String principleId) {
+        delete("FROM PrincipleCriterionJunction p WHERE p.id.motivationId =?1 AND p.id.principleId = ?2", motivationId, principleId);
+    }
+
+    public boolean isUsedWithCriterionInOtherMotivation(String motivationId, String principleId, Integer lodPcV) {
+        return find("SELECT 1 FROM PrincipleCriterionJunction m WHERE m.id.motivationId != ?1 AND m.id.principleId = ?2 AND m.id.lodPcV = ?3", motivationId, principleId, lodPcV)
+                .firstResultOptional()
+                .isPresent();
+    }
+
+    public void deletePrincipleCriterionMotivationRelation(String motivationId, String principleId,String criterionId) {
+        delete("FROM PrincipleCriterionJunction p WHERE p.motivation.id =?1 AND p.id.principleId = ?2 AND p.id.criterionId = ?3" , motivationId, principleId,criterionId);
+    }
 }
 
 

@@ -14,7 +14,11 @@ public class MotivationPrincipleRepository implements Repository<MotivationPrinc
                 .firstResultOptional()
                 .isPresent();
     }
-
+    public boolean isUsedInOtherMotivation(String motivationId, String principleId, Integer lodMpV) {
+        return find("SELECT 1 FROM MotivationPrincipleJunction m WHERE m.id.motivationId != ?1 AND m.id.principleId = ?2 AND m.id.lodMpV = ?3", motivationId, principleId, lodMpV)
+                .firstResultOptional()
+                .isPresent();
+    }
 
     public boolean existsByPrinciple(String principleId) {
         return find("SELECT 1 FROM MotivationPrincipleJunction pc WHERE pc.id.principleId = ?1", principleId)
@@ -33,5 +37,9 @@ public class MotivationPrincipleRepository implements Repository<MotivationPrinc
     @Transactional
     public long removeAll(){
         return deleteAll();
+    }
+
+    public void deleteByPrincipleId(String motivationId, String principleId,Integer lodMpV) {
+        delete("FROM MotivationPrincipleJunction p WHERE p.id.motivationId =?1 AND p.id.principleId = ?2 AND p.id.lodMpV = ?3", motivationId, principleId,lodMpV);
     }
 }

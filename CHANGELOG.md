@@ -40,10 +40,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#361](https://github.com/FC4E-CAT/fc4e-cat-api/pull/361) CAT-628 Assessment Update.
 - [#360](https://github.com/FC4E-CAT/fc4e-cat-api/pull/360) CAT-622 Create an endpoint to check if a url is a valid https
 - [#396](https://github.com/FC4E-CAT/fc4e-cat-api/pull/396) CAT-680 Create an API endpoint to establish a relationship between a criterion and a metric
-- [#400](https://github.com/FC4E-CAT/fc4e-cat-api/pull/400) 
-
+- [#400](https://github.com/FC4E-CAT/fc4e-cat-api/pull/400) CAT-689: Change POST /registry/metrics to insert full metric/metric-definition relation
 - [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship
 - [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695: Implement GET and PUT /metric - definition by Motivation API Endpoint
+- [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation
 
 ### Fix
 
