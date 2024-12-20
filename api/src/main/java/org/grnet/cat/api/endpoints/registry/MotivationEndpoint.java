@@ -39,6 +39,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
 import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
+import org.grnet.cat.dtos.registry.metric.DetailedMetricDto;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
@@ -50,6 +51,7 @@ import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
+import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.services.TemplateService;
 import org.grnet.cat.services.registry.*;
 import org.grnet.cat.utils.Utility;
@@ -1853,7 +1855,7 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
-    @Path("/{id}/metric-test")
+    @Path("/{id}/metrics/{metric-id}/tests")
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMetricTestRelation(
             @Parameter(
@@ -1864,11 +1866,22 @@ public class MotivationEndpoint {
             @PathParam("id")
             @Valid
             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+            //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+
+            @Parameter(
+                    description = "The ID of the Metric to update.",
+                    required = true,
+                    example = "pid_graph:EBCEBED1",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
+
             @NotEmpty(message = "Metric-Test list can not be empty.")
             Set<@Valid MetricTestRequest> request) {
 
-        var messages = motivationService.createMetricTestRelation(id, request, utility.getUserUniqueIdentifier());
+        var messages = motivationService.createMetricTestRelation(id, metricId,request, utility.getUserUniqueIdentifier());
 
         String result = String.join("\n", messages);
 
@@ -1888,7 +1901,7 @@ public class MotivationEndpoint {
             description = "A list of relations between motivation, metric and tests.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = PageableMetricTestJunctionResponse.class)))
+                    implementation = DetailedMetricDto.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -1909,10 +1922,10 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @GET
-    @Path("/{id}/metric-test")
+    @Path("/{id}/metrics/{metric-id}/test")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMetricTestsRelation(
-            @Parameter(description = "The ID of the Motivation to assign Metric-Test relation.",
+            @Parameter(description = "The ID of the Motivation to get Metric-Test relation.",
                     required = true,
                     example = "pid_graph:3E109BBA",
                     schema = @Schema(type = SchemaType.STRING))
@@ -1921,6 +1934,15 @@ public class MotivationEndpoint {
             @NotFoundEntity(repository = MotivationRepository.class,
                     message = "There is no Motivation with the following id:")
             String id,
+            @Parameter(
+                    description = "The ID of the Metric to get Metric-Tests.",
+                    required = true,
+                    example = "pid_graph:EBCEBED1",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
+
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.")
             @DefaultValue("1")
@@ -1934,7 +1956,7 @@ public class MotivationEndpoint {
             @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var response = motivationService.getMetricTestRelation(id, page - 1, size, uriInfo);
+        var response = motivationService.getMetricTestRelation(id,metricId, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();
     }
@@ -1975,7 +1997,7 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @PUT
-    @Path("/{id}/metric-test")
+    @Path("/{id}/metrics/{metric-id}/tests")
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateMetricTestsRelation(
             @Parameter(description = "The ID of the Motivation to update.",
@@ -1985,14 +2007,24 @@ public class MotivationEndpoint {
             @PathParam("id")
             @Valid
             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
-            Set<@Valid MetricTestRequest> request) {
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+            @Parameter(
+                    description = "The ID of the Metric to update.",
+                    required = true,
+                    example = "pid_graph:EBCEBED1",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
+
+            List<@Valid MetricTestRequest> request) {
 
         if (Objects.isNull(request)) {
-            request = new HashSet<>();
+            request = new ArrayList<>();
         }
 
-        var messages = motivationService.updateTestMetricRelation(id, request, utility.getUserUniqueIdentifier());
+        var messages = motivationService.updateTestMetricRelation(id, metricId, request, utility.getUserUniqueIdentifier());
 
         String result = String.join("\n", messages);
 

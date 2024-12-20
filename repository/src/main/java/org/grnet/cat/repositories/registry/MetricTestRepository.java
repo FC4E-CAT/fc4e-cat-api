@@ -19,9 +19,9 @@ import java.util.Optional;
 import java.util.StringJoiner;
 
 @ApplicationScoped
-public class MetricTestRepository  implements Repository<MetricTestJunction, String> {
+public class MetricTestRepository implements Repository<MetricTestJunction, String> {
     @Transactional
-    public PageQuery<MetricTestJunction> fetchMetricTestWithSearch(String search, String order, String sort,int page, int size) {
+    public PageQuery<MetricTestJunction> fetchMetricTestWithSearch(String search, String order, String sort, int page, int size) {
 
         var joiner = new StringJoiner(StringUtils.SPACE);
 
@@ -65,7 +65,21 @@ public class MetricTestRepository  implements Repository<MetricTestJunction, Str
 
     public PageQuery<MetricTestJunction> fetchMetricTestByMotivation(String motivationId, int page, int size) {
 
-        var panache = find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1", Sort.by("lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+        var panache = find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1 ", Sort.by("lastTouch", Sort.Direction.Descending), motivationId).page(page, size);
+
+        var pageable = new PageQueryImpl<MetricTestJunction>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    public PageQuery<MetricTestJunction> fetchMetricTestByMotivationAndMetricAndPage(String motivationId, String metricId, int page, int size) {
+
+        var panache = find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1 and mt.metric.id = ?2", Sort.by("lastTouch", Sort.Direction.Descending), motivationId, metricId).page(page, size);
 
         var pageable = new PageQueryImpl<MetricTestJunction>();
         pageable.list = panache.list();
@@ -80,6 +94,10 @@ public class MetricTestRepository  implements Repository<MetricTestJunction, Str
     public List<MetricTestJunction> fetchMetricTestByMotivation(String motivationId) {
         return find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1", motivationId).list();
     }
+    public List<MetricTestJunction> fetchMetricTestByMotivationAndMetric(String motivationId, String metricId) {
+        return find("SELECT mt FROM MetricTestJunction mt WHERE mt.motivation.id = ?1 and mt.metric.id = ?2", motivationId, metricId).list();
+    }
+
 
     public Optional<MetricTestJunction> findByMotivationAndMetricAndTestAndVersion(String motivationId, String metricId, String testId, String testDefinitionId, Integer lodMTTDV) {
         return find("FROM MetricTestJunction mt WHERE mt.id.motivationId = ?1 AND mt.id.metricId = ?2 AND mt.id.testId = ?3 AND mt.id.testDefinitionId = ?4 AND mt.id.lodMTTDV = ?5", motivationId, metricId, testId, testDefinitionId, lodMTTDV)
@@ -92,22 +110,68 @@ public class MetricTestRepository  implements Repository<MetricTestJunction, Str
                 .isPresent();
     }
 
-    public boolean existTestInStatus(String testId,boolean status) {
-        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.id.testId= ?1 AND ma.published= ?2", testId,status)
+    public boolean existTestInStatus(String testId, boolean status) {
+        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.id.testId= ?1 AND ma.published= ?2", testId, status)
                 .firstResultOptional()
                 .isPresent();
 
     }
-    public boolean existTestDefinitionInStatus(String testId,boolean status) {
-        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.testDefinition.id= ?1 AND ma.published= ?2", testId,status)
+
+    public boolean existTestDefinitionInStatus(String testId, boolean status) {
+        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.testDefinition.id= ?1 AND ma.published= ?2", testId, status)
                 .firstResultOptional()
                 .isPresent();
 
     }
-    public boolean existTestMethodInStatus(String testId,boolean status) {
-        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.testDefinition.testMethod.id= ?1 AND ma.published= ?2", testId,status)
+
+    public boolean existTestMethodInStatus(String testId, boolean status) {
+        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.testDefinition.testMethod.id= ?1 AND ma.published= ?2", testId, status)
                 .firstResultOptional()
                 .isPresent();
 
     }
+
+    @SuppressWarnings("unchecked")
+    public List<MetricTestProjection> fetchMotivationMetricTests(String motivationId, String metricId) {
+        return (List<MetricTestProjection>) getEntityManager()
+                .createNativeQuery("SELECT\n" +
+                        "        t.lodTES,\n" +
+                        "        t.TES,\n" +
+                        "        t.labelTest,\n" +
+                        "        t.descTest,\n" +
+                        "        md.valueBenchmark,\n" +
+                        "        tb.labelBenchmarkType,\n" +
+                        "        tm.labelTestMethod,\n" +
+                        "        td.testQuestion,\n" +
+                        "        td.testParams,\n" +
+                        "        td.toolTip,\n" +
+                        "        ta.labelAlgorithmType,\n" +
+                        "        tmt.labelTypeMetric,\n" +   // Existing selected columns
+                        "        m.lodMTR,\n" +                // Correct placement of the column, no alias needed
+                        "        m.MTR,\n" +                // Correct placement of the column, no alias needed
+                        "        m.labelMetric\n" +                // Correct placement of the column, no alias needed
+
+                        "    FROM\n" +
+                        "        t_Type_Benchmark tb \n" +
+                        "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
+                        "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                        "        INNER JOIN p_Metric_Test mt ON m.lodMTR = mt.metric_lodMTR\n" +
+                        "        INNER JOIN p_Test_Definition td ON mt.test_definition_lodTDF = td.lodTDF\n" +
+                        "        INNER JOIN t_TestMethod tm ON td.lodTME = tm.lodTME\n" +
+                        "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
+                        "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
+                        "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
+                        "    WHERE\n" +
+                        "        md.motivation_lodMTV = :motivationId\n" +
+                        "       AND  md.metric_lodMTR = :metricId\n" +
+                        "        AND mt.motivation_lodMTV = :motivationId\n" +
+                        "        AND mt.metric_lodMTR = :metricId\n" +
+                        "        AND m.lodMTR = :metricId\n" +
+                        "    ORDER BY\n" +
+                        "m.MTR;", "detailed-metric")
+                .setParameter("motivationId", motivationId)
+                .setParameter("metricId", metricId)
+                .getResultList();
+    }
+
 }
