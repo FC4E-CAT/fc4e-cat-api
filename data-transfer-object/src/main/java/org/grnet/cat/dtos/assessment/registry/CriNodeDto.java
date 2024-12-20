@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.grnet.cat.dtos.registry.template.MetricNode;
-import org.grnet.cat.dtos.registry.template.Node;
 
 @JsonPropertyOrder({ "id", "name", "description", "imperative", "metric" })
 @Getter

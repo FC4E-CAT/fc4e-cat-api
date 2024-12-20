@@ -5,8 +5,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.MetricTestJunction;
 import org.grnet.cat.entities.registry.TestDefinition;
 import org.grnet.cat.repositories.Repository;
+
+import java.util.Optional;
 
 @ApplicationScoped
 public class TestDefinitionRepository implements Repository<TestDefinition, String> {
@@ -31,4 +34,10 @@ public class TestDefinitionRepository implements Repository<TestDefinition, Stri
 
         return pageable;
     }
-}
+
+    public Optional<TestDefinition> fetchTestDefinitionByTest(String testId){
+            return find("FROM TestDefinition t WHERE t.lodTES = ?1",testId)
+                    .firstResultOptional();
+        }
+    }
+

@@ -23,7 +23,7 @@ public class TemplateTestNode extends TestNode{
     private List<String> urls;
 
     public TemplateTestNode(String id, String name, String description, String type, List<String> urls, String text, String params, String toolTip) {
-        super(id, name, description, type, text, params, toolTip);
+        super( id, name, description, type, text, params, toolTip);
         this.urls = urls;
     }
 }
