@@ -43,6 +43,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#400](https://github.com/FC4E-CAT/fc4e-cat-api/pull/400) 
 
 - [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship
+- [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695: Implement GET and PUT /metric - definition by Motivation API Endpoint
 
 ### Fix
 

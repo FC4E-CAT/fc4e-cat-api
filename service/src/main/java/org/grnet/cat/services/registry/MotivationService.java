@@ -10,8 +10,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.MetricTestResponseDto;
-import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
+import org.grnet.cat.dtos.registry.*;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
@@ -27,7 +26,6 @@ import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
-import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.grnet.cat.repositories.registry.*;
@@ -554,11 +552,61 @@ public class MotivationService {
     }
 
 
+    @Transactional
+    public List<String> updateMetricDefinitionRelation(String motivationId, Set<MetricDefinitionRequest> request, String userId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        removeMetricDefinitionRelationship(motivationId, request, resultMessages);
+
+        request.stream().iterator().forEachRemaining(req -> {
+
+            var junction = principleCriterionRepository.findByMotivationAndPrincipleAndCriterionAndVersion(motivationId, req.metricId, req.typeBenchmarkId, 1);
+
+            if (junction.isPresent()) {
+
+                var existingJunction = junction.get();
+                existingJunction.setLastTouch(Timestamp.from(Instant.now()));
+                existingJunction.setPopulatedBy(userId);
+                resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully updated.");
+            } else {
+
+                var metDef = new MetricDefinitionJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                        Panache.getEntityManager().getReference(Metric.class, req.metricId),
+                        Panache.getEntityManager().getReference(TypeBenchmark.class, req.typeBenchmarkId),
+                        req.valueBenchmark,
+                        motivationId,
+                        1,
+                        (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
+                        userId,
+                        Timestamp.from(Instant.now())
+                );
+
+                metricDefinitionRepository.persist(metDef);
+                resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully added to Motivation.");
+            }
+        });
+
+        return resultMessages;
+    }
+
+    public PageResource<MetricDefinitionExtendedResponse> getMetricDefinitionRelation(String motivationId, int page, int size, UriInfo uriInfo) {
+
+        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId, page, size);
+
+        var metricDefinitionResponse = MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponses(metricDefinition.list());
+
+        return new PageResource<>(metricDefinition, metricDefinitionResponse, uriInfo);
+    }
+
+
+
+
     /**
-     * Creates a new relationship between principle, criterion, and motivation.
+     * Creates a new relationship between metric, test, and motivation.
      *
      * @param motivationId the ID of the motivation.
-     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param request      the list of relationships containing metric and test IDs.
      * @param userId       the ID of the user performing the action.
      */
     @Transactional
@@ -602,10 +650,10 @@ public class MotivationService {
 
 
     /**
-     * Updates an existing relationship between principle, criterion, and motivation.
+     * Updates an existing relationship between metric, test, and motivation.
      *
      * @param motivationId the ID of the motivation.
-     * @param request      the list of relationships containing principle and criterion IDs.
+     * @param request      the list of relationships containing metric and test IDs.
      * @param userId       the ID of the user performing the action.
      */
     @Transactional
@@ -641,11 +689,31 @@ public class MotivationService {
                 metricTest.setLastTouch(Timestamp.from(Instant.now()));
 
                 metricTestRepository.persist(metricTest);
-                resultMessages.add("principle-criterion with ids :: " + req.metricId + " - " + req.testId + " successfully added to Motivation.");
+                resultMessages.add("metric-test with ids :: " + req.metricId + " - " + req.testId + " successfully added to Motivation.");
             }
         });
 
         return resultMessages;
+    }
+
+    private void removeMetricDefinitionRelationship(String motivationId, Set<MetricDefinitionRequest> request, List<String> resultMessages) {
+
+        var mdList = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId);
+
+        mdList
+                .iterator()
+                .forEachRemaining(md -> {
+
+                    var temp = new MetricDefinitionRequest();
+                    temp.metricId = md.getId().getMetricId();
+                    temp.typeBenchmarkId = md.getId().getTypeBenchmarkId();
+
+                    if (!request.contains(temp)) {
+
+                        metricDefinitionRepository.delete(md);
+                        resultMessages.add("principle-criterion with ids :: " + temp.metricId + " - " + temp.typeBenchmarkId + " removed from Motivation.");
+                    }
+                });
     }
 
     private void removeMetricTestRelation(String motivationId, Set<MetricTestRequest> request, List<String> resultMessages) {
@@ -668,4 +736,7 @@ public class MotivationService {
                     }
                 });
     }
+
+
+
 }

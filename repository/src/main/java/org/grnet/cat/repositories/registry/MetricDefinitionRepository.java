@@ -7,9 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.MetricDefinitionJunction;
-import org.grnet.cat.entities.registry.MetricTestJunction;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
