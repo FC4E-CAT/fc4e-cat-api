@@ -8,6 +8,8 @@ import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.repositories.Repository;
 
+import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
+
 @ApplicationScoped
 public class TestRepository implements Repository<Test, String> {
 
@@ -30,5 +32,13 @@ public class TestRepository implements Repository<Test, String> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    public boolean notUnique(String fieldName, String value) {
+        String query = "select count(c) from Test c where lower(c." + fieldName + ") = lower(?1)";
+        long count = getEntityManager().createQuery(query, Long.class)
+                .setParameter(1, value)
+                .getSingleResult();
+        return count > 0;
     }
 }

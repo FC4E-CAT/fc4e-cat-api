@@ -8,9 +8,8 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.test.TestDefinitionRequestDto;
-import org.grnet.cat.dtos.registry.test.TestDefinitionResponseDto;
-import org.grnet.cat.dtos.registry.test.TestDefinitionUpdateDto;
+import org.grnet.cat.dtos.registry.test.*;
+import org.grnet.cat.entities.registry.TestDefinition;
 import org.grnet.cat.entities.registry.TestMethod;
 import org.grnet.cat.mappers.registry.TestDefinitionMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
@@ -49,21 +48,42 @@ public class TestDefinitionService {
     /**
      * Creates a new TestDefinition item.
      *
-     * @param userId The user creating the TestDefinition.
-     * @param testDefinitionRequestDto The TestDefinition request data.
+     * @param userId The user creating the TestAndTestDefinitionRequest.
+     * @param request The TestAndTestDefinitionRequest request data.
      * @return The created TestDefinition DTO.
      */
     @Transactional
-    public TestDefinitionResponseDto createTestDefinition(String userId, TestDefinitionRequestDto testDefinitionRequestDto) {
+    public TestDefinitionResponseDto createTestDefinition(String userId, TestDefinitionRequestDto request) {
 
-        var testDefinition = TestDefinitionMapper.INSTANCE.testDefinitionToEntity(testDefinitionRequestDto);
+        var testDefinition = TestDefinitionMapper.INSTANCE.testDefinitionToEntity(request);
 
         testDefinition.setPopulatedBy(userId);
-        testDefinition.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, testDefinitionRequestDto.testMethodId));
+        testDefinition.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
 
         testDefinitionRepository.persist(testDefinition);
 
-        return TestDefinitionMapper.INSTANCE.testDefinitionToDto(testDefinition);
+        return TestDefinitionMapper.INSTANCE.testDefinitionToDto(testDefinition);    }
+
+
+    /**
+     * Creates a new TestDefinition item.
+     *
+     * @param userId The user creating the TestAndTestDefinitionRequest.
+     * @param request The TestAndTestDefinitionRequest request data.
+     * @return The created TestDefinition DTO.
+     */
+    @Transactional
+    public TestDefinition createTestDefinition(String userId, TestDefinitionRequestDto request, String lodTest) {
+
+        var testDefinition = TestDefinitionMapper.INSTANCE.testDefinitionToEntity(request);
+
+        testDefinition.setPopulatedBy(userId);
+        testDefinition.setLodTES(lodTest);
+        testDefinition.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
+
+        testDefinitionRepository.persist(testDefinition);
+
+        return testDefinition;
     }
 
     /**

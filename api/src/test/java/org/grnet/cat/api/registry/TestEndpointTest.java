@@ -8,9 +8,7 @@ import org.grnet.cat.api.endpoints.registry.TestEndpoint;
 import org.grnet.cat.dtos.AutomatedCheckResponse;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.AutomatedCheckRequest;
-import org.grnet.cat.dtos.registry.test.TestRequestDto;
-import org.grnet.cat.dtos.registry.test.TestResponseDto;
-import org.grnet.cat.dtos.registry.test.TestUpdateDto;
+import org.grnet.cat.dtos.registry.test.*;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -44,25 +42,38 @@ public class TestEndpointTest extends KeycloakTest {
 
         register("admin");
 
-        var request = new TestRequestDto();
-        request.TES = "T12";
-        request.labelTest = "Performance Test";
-        request.descTest = "This Test measures performance.";
+        var createRequest = new TestAndTestDefinitionRequest();
+
+        var testRequest = new TestRequestDto();
+        testRequest.TES = "TCREATE";
+        testRequest.labelTest =  "Performance Test";
+        testRequest.descTest = "This Test measures performance.";
+
+        var testDefinitionRequest = new TestDefinitionRequestDto();
+        testDefinitionRequest.testMethodId = "pid_graph:B733A7D5";
+        testDefinitionRequest.labelTestDefinition = "Performance Test Definition";
+        testDefinitionRequest.paramType = "onscreen";
+        testDefinitionRequest.testParams = "userAuth|evidence";
+        testDefinitionRequest.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
+        testDefinitionRequest.toolTip =  "\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\"|\"A document, web page, or publication describing provisions\"";
+
+        createRequest.setTestRequest(testRequest);
+        createRequest.setTestDefinitionRequest(testDefinitionRequest);
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(request)
+                .body(createRequest)
                 .contentType(ContentType.JSON)
                 .post("/")
                 .then()
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(TestAndTestDefinitionResponse.class);
 
-        assertEquals("Performance Test", response.labelTest);
-        assertEquals("This Test measures performance.", response.descTest);
+        assertEquals("Performance Test", response.testResponse.labelTest);
+        assertEquals("This Test measures performance.", response.testResponse.descTest);
     }
 
     @Test
@@ -70,10 +81,23 @@ public class TestEndpointTest extends KeycloakTest {
 
         register("admin");
 
-        var createRequest = new TestRequestDto();
-        createRequest.TES = "T12";
-        createRequest.labelTest = "Performance Test";
-        createRequest.descTest = "This Test measures performance.";
+        var createRequest = new TestAndTestDefinitionRequest();
+
+        var testRequest = new TestRequestDto();
+        testRequest.TES = "TGET";
+        testRequest.labelTest =  "Performance Test";
+        testRequest.descTest = "This Test measures performance.";
+
+        var testDefinitionRequest = new TestDefinitionRequestDto();
+        testDefinitionRequest.testMethodId = "pid_graph:B733A7D5";
+        testDefinitionRequest.labelTestDefinition = "Performance Test Definition";
+        testDefinitionRequest.paramType = "onscreen";
+        testDefinitionRequest.testParams = "userAuth|evidence";
+        testDefinitionRequest.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
+        testDefinitionRequest.toolTip =  "\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\"|\"A document, web page, or publication describing provisions\"";
+
+        createRequest.setTestRequest(testRequest);
+        createRequest.setTestDefinitionRequest(testDefinitionRequest);
 
         var createdTest = given()
                 .auth()
@@ -85,20 +109,20 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(TestAndTestDefinitionResponse.class);
 
         var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/{id}", createdTest.id)
+                .get("/{id}", createdTest.testResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(TestAndTestDefinitionResponse.class);
 
-        assertEquals(response.TES, "T12");
+        assertEquals(response.testResponse.TES, "TGET");
     }
 
     @Test
@@ -125,10 +149,23 @@ public class TestEndpointTest extends KeycloakTest {
 
         register("admin");
 
-        var createRequest = new TestRequestDto();
-        createRequest.TES = "T12";
-        createRequest.labelTest = "Performance Test";
-        createRequest.descTest = "This Test measures performance.";
+        var createRequest = new TestAndTestDefinitionRequest();
+
+        var testRequest = new TestRequestDto();
+        testRequest.TES = "TCREATE1";
+        testRequest.labelTest =  "Performance Test";
+        testRequest.descTest = "This Test measures performance.";
+
+        var testDefinitionRequest = new TestDefinitionRequestDto();
+        testDefinitionRequest.testMethodId = "pid_graph:B733A7D5";
+        testDefinitionRequest.labelTestDefinition = "Performance Test Definition";
+        testDefinitionRequest.paramType = "onscreen";
+        testDefinitionRequest.testParams = "userAuth|evidence";
+        testDefinitionRequest.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
+        testDefinitionRequest.toolTip =  "\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\"|\"A document, web page, or publication describing provisions\"";
+
+        createRequest.setTestRequest(testRequest);
+        createRequest.setTestDefinitionRequest(testDefinitionRequest);
 
         var createdTest = given()
                 .auth()
@@ -140,10 +177,10 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(TestAndTestDefinitionResponse.class);
 
         var updateRequest = new TestUpdateDto();
-        updateRequest.TES = "T12-Updated";
+        updateRequest.TES = "TCREATE1-Updated";
         updateRequest.labelTest = "Updated Performance Test";
         updateRequest.descTest = "Updated description for performance test.";
 
@@ -152,14 +189,14 @@ public class TestEndpointTest extends KeycloakTest {
                 .oauth2(getAccessToken("admin"))
                 .body(updateRequest)
                 .contentType(ContentType.JSON)
-                .put("/{id}", createdTest.id)
+                .put("/{id}", createdTest.testResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TestResponseDto.class);
 
-        assertEquals("T12-Updated", updatedResponse.TES);
+        assertEquals("TCREATE1-Updated", updatedResponse.TES);
         assertEquals("Updated Performance Test", updatedResponse.labelTest);
         assertEquals("Updated description for performance test.", updatedResponse.descTest);
     }
@@ -169,10 +206,23 @@ public class TestEndpointTest extends KeycloakTest {
 
         register("admin");
 
-        var createRequest = new TestRequestDto();
-        createRequest.TES = "T12";
-        createRequest.labelTest = "Performance Test";
-        createRequest.descTest = "This Test measures performance.";
+        var createRequest = new TestAndTestDefinitionRequest();
+
+        var testRequest = new TestRequestDto();
+        testRequest.TES = "TDELETE";
+        testRequest.labelTest =  "Performance Test";
+        testRequest.descTest = "This Test measures performance.";
+
+        var testDefinitionRequest = new TestDefinitionRequestDto();
+        testDefinitionRequest.testMethodId = "pid_graph:B733A7D5";
+        testDefinitionRequest.labelTestDefinition = "Performance Test Definition";
+        testDefinitionRequest.paramType = "onscreen";
+        testDefinitionRequest.testParams = "userAuth|evidence";
+        testDefinitionRequest.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
+        testDefinitionRequest.toolTip =  "\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\"|\"A document, web page, or publication describing provisions\"";
+
+        createRequest.setTestRequest(testRequest);
+        createRequest.setTestDefinitionRequest(testDefinitionRequest);
 
         var createdTest = given()
                 .auth()
@@ -184,13 +234,13 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(TestAndTestDefinitionResponse.class);
 
         given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .delete("/{id}", createdTest.id)
+                .delete("/{id}", createdTest.testResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200);
@@ -199,7 +249,7 @@ public class TestEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(getAccessToken("admin"))
                 .contentType(ContentType.JSON)
-                .get("/{id}", createdTest.id)
+                .get("/{id}", createdTest.testResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(404);
