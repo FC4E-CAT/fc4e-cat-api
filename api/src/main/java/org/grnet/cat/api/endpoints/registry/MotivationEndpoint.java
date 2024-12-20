@@ -1640,8 +1640,8 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
-            summary = "Create a new relationship between motivation, principles and criteria.",
-            description = "Create a new relationship between motivation, principles and criteria.")
+            summary = "Create a new relationship between motivation, criteria and metrics.",
+            description = "Create a new relationship between motivation, criteria and metrics.")
     @APIResponse(
             responseCode = "200",
             description = "Relationship created successfully.",
@@ -1685,7 +1685,7 @@ public class MotivationEndpoint {
                                                          @Valid
                                                          @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
                                                          @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
-                                                         @NotEmpty(message = "Criteria-Metrics list can not be empty.") Set<@Valid CriterionMetricRequest> request) {
+                                                         @NotEmpty(message = "Criteria-Metrics list can not be empty.") Set<@Valid MultipleCriterionMetricRequest> request) {
 
         var messages = criterionMetricService.createNewCriteriaMetricsRelationship(id, request, utility.getUserUniqueIdentifier());
         String result = String.join(StringUtils.LF, messages);
@@ -1704,12 +1704,6 @@ public class MotivationEndpoint {
     @APIResponse(
             responseCode = "200",
             description = "Relationship updated successfully.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid request payload.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -1744,7 +1738,7 @@ public class MotivationEndpoint {
                                                       @Valid
                                                       @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
                                                       @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
-                                                      Set<@Valid CriterionMetricRequest> request) {
+                                                      Set<@Valid MultipleCriterionMetricRequest> request) {
 
         if (Objects.isNull(request)) {
 
@@ -1817,6 +1811,197 @@ public class MotivationEndpoint {
         var response = criterionMetricService.getCriteriaMetricsRelationship(id, page - 1, size, uriInfo);
 
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get a relationship between motivation, criterion and metric.",
+            description = "Get a relationship between motivation, criterion and metric.")
+    @APIResponse(
+            responseCode = "200",
+            description = "A relationship between motivation, criterion and metric.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = CriterionMetricResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/criteria/{criterion-id}/metrics")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCriterionMetricRelationship(@Parameter(
+            description = "The ID of the Motivation to get a relationship.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("id")
+                                                         @Valid
+                                                         @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String id,
+                                                         @Parameter(
+                                                                 description = "The ID of the criterion to get a relationship.",
+                                                                 required = true,
+                                                                 example = "pid_graph:A5A41F03",
+                                                                 schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("criterion-id")
+                                                         @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String criterionId) {
+
+        var response = criterionMetricService.getCriterionMetricRelationship(id, criterionId);
+
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Create a new relationship between motivation, criterion and metric.",
+            description = "Create a new relationship between motivation, criterion and metric.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/criteria/{criterion-id}/metrics")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createNewCriterionMetricRelationship(@Parameter(
+            description = "The ID of the Motivation to create a relationship.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("id")
+                                                         @Valid
+                                                         @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+                                                         @Parameter(
+                                                                 description = "The ID of the criterion to create a relationship.",
+                                                                 required = true,
+                                                                 example = "pid_graph:A5A41F03",
+                                                                 schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("criterion-id")
+                                                         @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String criterionId,
+                                                         @Valid @NotNull(message = "The request body is empty.") CriterionMetricRequest request) {
+
+        criterionMetricService.createNewCriterionMetricRelationship(id, criterionId, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = "criterion-metric with ids :: " + criterionId + " - " + request.metricId + " successfully added to Motivation.";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update a relationship between motivation, criterion and metric.",
+            description = "Update a relationship between motivation, criterion and metric.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Relationship updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/criteria/{criterion-id}/metrics")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCriterionMetricRelationship(@Parameter(
+            description = "The ID of the Motivation to create a relationship.",
+            required = true,
+            example = "pid_graph:3E109BBA",
+            schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("id")
+                                                         @Valid
+                                                         @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+                                                         @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+                                                         @Parameter(
+                                                                 description = "The ID of the criterion to create a relationship.",
+                                                                 required = true,
+                                                                 example = "pid_graph:A5A41F03",
+                                                                 schema = @Schema(type = SchemaType.STRING))
+                                                         @PathParam("criterion-id")
+                                                         @Valid @NotFoundEntity(repository = CriterionRepository.class, message = "There is no Criterion with the following id:") String criterionId,
+                                                         @Valid CriterionMetricRequest request) {
+
+
+        List<CriterionMetricRequest> list = null;
+
+        if(Objects.isNull(request)){
+
+            list = new ArrayList<>();
+        } else {
+
+            list = new ArrayList<>();
+            list.add(request);
+        }
+
+        var messages = criterionMetricService.updatesNewCriterionMetricRelationship(id, criterionId, list, utility.getUserUniqueIdentifier());
+
+        String result = String.join(StringUtils.LF, messages);
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        informativeResponse.message = result;
+
+        return Response.ok().entity(informativeResponse).build();
     }
 
     @Tag(name = "Motivation")
@@ -2312,17 +2497,17 @@ public class MotivationEndpoint {
         }
     }
 
-    public static class PageableCriteriaMetricJunctionResponse extends PageResource<PrincipleCriterionResponseDto> {
+    public static class PageableCriteriaMetricJunctionResponse extends PageResource<CriterionMetricResponseDto> {
 
-        private List<PrincipleCriterionResponseDto> content;
+        private List<CriterionMetricResponseDto> content;
 
         @Override
-        public List<PrincipleCriterionResponseDto> getContent() {
+        public List<CriterionMetricResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<PrincipleCriterionResponseDto> content) {
+        public void setContent(List<CriterionMetricResponseDto> content) {
             this.content = content;
         }
     }
