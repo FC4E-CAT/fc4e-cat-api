@@ -46,7 +46,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation.
 - [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650 Automated Tests for ARCC-G071.
 - [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-720 Create Endpoint to Update Metric and Metric Definition.
-
+- [#415](https://github.com/FC4E-CAT/fc4e-cat-api/pull/415) CAT-641 Should we keep extra info on automated tests.
 ### Fix
 
 - [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
@@ -86,7 +86,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703 Provide MTR id in motivation/{id}/metric-definition call.
 - [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702 Pagination info in motivation-metric-tests call.
 - [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706 Give the ability to update tests with the same info as CREATE.
-- [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-618 Change metadata xml validation automated checks 
+- [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-718 Change metadata xml validation automated checks 
 
 
 ### Removed

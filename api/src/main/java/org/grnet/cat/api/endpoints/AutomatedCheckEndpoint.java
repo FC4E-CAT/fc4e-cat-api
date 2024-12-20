@@ -128,7 +128,7 @@ public class AutomatedCheckEndpoint {
         if (type != null && !ArccTestType.getTypes().contains(type)) {
             throw new BadRequestException("The value " + type + " is not a valid test type. Valid type values are: " + Arrays.toString(ArccTestType.values()));
         }
-        var response = arccValidationService.validateMetadataByTestId(type,request);
+        var response = arccValidationService.validateMetadataByTestType(type,request);
 
         return Response.ok().entity(response).build();
     }
