@@ -79,6 +79,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status
 - [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix)
 - [#406](https://github.com/FC4E-CAT/fc4e-cat-api/pull/406) CAT-698 Support test-metric relations of a specific metric in a motivation #406
+- [#407](https://github.com/FC4E-CAT/fc4e-cat-api/pull/407) CAT-697: Update /registry/tests Endpoints to Include All test and test-definition Fields
 
 
 

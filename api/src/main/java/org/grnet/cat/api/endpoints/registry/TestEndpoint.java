@@ -25,9 +25,7 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.test.TestRequestDto;
-import org.grnet.cat.dtos.registry.test.TestResponseDto;
-import org.grnet.cat.dtos.registry.test.TestUpdateDto;
+import org.grnet.cat.dtos.registry.test.*;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.grnet.cat.services.registry.TestService;
@@ -60,7 +58,7 @@ public class TestEndpoint {
             description = "The corresponding Test item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class))
+                    implementation = TestAndTestDefinitionResponse.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -100,7 +98,7 @@ public class TestEndpoint {
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
-        var response = testService.getTestById(id);
+        var response = testService.getTestAndTestDefinitionById(id);
 
         return Response.ok(response).build();
     }
@@ -146,12 +144,12 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response createTest(
-            @Valid @NotNull(message = "The request body is empty.") TestRequestDto testRequestDto, @Context UriInfo uriInfo) {
+            @Valid @NotNull(message = "The request body is empty.") TestAndTestDefinitionRequest request, @Context UriInfo uriInfo) {
 
-        var test = testService.createTest(utility.getUserUniqueIdentifier(), testRequestDto);
+        var test = testService.createTestAndTestDefinition(utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.id)).build()).entity(test).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.testResponse.id)).build()).entity(test).build();
     }
 
     @Tag(name = "Test")
@@ -329,7 +327,7 @@ public class TestEndpoint {
             @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var tests = testService.getTestlistAll(page - 1, size, uriInfo);
+        var tests = testService.getTestAndTestDefinitionListAll(page - 1, size, uriInfo);
 
         return Response.ok().entity(tests).build();
     }

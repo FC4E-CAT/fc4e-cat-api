@@ -16,25 +16,30 @@ public interface TestDefinitionMapper {
 
     TestDefinitionMapper INSTANCE = Mappers.getMapper(TestDefinitionMapper.class);
 
-    @IterableMapping(qualifiedByName="map")
+    @IterableMapping(qualifiedByName="mapTestDefinition")
     List<TestDefinitionResponseDto> testDefinitionToDtos(List<TestDefinition> entities);
 
-    @Named("map")
+    @Named("mapTestDefinition")
     @Mapping(target = "testMethodId", expression = "java(testDefinition.getTestMethod().getId())")
     @Mapping(target = "lodTESV", ignore = true)
     @Mapping(target = "testParams", expression = "java(TestParamsTransformer.transformTestParams(testDefinition.getTestParams()))")
     TestDefinitionResponseDto testDefinitionToDto(TestDefinition testDefinition);
 
     @Named("mapWithExpression")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "populatedBy", ignore = true)
+//    @Mapping(target = "id", ignore = true)
+//    @Mapping(target = "labelTestDefinition", ignore = true)
+//    @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
-    @Mapping(target = "testMethod", ignore = true)
-    @Mapping(target = "lodMTV", ignore = true)
-    @Mapping(target = "lodTES", ignore = true)
-    @Mapping(target = "lodDFV", ignore = true)
-    @Mapping(target = "upload", ignore = true)
-    @Mapping(target = "dataType", ignore = true)
+//    @Mapping(target = "testMethod", ignore = true)
+//    @Mapping(target = "lodMTV", ignore = true)
+//    @Mapping(target = "lodTES", ignore = true)
+//    @Mapping(target = "lodDFV", ignore = true)
+//    @Mapping(target = "upload", ignore = true)
+//    @Mapping(target = "dataType", ignore = true)
+//    @Mapping(target = "toolTip", ignore = true)
+//    @Mapping(target = "testQuestion", ignore = true)
+//    @Mapping(target = "testParams", ignore = true)
+//    @Mapping(target = "paramType", ignore = true)
     TestDefinition testDefinitionToEntity(TestDefinitionRequestDto request);
 
     @Mapping(target = "labelTestDefinition", expression = "java(StringUtils.isNotEmpty(request.labelTestDefinition) ? request.labelTestDefinition : testDefinition.getLabelTestDefinition())")

@@ -6,14 +6,23 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.test.TestRequestDto;
-import org.grnet.cat.dtos.registry.test.TestResponseDto;
-import org.grnet.cat.dtos.registry.test.TestUpdateDto;
+import org.grnet.cat.dtos.registry.test.*;
+import org.grnet.cat.entities.registry.Test;
+import org.grnet.cat.entities.registry.TestDefinition;
+import org.grnet.cat.exceptions.UniqueConstraintViolationException;
+import org.grnet.cat.mappers.registry.TestDefinitionMapper;
 import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
+import org.grnet.cat.repositories.registry.TestDefinitionRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.jboss.logging.Logger;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
 
 @ApplicationScoped
 public class TestService {
@@ -22,6 +31,12 @@ public class TestService {
     TestRepository testRepository;
     @Inject
     MetricTestRepository metricTestRepository;
+
+    @Inject
+    TestDefinitionService testDefinitionService;
+
+    @Inject
+    TestDefinitionRepository testDefinitionRepository;
 
     private static final Logger LOG = Logger.getLogger(TestService.class);
 
@@ -38,23 +53,45 @@ public class TestService {
         return TestMapper.INSTANCE.testToDto(test);
     }
 
+
+
+    /**
+     * Retrieves a specific Test item and related Test Definition item by its ID.
+     *
+     * @param id The unique ID of the Test item.
+     * @return The corresponding Test DTO.
+     */
+    public TestAndTestDefinitionResponse getTestAndTestDefinitionById(String id) {
+
+        var test = testRepository.findById(id);
+        var testDefinition = testDefinitionRepository.fetchTestDefinitionByTestId(id);
+
+        return TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+    }
+
+
+
     /**
      * Creates a new Test item.
      *
      * @param userId         The user creating the Test.
-     * @param testRequestDto The Test request data.
+     * @param request The Test and Test Definition request data.
      * @return The created Test DTO.
      */
     @Transactional
-    public TestResponseDto createTest(String userId, TestRequestDto testRequestDto) {
+    public TestAndTestDefinitionResponse createTestAndTestDefinition(String userId, TestAndTestDefinitionRequest request) {
 
-        var test = TestMapper.INSTANCE.testToEntity(testRequestDto);
+        if (testRepository.notUnique("TES", request.getTestRequest().TES.toUpperCase())) {
+            throw new UniqueConstraintViolationException("tes", request.getTestRequest().TES.toUpperCase());
+        }
 
+        var test = TestMapper.INSTANCE.testToEntity(request.getTestRequest());
         test.setPopulatedBy(userId);
-
         testRepository.persist(test);
 
-        return TestMapper.INSTANCE.testToDto(test);
+        var testDefinition = testDefinitionService.createTestDefinition(userId, request.getTestDefinitionRequest(), test.getId());
+
+        return TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
     }
 
     /**
@@ -109,4 +146,32 @@ public class TestService {
 
         return new PageResource<>(testPage, testDtos, uriInfo);
     }
+
+    public PageResource<TestAndTestDefinitionResponse> getTestAndTestDefinitionListAll(int page, int size, UriInfo uriInfo) {
+
+        var testPage = testRepository.fetchTestByPage(page, size);
+        var tests = testPage.list();
+
+        if (tests.isEmpty()) {
+            return new PageResource<>(testPage, List.of(), uriInfo);
+        }
+        var testIds = tests.stream()
+                .map(Test::getId)
+                .collect(Collectors.toList());
+
+        var testDefinitions = testDefinitionRepository.fetchTestDefinitionsByTestIds(testIds);
+        var testDefinitionMap = testDefinitions.stream()
+                .collect(Collectors.toMap(TestDefinition::getLodTES, td -> td));
+
+        var dtoList = tests.stream()
+                .map(test -> {
+                    TestDefinition testDefinition = testDefinitionMap.get(test.getId());
+                    return TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(testPage, dtoList, uriInfo);
+    }
+
+
 }
