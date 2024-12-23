@@ -80,6 +80,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix)
 - [#406](https://github.com/FC4E-CAT/fc4e-cat-api/pull/406) CAT-698 Support test-metric relations of a specific metric in a motivation #406
 - [#407](https://github.com/FC4E-CAT/fc4e-cat-api/pull/407) CAT-697: Update /registry/tests Endpoints to Include All test and test-definition Fields
+- [#409](https://github.com/FC4E-CAT/fc4e-cat-api/pull/409) CAT-699 Cleanup DB: in benchmark type Binary-Binary has a whitespace at the end
 
 
 
