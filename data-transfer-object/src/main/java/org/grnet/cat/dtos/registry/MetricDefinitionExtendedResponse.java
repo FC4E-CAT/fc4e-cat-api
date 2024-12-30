@@ -19,6 +19,15 @@ public class MetricDefinitionExtendedResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "The Metric Name.",
+            example = "MTR1001"
+    )
+    @JsonProperty("metric_mtr")
+    public String metricMtr;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The Metric Label.",
             example = "Versioning Supported"
     )
