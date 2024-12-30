@@ -32,6 +32,7 @@ public interface MetricDefinitionMapper {
 
     @Named("mapToExtendedResponse")
     @Mapping(target = "metricId", expression = "java(metricDefinitionJunction.getMetric().getId())")
+    @Mapping(target = "metricMtr", expression = "java(metricDefinitionJunction.getMetric().getMTR())")
     @Mapping(target = "metricLabel", expression = "java(metricDefinitionJunction.getMetric().getLabelMetric())")
     @Mapping(target = "metricDescription", expression = "java(metricDefinitionJunction.getMetric().getDescrMetric())")
     @Mapping(target = "typeAlgorithmId", expression = "java(metricDefinitionJunction.getMetric().getTypeAlgorithm().getId())")
