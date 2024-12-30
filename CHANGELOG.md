@@ -82,6 +82,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#407](https://github.com/FC4E-CAT/fc4e-cat-api/pull/407) CAT-697: Update /registry/tests Endpoints to Include All test and test-definition Fields
 - [#409](https://github.com/FC4E-CAT/fc4e-cat-api/pull/409) CAT-699 Cleanup DB: in benchmark type Binary-Binary has a whitespace at the end
 - [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703: Provide MTR id in motivation/{id}/metric-definition call
+- [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702: Pagination info in motivation-metric-tests call
 
 
 
