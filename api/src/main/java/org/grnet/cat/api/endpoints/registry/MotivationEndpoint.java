@@ -2079,11 +2079,11 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
-            summary = "Get a list of relations between motivation, metric and tests.",
-            description = "Get a list of relations between motivation, metric and tests.")
+            summary = "Get relation between motivation, metric and tests.",
+            description = "Get relation between motivation, metric and tests.")
     @APIResponse(
             responseCode = "200",
-            description = "A list of relations between motivation, metric and tests.",
+            description = "A relation between motivation, metric and tests.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = DetailedMetricDto.class)))
@@ -2126,22 +2126,10 @@ public class MotivationEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("metric-id")
             @Valid
-            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:")
+            String metricId) {
 
-            @Parameter(name = "page", in = QUERY,
-                    description = "Indicates the page number. Page number must be >= 1.")
-            @DefaultValue("1")
-            @Min(value = 1, message = "Page number must be >= 1.")
-            @QueryParam("page") int page,
-            @Parameter(name = "size", in = QUERY,
-                    description = "The page size.")
-            @DefaultValue("10")
-            @Min(value = 1, message = "Page size must be between 1 and 100.")
-            @Max(value = 100, message = "Page size must be between 1 and 100.")
-            @QueryParam("size") int size,
-            @Context UriInfo uriInfo) {
-
-        var response = motivationService.getMetricTestRelation(id,metricId, page - 1, size, uriInfo);
+        var response = motivationService.getMetricTestRelation(id,metricId);
 
         return Response.ok().entity(response).build();
     }

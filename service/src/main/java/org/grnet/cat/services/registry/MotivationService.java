@@ -681,7 +681,7 @@ public class MotivationService {
         return resultMessages;
     }
 
-    public DetailedMetricDto getMetricTestRelation(String motivationId, String metricId, int page, int size, UriInfo uriInfo) {
+    public DetailedMetricDto getMetricTestRelation(String motivationId, String metricId) {
 
         var metricTest = metricTestRepository.fetchMotivationMetricTests(motivationId, metricId);
         Map<String, MetricNode> metricNodeMap = new HashMap<>();
