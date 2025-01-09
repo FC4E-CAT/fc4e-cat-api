@@ -44,6 +44,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship
 - [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695: Implement GET and PUT /metric - definition by Motivation API Endpoint
 - [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation
+- [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650: Automated Tests for ARCC-G071
 
 ### Fix
 
@@ -83,9 +84,6 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#409](https://github.com/FC4E-CAT/fc4e-cat-api/pull/409) CAT-699 Cleanup DB: in benchmark type Binary-Binary has a whitespace at the end
 - [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703: Provide MTR id in motivation/{id}/metric-definition call
 - [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702: Pagination info in motivation-metric-tests call
-
-
-
 
 ### Removed
 
