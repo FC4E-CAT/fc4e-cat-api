@@ -162,7 +162,7 @@ public class TestEndpoint {
             description = "Subject was updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class)))
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -188,7 +188,7 @@ public class TestEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-    @PUT
+    @PATCH
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Registration
@@ -201,11 +201,15 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestUpdateDto testUpdateDto) {
+            @Valid TestAndTestDefinitionUpdateRequest testUpdateDto) {
 
-        var updatedDto = testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
+        testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
 
-        return Response.ok(updatedDto).build();
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Test was successfully updated.";
+
+        return Response.ok(response).build();
     }
 
     @Tag(name = "Test")
