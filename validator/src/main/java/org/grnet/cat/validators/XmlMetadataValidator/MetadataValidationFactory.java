@@ -1,6 +1,7 @@
 package org.grnet.cat.validators.XmlMetadataValidator;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import org.grnet.cat.enums.ArccTestType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -16,27 +17,27 @@ public class MetadataValidationFactory {
 
     public MetadataValidationFactory() {
         //MD-1a | Administrative Contact Details
-        validatorAttributes.put("pid_graph:333489E8", Map.of(
+        validatorAttributes.put(ArccTestType.MD1a.getType(), Map.of(
                 "namespace", "urn:oasis:names:tc:SAML:2.0:metadata",
                 "contactType", "administrative",
                 "emailAddressTag", "EmailAddress"
         ));
         // MD-1b1 | Operational Security Contact Email
-        validatorAttributes.put("pid_graph:391489E8", Map.of(
+        validatorAttributes.put(ArccTestType.MD1b1.getType(), Map.of(
                 "namespace", "urn:oasis:names:tc:SAML:2.0:metadata",
                 "contactType", "other",
                 "remdContactType", "http://refeds.org/metadata/contactType/security",
                 "emailAddressTag", "EmailAddress"
         ));
         // MD-1b2 | Operational Security Contact Phone Number
-        validatorAttributes.put("pid_graph:341399E8", Map.of(
+        validatorAttributes.put(ArccTestType.MD1b2.getType(), Map.of(
                 "namespace", "urn:oasis:names:tc:SAML:2.0:metadata",
                 "contactType", "other",
                 "telephoneNumberTag", "TelephoneNumber"
         ));
-        validationRules.put("pid_graph:333489E8", this::validateMd1a);
-        validationRules.put("pid_graph:391489E8", this::validateMd1b1);
-        validationRules.put("pid_graph:341399E8", this::validateMd1b2);
+        validationRules.put(ArccTestType.MD1a.getType(), this::validateMd1a);
+        validationRules.put(ArccTestType.MD1b1.getType(), this::validateMd1b1);
+        validationRules.put(ArccTestType.MD1b2.getType(), this::validateMd1b2);
     }
 
     public Map<String, String> getAttributes(String testId) {

@@ -86,6 +86,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703 Provide MTR id in motivation/{id}/metric-definition call.
 - [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702 Pagination info in motivation-metric-tests call.
 - [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706 Give the ability to update tests with the same info as CREATE.
+- [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-618 Change metadata xml validation automated checks 
+
 
 ### Removed
 

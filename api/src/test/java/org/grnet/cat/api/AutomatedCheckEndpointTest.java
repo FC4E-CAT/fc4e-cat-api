@@ -131,69 +131,74 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
         assertEquals(403, error.code);
     }
 
-//    @Test
-//    public void testForbiddenUser() {
-//        register("identified");
-//        var request=new AutomatedCheckRequest();
-//        request.url="https://google.com";
-//
-//        var error = given()
-//                .auth()
-//                .oauth2(getAccessToken("identified"))
-//                .contentType(ContentType.JSON)
-//                .body(request)
-//                .post("/check-url")
-//                .then()
-//                .assertThat()
-//                .statusCode(403)
-//                .extract()
-//                .as(InformativeResponse.class);
-//        assertEquals(403, error.code);
-//    }
 @Test
 public void testMd1aValid() {
+    register("admin");
 
     var request = new ArccValidationRequest();
-    request.testId = "pid_graph:333489E8"; // MD-1a Test ID
+   // request.testId = "pid_graph:333489E8"; // MD-1a Test ID
     request.metadataUrl = "https://meta.sram.surf.nl/metadata/proxy_sp.xml"; // Replace with actual accessible path or use in-memory XML
 
-    var response = arccValidationService.validateMetadataByTestId(request);
+    var response = given()
+            .auth()
+            .oauth2(getAccessToken("admin"))
+            .body(request)
+            .contentType(ContentType.JSON)
+            .post("/validate-metadata/MD-1a")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract()
+            .as(ArccValidationResponse.class);
 
-    assertTrue(response.isSchemaCompliant);
-    assertTrue(response.isTestCompliant);
-    assertEquals("MD-1a validation passed.", response.feedback);
-    assertEquals("MD-1a", response.name);
-    assertEquals("Administrative Contact Details", response.label);
-}
+
+    assertEquals(true, response.isValid);
+    assertEquals(200, response.code);
+  }
 
     @Test
     public void testMd1b1Valid() {
+        register("admin");
+
         var request = new ArccValidationRequest();
-        request.testId = "pid_graph:391489E8"; // MD-1b1 Test ID
+      //  request.testId = "pid_graph:391489E8"; // MD-1b1 Test ID
         request.metadataUrl = "https://meta.sram.surf.nl/metadata/proxy_sp.xml";
 
-        var response = arccValidationService.validateMetadataByTestId(request);
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/validate-metadata/MD-1a")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ArccValidationResponse.class);
+        assertEquals(true, response.isValid);
+        assertEquals(200, response.code);
 
-        assertTrue(response.isSchemaCompliant);
-        assertTrue(response.isTestCompliant);
-        assertEquals("MD-1b1 validation passed.", response.feedback);
-        assertEquals("MD-1b1", response.name);
-        assertEquals("Operational Security Contact Email", response.label);
-    }
+   }
 
     @Test
     public void testMd1b2Invalid_NoTelephoneNumber() {
-
+        register("admin");
         var request = new ArccValidationRequest();
-        request.testId = "pid_graph:341399E8"; // MD-1b2 Test ID
-        request.metadataUrl = "https://meta.sram.surf.nl/metadata/proxy_sp.xml"; // Replace with actual accessible path or use in-memory XML
+        request.metadataUrl = "https://meta.sram.surf.nl/metadata/proxy_sp.xml";
 
-        var response = arccValidationService.validateMetadataByTestId(request);
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/validate-metadata/MD-1b2")
+                .then()
+                .assertThat()
+                .statusCode(500)
+                .extract()
+                .as(InformativeResponse.class);
 
-        assertTrue(response.isSchemaCompliant);
-        assertFalse(response.isTestCompliant);
-        assertEquals("MD-1b2 validation failed: No operational security TelephoneNumber found.", response.feedback);
-        assertEquals("MD-1b2", response.name);
-        assertEquals("Operational Security Contact Phone Number", response.label);
+        assertEquals("MD-1b2 validation failed: No operational security TelephoneNumber found.", response.message);
+
     }
 }

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.constraints.NotFoundEntity;
+import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.repositories.registry.TestRepository;
 
 public class ArccValidationRequest {
 
@@ -15,13 +18,4 @@ public class ArccValidationRequest {
     @JsonProperty("metadata_url")
     @NotEmpty(message = "Metadata URL may not be empty.")
     public String metadataUrl;
-
-    @Schema(
-            type = SchemaType.STRING,
-            description = "The Id of the test to execute",
-            example = "pid_graph:333489E8"
-    )
-    @JsonProperty("test_id")
-    @NotEmpty(message = "Test id may not be empty.")
-    public String testId;
 }
