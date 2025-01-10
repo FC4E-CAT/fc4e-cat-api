@@ -46,6 +46,4 @@ public class MetricRepository implements Repository<Metric, String> {
                 .getSingleResult();
         return count > 0;
     }
-
-
 }

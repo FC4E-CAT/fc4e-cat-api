@@ -92,18 +92,14 @@ public class MetricService {
 
         var metric = metricRepository.findById(id);
 
-        if(criterionMetricRepository.existMetricInStatus(id,Boolean.TRUE)){
-            throw new ForbiddenException("No action permitted, metric exists in a published motivation");
-        }
+//        if(criterionMetricRepository.existMetricInStatus(id,Boolean.TRUE)){
+//            throw new ForbiddenException("No action permitted, metric exists in a published motivation");
+//        }
 
-        var currentMtr = metric.getMTR();
-        var updateMtr = StringUtils.isNotEmpty(request.MTR) ? request.MTR.toUpperCase() : currentMtr;
+        if(StringUtils.isNotEmpty(request.MTR) && !metric.getMTR().equalsIgnoreCase(request.MTR)){
 
-
-        if(StringUtils.isNotEmpty(updateMtr) && !updateMtr.equals(currentMtr)){
-
-            if (metricRepository.notUnique("MTR", updateMtr)) {
-                throw new UniqueConstraintViolationException("MTR", updateMtr);
+            if (metricRepository.notUnique("MTR", request.MTR)) {
+                throw new UniqueConstraintViolationException("MTR", request.MTR);
             }
         }
 

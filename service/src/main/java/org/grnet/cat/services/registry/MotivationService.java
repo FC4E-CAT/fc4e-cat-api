@@ -17,7 +17,9 @@ import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
 import org.grnet.cat.dtos.registry.metric.DetailedMetricDto;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
+import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricUpdateRequest;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
@@ -29,6 +31,7 @@ import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
+import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
@@ -38,6 +41,7 @@ import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
+import org.grnet.cat.services.registry.metric.MetricService;
 import org.grnet.cat.utils.TestParamsTransformer;
 
 import java.sql.Timestamp;
@@ -86,6 +90,9 @@ public class MotivationService {
 
     @Inject
     TestDefinitionRepository testDefinitionRepository;
+
+    @Inject
+    MetricService metricService;
 
     /**
      * Creates a new Motivation.
@@ -560,6 +567,41 @@ public class MotivationService {
         return response;
     }
 
+    @Transactional
+    public InformativeResponse updateMetricDefinitionForMotivation(String id, String metricId, MotivationMetricUpdateRequest request, String userId) {
+
+        var response = new InformativeResponse();
+
+        var updateMetric = new MetricUpdateDto();
+
+        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMetricId(metricId);
+
+        updateMetric.MTR = request.MTR;
+        updateMetric.labelMetric = request.labelMetric;
+        updateMetric.descrMetric = request.descrMetric;
+        updateMetric.typeMetricId = request.typeMetricId;
+        updateMetric.urlMetric = request.urlMetric;
+        updateMetric.typeAlgorithmId = request.typeAlgorithmId;
+
+        metricService.updateMetric(metricId, userId, updateMetric);
+
+        if(StringUtils.isNotEmpty(request.typeBenchmarkId)){
+
+            metricDefinition.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId));
+
+        }
+
+        if(StringUtils.isNotEmpty(request.valueBenchmark)){
+
+            metricDefinition.setValueBenchmark(request.valueBenchmark);
+        }
+
+        response.code = 200;
+        response.message = "A metric and a Metric Definition successfully updated.";
+
+        return response;
+    }
+
 
     @Transactional
     public List<String> updateMetricDefinitionRelation(String motivationId, Set<MetricDefinitionRequest> request, String userId) {
@@ -638,6 +680,12 @@ public class MotivationService {
         return new PageResource<>(metricDefinition, metricDefinitionResponse, uriInfo);
     }
 
+    public MetricDefinitionExtendedResponse getMetricDefinitionRelation(String motivationId, String metricId) {
+
+        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivationAndMetricId(motivationId, metricId);
+
+        return MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponse(metricDefinition);
+    }
 
     /**
      * Creates a new relationship between metric, test, and motivation.
