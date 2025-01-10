@@ -179,26 +179,28 @@ public class TestEndpointTest extends KeycloakTest {
                 .extract()
                 .as(TestAndTestDefinitionResponse.class);
 
+        var update = new TestAndTestDefinitionUpdateRequest();
+
         var updateRequest = new TestUpdateDto();
         updateRequest.TES = "TCREATE1-Updated";
         updateRequest.labelTest = "Updated Performance Test";
         updateRequest.descTest = "Updated description for performance test.";
 
-        var updatedResponse = given()
+        update.setTestRequest(updateRequest);
+
+        var response = given()
                 .auth()
                 .oauth2(getAccessToken("admin"))
-                .body(updateRequest)
+                .body(update)
                 .contentType(ContentType.JSON)
-                .put("/{id}", createdTest.testResponse.id)
+                .patch("/{id}", createdTest.testResponse.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(InformativeResponse.class);
 
-        assertEquals("TCREATE1-Updated", updatedResponse.TES);
-        assertEquals("Updated Performance Test", updatedResponse.labelTest);
-        assertEquals("Updated description for performance test.", updatedResponse.descTest);
+        assertEquals("Test was successfully updated.", response.message);
     }
 
     @Test

@@ -10,7 +10,6 @@ import org.grnet.cat.dtos.registry.test.*;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.entities.registry.TestDefinition;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.registry.TestDefinitionMapper;
 import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestDefinitionRepository;
@@ -19,10 +18,8 @@ import org.grnet.cat.repositories.registry.TestRepository;
 import org.jboss.logging.Logger;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
 
 @ApplicationScoped
 public class TestService {
@@ -103,18 +100,26 @@ public class TestService {
      * @return The updated Test DTO.
      */
     @Transactional
-    public TestResponseDto updateTest(String id, String userId, TestUpdateDto request) {
+    public void updateTest(String id, String userId, TestAndTestDefinitionUpdateRequest request) {
 
         if (metricTestRepository.existTestInStatus(id, Boolean.TRUE)) {
             throw new ForbiddenException("No action permitted, test exists in a published motivation");
         }
 
         var test = testRepository.findById(id);
-
-        TestMapper.INSTANCE.updateTestFromDto(request, test);
         test.setPopulatedBy(userId);
 
-        return TestMapper.INSTANCE.testToDto(test);
+        if(!Objects.isNull(request.getTestRequest())){
+
+            TestMapper.INSTANCE.updateTestFromDto(request.getTestRequest(), test);
+        }
+
+        if(!Objects.isNull(request.getTestDefinitionRequest())){
+
+            var testDefinition = testDefinitionRepository.fetchTestDefinitionByTestId(id);
+            testDefinitionService.updateTestDefinition(testDefinition.getId(), userId, request.getTestDefinitionRequest());
+        }
+
     }
 
     /**

@@ -30,6 +30,7 @@ public class TestDefinitionService {
 
     @Inject
     MetricTestRepository metricTestRepository;
+
     private static final Logger LOG = Logger.getLogger(TestDefinitionService.class);
 
     /**
@@ -62,7 +63,8 @@ public class TestDefinitionService {
 
         testDefinitionRepository.persist(testDefinition);
 
-        return TestDefinitionMapper.INSTANCE.testDefinitionToDto(testDefinition);    }
+        return TestDefinitionMapper.INSTANCE.testDefinitionToDto(testDefinition);
+    }
 
 
     /**
@@ -96,6 +98,7 @@ public class TestDefinitionService {
      */
     @Transactional
     public TestDefinitionResponseDto updateTestDefinition(String id, String userId, TestDefinitionUpdateDto request) {
+
         if (metricTestRepository.existTestDefinitionInStatus(id, Boolean.TRUE)) {
             throw new ForbiddenException("No action permitted, test definition exists in a published motivation");
         }
