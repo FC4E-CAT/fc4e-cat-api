@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.grnet.cat.dtos.ArccValidationRequest;
 import org.grnet.cat.dtos.ArccValidationResponse;
+import org.grnet.cat.dtos.AutomatedCheckResponse;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.repositories.registry.TestRepository;
 import org.grnet.cat.validators.XmlMetadataValidator.GeneralMetadataValidator;
@@ -23,14 +24,19 @@ public class ArccValidationService {
     @Inject
     GeneralMetadataValidator metadataValidator;
 
-    public ArccValidationResponse validateMetadataByTestId(ArccValidationRequest request) {
+    public ArccValidationResponse validateMetadataByTestId(String type, ArccValidationRequest request) {
 
-        var test = testRepository.findById(request.testId);
         var isSchemaCompliant = xmlSchemaValidator.validateSchema(request.metadataUrl);
         var document = parseXmlSafely(request.metadataUrl);
-        var testValidationResult = metadataValidator.validate(test.getId(), document);
+        var testValidationResult = metadataValidator.validate(type, document);
 
-        return constructResponse(test, isSchemaCompliant, testValidationResult);
+        if (!testValidationResult.isCompliant) {
+            throw new IllegalArgumentException(testValidationResult.feedback);
+        }
+        var response = new ArccValidationResponse();
+        response.isValid= testValidationResult.isCompliant;
+        response.code = 200;
+        return response;
     }
 
     private Document parseXmlSafely(String metadataUrl) {
@@ -41,13 +47,4 @@ public class ArccValidationService {
         }
     }
 
-    private ArccValidationResponse constructResponse(Test test, boolean isSchemaCompliant, MetadataValidator.ValidationResult testResult) {
-        ArccValidationResponse response = new ArccValidationResponse();
-        response.isSchemaCompliant = isSchemaCompliant;
-        response.isTestCompliant = testResult.isCompliant;
-        response.feedback = testResult.feedback;
-        response.label = test.getLabelTest();
-        response.name = test.getTES();
-        return response;
-    }
 }

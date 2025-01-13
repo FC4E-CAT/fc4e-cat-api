@@ -9,6 +9,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
 import org.xml.sax.SAXException;
@@ -64,6 +65,8 @@ public class XmlSchemaValidator {
             return true;
         } catch (SAXException e) {
             throw new IllegalArgumentException("Schema validation failed: " + e.getMessage(), e);
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("Url not found: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error validating XML against schema: " + e.getMessage(), e);
         }
