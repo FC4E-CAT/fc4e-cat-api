@@ -44,8 +44,6 @@ public interface MetricDefinitionMapper {
     @Mapping(target = "typeBenchmarkDescription", expression = "java(metricDefinitionJunction.getTypeBenchmark().getDescBenchmarkType())")
     @Mapping(target = "typeBenchmarkPatter", expression = "java(metricDefinitionJunction.getTypeBenchmark().getPattern())")
     @Mapping(target = "motivationId", expression = "java(metricDefinitionJunction.getMotivation().getId())")
+    @Mapping(target = "valueBenchmark", expression = "java(metricDefinitionJunction.getValueBenchmark())")
     MetricDefinitionExtendedResponse metricDefinitionToExtendedResponse(MetricDefinitionJunction metricDefinitionJunction);
-
-
-
 }

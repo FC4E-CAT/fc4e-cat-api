@@ -1,6 +1,7 @@
 package org.grnet.cat.dtos.registry;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -124,4 +125,12 @@ public class MetricDefinitionExtendedResponse {
     )@JsonProperty("motivation_id")
     public String motivationId;
 
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Value.",
+            example = "3"
+    )
+    @JsonProperty("value_benchmark")
+    public String valueBenchmark;
 }

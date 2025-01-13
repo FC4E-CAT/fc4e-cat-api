@@ -32,59 +32,60 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#339](https://github.com/FC4E-CAT/fc4e-cat-api/pull/339) CAT-600 Permit actions depending on Motivation publish status.
 - [#340](https://github.com/FC4E-CAT/fc4e-cat-api/pull/340) CAT-603 Unpublish a published motivation.
 - [#343](https://github.com/FC4E-CAT/fc4e-cat-api/pull/343) CAT-605 Unpublish a published motivation.
-- [#345](https://github.com/FC4E-CAT/fc4e-cat-api/pull/345) CAT-608 Implement Search and Retrieve Associated Motivations for Principles and Criteria
-- [#346](https://github.com/FC4E-CAT/fc4e-cat-api/pull/346) CAT-613 Publish/Unpublish motivation actor relationship
-- [#350](https://github.com/FC4E-CAT/fc4e-cat-api/pull/350) CAT-612 Include Related Metrics in Criterion Response
-- [#355](https://github.com/FC4E-CAT/fc4e-cat-api/pull/355) CAT-617 API Create a principle under motivation
+- [#345](https://github.com/FC4E-CAT/fc4e-cat-api/pull/345) CAT-608 Implement Search and Retrieve Associated Motivations for Principles and Criteria.
+- [#346](https://github.com/FC4E-CAT/fc4e-cat-api/pull/346) CAT-613 Publish/Unpublish motivation actor relationship.
+- [#350](https://github.com/FC4E-CAT/fc4e-cat-api/pull/350) CAT-612 Include Related Metrics in Criterion Response.
+- [#355](https://github.com/FC4E-CAT/fc4e-cat-api/pull/355) CAT-617 API Create a principle under motivation.
 - [#351](https://github.com/FC4E-CAT/fc4e-cat-api/pull/351) CAT-616 Create New Version Endpoint for Generating Assessments Based on Motivation Actor Templates.
 - [#361](https://github.com/FC4E-CAT/fc4e-cat-api/pull/361) CAT-628 Assessment Update.
-- [#360](https://github.com/FC4E-CAT/fc4e-cat-api/pull/360) CAT-622 Create an endpoint to check if a url is a valid https
-- [#396](https://github.com/FC4E-CAT/fc4e-cat-api/pull/396) CAT-680 Create an API endpoint to establish a relationship between a criterion and a metric
-- [#400](https://github.com/FC4E-CAT/fc4e-cat-api/pull/400) CAT-689: Change POST /registry/metrics to insert full metric/metric-definition relation
-- [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship
-- [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695: Implement GET and PUT /metric - definition by Motivation API Endpoint
-- [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation
-- [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650: Automated Tests for ARCC-G071
+- [#360](https://github.com/FC4E-CAT/fc4e-cat-api/pull/360) CAT-622 Create an endpoint to check if a url is a valid https.
+- [#396](https://github.com/FC4E-CAT/fc4e-cat-api/pull/396) CAT-680 Create an API endpoint to establish a relationship between a criterion and a metric.
+- [#400](https://github.com/FC4E-CAT/fc4e-cat-api/pull/400) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation.
+- [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship.
+- [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695 Implement GET and PUT /metric - definition by Motivation API Endpoint.
+- [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation.
+- [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650 Automated Tests for ARCC-G071.
+- [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-720 Create Endpoint to Update Metric and Metric Definition.
 
 ### Fix
 
 - [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
-- [#331](https://github.com/FC4E-CAT/fc4e-cat-api/pull/331) CAT-589 Change copy Motivation to insert value on db field lodMTV_P
-- [#329](https://github.com/FC4E-CAT/fc4e-cat-api/pull/329) CAT-573 Jenkins warnings
-- [#332](https://github.com/FC4E-CAT/fc4e-cat-api/pull/332) CAT-590 Fix CriterionActorJunction key to keep Motivation id
-- [#333](https://github.com/FC4E-CAT/fc4e-cat-api/pull/333) CAT-586 Principles are displayed multiple times in motivation/actor/criteria selection
-- [#342](https://github.com/FC4E-CAT/fc4e-cat-api/pull/342) CAT-604 CRI duplicate warning on criterion update with same CRI
-- [#344](https://github.com/FC4E-CAT/fc4e-cat-api/pull/344) CAT-607 Template's view issue when unpublished motivation , during preview motivation
-- [#352](https://github.com/FC4E-CAT/fc4e-cat-api/pull/352) CAT-619 Permit actions on published/unpublished relation motivation-actor #352
+- [#331](https://github.com/FC4E-CAT/fc4e-cat-api/pull/331) CAT-589 Change copy Motivation to insert value on db field lodMTV_P.
+- [#329](https://github.com/FC4E-CAT/fc4e-cat-api/pull/329) CAT-573 Jenkins warnings.
+- [#332](https://github.com/FC4E-CAT/fc4e-cat-api/pull/332) CAT-590 Fix CriterionActorJunction key to keep Motivation id.
+- [#333](https://github.com/FC4E-CAT/fc4e-cat-api/pull/333) CAT-586 Principles are displayed multiple times in motivation/actor/criteria selection.
+- [#342](https://github.com/FC4E-CAT/fc4e-cat-api/pull/342) CAT-604 CRI duplicate warning on criterion update with same CRI.
+- [#344](https://github.com/FC4E-CAT/fc4e-cat-api/pull/344) CAT-607 Template's view issue when unpublished motivation , during preview motivation.
+- [#352](https://github.com/FC4E-CAT/fc4e-cat-api/pull/352) CAT-619 Permit actions on published/unpublished relation motivation-actor.
 - [#365](https://github.com/FC4E-CAT/fc4e-cat-api/pull/365) CAT-628 Shared Users.
 - [#367](https://github.com/FC4E-CAT/fc4e-cat-api/pull/367) CAT-633 Public Objects.
 - [#369](https://github.com/FC4E-CAT/fc4e-cat-api/pull/369) CAT-627 public assessments.
-- [#366](https://github.com/FC4E-CAT/fc4e-cat-api/pull/366) CAT-632 Change GET motivation response to show the published status of motivation-actor
-- [#370](https://github.com/FC4E-CAT/fc4e-cat-api/pull/370) CAT-626 Show subjects per assessment
-- [#373](https://github.com/FC4E-CAT/fc4e-cat-api/pull/373) CAT-635 Subject (objects) filters for non-public assessments
-- [#374](https://github.com/FC4E-CAT/fc4e-cat-api/pull/374) CAT-636 Error when filtering public assessment per subject
-- [#375](https://github.com/FC4E-CAT/fc4e-cat-api/pull/375) CAT-638 Change call GET /v1/registry/tests/check-automated-test/https-url definition
-- [#378](https://github.com/FC4E-CAT/fc4e-cat-api/pull/378) CAT-640 Auto-Check-Url-Binary Test value - allow to be string
-- [#376](https://github.com/FC4E-CAT/fc4e-cat-api/pull/376) CAT-643 Strange json response in /v2/assessments/objects #376
-- [#377](https://github.com/FC4E-CAT/fc4e-cat-api/pull/377) CAT-645 Create AutomatedCheck resource
-- [#381](https://github.com/FC4E-CAT/fc4e-cat-api/pull/381) CAT-644 Fix Test T14 to Value-Based Percentage Test
-- [#383](https://github.com/FC4E-CAT/fc4e-cat-api/pull/383) CAT-652 Principles created under a motivation dont show the motivation item in used_by_motivation field
-- [#384](https://github.com/FC4E-CAT/fc4e-cat-api/pull/384) CAT-662 Missing junit tests for publish/unpublish motivation/motivation-actor to be added
-- [#386](https://github.com/FC4E-CAT/fc4e-cat-api/pull/386) CAT-660 A principle with the identifier '...' already exists should return conflict 409 not 200
-- [#387](https://github.com/FC4E-CAT/fc4e-cat-api/pull/387) CAT-661 Consistency in backend responses
-- [#388](https://github.com/FC4E-CAT/fc4e-cat-api/pull/388) CAT-651: REJECTED Validation email should follow the other emails
-- [#389](https://github.com/FC4E-CAT/fc4e-cat-api/pull/389) CAT-669 Fix 404 Error Response for Assessment Comments API Endpoint
-- [#391](https://github.com/FC4E-CAT/fc4e-cat-api/pull/391) CAT-671 Fix Uniqueness Constraint on MTR field in Metric
-- [#395](https://github.com/FC4E-CAT/fc4e-cat-api/pull/395) CAT-679 Script to delete secondary principles from EOSC PID POLICY motivation
-- [#397](https://github.com/FC4E-CAT/fc4e-cat-api/pull/397) CAT-570 DB: Cannot find user friendly that describe the parameters for tests
-- [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status
-- [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix)
-- [#406](https://github.com/FC4E-CAT/fc4e-cat-api/pull/406) CAT-698 Support test-metric relations of a specific metric in a motivation #406
-- [#407](https://github.com/FC4E-CAT/fc4e-cat-api/pull/407) CAT-697: Update /registry/tests Endpoints to Include All test and test-definition Fields
-- [#409](https://github.com/FC4E-CAT/fc4e-cat-api/pull/409) CAT-699 Cleanup DB: in benchmark type Binary-Binary has a whitespace at the end
-- [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703: Provide MTR id in motivation/{id}/metric-definition call
-- [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702: Pagination info in motivation-metric-tests call
-- [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706: Give the ability to update tests with the same info as CREATE
+- [#366](https://github.com/FC4E-CAT/fc4e-cat-api/pull/366) CAT-632 Change GET motivation response to show the published status of motivation-actor.
+- [#370](https://github.com/FC4E-CAT/fc4e-cat-api/pull/370) CAT-626 Show subjects per assessment.
+- [#373](https://github.com/FC4E-CAT/fc4e-cat-api/pull/373) CAT-635 Subject (objects) filters for non-public assessments.
+- [#374](https://github.com/FC4E-CAT/fc4e-cat-api/pull/374) CAT-636 Error when filtering public assessment per subject.
+- [#375](https://github.com/FC4E-CAT/fc4e-cat-api/pull/375) CAT-638 Change call GET /v1/registry/tests/check-automated-test/https-url definition.
+- [#378](https://github.com/FC4E-CAT/fc4e-cat-api/pull/378) CAT-640 Auto-Check-Url-Binary Test value - allow to be string.
+- [#376](https://github.com/FC4E-CAT/fc4e-cat-api/pull/376) CAT-643 Strange json response in /v2/assessments/objects.
+- [#377](https://github.com/FC4E-CAT/fc4e-cat-api/pull/377) CAT-645 Create AutomatedCheck resource.
+- [#381](https://github.com/FC4E-CAT/fc4e-cat-api/pull/381) CAT-644 Fix Test T14 to Value-Based Percentage Test.
+- [#383](https://github.com/FC4E-CAT/fc4e-cat-api/pull/383) CAT-652 Principles created under a motivation dont show the motivation item in used_by_motivation field.
+- [#384](https://github.com/FC4E-CAT/fc4e-cat-api/pull/384) CAT-662 Missing junit tests for publish/unpublish motivation/motivation-actor to be added.
+- [#386](https://github.com/FC4E-CAT/fc4e-cat-api/pull/386) CAT-660 A principle with the identifier '...' already exists should return conflict 409 not 200.
+- [#387](https://github.com/FC4E-CAT/fc4e-cat-api/pull/387) CAT-661 Consistency in backend responses.
+- [#388](https://github.com/FC4E-CAT/fc4e-cat-api/pull/388) CAT-651 REJECTED Validation email should follow the other emails.
+- [#389](https://github.com/FC4E-CAT/fc4e-cat-api/pull/389) CAT-669 Fix 404 Error Response for Assessment Comments API Endpoint.
+- [#391](https://github.com/FC4E-CAT/fc4e-cat-api/pull/391) CAT-671 Fix Uniqueness Constraint on MTR field in Metric.
+- [#395](https://github.com/FC4E-CAT/fc4e-cat-api/pull/395) CAT-679 Script to delete secondary principles from EOSC PID POLICY motivation.
+- [#397](https://github.com/FC4E-CAT/fc4e-cat-api/pull/397) CAT-570 DB: Cannot find user friendly that describe the parameters for tests.
+- [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status.
+- [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix).
+- [#406](https://github.com/FC4E-CAT/fc4e-cat-api/pull/406) CAT-698 Support test-metric relations of a specific metric in a motivation.
+- [#407](https://github.com/FC4E-CAT/fc4e-cat-api/pull/407) CAT-697 Update /registry/tests Endpoints to Include All test and test-definition Fields.
+- [#409](https://github.com/FC4E-CAT/fc4e-cat-api/pull/409) CAT-699 Cleanup DB: in benchmark type Binary-Binary has a whitespace at the end.
+- [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703 Provide MTR id in motivation/{id}/metric-definition call.
+- [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702 Pagination info in motivation-metric-tests call.
+- [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706 Give the ability to update tests with the same info as CREATE.
 
 ### Removed
 

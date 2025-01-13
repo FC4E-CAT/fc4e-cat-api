@@ -41,6 +41,7 @@ import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
 import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.metric.DetailedMetricDto;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricUpdateRequest;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
@@ -2190,7 +2191,6 @@ public class MotivationEndpoint {
             @PathParam("metric-id")
             @Valid
             @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
-
             List<@Valid MetricTestRequest> request) {
 
         if (Objects.isNull(request)) {
@@ -2207,7 +2207,6 @@ public class MotivationEndpoint {
 
         return Response.ok().entity(informativeResponse).build();
     }
-
 
     @Tag(name = "Motivation")
     @Operation(
@@ -2251,7 +2250,7 @@ public class MotivationEndpoint {
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
     @POST
-    @Path("/{id}/metric-definition")
+    @Path("/{id}/metric")
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMetric(
             @Parameter(
@@ -2263,13 +2262,139 @@ public class MotivationEndpoint {
             @Valid
             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
             @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
-            String id,
-            MotivationMetricExtendedRequest request) {
+            String id, @Valid @NotNull(message = "The request body is empty.") MotivationMetricExtendedRequest request) {
 
         var response = motivationService.createMetricDefinitionForMotivation(id, request, utility.getUserUniqueIdentifier());
 
         return Response.status(response.code).entity(response).build();
     }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update a Metric - Definition relation for a Motivation.",
+            description = "Update a Metric Definition for a single motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric successfully updated for the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PATCH
+    @Path("/{id}/metric/{metric-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateMetric(
+            @Parameter(
+                    description = "The ID of the Motivation to update a metric for.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+            @Parameter(
+                    description = "The ID of the Metric to update.",
+                    required = true,
+                    example = "pid_graph:EBCEBED1",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
+            @Valid @NotNull(message = "The request body is empty.") MotivationMetricUpdateRequest request) {
+
+        var response = motivationService.updateMetricDefinitionForMotivation(id, metricId, request, utility.getUserUniqueIdentifier());
+
+        return Response.status(response.code).entity(response).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Get a Metric - Definition relation for a Motivation.",
+            description = "Get a Metric - Definition relation for a Motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric successfully retrieved for the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricDefinitionExtendedResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/metric/{metric-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMetricDefinitionRelation(
+            @Parameter(description = "The ID of the Motivation to retrieve Metric-Definition relation.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class,
+                    message = "There is no Motivation with the following id:")
+            String id,
+            @Parameter(
+                    description = "The ID of the Metric to retrieve.",
+                    required = true,
+                    example = "pid_graph:EBCEBED1",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId) {
+
+        var response = motivationService.getMetricDefinitionRelation(id, metricId);
+
+        return Response.ok().entity(response).build();
+    }
+
     @Tag(name = "Motivation")
     @Operation(
             summary = "Get a list of relations between motivation, metric and definition.",
@@ -2303,7 +2428,7 @@ public class MotivationEndpoint {
     @Path("/{id}/metric-definition")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMetricDefinitionRelation(
-            @Parameter(description = "The ID of the Motivation to assign Metric-Definition relation.",
+            @Parameter(description = "The ID of the Motivation to retrieve Metric-Definition relation.",
                     required = true,
                     example = "pid_graph:3E109BBA",
                     schema = @Schema(type = SchemaType.STRING))

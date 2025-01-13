@@ -18,7 +18,6 @@ public class MetricDefinitionId {
     @Column(name = "type_benchmark_lodTBN")
     private String typeBenchmarkId;
 
-
     @Column(name = "lodM_TB_V")
     private Integer lodMTBV;
 

@@ -64,7 +64,6 @@ public class Metric {
     private String descrMetric;
 
     @Column(name = "urlMetric")
-    @NotNull
     private String urlMetric;
 
     @ManyToOne(fetch = FetchType.EAGER)

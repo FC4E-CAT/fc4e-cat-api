@@ -12,6 +12,7 @@ import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -71,8 +72,18 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return pageable;
     }
 
+    public MetricDefinitionJunction fetchMetricDefinitionByMotivationAndMetricId(String motivationId, String metricId) {
+
+        return find("SELECT md FROM MetricDefinitionJunction md WHERE md.motivation.id = ?1 and md.metric.id = ?2", motivationId, metricId).firstResult();
+    }
+
     public List<MetricDefinitionJunction> fetchMetricDefinitionByMotivation(String motivationId) {
         return find("SELECT md FROM MetricDefinitionJunction md WHERE md.motivation.id = ?1", motivationId).list();
+    }
+
+    public MetricDefinitionJunction fetchMetricDefinitionByMetricId(String metricId){
+
+        return find("SELECT md FROM MetricDefinitionJunction md WHERE md.metric.id = ?1", metricId).firstResult();
     }
 
     @Transactional
