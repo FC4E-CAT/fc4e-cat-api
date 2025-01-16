@@ -223,7 +223,7 @@ public class PrincipleEndpoint {
                     description = "The \"search\" parameter allows clients to search " +
                             "for matches in specific fields in the Principle entity. " +
                             "The search will be conducted in the following fields: " +
-                            "principleId, pri and principle label.")
+                            "principle's id, pri, label and description.")
             @QueryParam("search") String search,
             @Parameter(name = "Sort", in = QUERY,
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),

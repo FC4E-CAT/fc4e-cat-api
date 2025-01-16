@@ -229,7 +229,7 @@ public class CriteriaEndpoint {
                     description = "The \"search\" parameter allows clients to search " +
                             "for matches in specific fields in the Criterion entity. " +
                             "The search will be conducted in the following fields: " +
-                            "criterionId, cri and principle label.")
+                            "criterion's Id, cri, label and description.")
             @QueryParam("search") String search,
             @Parameter(name = "Sort", in = QUERY,
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),

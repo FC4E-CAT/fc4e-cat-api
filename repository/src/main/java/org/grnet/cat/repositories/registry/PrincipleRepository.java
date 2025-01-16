@@ -30,9 +30,10 @@ public class PrincipleRepository implements Repository<Principle, String> {
         var map = new HashMap<String, Object>();
 
         if (StringUtils.isNotEmpty(search)) {
-            joiner.add("where (p.id like :search")
-                    .add("or p.label like :search")
-                    .add("or p.pri like :search)");
+            joiner.add("where (p.id ilike :search")
+                    .add("or p.label ilike :search")
+                    .add("or p.pri ilike :search")
+                    .add("or p.description ilike :search)");
 
             map.put("search", "%" + search + "%");
         }
