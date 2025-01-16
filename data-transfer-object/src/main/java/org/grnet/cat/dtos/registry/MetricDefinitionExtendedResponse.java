@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name="MetricDefinitionResponse", description="This object represents a response for a Metric Definition.")
+@Schema(name="MetricDefinitionExtendedResponse", description="This object represents a response for a Metric Definition.")
 public class MetricDefinitionExtendedResponse {
 
     @Schema(
