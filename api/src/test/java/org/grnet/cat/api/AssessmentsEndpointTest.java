@@ -867,4 +867,84 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         return objectMapper.readValue(doc, TemplateDto.class);
     }
+    @Test
+    public void publishUnpublish() throws IOException {
+
+        register("validated");
+        register("admin");
+        register("evald");
+
+        makeValidation("validated", "pid_graph:B5CC396B");
+
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
+
+        var assessment = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments")
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+
+        var response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments/")
+                .put("/{id}/publish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(200,response.code);
+        assertEquals("Assessment is published successfully", response.message);
+
+        response = given()
+                .auth()
+                .oauth2(getAccessToken("validated"))
+                .basePath("/v2/assessments/")
+                .put("/{id}/unpublish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(200,response.code);
+        assertEquals("Assessment is unpublished successfully", response.message);
+
+        var error = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v2/assessments")
+                .put("/{id}/publish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+
+        error = given()
+                .auth()
+                .oauth2(getAccessToken("admin"))
+                .basePath("/v2/assessments")
+                .put("/{id}/unpublish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.grnet.cat.services.assessment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -16,6 +17,7 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
@@ -39,7 +41,6 @@ import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.SubjectService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
@@ -103,12 +104,13 @@ public class JsonAssessmentService {
         assessment.setMotivation(Panache.getEntityManager().getReference(Motivation.class, request.assessmentDoc.motivation.getId()));
         assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
         assessment.setShared(Boolean.FALSE);
+        assessment.setPublished(Boolean.FALSE);
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
         motivationAssessmentRepository.persist(assessment);
 
         request.assessmentDoc.id = assessment.getId();
 
-        assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
+        //assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
 
         keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
 
@@ -308,7 +310,7 @@ public class JsonAssessmentService {
     @Transactional
     public UserJsonRegistryAssessmentResponse updatePrivateAssessment(String id, JsonRegistryAssessmentRequest request) {
 
-       return update(id, request);
+        return update(id, request);
     }
 
     @SneakyThrows
@@ -326,6 +328,7 @@ public class JsonAssessmentService {
         request.assessmentDoc.subject = dbAssessmentToJson.assessmentDoc.subject;
         request.assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
         request.assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
+       // request.assessmentDoc.published = dbAssessmentToJson.assessmentDoc.published;
 
         dbAssessment.setUpdatedBy(utility.getUserUniqueIdentifier());
         dbAssessment.setUpdatedOn(Timestamp.from(Instant.now()));
@@ -364,13 +367,13 @@ public class JsonAssessmentService {
     /**
      * Retrieves a page of published assessments categorized by motivation and actor, created by all users.
      *
-     * @param page        The index of the page to retrieve (starting from 0).
-     * @param size        The maximum number of assessments to include in a page.
-     * @param uriInfo     The Uri Info.
-     * @param motivationId  The Motivation.
-     * @param actorId     The Actor's id.
-     * @param subjectName Subject name to search for.
-     * @param subjectType Subject Type to search for.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessments to include in a page.
+     * @param uriInfo      The Uri Info.
+     * @param motivationId The Motivation.
+     * @param actorId      The Actor's id.
+     * @param subjectName  Subject name to search for.
+     * @param subjectType  Subject Type to search for.
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
     public PageResource<AdminPartialJsonAssessmentResponse> getPublishedAssessmentsByMotivationAndActorAndPage(int page, int size, String motivationId, String actorId, UriInfo uriInfo, String subjectName, String subjectType) {
@@ -385,11 +388,11 @@ public class JsonAssessmentService {
     /**
      * Retrieves a page of public assessment objects by motivation and actor.
      *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of assessment objects to include in a page.
-     * @param uriInfo The Uri Info.
-     * @param motivationId  The ID of the Motivation.
-     * @param actorId The Actor's id.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessment objects to include in a page.
+     * @param uriInfo      The Uri Info.
+     * @param motivationId The ID of the Motivation.
+     * @param actorId      The Actor's id.
      * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
      */
     public PageResource<TemplateSubjectDto> getPublishedAssessmentObjectsByMotivationAndActorAndPage(int page, int size, String motivationId, String actorId, UriInfo uriInfo) {
@@ -501,7 +504,7 @@ public class JsonAssessmentService {
 
         var assessmentDto = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
 
-        if (!assessmentDto.assessmentDoc.published) {
+        if (!assessment.getPublished()) {
             throw new ForbiddenException("Not Permitted.");
         }
 
@@ -539,5 +542,38 @@ public class JsonAssessmentService {
         var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
 
         return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+    }
+
+    @SneakyThrows
+    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
+    @Transactional
+    public String managePublishAssessment(String id,boolean publish) {
+        var assessment = motivationAssessmentRepository.findById(id);
+        var doc = assessment.getAssessmentDoc();
+        ObjectNode jsonNode = null;
+        try {
+            jsonNode = (ObjectNode) objectMapper.readTree(doc);
+            assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        assessment.setPublished(publish);
+        return String.format("Assessment is %s successfully", publish ? "published" : "unpublished");
+
+    }
+    @Transactional
+    public String managePublishAssessmentByAdmin(String id,boolean publish) {
+        var assessment = motivationAssessmentRepository.findById(id);
+        var doc = assessment.getAssessmentDoc();
+        ObjectNode jsonNode = null;
+        try {
+            jsonNode = (ObjectNode) objectMapper.readTree(doc);
+            assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        assessment.setPublished(true);
+        return String.format("Assessment is %s successfully", publish ? "published" : "unpublished");
+
     }
 }

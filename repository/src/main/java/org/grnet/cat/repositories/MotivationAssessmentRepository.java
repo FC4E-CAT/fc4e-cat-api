@@ -9,6 +9,7 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,12 +106,12 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         var em = Panache.getEntityManager();
 
-        var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published")
+        var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published")
                 .setParameter("actorId", actorId)
                 .setParameter("published", true)
                 .setParameter("motivationId", motivationId);
 
-        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published")
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published")
                 .setParameter("actorId", actorId)
                 .setParameter("published", true)
                 .setParameter("motivationId", motivationId);
@@ -146,27 +147,26 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         var em = Panache.getEntityManager();
 
-        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
+        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
                 .setParameter("actorId", actorId)
                 .setParameter("published", true)
                 .setParameter("motivationId", motivationId);
 
-        var countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published", Long.class)
+        var countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published", Long.class)
                 .setParameter("actorId", actorId)
                 .setParameter("published", true)
                 .setParameter("motivationId", motivationId);
-
 
         if (StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
                     .setParameter("name", subjectName)
                     .setParameter("type", subjectType);
 
-            countQuery = em.createNativeQuery("SELECT count(a.id)  FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published AND (a.assessment_doc->>'published')::::boolean = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type", Long.class)
+            countQuery = em.createNativeQuery("SELECT count(a.id)  FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type", Long.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
@@ -176,13 +176,13 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         } else if (StringUtils.isNotEmpty(subjectName)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published :published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
                     .setParameter("name", subjectName);
 
-            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published AND a.assessment_doc->'subject'->>'name' = :name", Long.class)
+            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name", Long.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
@@ -190,13 +190,13 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         } else if (StringUtils.isNotEmpty(subjectType)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.published = :published AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
                     .setParameter("type", subjectType);
 
-            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.assessment_doc->>'published')::::boolean = :published AND a.assessment_doc->'subject'->>'type' = :type", Long.class)
+            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND a.assessment_doc->'subject'->>'type' = :type", Long.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
@@ -377,4 +377,5 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return count("from MotivationAssessment a where a.validation.user.id = ?1", userId);
     }
+
 }

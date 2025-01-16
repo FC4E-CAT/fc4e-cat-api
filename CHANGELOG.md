@@ -47,6 +47,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650 Automated Tests for ARCC-G071.
 - [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-720 Create Endpoint to Update Metric and Metric Definition.
 - [#415](https://github.com/FC4E-CAT/fc4e-cat-api/pull/415) CAT-641 Should we keep extra info on automated tests.
+- [#418](https://github.com/FC4E-CAT/fc4e-cat-api/pull/418) CAT-727 Publish assessment.
+
 ### Fix
 
 - [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
