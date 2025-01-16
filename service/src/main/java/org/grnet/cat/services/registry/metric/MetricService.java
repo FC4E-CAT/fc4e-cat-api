@@ -8,21 +8,25 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
+import org.grnet.cat.mappers.registry.MetricDefinitionMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
+import org.grnet.cat.repositories.registry.MetricDefinitionRepository;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 import org.jboss.logging.Logger;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MetricService {
@@ -38,7 +42,24 @@ public class MetricService {
     @Inject
     CriterionMetricRepository criterionMetricRepository;
 
+    @Inject
+    MetricDefinitionRepository metricDefinitionRepository;
+
     private static final Logger LOG = Logger.getLogger(MetricService.class);
+
+//    /**
+//     * Retrieves a specific Metric item by its ID.
+//     *
+//     * @param id The unique ID of the Metric item.
+//     * @return The corresponding Metric DTO.
+//     */
+//    public MetricResponseDto getMetricById(String id) {
+//
+//        var metric = metricRepository.findById(id);
+//
+//        return MetricMapper.INSTANCE.metricToDto(metric);
+//    }
+
 
     /**
      * Retrieves a specific Metric item by its ID.
@@ -46,12 +67,14 @@ public class MetricService {
      * @param id The unique ID of the Metric item.
      * @return The corresponding Metric DTO.
      */
-    public MetricResponseDto getMetricById(String id) {
+    public MetricDefinitionExtendedResponse getMetricById(String id) {
 
-        var metric = metricRepository.findById(id);
+        var metric = metricDefinitionRepository.fetchMetricDefinitionByMetricId(id);
 
-        return MetricMapper.INSTANCE.metricToDto(metric);
+        return MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponse(metric);
     }
+
+
 
     /**
      * Creates a new Metric item.
@@ -151,4 +174,23 @@ public class MetricService {
 
         return new PageResource<>(metricPage, metricDtos, uriInfo);
     }
+
+    /**
+     * Retrieves a paginated list of Metric items with their associated definitions.
+     *
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of Metric items to include in a page.
+     * @param uriInfo The UriInfo object containing request URI details for generating pagination links.
+     * @return A PageResource containing the MetricDefinitionExtendedResponse items in the requested page.
+     */
+    public PageResource<MetricDefinitionExtendedResponse> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
+
+        var metricDefinitionPage = metricDefinitionRepository.fetchMetricDefinitionByPage(search,sort, order, page, size);
+
+        var metricDefinitionDtos = MetricMapper.INSTANCE
+                .metricAndDefinitionToDtos(metricDefinitionPage.list());
+
+        return new PageResource<>(metricDefinitionPage, metricDefinitionDtos, uriInfo);
+    }
+
 }

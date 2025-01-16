@@ -8,6 +8,7 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.MetricDefinitionJunction;
+import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.list().stream().count();
+        pageable.count = panache.count();
         pageable.page = Page.of(page, size);
 
         return pageable;
@@ -71,6 +72,65 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
 
         return pageable;
     }
+
+//    public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionByPage(int page, int size){
+//
+//        var panache = find("from MetricDefinitionJunction", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
+//
+//        var pageable = new PageQueryImpl<MetricDefinitionJunction>();
+//        pageable.list = panache.list();
+//        pageable.index = page;
+//        pageable.size = size;
+//        pageable.count = panache.count();
+//        pageable.page = Page.of(page, size);
+//
+//        return pageable;
+//    }
+
+
+
+    public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionByPage(String search, String sort, String order, int page, int size){
+
+        var joiner = new StringJoiner(StringUtils.SPACE);
+
+        joiner.add("from MetricDefinitionJunction m")
+                .add("left join m.metric met")
+                .add("left join m.typeBenchmark tb");
+
+        joiner.add("where 1=1");
+
+        var map = new HashMap<String, Object>();
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("and (m.metric.id like :search")
+                    .add("or m.metric.MTR like :search")
+                    .add("or m.typeBenchmark.id like :search")
+                    .add("or m.typeBenchmark.labelBenchmarkType like :search")
+                    .add("or m.motivation.Id like :search")
+                    .add("or m.valueBenchmark like :search")
+                    .add("or m.motivationX like :search)");
+
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by");
+        joiner.add("m."+ sort);
+        joiner.add(order + ", m.id ASC");
+
+        var panache = find(joiner.toString(), map).page(page, size);
+        var pageable = new PageQueryImpl<MetricDefinitionJunction>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+
+
+
 
     public MetricDefinitionJunction fetchMetricDefinitionByMotivationAndMetricId(String motivationId, String metricId) {
 
