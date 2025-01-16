@@ -66,10 +66,11 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
                 .post("/check-url")
                 .then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(AutomatedCheckResponse.class);
         assertEquals("Failed to connect to the URL: "+request.url+". IOException: "+request.url.replace("https://",""), error.message);
+        assertEquals(400,error.code);
     }
     @Test
     public void testEmptyUrl() {
@@ -106,10 +107,11 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
                 .post("/check-url")
                 .then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(AutomatedCheckResponse.class);
         assertEquals("Failed to connect to the URL: "+request.url+". The URL is not a secure HTTPS connection.", error.message);
+        assertEquals(503,error.code);
     }
     @Test
     public void testUnauthenticatedUser() {
@@ -194,11 +196,11 @@ public void testMd1aValid() {
                 .post("/validate-metadata/MD-1b2")
                 .then()
                 .assertThat()
-                .statusCode(500)
+                .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(ArccValidationResponse.class);
 
         assertEquals("MD-1b2 validation failed: No operational security TelephoneNumber found.", response.message);
-
+        assertEquals(400,response.code);
     }
 }
