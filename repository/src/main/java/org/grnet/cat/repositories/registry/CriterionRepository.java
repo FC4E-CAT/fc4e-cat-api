@@ -31,9 +31,10 @@ public class CriterionRepository implements Repository<Criterion, String> {
         var map = new HashMap<String, Object>();
 
         if (StringUtils.isNotEmpty(search)) {
-            joiner.add("where (c.id like :search")
-                    .add("or c.label like :search")
-                    .add("or c.cri like :search)");
+            joiner.add("where (c.id ilike :search")
+                    .add("or c.label ilike :search")
+                    .add("or c.cri ilike :search")
+                    .add("or c.description ilike :search)");
 
             map.put("search", "%" + search + "%");
         }
