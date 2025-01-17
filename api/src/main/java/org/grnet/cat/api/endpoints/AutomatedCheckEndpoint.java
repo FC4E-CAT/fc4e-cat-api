@@ -126,7 +126,7 @@ public class AutomatedCheckEndpoint {
             @Valid @NotNull(message = "The request body is empty.") ArccValidationRequest request) {
 
         if (type != null && !ArccTestType.getTypes().contains(type)) {
-            throw new BadRequestException("The value " + type + " is not a valid test type. Valid type values are: " + Arrays.toString(ArccTestType.values()));
+            throw new BadRequestException("The value " + type + " is not a valid test type. Valid type values are: " + ArccTestType.getTypes().toString());
         }
         var response = arccValidationService.validateMetadataByTestType(type,request);
 
