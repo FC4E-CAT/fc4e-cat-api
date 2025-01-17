@@ -136,25 +136,25 @@ public class TestService {
         return testRepository.deleteById(id);
     }
 
-    /**
-     * Retrieves a page of Test items.
-     *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of Test items to include in a page.
-     * @param uriInfo The Uri Info for pagination links.
-     * @return A PageResource containing the Test items in the requested page.
-     */
-    public PageResource<TestResponseDto> getTestlistAll(int page, int size, UriInfo uriInfo) {
+//    /**
+//     * Retrieves a page of Test items.
+//     *
+//     * @param page    The index of the page to retrieve (starting from 0).
+//     * @param size    The maximum number of Test items to include in a page.
+//     * @param uriInfo The Uri Info for pagination links.
+//     * @return A PageResource containing the Test items in the requested page.
+//     */
+//    public PageResource<TestResponseDto> getTestlistAll(int page, int size, UriInfo uriInfo) {
+//
+//        var testPage = testRepository.fetchTestByPage(page, size);
+//        var testDtos = TestMapper.INSTANCE.testToDtos(testPage.list());
+//
+//        return new PageResource<>(testPage, testDtos, uriInfo);
+//    }
 
-        var testPage = testRepository.fetchTestByPage(page, size);
-        var testDtos = TestMapper.INSTANCE.testToDtos(testPage.list());
+    public PageResource<TestAndTestDefinitionResponse> getTestAndTestDefinitionListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        return new PageResource<>(testPage, testDtos, uriInfo);
-    }
-
-    public PageResource<TestAndTestDefinitionResponse> getTestAndTestDefinitionListAll(int page, int size, UriInfo uriInfo) {
-
-        var testPage = testRepository.fetchTestByPage(page, size);
+        var testPage = testRepository.fetchTestByPage(search, sort, order, page, size);
         var tests = testPage.list();
 
         if (tests.isEmpty()) {
