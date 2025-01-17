@@ -88,7 +88,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706 Give the ability to update tests with the same info as CREATE.
 - [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-618 Change metadata xml validation automated checks 
 - [#416](https://github.com/FC4E-CAT/fc4e-cat-api/pull/416) Update /registry/metric Endpoints to Include All metric and metric-definition Fields
-
+- [#419](https://github.com/FC4E-CAT/fc4e-cat-api/pull/419) CAT-726 CAT-725 CAT-724 Quote typos in MD1 related tests - Auto MD1 related tests inform about wrong parameters-Auto MD1 related test return 500 when metadata not valid.
 
 ### Removed
 
