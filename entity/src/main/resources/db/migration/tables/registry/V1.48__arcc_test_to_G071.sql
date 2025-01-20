@@ -1,3 +1,8 @@
+-- ------------------------------------------------
+-- Version: v1.48
+--
+-- Description: Migration that introduces the new arcc tests
+-- --
 INSERT INTO p_Test (lodTES , TES , labelTest, descTest, lodMTV , lodTES_V) VALUES ('pid_graph:221489E8', 'Auto-MD-1a', 'Administrative Contact Details', 'administrative contact details for the AA Operator, including at least one role-based email address and one postal contact address',  'pid_graph:5EB0885A',1);
 INSERT INTO p_Test (lodTES , TES , labelTest, descTest, lodMTV , lodTES_V) VALUES ('pid_graph:39148A01', 'Auto-MD-1b1', 'Operational Security Contact Email', 'an operational security contact for the AA Operator, being at least a role-based email address',  'pid_graph:5EB0885A',1);
 INSERT INTO p_Test (lodTES , TES , labelTest, descTest, lodMTV , lodTES_V) VALUES ('pid_graph:12A3BBE8', 'Auto-MD-1b2', 'Operational Security Contact Phone Number','an operational security contact for the AA Operator, preferably including a telephone number',  'pid_graph:5EB0885A',1);
