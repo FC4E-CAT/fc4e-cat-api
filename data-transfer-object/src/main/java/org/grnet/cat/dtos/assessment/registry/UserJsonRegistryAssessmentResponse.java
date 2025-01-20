@@ -24,4 +24,13 @@ public class UserJsonRegistryAssessmentResponse extends AdminJsonRegistryAssessm
     )
     @JsonProperty("shared_by_user")
     public Boolean sharedByUser;
+//
+//    @Schema(
+//            type = SchemaType.BOOLEAN,
+//            implementation = Boolean.class,
+//            description = "Indicates that the assessment is published.",
+//            example = "true"
+//    )
+//    @JsonProperty("published")
+//    public Boolean published;
 }

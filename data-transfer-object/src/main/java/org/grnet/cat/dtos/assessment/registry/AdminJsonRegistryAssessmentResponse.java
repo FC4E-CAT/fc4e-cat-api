@@ -23,4 +23,5 @@ public class AdminJsonRegistryAssessmentResponse extends AssessmentResponse {
     )
     @JsonProperty("shared")
     public Boolean shared;
+
 }

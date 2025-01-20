@@ -42,7 +42,7 @@ public interface AssessmentMapper {
     @Mapping(target = "type", expression = "java(assessment.assessmentDoc.motivation.getName())")
     @Mapping(target = "actor", expression = "java(assessment.assessmentDoc.actor.getName())")
     @Mapping(target = "organisation", expression = "java(assessment.assessmentDoc.organisation.name)")
-    @Mapping(target = "published", expression = "java(assessment.assessmentDoc.published)")
+    @Mapping(target = "published", expression = "java(assessment.getPublished())")
     @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
     @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
     @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
@@ -57,6 +57,7 @@ public interface AssessmentMapper {
     @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
     @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
     @Mapping(target = "shared", expression = "java(assessment.getShared())")
+    @Mapping(target = "published", expression = "java(assessment.getPublished())")
     AdminJsonRegistryAssessmentResponse adminRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
 
     @Named("adminPartialRegistryMapWithExpression")
@@ -64,7 +65,7 @@ public interface AssessmentMapper {
     @Mapping(target = "type", expression = "java(assessment.assessmentDoc.motivation.getName())")
     @Mapping(target = "actor", expression = "java(assessment.assessmentDoc.actor.getName())")
     @Mapping(target = "organisation", expression = "java(assessment.assessmentDoc.organisation.name)")
-    @Mapping(target = "published", expression = "java(assessment.assessmentDoc.published)")
+    @Mapping(target = "published", expression = "java(assessment.getPublished())")
     @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
     @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
     @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
@@ -88,10 +89,13 @@ public interface AssessmentMapper {
     @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
     @Mapping(target = "sharedToUser", expression = "java(isSharedToUser(assessment.getValidation().getUser().getId()))")
     @Mapping(target = "sharedByUser", expression = "java(isRegistryAssessmentSharedByUser(assessment, assessment.getValidation().getUser().getId()))")
+    @Mapping(target = "published", source = "assessment.published")
+
     UserJsonRegistryAssessmentResponse userRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
 
     @IterableMapping(qualifiedByName = "mapWithRegistryExpression")
     List<UserJsonRegistryAssessmentResponse> userRegistryAssessmentsToJsonAssessments(List<MotivationAssessment> assessments);
+
 
     @IterableMapping(qualifiedByName = "mapWithExpression")
     List<AssessmentPerActorDto> assessmentPerActorsToAssessmentPerActorsDto(List<AssessmentPerActor> assessmentPerActors);

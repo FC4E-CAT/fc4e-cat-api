@@ -759,6 +759,7 @@ public class AdminEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAllAssessmentsByPage(page - 1, size, search, uriInfo);
+//        assessments.getContent().stream().forEach(e-> System.out.println("is published-- ? "+e.getPublished()));
 
         return Response.ok().entity(assessments).build();
     }
@@ -828,5 +829,123 @@ public class AdminEndpoint {
         public void setContent(List<AdminPartialJsonAssessmentResponse> content) {
             this.content = content;
         }
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Publish an existing assessment.",
+            description = "Allows an admin to publish an existing assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment published successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/assessments/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response publishAssessment(@Parameter(
+                                             description = "The ID of the assessment to be updated.",
+                                             required = true,
+                                             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                             schema = @Schema(type = SchemaType.STRING))
+                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id) {
+
+        var message = assessmentService.managePublishAssessment(id,true);
+        var response=new InformativeResponse();
+        response.code=200;
+        response.message=message;
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Unpublish an existing assessment.",
+            description = "Allows an admin to unpublish an existing assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment unpublished successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/assessments/{id}/unpublish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response unpublishAssessment(@Parameter(
+                                              description = "The ID of the assessment to be updated.",
+                                              required = true,
+                                              example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                              schema = @Schema(type = SchemaType.STRING))
+                                      @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id) {
+
+        var message = assessmentService.managePublishAssessmentByAdmin(id,false);
+        var response=new InformativeResponse();
+        response.code=200;
+        response.message=message;
+        return Response.ok().entity(response).build();
     }
 }

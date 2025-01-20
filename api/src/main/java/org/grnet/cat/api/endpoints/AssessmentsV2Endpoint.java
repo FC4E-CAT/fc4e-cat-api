@@ -32,6 +32,7 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
@@ -116,7 +117,7 @@ public class AssessmentsV2Endpoint {
     @Registration
     public Response create(@Valid @NotNull(message = "The request body is empty.") JsonRegistryAssessmentRequest request, @Context UriInfo uriInfo) {
 
-        var response  = assessmentService.createV2Assessment(utility.getUserUniqueIdentifier(), request);
+        var response = assessmentService.createV2Assessment(utility.getUserUniqueIdentifier(), request);
 
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
         return Response.created(serverInfo.getAbsolutePathBuilder().path(response.id).build()).entity(response).build();
@@ -209,7 +210,7 @@ public class AssessmentsV2Endpoint {
     @Authenticated
     @Registration
     public Response assessments(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                        description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
                                 @Parameter(name = "size", in = QUERY,
                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
@@ -218,7 +219,7 @@ public class AssessmentsV2Endpoint {
                                 @Parameter(name = "subject_type", in = QUERY,
                                         description = "The subject type to filter.") @QueryParam("subject_type") @DefaultValue("") String subjectType,
                                 @Parameter(name = "actor", in = QUERY,
-                                        description = "The actor to filter.") @QueryParam("actor")  String actorId,
+                                        description = "The actor to filter.") @QueryParam("actor") String actorId,
                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getDtoRegistryAssessmentsByUserAndPage(page - 1, size, uriInfo, utility.getUserUniqueIdentifier(), subjectName, subjectType, actorId);
@@ -291,7 +292,7 @@ public class AssessmentsV2Endpoint {
             description = "Assessment's registry json document updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = UserJsonRegistryAssessmentResponse.class)))
+                    implementation = AdminJsonRegistryAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -329,10 +330,10 @@ public class AssessmentsV2Endpoint {
     @Authenticated
     @Registration
     public Response updateAssessment(@Parameter(
-            description = "The ID of the assessment to update.",
-            required = true,
-            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
-            schema = @Schema(type = SchemaType.STRING))
+                                             description = "The ID of the assessment to update.",
+                                             required = true,
+                                             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                             schema = @Schema(type = SchemaType.STRING))
                                      @PathParam("id")
                                      @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id,
                                      @Valid @NotNull(message = "The request body is empty.") JsonRegistryAssessmentRequest request) {
@@ -375,15 +376,15 @@ public class AssessmentsV2Endpoint {
     @Path("/public-objects/by-motivation/{motivation-id}/by-actor/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response objectsByTypeAndActor(@Parameter(
-            description = "The Motivation.",
-            required = true,
-            example = "pid_graph:3E109BBA",
-            schema = @Schema(type = SchemaType.STRING))
+                                                  description = "The Motivation.",
+                                                  required = true,
+                                                  example = "pid_graph:3E109BBA",
+                                                  schema = @Schema(type = SchemaType.STRING))
                                           @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String motivationId, @Parameter(
-            description = "The Actor to retrieve public assessment objects.",
-            required = true,
-            example = "pid_graph:B5CC396B",
-            schema = @Schema(type = SchemaType.STRING))
+                                                  description = "The Actor to retrieve public assessment objects.",
+                                                  required = true,
+                                                  example = "pid_graph:B5CC396B",
+                                                  schema = @Schema(type = SchemaType.STRING))
                                           @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
                                           @Parameter(name = "page", in = QUERY,
                                                   description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
@@ -430,26 +431,26 @@ public class AssessmentsV2Endpoint {
     @Path("/by-motivation/{motivation-id}/by-actor/{actor-id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response assessmentsByMotivationAndActor(@Parameter(
-            description = "The Motivation.",
-            required = true,
-            example = "pid_graph:3E109BBA",
-            schema = @Schema(type = SchemaType.STRING))
-                                              @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String motivationId, @Parameter(
-            description = "The Actor to retrieve assessments.",
-            required = true,
-            example = "pid_graph:B5CC396B",
-            schema = @Schema(type = SchemaType.STRING))
-                                              @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
-                                              @Parameter(name = "page", in = QUERY,
-                                                      description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                              @Parameter(name = "size", in = QUERY,
-                                                      description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                              @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                              @Parameter(name = "subject_name", in = QUERY,
-                                                      description = "The subject name to filter.") @QueryParam("subject_name") @DefaultValue("") String subjectName,
-                                              @Parameter(name = "subject_type", in = QUERY,
-                                                      description = "The subject type to filter.") @QueryParam("subject_type") @DefaultValue("") String subjectType,
-                                              @Context UriInfo uriInfo) {
+                                                            description = "The Motivation.",
+                                                            required = true,
+                                                            example = "pid_graph:3E109BBA",
+                                                            schema = @Schema(type = SchemaType.STRING))
+                                                    @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String motivationId, @Parameter(
+                                                            description = "The Actor to retrieve assessments.",
+                                                            required = true,
+                                                            example = "pid_graph:B5CC396B",
+                                                            schema = @Schema(type = SchemaType.STRING))
+                                                    @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+                                                    @Parameter(name = "page", in = QUERY,
+                                                            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                                    @Parameter(name = "size", in = QUERY,
+                                                            description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                    @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                                    @Parameter(name = "subject_name", in = QUERY,
+                                                            description = "The subject name to filter.") @QueryParam("subject_name") @DefaultValue("") String subjectName,
+                                                    @Parameter(name = "subject_type", in = QUERY,
+                                                            description = "The subject type to filter.") @QueryParam("subject_type") @DefaultValue("") String subjectType,
+                                                    @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getPublishedAssessmentsByMotivationAndActorAndPage(page - 1, size, motivationId, actorId, uriInfo, subjectName, subjectType);
 
@@ -499,6 +500,7 @@ public class AssessmentsV2Endpoint {
 
         return Response.ok().entity(validations).build();
     }
+
     @Tag(name = "Assessment")
     @Operation(
             summary = "Get list of objects.",
@@ -531,15 +533,107 @@ public class AssessmentsV2Endpoint {
     @GET
     @Path("/objects")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getObjects(  @Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                 @Parameter(name = "size", in = QUERY,
-                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                     @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                 @Context UriInfo uriInfo) {
+    public Response getObjects(@Parameter(name = "page", in = QUERY,
+                                       description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                               @Parameter(name = "size", in = QUERY,
+                                       description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                               @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                               @Context UriInfo uriInfo) {
 
-        var objects = assessmentService.getObjects(page-1, size, uriInfo, utility.getUserUniqueIdentifier());
+        var objects = assessmentService.getObjects(page - 1, size, uriInfo, utility.getUserUniqueIdentifier());
 
         return Response.ok().entity(objects).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Publish Assessment",
+            description = "Publish assessments.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding response.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response publishAssessment(@Parameter(
+            description = "The ID of the assessment to retrieve.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                      @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+
+        var message = assessmentService.managePublishAssessment(id, true);
+        var response = new InformativeResponse();
+        response.message = message;
+        response.code = 200;
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Unpublish Assessment",
+            description = "Unpublish assessments.")
+    @APIResponse(
+            responseCode = "200",
+            description = "The corresponding response.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/unpublish")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response unpublishAssessment(@Parameter(
+            description = "The ID of the assessment to retrieve.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+
+        var message = assessmentService.managePublishAssessment(id, false);
+        var response = new InformativeResponse();
+        response.message = message;
+        response.code = 200;
+        return Response.ok().entity(response).build();
     }
 }

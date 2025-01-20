@@ -71,4 +71,11 @@ public class MotivationAssessment {
     @JoinColumn(name = "motivation_id", referencedColumnName = "lodMTV")
     @NotNull
     private Motivation motivation;
+
+    @Column
+    private Boolean  published;
+
+    public Boolean getPublished() {
+        return published;
+    }
 }
