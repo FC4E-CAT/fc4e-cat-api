@@ -48,6 +48,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-720 Create Endpoint to Update Metric and Metric Definition.
 - [#415](https://github.com/FC4E-CAT/fc4e-cat-api/pull/415) CAT-641 Should we keep extra info on automated tests.
 - [#418](https://github.com/FC4E-CAT/fc4e-cat-api/pull/418) CAT-727 Publish assessment.
+- [#420](https://github.com/FC4E-CAT/fc4e-cat-api/pull/420) CAT-729 Implement Search Functionality for Test Library
 
 ### Fix
 
@@ -89,8 +90,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702 Pagination info in motivation-metric-tests call.
 - [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706 Give the ability to update tests with the same info as CREATE.
 - [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-618 Change metadata xml validation automated checks 
-- [#416](https://github.com/FC4E-CAT/fc4e-cat-api/pull/416) Update /registry/metric Endpoints to Include All metric and metric-definition Fields
+- [#416](https://github.com/FC4E-CAT/fc4e-cat-api/pull/416) CAT-722 Update /registry/metric Endpoints to Include All metric and metric-definition Fields
 - [#419](https://github.com/FC4E-CAT/fc4e-cat-api/pull/419) CAT-726 CAT-725 CAT-724 Quote typos in MD1 related tests - Auto MD1 related tests inform about wrong parameters-Auto MD1 related test return 500 when metadata not valid.
+- [#417]() CAT-728 Extend Search Functionality for Principles and Criteria
+
 
 ### Removed
 
