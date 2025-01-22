@@ -40,7 +40,7 @@ public class RegistryAssessmentDto {
     @JsonProperty(value = "assessment_type")
     public RegistryTemplateMotivationDto motivation;
 
-    @JsonIgnore
+//    @JsonIgnore
     public boolean published;
 
     public String timestamp = "";

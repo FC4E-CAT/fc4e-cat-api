@@ -104,7 +104,7 @@ public class JsonAssessmentService {
         assessment.setMotivation(Panache.getEntityManager().getReference(Motivation.class, request.assessmentDoc.motivation.getId()));
         assessment.setSubject(subjectService.getSubjectById(request.assessmentDoc.subject.dbId));
         assessment.setShared(Boolean.FALSE);
-        assessment.setPublished(Boolean.FALSE);
+        assessment.setPublished(request.assessmentDoc.published);
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
         motivationAssessmentRepository.persist(assessment);
 
@@ -329,7 +329,7 @@ public class JsonAssessmentService {
         request.assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
         request.assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
        // request.assessmentDoc.published = dbAssessmentToJson.assessmentDoc.published;
-
+        dbAssessment.setPublished(request.assessmentDoc.published);
         dbAssessment.setUpdatedBy(utility.getUserUniqueIdentifier());
         dbAssessment.setUpdatedOn(Timestamp.from(Instant.now()));
         dbAssessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
@@ -553,6 +553,8 @@ public class JsonAssessmentService {
         ObjectNode jsonNode = null;
         try {
             jsonNode = (ObjectNode) objectMapper.readTree(doc);
+            jsonNode.put("published", publish);
+
             assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
