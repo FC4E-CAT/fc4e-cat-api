@@ -95,6 +95,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#417](https://github.com/FC4E-CAT/fc4e-cat-api/pull/417) CAT-728 Extend Search Functionality for Principles and Criteria
 - [#424](https://github.com/FC4E-CAT/fc4e-cat-api/pull/424) CAT-734 Change assessment_doc to include published.
 - [#428](https://github.com/FC4E-CAT/fc4e-cat-api/pull/428) CAT-741 Motivation preview displays wrong json when add/remove elements in motivation
+- [#429](https://github.com/FC4E-CAT/fc4e-cat-api/pull/429) CAT-744 Issue when actor- criteria vary betwen 2 motivations which are parent-child(cloned)
 
 
 

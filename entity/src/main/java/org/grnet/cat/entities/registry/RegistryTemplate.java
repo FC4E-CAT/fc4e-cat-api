@@ -58,4 +58,6 @@ public class RegistryTemplate {
 
     private String mt_mtv;
     private String cm_mtv;
+
+    private String ca_mtv;
 }
