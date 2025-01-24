@@ -94,6 +94,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#419](https://github.com/FC4E-CAT/fc4e-cat-api/pull/419) CAT-726 CAT-725 CAT-724 Quote typos in MD1 related tests - Auto MD1 related tests inform about wrong parameters-Auto MD1 related test return 500 when metadata not valid.
 - [#417](https://github.com/FC4E-CAT/fc4e-cat-api/pull/417) CAT-728 Extend Search Functionality for Principles and Criteria
 - [#424](https://github.com/FC4E-CAT/fc4e-cat-api/pull/424) CAT-734 Change assessment_doc to include published.
+- [#428](https://github.com/FC4E-CAT/fc4e-cat-api/pull/428) CAT-741 Motivation preview displays wrong json when add/remove elements in motivation
 
 
 
