@@ -155,9 +155,17 @@ public class ValidationRepository implements Repository<Validation, Long> {
             map.put("search", "%" + search + "%");
         }
 
-        joiner.add("order by");
-        joiner.add("validation." + sort);
-        joiner.add(order);
+        if(StringUtils.isNotEmpty(sort)){
+
+            joiner.add("order by");
+            joiner.add("validation." + sort);
+            joiner.add(order);
+        } else {
+
+            joiner.add("order by");
+            joiner.add("validation.status ASC");
+            joiner.add(", validation.createdOn DESC");
+        }
 
         var panache = find(joiner.toString(), map).page(page, size);
 

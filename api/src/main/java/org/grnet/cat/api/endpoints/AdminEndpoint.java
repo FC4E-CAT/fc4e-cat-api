@@ -138,12 +138,12 @@ public class AdminEndpoint {
                                 @Parameter(name = "search", in = QUERY,
                                         description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in Validation entity. The search will be conducted in the following fields : id, organization's name, user's name.") @QueryParam("search") String search,
                                 @Parameter(name = "sort", in = QUERY,
-                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "createdOn"),
-                                        examples = {@ExampleObject(name = "Organization name", value = "organisationName"), @ExampleObject(name = "Created On", value = "createdOn")},
-                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("createdOn") @QueryParam("sort") String sort,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Organization name", value = "organisationName"), @ExampleObject(name = "Created On", value = "createdOn"), @ExampleObject(name = "Status", value = "status")},
+                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("") @QueryParam("sort") String sort,
                                 @Parameter(name = "order",
                                         in = QUERY,
-                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                                         examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
                                         description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("DESC") @QueryParam("order") String order,
                                 @Parameter(name = "status",
@@ -157,7 +157,7 @@ public class AdminEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("organisationName", "createdOn");
+        var sortValues = List.of("organisationName", "createdOn", "", "status");
 
         if (!orderValues.contains(order)) {
 
