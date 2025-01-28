@@ -98,6 +98,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#426](https://github.com/FC4E-CAT/fc4e-cat-api/pull/426) CAT-554 API: Motivation Clone Missing MotivationActors in Cloned Item
 - [#428](https://github.com/FC4E-CAT/fc4e-cat-api/pull/428) CAT-741 Motivation preview displays wrong json when add/remove elements in motivation
 - [#429](https://github.com/FC4E-CAT/fc4e-cat-api/pull/429) CAT-744 Issue when actor- criteria vary betwen 2 motivations which are parent-child(cloned)
+- [#431](https://github.com/FC4E-CAT/fc4e-cat-api/pull/431) CAT-745 C7 criterion fails due to wrong benchmark value
 
 
 
