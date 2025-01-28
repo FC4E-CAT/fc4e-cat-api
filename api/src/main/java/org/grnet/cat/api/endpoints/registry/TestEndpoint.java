@@ -330,8 +330,9 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
                     examples = {
                             @ExampleObject(name = "Last Touch", value = "lastTouch"),
-                            @ExampleObject(name = "TES", value = "tes"),
-                            @ExampleObject(name = "Label", value = "label")},
+                            @ExampleObject(name = "TES", value = "TES"),
+                            @ExampleObject(name = "Label", value = "labelTest"),
+                            @ExampleObject(name = "Description", value = "descTest")},
                     description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
             @DefaultValue("lastTouch")
             @QueryParam("sort") String sort,
@@ -357,7 +358,7 @@ public class TestEndpoint {
             @Context UriInfo uriInfo) {
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("lastTouch", "pri", "label");
+        var sortValues = List.of("lastTouch", "TES", "labelTest", "descTest");
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 
