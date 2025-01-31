@@ -50,6 +50,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#418](https://github.com/FC4E-CAT/fc4e-cat-api/pull/418) CAT-727 Publish assessment.
 - [#420](https://github.com/FC4E-CAT/fc4e-cat-api/pull/420) CAT-729 Implement Search Functionality for Test Library
 - [#427](https://github.com/FC4E-CAT/fc4e-cat-api/pull/427) Admin view Validations / Order by status with pending on top.
+- [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750: Retrieve Associated Motivations for Tests
 
 ### Fix
 

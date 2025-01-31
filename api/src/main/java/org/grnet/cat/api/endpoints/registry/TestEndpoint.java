@@ -367,17 +367,17 @@ public class TestEndpoint {
         return Response.ok().entity(tests).build();
     }
 
-    public static class PageableTestResponse extends PageResource<TestResponseDto> {
+    public static class PageableTestResponse extends PageResource<TestAndTestDefinitionResponse> {
 
-        private List<TestResponseDto> content;
+        private List<TestAndTestDefinitionResponse> content;
 
         @Override
-        public List<TestResponseDto> getContent() {
+        public List<TestAndTestDefinitionResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<TestResponseDto> content) {
+        public void setContent(List<TestAndTestDefinitionResponse> content) {
             this.content = content;
         }
     }
