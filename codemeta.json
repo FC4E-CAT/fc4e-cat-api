@@ -1,0 +1,81 @@
+{
+  "@context": "https://w3id.org/codemeta/3.0",
+  "type": "SoftwareSourceCode",
+  "applicationCategory": "Assessment - API",
+  "author": [
+    {
+      "id": "https://orcid.org/0009-0004-9021-8034",
+      "type": "Person",
+      "affiliation": {
+        "type": "Organization",
+        "name": "National Infrastructures for Research and Technology -  GRNET S.A"
+      },
+      "email": "cthermolia@admin.grnet.gr",
+      "familyName": "Thermolia",
+      "givenName": "Chryssa"
+    },
+    {
+      "type": "Role",
+      "schema:author": "https://orcid.org/0009-0004-9021-8034",
+      "roleName": "Developer"
+    },
+    {
+      "id": "https://orcid.org/0009-0000-0192-3868",
+      "type": "Person",
+      "affiliation": {
+        "type": "Organization",
+        "name": "National Infrastructures for Research and Technology -  GRNET S.A"
+      },
+      "email": "irina@admin.grnet.gr",
+      "familyName": "Skopouli",
+      "givenName": "Irina"
+    },
+    {
+      "type": "Role",
+      "schema:author": "https://orcid.org/0009-0000-0192-3868",
+      "roleName": "Developer"
+    },
+    {
+      "id": "https://orcid.org/0009-0003-6339-3278",
+      "type": "Person",
+      "affiliation": {
+        "type": "Organization",
+        "name": "National Infrastructures for Research and Technology -  GRNET S.A"
+      },
+      "email": "fbasios@admin.grnet.gr",
+      "familyName": "Basios",
+      "givenName": "Fotios"
+    },
+    {
+      "type": "Role",
+      "schema:author": "https://orcid.org/0009-0003-6339-3278",
+      "roleName": "Developer"
+    }
+  ],
+  "codeRepository": "https://github.com/FC4E-CAT/fc4e-cat-api",
+  "dateCreated": "2023-05-10",
+  "datePublished": "2023-07-19",
+  "description": "The Compliance Assessment Toolkit will support the EOSC PID policy with services to encode, record, and query compliance with the policy.",
+  "downloadUrl": "https://github.com/FC4E-CAT/fc4e-cat-api/archive/refs/heads/main.zip",
+  "funder": {
+    "type": "Organization",
+    "name": "European Commission"
+  },
+  "identifier": "https://github.com/FC4E-CAT/fc4e-cat-api",
+  "isPartOf": "https://faircore4eosc.eu",
+  "keywords": [
+    "Quarkus",
+    "Java",
+    "API",
+    "REST"
+  ],
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "name": "FAIRCORE4EOSC - CAT: Compliance Assessment Toolkit",
+  "operatingSystem": "Rocky Linux 9.0",
+  "programmingLanguage": "Java",
+  "runtimePlatform": "JVM",
+  "version": "v1.8.1",
+  "developmentStatus": "active",
+  "funding": "Funded by European Commission under grant number 101057264.",
+  "issueTracker": "https://github.com/FC4E-CAT/fc4e-cat-api/issues"
+}
