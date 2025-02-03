@@ -40,6 +40,7 @@ public interface TestMapper {
     @Named("mapTestAndTestDefinition")
     @Mapping(source = "test", target = "testResponse", qualifiedByName = "mapTest")
     @Mapping(source = "testDefinition", target = "testDefinitionResponse", qualifiedByName = "mapTestDefinition")
+    @Mapping(target = "motivations", ignore = true)
     TestAndTestDefinitionResponse testAndTestDefinitionToDto(Test test, TestDefinition testDefinition);
 
 

@@ -2,14 +2,17 @@ package org.grnet.cat.repositories.registry;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringJoiner;
 
 import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
@@ -53,6 +56,19 @@ public class TestRepository implements Repository<Test, String> {
 
         return pageable;
     }
+
+    @Transactional
+    public List<Motivation> getMotivationIdsByTest(String testId) {
+
+        var db = "SELECT DISTINCT m FROM Motivation m " +
+                "LEFT JOIN MetricTestJunction mt ON mt.motivation.id = m.id " +
+                "WHERE mt.test.id = :testId";
+
+        return getEntityManager().createQuery(db, Motivation.class)
+                .setParameter("testId", testId)
+                .getResultList();
+    }
+
 
     public boolean notUnique(String fieldName, String value) {
         String query = "select count(c) from Test c where lower(c." + fieldName + ") = lower(?1)";

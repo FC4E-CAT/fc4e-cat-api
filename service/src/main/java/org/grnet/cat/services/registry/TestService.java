@@ -6,10 +6,14 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.test.*;
+import org.grnet.cat.entities.registry.Principle;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.entities.registry.TestDefinition;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
+import org.grnet.cat.mappers.registry.MotivationMapper;
+import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestDefinitionRepository;
@@ -63,7 +67,31 @@ public class TestService {
         var test = testRepository.findById(id);
         var testDefinition = testDefinitionRepository.fetchTestDefinitionByTestId(id);
 
-        return TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+        return testResponseWithMotivations(test, testDefinition);
+    }
+
+
+
+
+    /**
+     * This method takes a Principle entity, converts it to a PrincipleResponseDto, retrieves and maps
+     * any associated motivations, and then sets the motivations in the response.
+     *
+     * @param test The Test entity to be converted and enhanced.
+     * @return A PrincipleResponseDto with associated motivations.
+     */
+    private TestAndTestDefinitionResponse testResponseWithMotivations(Test test, TestDefinition testDefinition) {
+
+        var testAndTestDefinitionResponse = TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+
+        var motivations = testRepository.getMotivationIdsByTest(test.getId());
+        var motivationResponses = motivations.stream()
+                .map(MotivationMapper.INSTANCE::mapPartialMotivation)
+                .collect(Collectors.toList());
+
+        testAndTestDefinitionResponse.setMotivations(motivationResponses);
+
+        return testAndTestDefinitionResponse;
     }
 
 
@@ -171,7 +199,7 @@ public class TestService {
         var dtoList = tests.stream()
                 .map(test -> {
                     TestDefinition testDefinition = testDefinitionMap.get(test.getId());
-                    return TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+                    return testResponseWithMotivations(test, testDefinition);
                 })
                 .collect(Collectors.toList());
 
