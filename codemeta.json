@@ -56,7 +56,7 @@
   "dateCreated": "2023-05-10",
   "datePublished": "2023-07-19",
   "description": "The Compliance Assessment Toolkit will support the EOSC PID policy with services to encode, record, and query compliance with the policy.",
-  "downloadUrl": "https://github.com/FC4E-CAT/fc4e-cat-api/archive/refs/heads/main.zip",
+  "downloadUrl": "https://github.com/FC4E-CAT/fc4e-cat-api/releases",
   "funder": {
     "type": "Organization",
     "name": "European Commission"
