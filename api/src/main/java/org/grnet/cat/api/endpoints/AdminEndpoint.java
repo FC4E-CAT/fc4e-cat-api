@@ -883,7 +883,7 @@ public class AdminEndpoint {
                                              schema = @Schema(type = SchemaType.STRING))
                                      @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id) {
 
-        var message = assessmentService.managePublishAssessment(id,true);
+        var message = assessmentService.managePublishAssessmentByAdmin(id,true);
         var response=new InformativeResponse();
         response.code=200;
         response.message=message;
