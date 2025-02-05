@@ -324,7 +324,7 @@ public class JsonAssessmentService {
         request.assessmentDoc.id = dbAssessment.getId();
         request.assessmentDoc.version = dbAssessmentToJson.assessmentDoc.version;
         request.assessmentDoc.status = dbAssessmentToJson.assessmentDoc.status;
-        request.assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor;
+      //  request.assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor; ---please remove the comment
         request.assessmentDoc.subject = dbAssessmentToJson.assessmentDoc.subject;
         request.assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
         request.assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
