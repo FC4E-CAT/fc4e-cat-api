@@ -7,221 +7,239 @@ import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.RegistryCodelistEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.RelationResponse;
-import org.grnet.cat.dtos.registry.codelist.*;
+import org.grnet.cat.dtos.registry.codelist.ImperativeResponse;
+import org.grnet.cat.dtos.registry.codelist.MotivationTypeResponse;
+import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
+import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 @TestHTTPEndpoint(RegistryCodelistEndpoint.class)
 public class RegistryCodelistEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTypeCriterionNotPermitted() {
-
-        register("alice");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .get("/criterion-types/{id}", "pid_graph:07CA8184")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
+        var error = getTypeCriterionForbidden("pid_graph:07CA8184");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getImperativeNotPermitted() {
-
-        register("alice");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .get("/imperatives/{id}", "pid_graph:293B1DEE")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
+        var error = getImperativeForbidden("pid_graph:293B1DEE");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getImperative() {
+        var response = getImperative("pid_graph:293B1DEE");
+        assertEquals("pid_graph:293B1DEE", response.id);
+    }
 
-        register("admin");
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getTypeBenchmarkNotPermitted() {
+        var error = getTypeBenchmarkForbidden("pid_graph:0917EC0D");
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
 
-        var response = given()
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getTypeBenchmark() {
+        var response = getTypeBenchmark("pid_graph:0917EC0D");
+        assertEquals("pid_graph:0917EC0D", response.id);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getRegistryActorNotPermitted() {
+        var error = getRegistryActorForbidden("pid_graph:234B60D8");
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getRegistryActor() {
+        var response = getRegistryActor("pid_graph:234B60D8");
+        assertEquals("pid_graph:234B60D8", response.id);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getMotivationType() {
+        var response = getMotivationType("pid_graph:5AF642D8");
+        assertEquals("pid_graph:5AF642D8", response.id);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getMotivationTypeNotPermitted() {
+        var error = getMotivationTypeForbidden("pid_graph:5AF642D8");
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getRelation() {
+        var response = getRelation("dcterms:isRequiredBy");
+        assertEquals("dcterms:isRequiredBy", response.id);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getRelationNotPermitted() {
+        var error = getRelationForbidden("dcterms:isRequiredBy");
+        assertEquals("You do not have permission to access this resource.", error.message);
+    }
+
+
+    private ImperativeResponse getImperative(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get("/imperatives/{id}", "pid_graph:293B1DEE")
+                .get("/imperatives/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(ImperativeResponse.class);
-
-        assertEquals(response.id, "pid_graph:293B1DEE");
     }
-    @Test
-    public void getTypeBenchmarkNotPermitted() {
 
-        register("alice");
-
-        var error = given()
+    private InformativeResponse getImperativeForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/benchmark-types/{id}", "pid_graph:0917EC0D")
+                .get("/imperatives/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
     }
 
-    @Test
-    public void getTypeBenchmark() {
-
-        register("admin");
-
-        var response = given()
+    private InformativeResponse getTypeCriterionForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/benchmark-types/{id}", "pid_graph:0917EC0D")
+                .get("/criterion-types/{id}", id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private TypeBenchmarkResponse getTypeBenchmark(String id) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .get("/benchmark-types/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TypeBenchmarkResponse.class);
-
-        assertEquals(response.id, "pid_graph:0917EC0D");
     }
 
-
-    @Test
-    public void getRegistryActorNotPermitted() {
-
-        register("alice");
-
-        var error = given()
+    private InformativeResponse getTypeBenchmarkForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/actors/{id}", "pid_graph:234B60D8")
+                .get("/benchmark-types/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
     }
 
-    @Test
-    public void getRegistryActor() {
-
-        register("admin");
-
-        var response = given()
+    private RegistryActorResponse getRegistryActor(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get("/actors/{id}", "pid_graph:234B60D8")
+                .get("/actors/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(RegistryActorResponse.class);
-
-        assertEquals(response.id, "pid_graph:234B60D8");
     }
 
-    @Test
-    public void getMotivationType() {
-
-        register("admin");
-
-        var response = given()
+    private InformativeResponse getRegistryActorForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/motivation-types/{id}", "pid_graph:5AF642D8")
+                .get("/actors/{id}", id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private MotivationTypeResponse getMotivationType(String id) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .get("/motivation-types/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(MotivationTypeResponse.class);
-
-        assertEquals(response.id, "pid_graph:5AF642D8");
     }
 
-    @Test
-    public void getMotivationTypeNotPermitted() {
-
-        register("alice");
-
-        var error = given()
+    private InformativeResponse getMotivationTypeForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/motivation-types/{id}", "pid_graph:5AF642D8")
+                .get("/motivation-types/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
     }
-    @Test
-    public void getRelation() {
 
-        register("admin");
-
-        var response = given()
+    private RelationResponse getRelation(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get("/relations/{id}", "dcterms:isRequiredBy")
+                .get("/relations/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(RelationResponse.class);
-
-        assertEquals(response.id, "dcterms:isRequiredBy");
     }
 
-    @Test
-    public void getRelationNotPermitted() {
-
-        register("alice");
-
-        var error = given()
+    private InformativeResponse getRelationForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/relations/{id}", "dcterms:isRequiredBy")
+                .get("/relations/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
     }
 }

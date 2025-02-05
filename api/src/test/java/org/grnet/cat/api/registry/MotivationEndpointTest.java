@@ -20,26 +20,32 @@ import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.UUID;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.Conversions.toUpperCase;
 
 @QuarkusTest
 @TestHTTPEndpoint(MotivationEndpoint.class)
 public class MotivationEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getMotivationNotPermitted() {
-
-        register("alice");
 
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
                 .get("/{id}", "pid_graph:3E109BBA")
                 .then()
@@ -52,9 +58,8 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void motivationTypeIsNotFound() {
-
-        register("admin");
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
@@ -64,7 +69,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -78,13 +83,12 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getMotivation() {
-
-        register("admin");
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .get("/{id}", "pid_graph:3E109BBA")
                 .then()
@@ -103,7 +107,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 //
 //        var response = given()
 //                .auth()
-//                .oauth2(getAccessToken("admin"))
+//                .oauth2(adminToken)
 //                .contentType(ContentType.JSON)
 //                .get("/{id}", "pid_graph:3E109BBA")
 //                .then()
@@ -128,9 +132,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 //    }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createMotivation() {
-
-        register("admin");
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
@@ -140,7 +143,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -155,9 +158,8 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createMotivationAndCopyFromMotivation() {
-
-        register("admin");
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
@@ -169,7 +171,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -185,9 +187,8 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createMotivationCopyNotFound() {
-
-        register("admin");
 
         var request = new MotivationRequest();
         request.mtv = "mtv";
@@ -199,7 +200,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -215,8 +216,6 @@ public class MotivationEndpointTest extends KeycloakTest {
     @Test
     public void updateMotivation() {
 
-        register("admin");
-
         var request = new MotivationRequest();
         request.mtv = "mtv";
         request.label = "labelMotivation";
@@ -225,7 +224,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -243,7 +242,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var updated = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(update)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", response.id)
@@ -260,7 +259,6 @@ public class MotivationEndpointTest extends KeycloakTest {
     @Test
     public void addActor() {
 
-        register("admin");
         var request = new MotivationRequest();
         request.mtv = "mtv";
         request.label = "labelMotivation";
@@ -269,7 +267,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -284,9 +282,10 @@ public class MotivationEndpointTest extends KeycloakTest {
         motivationActor.relation = "dcterms:isRequiredBy";
         MotivationActorRequest[] array = new MotivationActorRequest[1];
         array[0] = motivationActor;
+
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationResponse.id)
@@ -302,7 +301,6 @@ public class MotivationEndpointTest extends KeycloakTest {
     @Test
     public void addCriterion() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -311,7 +309,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -323,7 +321,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new CriterionRequest();
 
-        request.cri = "C100";
+        request.cri = "C100AC";
         request.label = "Minimum Operations";
         request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
         request.imperative = "pid_graph:BED209B9";
@@ -331,7 +329,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var criterionResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/criteria")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -350,7 +348,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationResponse.id)
@@ -367,7 +365,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         array1[0] = criterionActor;
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
@@ -394,7 +392,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 //
 //        var criterionResponse = given()
 //                .auth()
-//                .oauth2(getAccessToken("admin"))
+//                .oauth2(adminToken)
 //                .basePath("/v1/registry/criteria")
 //                .body(request)
 //                .contentType(ContentType.JSON)
@@ -414,7 +412,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 //
 //        given()
 //                .auth()
-//                .oauth2(getAccessToken("admin"))
+//                .oauth2(adminToken)
 //                .body(array)
 //                .contentType(ContentType.JSON)
 //                .post("/{id}/actors", "pid_graph:C6B2D50E")
@@ -431,7 +429,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 //        array1[0]=criterionActor;
 //        var response = given()
 //                .auth()
-//                .oauth2(getAccessToken("admin"))
+//                .oauth2(adminToken)
 //                .body(array1)
 //                .contentType(ContentType.JSON)
 //                .post("/{id}/actors/{actor-id}/criteria", "pid_graph:C6B2D50A","pid_graph:1A718108")
@@ -446,18 +444,18 @@ public class MotivationEndpointTest extends KeycloakTest {
 
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void addCriterionNoActor() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
-        motivationRequest.mtv = "mtv";
+        motivationRequest.mtv = "mtvna";
         motivationRequest.label = "labelMotivation";
         motivationRequest.description = "decMotivation";
         motivationRequest.motivationTypeId = "pid_graph:8882700E";
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -469,7 +467,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new CriterionRequest();
 
-        request.cri = "C100";
+        request.cri = "C100NA";
         request.label = "Minimum Operations";
         request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
         request.imperative = "pid_graph:BED209B9";
@@ -477,7 +475,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var criterionResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/criteria")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -496,7 +494,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationResponse.id)
@@ -513,7 +511,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         array1[0] = criterionActor;
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718109")
@@ -527,9 +525,9 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void addCriterionNoImperative() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -538,7 +536,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -550,7 +548,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new CriterionRequest();
 
-        request.cri = "C100";
+        request.cri = "C100NI";
         request.label = "Minimum Operations";
         request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
         request.imperative = "pid_graph:BED209B9";
@@ -558,7 +556,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var criterionResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/criteria")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -577,7 +575,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationResponse.id)
@@ -592,9 +590,10 @@ public class MotivationEndpointTest extends KeycloakTest {
         criterionActor.imperativeId = "pid_graph:293B1DEEE";
         CriterionActorRequest[] array1 = new CriterionActorRequest[1];
         array1[0] = criterionActor;
+
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
@@ -609,9 +608,9 @@ public class MotivationEndpointTest extends KeycloakTest {
 
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void addCriterionNoMotivationActor() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -620,7 +619,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -632,15 +631,15 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new CriterionRequest();
 
-        request.cri = "C100";
+        request.cri = "C100NMA";
         request.label = "Minimum Operations";
         request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
-        request.imperative = "pid_graph:BED209B9";
+        request.imperative = "pid_graph:2981F3DD";
         request.typeCriterion = "pid_graph:A2719B92";
 
         var criterionResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/criteria")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -658,7 +657,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         array1[0] = criterionActor;
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
@@ -672,9 +671,9 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateCriterionImperativeNotFound() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -683,7 +682,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -695,7 +694,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var request = new CriterionRequest();
 
-        request.cri = "C100";
+        request.cri = "C100NF";
         request.label = "Minimum Operations";
         request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
         request.imperative = "pid_graph:BED209B9";
@@ -703,7 +702,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var criterionResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/criteria")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -722,7 +721,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
+
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationResponse.id)
@@ -739,7 +739,8 @@ public class MotivationEndpointTest extends KeycloakTest {
         array1[0] = criterionActor;
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
+
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .put("/{id}/actors/{actor-id}/criteria", motivationResponse.id, "pid_graph:1A718108")
@@ -753,9 +754,9 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void addPrinciple() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -764,7 +765,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -783,7 +784,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
+
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principles", motivationResponse.id)
@@ -798,9 +800,9 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void duplicatePrinciple() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -809,7 +811,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -828,7 +830,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principles", motivationResponse.id)
@@ -842,7 +844,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var duplicate = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principles", motivationResponse.id)
@@ -856,9 +858,9 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void principleNotFound() {
 
-        register("admin");
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = "mtv";
         motivationRequest.label = "labelMotivation";
@@ -867,7 +869,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
+
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -886,7 +889,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
+
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principles", motivationResponse.id)
@@ -901,19 +905,18 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createPrincipleForMotivationAlreadyExist() {
 
-        register("admin");
-
         var motivation = new MotivationRequest();
-        motivation.mtv = "testMtv";
+        motivation.mtv = "mtv";
         motivation.label = "testLabelMotivation";
         motivation.description = "testDecMotivation";
         motivation.motivationTypeId = "pid_graph:8882700E";
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivation)
                 .contentType(ContentType.JSON)
                 .post()
@@ -924,7 +927,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(MotivationResponse.class);
 
         var principleRequestDto = new PrincipleRequestDto();
-        principleRequestDto.pri = "PRITEST";
+        principleRequestDto.pri = ("PRI" + UUID.randomUUID()).toUpperCase();
         principleRequestDto.label = "New Principle";
         principleRequestDto.description = "A test principle for motivation.";
 
@@ -936,7 +939,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principle", motivationResponse.id)
@@ -949,7 +952,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var errorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principle", motivationResponse.id)
@@ -959,23 +962,25 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("A principle with the identifier 'PRITEST' already exists.", errorResponse.message);
+        assertEquals("A principle with the identifier '" + principleRequestDto.pri + "' already exists.", errorResponse.message);
     }
 
+
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createMetricDefinitionForMotivationAlreadyExist() {
 
-        register("admin");
+        //register("admin");
 
         var motivationRequest = new MotivationRequest();
-        motivationRequest.mtv = "testMtv";
+        motivationRequest.mtv = ("mtv" + UUID.randomUUID()).toUpperCase();
         motivationRequest.label = "testLabelMotivation";
         motivationRequest.description = "testDecMotivation";
         motivationRequest.motivationTypeId = "pid_graph:8882700E";
 
         var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(motivationRequest)
                 .contentType(ContentType.JSON)
                 .post()
@@ -986,7 +991,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(MotivationResponse.class);
 
         var metricDefinitionRequest = new MotivationMetricExtendedRequest();
-        metricDefinitionRequest.MTR = "MTRTEST";
+        metricDefinitionRequest.MTR = ("MTR" + UUID.randomUUID()).toUpperCase();
         metricDefinitionRequest.labelMetric = "Performance Metric";
         metricDefinitionRequest.descrMetric = "This metric measures performance.";
         metricDefinitionRequest.urlMetric = "http://example.com/metric";
@@ -1023,12 +1028,13 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertEquals(409, errorResponse.code);
-        assertEquals("A metric with the identifier 'MTRTEST' already exists.", errorResponse.message);
+        assertEquals("A metric with the identifier '" + metricDefinitionRequest.MTR + "' already exists.", errorResponse.message);
     }
-    @Test
-    public void testPublish() {
-        register("admin");
 
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testPublish() {
 
         MotivationResponse motivationResponse = testCreateMotivation();
         CriterionResponse criterionResponse = testCreateCriterion();
@@ -1055,7 +1061,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/principles")
                 .contentType(ContentType.JSON)
                 .delete("{id}", principleResponse.id)
@@ -1067,17 +1073,15 @@ public class MotivationEndpointTest extends KeycloakTest {
 
     private MotivationResponse testCreateMotivation() {
 
-        //    register("admin");
-
         var request = new MotivationRequest();
-        request.mtv = "mtv";
+        request.mtv = ("mtv"+ UUID.randomUUID()).toUpperCase();;
         request.label = "labelMotivation";
         request.description = "decMotivation";
         request.motivationTypeId = "pid_graph:8882700E";
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -1104,7 +1108,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/criteria")
                 .body(request)
                 .contentType(ContentType.JSON)
@@ -1128,7 +1132,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var principleResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/registry/principles")
                 .body(principle)
                 .contentType(ContentType.JSON)
@@ -1159,7 +1163,8 @@ public class MotivationEndpointTest extends KeycloakTest {
 //        /******* No motivation found *************/
         response = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
+
                 .contentType(ContentType.JSON)
                 .put("/{id}/publish", "pid_graph:")
                 .then()
@@ -1172,7 +1177,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var publishResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .put("/{id}/publish", motivationId)
                 .then()
@@ -1184,7 +1189,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 /**** Publish published motivation ****/
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .put("/{id}/publish", motivationId)
                 .then()
@@ -1199,7 +1204,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     private void testUnpublishMotivation(String motivationId) {
         var response =
                 given().auth().
-                        oauth2(getAccessToken("admin")).
+                        oauth2(adminToken).
                         contentType(ContentType.JSON)
                         .put("/{id}/unpublish", "pid_graph:")
                         .then().
@@ -1211,7 +1216,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var unpublishResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .put("/{id}/unpublish", motivationId)
                 .then()
@@ -1227,7 +1232,7 @@ public class MotivationEndpointTest extends KeycloakTest {
         unpublishResponse =
                 given().
                         auth().
-                        oauth2(getAccessToken("admin")).
+                        oauth2(adminToken).
                         contentType(ContentType.JSON).
                         put("/{id}/unpublish", motivationId).
                         then().
@@ -1247,7 +1252,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var actorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationId)
@@ -1263,7 +1268,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     private void testPublishMotivationActor(String motivationId) {
         var actorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .put("/{id}/actors/{actor-id}/publish", motivationId, "pid_graph:1A718108")
                 .then()
@@ -1277,7 +1282,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         actorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .put("/{id}/actors/{actor-id}/publish", motivationId, "pid_graph:1A718108")
                 .then()
@@ -1301,7 +1306,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var criterionActorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
@@ -1315,7 +1320,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         criterionActorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .put("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
@@ -1340,7 +1345,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var criterionActorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array1)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
@@ -1358,7 +1363,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     private void testUnpublishMotivationActor(String motivationId, String actorId) {
         var actorResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .put("/{id}/actors/{actor-id}/unpublish", motivationId, actorId)
                 .then()
@@ -1379,7 +1384,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(update)
                 .contentType(ContentType.JSON)
                 .patch("/{id}", motivationId)
@@ -1403,7 +1408,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors", motivationId)
                 .then()
@@ -1428,7 +1433,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(array)
                 .contentType(ContentType.JSON)
                 .post("/{id}/actors/{actor-id}/criteria", motivationId, actorId)
@@ -1455,7 +1460,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
         var informativeResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/{id}/principles", motivationId)

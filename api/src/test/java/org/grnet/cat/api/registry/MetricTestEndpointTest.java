@@ -7,6 +7,8 @@ import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MetricTestEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,11 +20,9 @@ public class MetricTestEndpointTest extends KeycloakTest {
     @Test
     public void getMetricTestNotPermitted() {
 
-        register("alice");
-
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
                 .get("/")
                 .then()

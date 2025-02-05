@@ -8,67 +8,74 @@ import org.grnet.cat.api.endpoints.registry.TypeReproducibilityEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.metric.TypeReproducibilityResponseDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 @TestHTTPEndpoint(TypeReproducibilityEndpoint.class)
 public class TypeReproducibilityEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTypeReproducibilityNotPermitted() {
-        register("alice");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", "pid_graph:1BA2356B")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
+        var error = getTypeReproducibilityUnauthorized("pid_graph:1BA2356B");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTypeReproducibility() {
+        var response = getTypeReproducibility("pid_graph:1BA2356B");
+        assertNotNull(response);
+        assertEquals("pid_graph:1BA2356B", response.id);
+    }
 
-        register("admin");
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getTypeReproducibilityNotFound() {
+        var error = getTypeReproducibilityNotFound("notfound");
+        assertEquals("There is no Type Reproducibility with the following id: notfound", error.message);
+    }
 
-        var response = given()
+    private TypeReproducibilityResponseDto getTypeReproducibility(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get("/{id}", "pid_graph:1BA2356B")
+                .get("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TypeReproducibilityResponseDto.class);
-
-        assertEquals(response.id, "pid_graph:1BA2356B");
     }
 
-    @Test
-    public void getTypeReproducibilityNotFound() {
-
-        register("admin");
-
-        var error = given()
+    private InformativeResponse getTypeReproducibilityUnauthorized(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/{id}", "notfound")
+                .get("/{id}", id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private InformativeResponse getTypeReproducibilityNotFound(String id) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .get("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("There is no Type Reproducibility with the following id: notfound", error.message);
     }
 }

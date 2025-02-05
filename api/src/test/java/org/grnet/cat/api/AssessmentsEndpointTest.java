@@ -1,5 +1,6 @@
 package org.grnet.cat.api;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -11,68 +12,133 @@ import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
 @TestHTTPEndpoint(AssessmentsEndpoint.class)
+@QuarkusTestResource(DatabaseTestResource.class)
 public class AssessmentsEndpointTest extends KeycloakTest {
 
-    @Test
-    public void getAssessment() throws IOException {
+    private static UserJsonRegistryAssessmentResponse assessment;
 
-        register("validated");
-        register("admin");
-        register("evald");
-
+    @BeforeAll
+    public void initMakeValidation()  throws IOException{
         makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .get("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        assertEquals(assessment.id, response.id);
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("evald"))
-                .basePath("/v2/assessments")
-                .get("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
+        assessment = createRegistryAssessment(validatedToken);
     }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getAssessment(){
+
+        var fetchedAssessment = fetchAssessment(validatedToken, assessment.id);
+        assertEquals(assessment.id, fetchedAssessment.id);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void accessAssessmentCreatedByOtherUser(){
+        var errorResponse = fetchAssessmentNotValid(getAccessToken("bob"), assessment.id);
+
+        assertEquals("You do not have permission to access this resource.", errorResponse.message);
+    }
+
+    @Test
+    public void deleteRegistryAssessment() throws IOException {
+        var assessment = createRegistryAssessment(validatedToken);
+        var response = deleteAssessment(validatedToken, assessment.id, 200);
+
+        assertEquals("Assessment has been successfully deleted.", response.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createComment() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Create comment" + UUID.randomUUID();
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+        assertEquals(commentRequest.text, commentResponse.text);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createCommentNotAuthorized() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Unauthorized comment.";
+
+        var errorResponse = addCommentNotPermitted(aliceToken, assessment.id, commentRequest);
+        assertEquals("You do not have permission to access this resource.", errorResponse.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getComments(){
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment."+ UUID.randomUUID();
+
+        addComment(validatedToken, assessment.id, commentRequest);
+
+        var comments = fetchComments(validatedToken, assessment.id);
+        assertFalse(comments.getContent().isEmpty(), "Comments list should not be empty.");
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void updateComment() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Original comment." + UUID.randomUUID();
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+
+        var updatedCommentRequest = new CommentRequestDto();
+        updatedCommentRequest.text = "Updated comment.";
+
+        var updatedComment = updateComment(validatedToken, assessment.id, commentResponse.id, updatedCommentRequest);
+        assertEquals(updatedCommentRequest.text, updatedComment.text);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteComment() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Comment to delete." + UUID.randomUUID();
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+
+        var response = deleteComment(validatedToken, assessment.id, commentResponse.id, 200);
+        assertEquals("Comment has been successfully deleted.", response.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteCommentNotPermitted() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Comment to delete." + UUID.randomUUID();;
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+
+        var errorResponse = deleteComment(aliceToken, assessment.id, commentResponse.id, 403);
+        assertEquals("You do not have permission to access this resource.", errorResponse.message);
+    }
+
 
     private ValidationResponse approveValidation(Long valId) {
 
@@ -82,7 +148,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/admin/validations")
                 .contentType(ContentType.JSON)
                 .body(updateStatus)
@@ -94,7 +160,11 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(ValidationResponse.class);
 
     }
+    private ValidationResponse makeValidation(String username, String actorId) {
 
+        var response = makeValidationRequest(username, actorId);
+        return approveValidation(response.id);
+    }
     private ValidationResponse makeValidationRequest(String username, String actorId) {
 
         var request = new ValidationRequest();
@@ -105,7 +175,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
         request.registryActorId = actorId;
 
-        var response = given()
+        return given()
                 .auth()
                 .oauth2(getAccessToken(username))
                 .basePath("/v1/validations")
@@ -117,25 +187,17 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
-        return response;
     }
 
-    @Test
-    public void deleteRegistryAssessment() throws IOException {
+    private UserJsonRegistryAssessmentResponse createRegistryAssessment(String token) throws IOException {
+        var request = new JsonRegistryAssessmentRequest();
+        request.assessmentDoc = makeRegistryJsonDoc();
 
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(token)
                 .basePath("/v2/assessments")
-                .body(requestAssessment)
+                .body(request)
                 .contentType(ContentType.JSON)
                 .post()
                 .then()
@@ -143,367 +205,112 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(UserJsonRegistryAssessmentResponse.class);
+    }
 
-        var informativeResponse = given()
+    private UserJsonRegistryAssessmentResponse fetchAssessment(String token, String assessmentId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .contentType(ContentType.JSON)
+                .oauth2(token)
                 .basePath("/v2/assessments")
-                .delete("/{id}", assessment.id)
+                .get("/{id}", assessmentId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Assessment has been successfully deleted.", informativeResponse.message);
+                .as(UserJsonRegistryAssessmentResponse.class);
     }
 
-    @Test
-    public void accessAssessmentCreatedByOtherUser() throws IOException {
-
-        register("validated");
-        register("admin");
-        register("bob");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+    private InformativeResponse fetchAssessmentNotValid(String token, String assessmentId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(token)
                 .basePath("/v2/assessments")
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .contentType(ContentType.JSON)
-                .basePath("/v2/assessments")
-                .get("/{id}", assessment.id)
+                .get("/{id}", assessmentId)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
     }
 
-    @Test
-    public void createComment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+    private InformativeResponse deleteAssessment(String token, String assessmentId, int expectedStatus) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(token)
                 .basePath("/v2/assessments")
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
+                .delete("/{id}", assessmentId)
                 .then()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(expectedStatus)
                 .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
+                .as(InformativeResponse.class);
+    }
 
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
+    private CommentResponseDto addComment(String token, String assessmentId, CommentRequestDto request) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
+                .oauth2(token)
+                .body(request)
                 .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
+                .post("/{id}/comments", assessmentId)
                 .then()
                 .assertThat()
                 .statusCode(201)
                 .extract()
                 .as(CommentResponseDto.class);
-
-        assertEquals(commentRequest.text, responseComment.text);
     }
 
-    @Test
-    public void createCommentNotAuthorized() throws IOException {
-
-        register("alice");
-        register("admin");
-        register("validated");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+    private InformativeResponse addCommentNotPermitted(String token, String assessmentId, CommentRequestDto request) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
+                .oauth2(token)
+                .body(request)
                 .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
+                .post("/{id}/comments", assessmentId)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals(403, responseComment.code);
     }
 
-    @Test
-    public void getComments() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+    private PageResource fetchComments(String token, String assessmentId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments/", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var pageResource = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get("/{id}/comments", assessment.id)
+                .oauth2(token)
+                .get("/{id}/comments", assessmentId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(PageResource.class);
-
-        assertEquals(1, pageResource.getTotalElements());
     }
 
-    @Test
-    public void updateComment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+    private CommentResponseDto updateComment(String token, String assessmentId, Long commentId, CommentRequestDto request) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
+                .oauth2(token)
+                .body(request)
                 .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var updatedCommentRequest = new CommentRequestDto();
-        updatedCommentRequest.text = "This is an updated test comment.";
-
-        var updatedCommentResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(updatedCommentRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}/comments/{comment-id}", assessment.id, responseComment.id)
+                .put("/{id}/comments/{comment-id}", assessmentId, commentId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(CommentResponseDto.class);
-
-        assertEquals(updatedCommentRequest.text, updatedCommentResponse.text);
     }
 
-    @Test
-    public void deleteComment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+    private InformativeResponse deleteComment(String token, String assessmentId, Long commentId, int expectedStatus) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
+                .oauth2(token)
                 .contentType(ContentType.JSON)
-                .post()
+                .delete("/{id}/comments/{comment-id}", assessmentId, commentId)
                 .then()
                 .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}/comments/{comment-id}", assessment.id, responseComment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
+                .statusCode(expectedStatus)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("Comment has been successfully deleted.", informativeResponse.message);
-    }
-
-    @Test
-    public void deleteCommentNotPermitted() throws IOException {
-
-        register("validated");
-        register("admin");
-        register("alice");
-
-        makeValidation("validated", "pid_graph:B5CC396B");
-
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .delete("/comments/{id}", responseComment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
-    }
-
-    private ValidationResponse makeValidation(String username, String actorId) {
-
-        var response = makeValidationRequest(username, actorId);
-        return approveValidation(response.id);
     }
 
     private TemplateDto makeJsonDoc(boolean published, Long actor) throws IOException {
@@ -870,18 +677,18 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     @Test
     public void publishUnpublish() throws IOException {
 
-        register("validated");
-        register("admin");
-        register("evald");
+        //register("validated");
+        //register("admin");
+        //register("evald");
 
-        makeValidation("validated", "pid_graph:B5CC396B");
+        //makeValidation("validated", "pid_graph:B5CC396B");
 
         var requestAssessment = new JsonRegistryAssessmentRequest();
         requestAssessment.assessmentDoc = makeRegistryJsonDoc();
 
         var assessment = given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(validatedToken)
                 .basePath("/v2/assessments")
                 .body(requestAssessment)
                 .contentType(ContentType.JSON)
@@ -894,7 +701,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(validatedToken)
                 .basePath("/v2/assessments/")
                 .put("/{id}/publish", assessment.id)
                 .then()
@@ -908,7 +715,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         response = given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(validatedToken)
                 .basePath("/v2/assessments/")
                 .put("/{id}/unpublish", assessment.id)
                 .then()
@@ -921,7 +728,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v2/assessments")
                 .put("/{id}/publish", assessment.id)
                 .then()
@@ -934,7 +741,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         error = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v2/assessments")
                 .put("/{id}/unpublish", assessment.id)
                 .then()

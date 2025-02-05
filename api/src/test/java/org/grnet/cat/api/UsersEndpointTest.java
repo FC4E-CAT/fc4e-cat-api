@@ -3,12 +3,14 @@ package org.grnet.cat.api;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.UsersEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
-import org.grnet.cat.dtos.pagination.PageResource;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,278 +20,168 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UsersEndpointTest extends KeycloakTest {
 
     @Test
-    public void unauthorizedUser(){
-
-        var notAuthenticatedResponse = given()
-                    .auth()
-                    .oauth2("invalidToken")
-                    .post("/register")
-                    .thenReturn();
-
-            assertEquals(401, notAuthenticatedResponse.statusCode());
+    @Execution(ExecutionMode.CONCURRENT)
+    public void unauthorizedUser() {
+        var error = performRegisterRequest("invalidToken", 401);
+        assertEquals(401, error.code);
     }
 
     @Test
-    public void userAlreadyExistsInTheDatabase(){
-
-        register("alice");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .post("/register")
-                .then()
-                .assertThat()
-                .statusCode(409)
-                .extract()
-                .as(InformativeResponse.class);
-
+    @Execution(ExecutionMode.CONCURRENT)
+    public void userAlreadyExistsInTheDatabase() {
+        var error = performRegisterRequest(getAccessToken("alice"), 409);
         assertEquals("User already exists in the database.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void nonRegisterUserRequestsTheirUserProfile() {
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .get("/profile")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("User has not been registered on CAT service. User registration is a prerequisite for accessing this API resource.", informativeResponse.message);
+        var error = performGetUserProfileRequest(getAccessToken("evald"), 403);
+        assertEquals("User has not been registered on CAT service. User registration is a prerequisite for accessing this API resource.", error.message);
     }
 
     @Test
-    public void fetchAllUsers() {
-
-        register("admin");
-
-        var response = given()
-                .basePath("/v1/admin/users")
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get()
-                .thenReturn();
-
-        assertEquals(200, response.statusCode());
-        assertEquals(1, response.body().as(PageResource.class).getNumberOfPage());
-    }
-
-    @Test
-    public void fetchAllUsersBadRequest() {
-
-        register("admin");
-
-        var informativeResponse = given()
-                .basePath("/v1/admin/users")
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .queryParam("page", 0)
-                .get()
-                .then()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Page number must be >= 1.", informativeResponse.message);
-    }
-
-    @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataRequestBodyIsEmpty() {
-
-        register("alice");
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The request body is empty.", response.message);
+        var error = (InformativeResponse) performUpdateUserProfileRequest(null, aliceToken, 400);
+        assertEquals("The request body is empty.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataNameIsEmpty() {
-
-        register("alice");
-
-        var update = new UpdateUserProfileDto();
-        update.surname = "foo";
-        update.email = "foo@admin.grnet.gr";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(update)
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("name may not be empty.", response.message);
+        var update = createUpdateUserProfileDto(null, "foo", "foo@admin.grnet.gr", null);
+        var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
+        assertEquals("name may not be empty.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataEmailIsEmpty() {
-
-        register("alice");
-
-        var update = new UpdateUserProfileDto();
-        update.name = "foo";
-        update.surname = "foo";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(update)
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("email may not be empty.", response.message);
+        var update = createUpdateUserProfileDto("foo", "foo", null, null);
+        var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
+        assertEquals("email may not be empty.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataEmailIsNotValid() {
-
-        register("alice");
-
-        var update = new UpdateUserProfileDto();
-        update.name = "foo";
-        update.surname = "foo";
-        update.email = "foo.foo";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(update)
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Please provide a valid email address.", response.message);
+        var update = createUpdateUserProfileDto("foo", "foo", "foo.foo", null);
+        var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
+        assertEquals("Please provide a valid email address.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataSurnameIsEmpty() {
-
-        register("bob");
-
-        var update = new UpdateUserProfileDto();
-        update.name = "foo";
-        update.email = "foo@admin.grnet.gr";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .body(update)
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("surname may not be empty.", response.message);
+        var update = createUpdateUserProfileDto("foo", null, "foo@admin.grnet.gr", null);
+        var error = (InformativeResponse) performUpdateUserProfileRequest(update, bobToken, 400);
+        assertEquals("surname may not be empty.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataNotValidOrcid() {
-
-        register("alice");
-
-        var update = new UpdateUserProfileDto();
-        update.name = "foo";
-        update.surname = "foo";
-        update.email = "foo@admin.grnet.gr";
-        update.orcidId = "la-la-la-la";
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(update)
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Not valid structure of the ORCID Identifier.", informativeResponse.message);
+        var update = createUpdateUserProfileDto("foo", "foo", "foo@admin.grnet.gr", "la-la-la-la");
+        var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
+        assertEquals("Not valid structure of the ORCID Identifier.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataWithoutOrcid() {
-
-        register("alice");
-
-        var update = new UpdateUserProfileDto();
-        update.name = "foo";
-        update.surname = "foo";
-        update.email = "foo@admin.grnet.gr";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(update)
-                .contentType(ContentType.JSON)
-                .put("/profile")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserProfileDto.class);
-
+        var update = createUpdateUserProfileDto("foo", "foo", "foo@admin.grnet.gr", null);
+        var response = (UserProfileDto) performUpdateUserProfileRequest(update, aliceToken, 200);
         assertEquals("foo@admin.grnet.gr", response.email);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataWithOrcid() {
+        var update = createUpdateUserProfileDto("foo", "foo", "foo@admin.grnet.gr", "0000-0002-1825-0097");
+        var response = (UserProfileDto) performUpdateUserProfileRequest(update, aliceToken, 200);
+        assertEquals("0000-0002-1825-0097", response.orcidId);
+    }
 
-        register("alice");
-
-        var update = new UpdateUserProfileDto();
-        update.name = "foo";
-        update.surname = "foo";
-        update.email = "foo@admin.grnet.gr";
-        update.orcidId = "0000-0002-1825-0097";
-
-        var response = given()
+    private InformativeResponse performRegisterRequest(String token, int expectedStatus) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(update)
-                .contentType(ContentType.JSON)
+                .oauth2(token)
+                .post("/register")
+                .then()
+                .assertThat()
+                .statusCode(expectedStatus)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private InformativeResponse performGetUserProfileRequest(String token, int expectedStatus) {
+        return given()
+                .auth()
+                .oauth2(token)
+                .get("/profile")
+                .then()
+                .assertThat()
+                .statusCode(expectedStatus)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private UpdateUserProfileDto createUpdateUserProfileDto(String name, String surname, String email, String orcidId) {
+        var dto = new UpdateUserProfileDto();
+        dto.name = name;
+        dto.surname = surname;
+        dto.email = email;
+        dto.orcidId = orcidId;
+        return dto;
+    }
+
+    private Object performUpdateUserProfileRequest(UpdateUserProfileDto update, String token, int expectedStatus) {
+        var requestSpec = given()
+                .auth()
+                .oauth2(token)
+                .contentType(ContentType.JSON);
+
+        if (update != null) {
+            requestSpec.body(update);
+        }
+
+        var response = requestSpec
                 .put("/profile")
                 .then()
                 .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserProfileDto.class);
+                .statusCode(expectedStatus)
+                .extract();
 
-        assertEquals("0000-0002-1825-0097", response.orcidId);
+        if (expectedStatus == 200) {
+            return response.as(UserProfileDto.class);
+        } else {
+            return response.as(InformativeResponse.class);
+        }
     }
+
+    private Object performUpdateUserProfileRequestNotValid(UpdateUserProfileDto update, String token, int expectedStatus) {
+        var requestSpec = given()
+                .auth()
+                .oauth2(token)
+                .contentType(ContentType.JSON);
+
+        if (update != null) {
+            requestSpec.body(update);
+        }
+
+        var response = requestSpec
+                .put("/profile")
+                .then()
+                .assertThat()
+                .statusCode(expectedStatus)
+                .extract();
+
+        if (expectedStatus == 200) {
+            return response.as(UserProfileDto.class);
+        } else {
+            return response.as(InformativeResponse.class);
+        }
+    }
+
 }

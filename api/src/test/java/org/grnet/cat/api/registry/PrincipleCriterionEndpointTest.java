@@ -16,11 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
      @Test
      public void getPrincipleCriterionNotPermitted() {
-         register("alice");
 
          var error = given()
                     .auth()
-                    .oauth2(getAccessToken("alice"))
+                    .oauth2(aliceToken)
                     .contentType(ContentType.JSON)
                     .get("/")
                     .then()
