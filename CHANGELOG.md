@@ -48,9 +48,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-720 Create Endpoint to Update Metric and Metric Definition.
 - [#415](https://github.com/FC4E-CAT/fc4e-cat-api/pull/415) CAT-641 Should we keep extra info on automated tests.
 - [#418](https://github.com/FC4E-CAT/fc4e-cat-api/pull/418) CAT-727 Publish assessment.
-- [#420](https://github.com/FC4E-CAT/fc4e-cat-api/pull/420) CAT-729 Implement Search Functionality for Test Library
+- [#420](https://github.com/FC4E-CAT/fc4e-cat-api/pull/420) CAT-729 Implement Search Functionality for Test Library.
 - [#427](https://github.com/FC4E-CAT/fc4e-cat-api/pull/427) Admin view Validations / Order by status with pending on top.
-- [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750: Retrieve Associated Motivations for Tests
+- [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750: Retrieve Associated Motivations for Tests.
+- [#437](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-759: API - healthcheck.
 
 ### Fix
 
