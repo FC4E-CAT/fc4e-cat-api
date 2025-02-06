@@ -94,12 +94,8 @@ public class Utility {
         } else if (name.equals("PID Service Provider")) {
 
             return registryActorRepository.findById("pid_graph:E92B9B49");
-        } else if (name.equals("Multi-Primary Administrator")) {
-
+        } else{
             return registryActorRepository.findById("pid_graph:7835EF43");
-        } else {
-
-            return registryActorRepository.findById("pid_graph:566C01F6");
         }
     }
 }

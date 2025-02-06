@@ -206,7 +206,8 @@ public class ValidationsEndpointTest extends KeycloakTest {
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void updateValidationRequestByAdmin() {
-        var request = createValidationRequest("Manager", "ROR", "Keimyung University", "https://ror.org/00tjv0s33", "pid_graph:0E00C332");
+
+        var request = createValidationRequest("Manager", "ROR",  "National Infrastructures for Research and Technology -  GRNET S.A", "https://ror.org/05tcasm11", "pid_graph:0E00C332");
         var createdValidation = performValidationRequest(request, aliceToken);
 
         var updateRequest = createValidationRequest("Project Manager", "ROR", "NTUA", "https://ror.org/00tjv0s33", "pid_graph:0E00C332");
@@ -232,7 +233,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
     public void updateValidationRequestStatusByAdmin() {
         doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any());
 
-        var request = createValidationRequest("Manager Alice", "ROR", "Keimyung University", "https://ror.org/00tjv0s33", "pid_graph:E92B9B49");
+        var request = createValidationRequest("Manager Alice", "ROR", "Keimyung University", "https://ror.org/00tjv0s33", "pid_graph:0E00C332");
         var createdValidation = performValidationRequest(request, aliceToken);
 
         var updateStatus = new UpdateValidationStatus();
@@ -295,7 +296,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void createValidationInPolish() {
-        var request = createValidationRequest("Manager", "ROR", "Gdańskie Seminarium Duchowne", "https://ror.org/00tjv0s33", "pid_graph:566C01F6");
+        var request = createValidationRequest("Manager", "ROR", "Gdańskie Seminarium Duchowne", "https://ror.org/00tjv0s33", "pid_graph:E92B9B49");
         var response = performValidationRequest(request, aliceToken);
 
         assertEquals("Gdańskie Seminarium Duchowne", ((ValidationResponse) response).organisationName);
