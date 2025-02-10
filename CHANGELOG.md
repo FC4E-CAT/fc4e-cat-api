@@ -102,12 +102,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#428](https://github.com/FC4E-CAT/fc4e-cat-api/pull/428) CAT-741 Motivation preview displays wrong json when add/remove elements in motivation
 - [#429](https://github.com/FC4E-CAT/fc4e-cat-api/pull/429) CAT-744 Issue when actor- criteria vary betwen 2 motivations which are parent-child(cloned)
 - [#431](https://github.com/FC4E-CAT/fc4e-cat-api/pull/431) CAT-745 C7 criterion fails due to wrong benchmark value
-
+- [#439](https://github.com/FC4E-CAT/fc4e-cat-api/pull/439) CAT-749 API call: admin publish assessment gets 403 when admin
 
 
 ### Removed
 
-- [#335](https://github.com/FC4E-CAT/fc4e-cat-api/pull/335) CAT-592 Delete All Motivations Except Specific Entries.
+- [#335](https://github.com/FC4E-CAT/fc4e-cat-api/pull/335) CAT-592 Delete All Motivations Except Specific Entries. 
+- [#435](https://github.com/FC4E-CAT/fc4e-cat-api/pull/435) CAT-766 Update validation actors to PID Service Provider.
+- [#436](https://github.com/FC4E-CAT/fc4e-cat-api/pull/436) CAT-767 Delete the PID Service(Component) from CAT.
 
 ## 1.8.1 - 2024-10-17
 ---
@@ -115,8 +117,6 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Removed
 
 - [#320](https://github.com/FC4E-CAT/fc4e-cat-api/pull/320) CAT-579 Remove criteria ordering logic based on unique names.
-- [#435](https://github.com/FC4E-CAT/fc4e-cat-api/pull/435) CAT-766 Update validation actors to PID Service Provide
-- [#436](https://github.com/FC4E-CAT/fc4e-cat-api/pull/436) CAT-767 Delete the PID Service(Component) from CAT.
 
 ## 1.8.0 - 2024-10-16
 ---
