@@ -35,6 +35,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## 1.9.1 - 2025-02-25
 ---
+#### Added
+- [#466](https://github.com/FC4E-CAT/fc4e-cat-api/pull/466) CAT-827 CAT-829 Publish Assessment in Zenodo / Store zenodo info in database #466
+
 
 ### Fix
 - [#458](https://github.com/FC4E-CAT/fc4e-cat-api/pull/458) CAT-825 Missing label_algorithm , label_type_metric from assessment doc.
