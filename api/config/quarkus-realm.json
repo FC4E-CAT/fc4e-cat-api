@@ -998,6 +998,28 @@
             "icon_uri": ""
           },
           {
+            "name": "Zenodo Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Zenodo Resource",
+            "attributes": {},
+            "_id": "c9bb9z92-led3-43de-bb6f-24d6d816q453",
+            "uris": [
+              "/v2/zenodo/*"
+            ],
+            "scopes": [
+              {
+                "name": "cat.create"
+              },
+              {
+                "name": "cat.update"
+              },
+              {
+                "name": "cat.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Read Assessment Objects by Actor",
             "ownerManagedAccess": false,
             "displayName": "Read Assessment Objects by Actor",
@@ -1288,7 +1310,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1312,7 +1334,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\"]",
+              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           },

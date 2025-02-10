@@ -2,6 +2,7 @@ package org.grnet.cat.repositories;
 
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.AssessmentPerActor;
 import org.grnet.cat.entities.MotivationAssessment;
@@ -378,4 +379,8 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
         return count("from MotivationAssessment a where a.validation.user.id = ?1", userId);
     }
 
+    @Transactional
+    public long removeAll() {
+        return deleteAll();
+    }
 }

@@ -8,33 +8,31 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
-import org.grnet.cat.dtos.*;
-import org.grnet.cat.dtos.assessment.*;
+import org.grnet.cat.api.endpoints.ZenodoEndpoint;
+import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.UpdateValidationStatus;
+import org.grnet.cat.dtos.ValidationRequest;
+import org.grnet.cat.dtos.ValidationResponse;
+import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
-import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.template.TemplateDto;
 import org.grnet.cat.enums.ZenodoState;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
-@TestHTTPEndpoint(AssessmentsEndpoint.class)
+@TestHTTPEndpoint(ZenodoEndpoint.class)
 @QuarkusTestResource(DatabaseTestResource.class)
-public class AssessmentsEndpointTest extends KeycloakTest {
+public class ZenodoEndpointTest extends KeycloakTest {
 
     private static UserJsonRegistryAssessmentResponse assessment;
     private static UserJsonRegistryAssessmentResponse publicAssessment;
@@ -54,130 +52,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void getAssessment() {
-
-        var fetchedAssessment = fetchAssessment(validatedToken, assessment.id);
-        assertEquals(assessment.id, fetchedAssessment.id);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void accessAssessmentCreatedByOtherUser() {
-        var errorResponse = fetchAssessmentNotValid(getAccessToken("bob"), assessment.id);
-
-        assertEquals("You do not have permission to access this resource.", errorResponse.message);
-    }
-
-    @Test
-    public void deleteRegistryAssessment() throws IOException {
-        var assessment = createRegistryAssessment(validatedToken);
-        var response = deleteAssessment(validatedToken, assessment.id, 200);
-
-        assertEquals("Assessment has been successfully deleted.", response.message);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void createComment() {
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "Create comment" + UUID.randomUUID();
-
-        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
-        assertEquals(commentRequest.text, commentResponse.text);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void createCommentNotAuthorized() {
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "Unauthorized comment.";
-
-        var errorResponse = addCommentNotPermitted(aliceToken, assessment.id, commentRequest);
-        assertEquals("You do not have permission to access this resource.", errorResponse.message);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void getComments() {
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment." + UUID.randomUUID();
-
-        addComment(validatedToken, assessment.id, commentRequest);
-
-        var comments = fetchComments(validatedToken, assessment.id);
-        assertFalse(comments.getContent().isEmpty(), "Comments list should not be empty.");
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void updateComment() {
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "Original comment." + UUID.randomUUID();
-
-        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
-
-        var updatedCommentRequest = new CommentRequestDto();
-        updatedCommentRequest.text = "Updated comment.";
-
-        var updatedComment = updateComment(validatedToken, assessment.id, commentResponse.id, updatedCommentRequest);
-        assertEquals(updatedCommentRequest.text, updatedComment.text);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void deleteComment() {
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "Comment to delete." + UUID.randomUUID();
-
-        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
-
-        var response = deleteComment(validatedToken, assessment.id, commentResponse.id, 200);
-        assertEquals("Comment has been successfully deleted.", response.message);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void deleteCommentNotPermitted() {
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "Comment to delete." + UUID.randomUUID();
-        ;
-
-        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
-
-        var errorResponse = deleteComment(aliceToken, assessment.id, commentResponse.id, 403);
-        assertEquals("You do not have permission to access this resource.", errorResponse.message);
-    }
-
-
-    private ValidationResponse approveValidation(Long valId) {
-
-        var updateStatus = new UpdateValidationStatus();
-
-        updateStatus.status = "APPROVED";
-
-        return given()
-                .auth()
-                .oauth2(adminToken)
-                .basePath("/v1/admin/validations")
-                .contentType(ContentType.JSON)
-                .body(updateStatus)
-                .put("/{id}/update-status", valId)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ValidationResponse.class);
 
     }
 
@@ -228,12 +102,13 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(UserJsonRegistryAssessmentResponse.class);
     }
+
     private UserJsonRegistryAssessmentResponse createRegistryPublicAssessment(String token) throws IOException {
         var request = new JsonRegistryAssessmentRequest();
         request.assessmentDoc = makeRegistryJsonDoc();
 
 
-        var assessment= given()
+        var assessment = given()
                 .auth()
                 .oauth2(token)
                 .basePath("/v2/assessments")
@@ -272,185 +147,161 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     }
 
-    private UserJsonRegistryAssessmentResponse fetchAssessment(String token, String assessmentId) {
-        return given()
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testPublishZenodoAssessment_Success() throws IOException, InterruptedException {
+
+        //register(validatedToken);
+        var assessment = createRegistryPublicAssessment(validatedToken);
+        assessment.published = true;
+        var pdf=generateValidPdf();
+        var response = given()
                 .auth()
-                .oauth2(token)
-                .basePath("/v2/assessments")
-                .get("/{id}", assessmentId)
+                .oauth2(validatedToken)
+                .body(pdf)
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", assessment.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
+                .as(InformativeResponse.class);
+        //  String expectedMessage = "Process of uploading assessment with ID: " + assessment.id + " has started...";
+        var zenodAssessmentInfo = given()
+                .auth()
+                .oauth2(validatedToken)
+                .get("/assessment/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ZenodoAssessmentInfoResponse.class);
+
+
+        assertEquals(ZenodoState.PROCESS_COMPLETED.getType(), zenodAssessmentInfo.getZenodoState());
     }
 
-    private InformativeResponse fetchAssessmentNotValid(String token, String assessmentId) {
-        return given()
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testPublishZenodoAssessment_notPublished() throws IOException {
+
+        //register(validatedToken);
+        var assessment = createRegistryAssessment(validatedToken);
+        assessment.published = true;
+
+        var response = given()
                 .auth()
-                .oauth2(token)
-                .basePath("/v2/assessments")
-                .get("/{id}", assessmentId)
+                .oauth2(validatedToken)
+                .body(generateValidPdf())
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        String expectedMessage = "Action not permitted for assessment:  " + assessment.id;
+        assertEquals(expectedMessage, response.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testPublishZenodoAssessment_ForbiddenAccess() throws IOException {
+
+        //register(validatedToken);
+        var assessment = createRegistryAssessment(validatedToken);
+        assessment.published = true;
+
+        var response = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(generateValidPdf())
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", assessment.id)
                 .then()
                 .assertThat()
                 .statusCode(403)
                 .extract()
                 .as(InformativeResponse.class);
+
+        String expectedMessage = "You do not have permission to access this resource.";
+        assertEquals(expectedMessage, response.message);
     }
 
-    private InformativeResponse deleteAssessment(String token, String assessmentId, int expectedStatus) {
-        return given()
-                .auth()
-                .oauth2(token)
-                .basePath("/v2/assessments")
-                .delete("/{id}", assessmentId)
-                .then()
-                .assertThat()
-                .statusCode(expectedStatus)
-                .extract()
-                .as(InformativeResponse.class);
-    }
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testPublishZenodoAssessment_AlreadyPublishedInZenodo() throws IOException {
 
-    private CommentResponseDto addComment(String token, String assessmentId, CommentRequestDto request) {
-        return given()
-                .auth()
-                .oauth2(token)
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessmentId)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-    }
+        // motivationAssessmentRepository.removeAll();
+        //register(validatedToken);
+        var assessment = createRegistryPublicAssessment(validatedToken);
+        assessment.published = true;
 
-    private InformativeResponse addCommentNotPermitted(String token, String assessmentId, CommentRequestDto request) {
-        return given()
+        var response = given()
                 .auth()
-                .oauth2(token)
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessmentId)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-    }
-
-    private PageResource fetchComments(String token, String assessmentId) {
-        return given()
-                .auth()
-                .oauth2(token)
-                .get("/{id}/comments", assessmentId)
+                .oauth2(validatedToken)
+                .body(generateValidPdf())
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", assessment.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(PageResource.class);
-    }
+                .as(InformativeResponse.class);
 
-    private CommentResponseDto updateComment(String token, String assessmentId, Long commentId, CommentRequestDto request) {
-        return given()
+        var zenodoAssessment = given()
                 .auth()
-                .oauth2(token)
-                .body(request)
+                .oauth2(validatedToken)
                 .contentType(ContentType.JSON)
-                .put("/{id}/comments/{comment-id}", assessmentId, commentId)
+                .get("/assessment/{id}", assessment.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(CommentResponseDto.class);
-    }
+                .as(ZenodoAssessmentInfoResponse.class);
 
-    private InformativeResponse deleteComment(String token, String assessmentId, Long commentId, int expectedStatus) {
-        return given()
+
+        var response2 = given()
                 .auth()
-                .oauth2(token)
-                .contentType(ContentType.JSON)
-                .delete("/{id}/comments/{comment-id}", assessmentId, commentId)
+                .oauth2(validatedToken)
+                .body(generateValidPdf())
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", assessment.id)
                 .then()
                 .assertThat()
-                .statusCode(expectedStatus)
+                .statusCode(500)
                 .extract()
                 .as(InformativeResponse.class);
+        String isPublished = zenodoAssessment.getIsPublished() ? "PUBLISHED" : "DRAFT";
+
+        String expectedMessage = "Assessment with ID: " + assessment.id + " is already in Zenodo under deposit with ID: " + zenodoAssessment.getDepositId() + " and it's publication status is: " + isPublished;
+
+        assertEquals(expectedMessage, response2.message);
     }
 
-    private TemplateDto makeJsonDoc(boolean published, Long actor) throws IOException {
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testPublishZenodoAssessment_notValidPDF() throws IOException {
 
-        String doc = "{\n" +
-                "    \"status\": \"PRIVATE\",\n" +
-                "    \"published\": " + published + ",\n" +
-                "    \"version\": \"1\",\n" +
-                "    \"name\": \"first assessment\",\n" +
-                "    \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
-                "    \"subject\": {\n" +
-                "      \"id\": \"1\",\n" +
-                "      \"type\": \"PID POLICY \",\n" +
-                "      \"name\": \"services pid policy\"\n" +
-                "    },\n" +
-                "    \"assessment_type\": {\n" +
-                "      \"id\": 1,\n" +
-                "      \"name\": \"eosc pid policy\"\n" +
-                "    },\n" +
-                "    \"actor\": {\n" +
-                "      \"id\": " + actor + ",\n" +
-                "      \"name\": \"PID Owner\"\n" +
-                "    },\n" +
-                "    \"organisation\": {\n" +
-                "      \"id\": \"00tjv0s33\",\n" +
-                "      \"name\": \"test\"\n" +
-                "    },\n" +
-                "    \"result\": {\n" +
-                "      \"compliance\": true,\n" +
-                "      \"ranking\": 5\n" +
-                "    },\n" +
-                "    \"principles\": [\n" +
-                "      {\n" +
-                "        \"id\": \"P1\",\n" +
-                "        \"name\": \"Application\",\n" +
-                "        \"description\": \"PID application depends on unambiguous ownership, proper maintenance, and unambiguous identification of the entity being referenced.\",\n" +
-                "        \"criteria\": [\n" +
-                "          {\n" +
-                "            \"id\": \"C4\",\n" +
-                "            \"name\": \"Measurement\",\n" +
-                "            \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
-                "            \"imperative\": \"should\",\n" +
-                "            \"metric\": {\n" +
-                "              \"type\": \"number\",\n" +
-                "              \"algorithm\": \"sum\",\n" +
-                "              \"benchmark\": {\n" +
-                "                \"equal_greater_than\": 1\n" +
-                "              },\n" +
-                "              \"value\": 1,\n" +
-                "              \"result\": 1,\n" +
-                "              \"tests\": [\n" +
-                "                {\n" +
-                "                   \"id\": \"T4\",\n" +
-                "                  \"type\": \"binary\",\n" +
-                "                 \"name\": \"Maintenance\",\n" +
-                "                 \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
-                "                  \"text\": \"Do you regularly maintain the metadata for your object?\",\n" +
-                "                  \"value\": false,\n" +
-                "                  \"result\": 0,\n" +
-                "                  \"guidance\": {\n" +
-                "                  \"id\": \"G4\",\n" +
-                "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
-                "                  },\n" +
-                "                  \"evidence_url\": [\n" +
-                "                 {\"url\": \"https://www.in.gr\"}\n" +
-                "                  ]\n" +
-                "                }\n" +
-                "              ]\n" +
-                "            }\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }";
-        return objectMapper.readValue(doc, TemplateDto.class);
+        //register(validatedToken);
+        var assessment = createRegistryPublicAssessment(validatedToken);
+        assessment.published = true;
+        var invalidPdf = new byte[]{0x00, 0x01, 0x02};
+        var response = given()
+                .auth()
+                .oauth2(validatedToken)
+                .body(invalidPdf)
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        String expectedMessage = "Invalid PDF file format.";
+        assertEquals(expectedMessage, response.message);
     }
 
     private RegistryAssessmentDto makeRegistryJsonDoc() throws IOException {
@@ -665,172 +516,47 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return objectMapper.readValue(doc, RegistryAssessmentDto.class);
     }
 
-    private TemplateDto makeJsonDocUpdated() throws IOException {
-        String doc = "{\n" +
-                "    \"status\": \"PRIVATE\",\n" +
-                "    \"published\": false,\n" +
-                "    \"version\": \"1\",\n" +
-                "    \"name\": \"first assessment\",\n" +
-                "    \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
-                "    \"subject\": {\n" +
-                "      \"id\": \"1\",\n" +
-                "      \"type\": \"PID POLICY \",\n" +
-                "      \"name\": \"services pid policy\"\n" +
-                "    },\n" +
-                "    \"assessment_type\": {\n" +
-                "      \"id\": 1,\n" +
-                "      \"name\": \"eosc pid policy\"\n" +
-                "    },\n" +
-                "    \"actor\": {\n" +
-                "      \"id\": 6,\n" +
-                "      \"name\": \"PID Owner\"\n" +
-                "    },\n" +
-                "    \"organisation\": {\n" +
-                "      \"id\": \"00tjv0s33\",\n" +
-                "      \"name\": \"test\"\n" +
-                "    },\n" +
-                "    \"result\": {\n" +
-                "      \"compliance\": true,\n" +
-                "      \"ranking\": 5\n" +
-                "    },\n" +
-                "    \"principles\": [\n" +
-                "      {\n" +
-                "        \"id\": \"P1\",\n" +
-                "        \"name\": \"Application\",\n" +
-                "        \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
-                "        \"criteria\": [\n" +
-                "          {\n" +
-                "            \"id\": \"C4\",\n" +
-                "            \"name\": \"Measurement\",\n" +
-                "            \"description\": \"PID application depends on unambiguous ownership, proper maintenance, and unambiguous identification of the entity being referenced.\",\n" +
-                "            \"imperative\": \"should\",\n" +
-                "            \"metric\": {\n" +
-                "              \"type\": \"number\",\n" +
-                "              \"algorithm\": \"sum\",\n" +
-                "              \"benchmark\": {\n" +
-                "                \"equal_greater_than\": 1\n" +
-                "              },\n" +
-                "              \"value\": 1,\n" +
-                "              \"result\": 1,\n" +
-                "              \"tests\": [\n" +
-                "                {\n" +
-                "                   \"id\": \"T4\",\n" +
-                "                  \"type\": \"binary\",\n" +
-                "                 \"name\": \"Maintenance\",\n" +
-                "                 \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
-                "                  \"text\": \"Do you regularly maintain the metadata for your object?\",\n" +
-                "                  \"value\": false,\n" +
-                "                  \"result\": 0,\n" +
-                "                  \"guidance\": {\n" +
-                "                  \"id\": \"G4\",\n" +
-                "                  \"description\": \"Inventory of public evidence of processes and operations. Subjective evaluation of the completeness of the inventory compared to the infrastructures stated products and services.\"\n" +
-                "                  },\n" +
-                "                  \"evidence_url\": [\n" +
-                "                   {\"url\": \"https://www.in.gr\"}\n" +
-                "                  ]\n" +
-                "                }\n" +
-                "              ]\n" +
-                "            }\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }";
+    public static byte[] generateValidPdf() throws IOException {
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
 
-        return objectMapper.readValue(doc, TemplateDto.class);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page);
+        contentStream.beginText();
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        contentStream.newLineAtOffset(100, 700);
+        contentStream.showText("This is a valid PDF file for testing.");
+        contentStream.endText();
+        contentStream.close();
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        document.save(byteArrayOutputStream);
+        document.close();
+
+        return byteArrayOutputStream.toByteArray();
     }
 
-    @Test
-    public void publishUnpublish() throws IOException {
+    private ValidationResponse approveValidation(Long valId) {
 
-        //register("validated");
-        //register("admin");
-        //register("evald");
+        var updateStatus = new UpdateValidationStatus();
 
-        //makeValidation("validated", "pid_graph:B5CC396B");
+        updateStatus.status = "APPROVED";
 
-        var requestAssessment = new JsonRegistryAssessmentRequest();
-        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
-
-        var assessment = given()
+        return given()
                 .auth()
-                .oauth2(validatedToken)
-                .basePath("/v2/assessments")
-                .body(requestAssessment)
+                .oauth2(adminToken)
+                .basePath("/v1/admin/validations")
                 .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-
-        var response = given()
-                .auth()
-                .oauth2(validatedToken)
-                .basePath("/v2/assessments/")
-                .put("/{id}/publish", assessment.id)
+                .body(updateStatus)
+                .put("/{id}/update-status", valId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(200, response.code);
-        assertEquals("Assessment is published successfully", response.message);
-
-        response = given()
-                .auth()
-                .oauth2(validatedToken)
-                .basePath("/v2/assessments/")
-                .put("/{id}/unpublish", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-        assertEquals(200, response.code);
-        assertEquals("Assessment is unpublished successfully", response.message);
-
-        var error = given()
-                .auth()
-                .oauth2(adminToken)
-                .basePath("/v2/assessments")
-                .put("/{id}/publish", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
-
-        error = given()
-                .auth()
-                .oauth2(adminToken)
-                .basePath("/v2/assessments")
-                .put("/{id}/unpublish", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", error.message);
+                .as(ValidationResponse.class);
 
     }
 
-    @Test
-    public void getPublicAssessment() {
-        var assessment = given()
-                .basePath("/v2/assessments")
-                .get("/public/{id}", publicAssessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserJsonRegistryAssessmentResponse.class);
-        assertEquals(assessment.id, publicAssessment.id);
-    }
 
 }
+
