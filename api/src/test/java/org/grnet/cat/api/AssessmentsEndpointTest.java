@@ -767,10 +767,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     }
     @Test
-    public void getPublicAssessment() throws IOException {
-
-
-
+    public void getPublicAssessment() {
         var assessment = given()
                 .basePath("/v2/assessments")
                 .get("/public/{id}", publicAssessment.id)
@@ -781,6 +778,4 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(UserJsonRegistryAssessmentResponse.class);
         assertEquals(assessment.id,publicAssessment.id);
     }
-
-
 }
