@@ -42,6 +42,7 @@ import org.grnet.cat.repositories.*;
 import org.grnet.cat.services.*;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.registry.RegistryActorService;
+import org.grnet.cat.services.zenodo.ZenodoService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.Arrays;
@@ -93,6 +94,7 @@ public class AdminEndpoint {
     /**
      * Injection point for the Utility service
      */
+
     @Inject
     Utility utility;
 
@@ -759,7 +761,6 @@ public class AdminEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAllAssessmentsByPage(page - 1, size, search, uriInfo);
-//        assessments.getContent().stream().forEach(e-> System.out.println("is published-- ? "+e.getPublished()));
 
         return Response.ok().entity(assessments).build();
     }
@@ -948,4 +949,6 @@ public class AdminEndpoint {
         response.message=message;
         return Response.ok().entity(response).build();
     }
+
+
 }

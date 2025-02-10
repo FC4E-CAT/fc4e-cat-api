@@ -26,6 +26,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Added
 - [#465](https://github.com/FC4E-CAT/fc4e-cat-api/pull/465) CAT-822 Assessment type view and fill put order in criteria.
 - [#467](https://github.com/FC4E-CAT/fc4e-cat-api/pull/467) CAT-832 Add 127.0.0.1 to Keycloak Public Client to Accept Requests.
+- [#468](https://github.com/FC4E-CAT/fc4e-cat-api/pull/468) CAT-827 CAT-829 CAT-828 Publish Assessment in Zenodo / Store zenodo info in database/ Notifications to creator.
+
 
 
 ## 1.9.2 - 2025-02-26
@@ -36,6 +38,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## 1.9.1 - 2025-02-25
 ---
+#### Added
 
 ### Fix
 - [#458](https://github.com/FC4E-CAT/fc4e-cat-api/pull/458) CAT-825 Missing label_algorithm , label_type_metric from assessment doc.
