@@ -81,6 +81,10 @@ public class MailerService {
     @Location("zenodo_failed_publish_deposit_notification")
     Template zenodoFailedPublishDeposit;
     @Inject
+    @Location("zenodo_publish_deposit_draft_in_db_notification")
+    Template zenodoPublishDepositDraftInDB;
+
+    @Inject
     KeycloakAdminRepository keycloakAdminRepository;
     @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
@@ -183,7 +187,6 @@ public class MailerService {
                 templateParams.put("assessmentId", assessment.getId());
 
                 LOG.info("zenodo publish assessment Template parameters: " + templateParams);
-
                 notifyUser(zenodoDraftDeposit, templateParams, mailAddrs, type);
                 break;
 
@@ -198,7 +201,6 @@ public class MailerService {
 
                 notifyUser(zenodoCompletedPublishProcess, templateParams, mailAddrs, type);
                 break;
-
             case ZENODO_PUBLISH_ASSESSMENT:
                 templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);
@@ -229,6 +231,13 @@ public class MailerService {
 
                 LOG.info("Template parameters: " + templateParams);
                 notifyUser(zenodoFailedPublishDeposit, templateParams, mailAddrs, type);
+                break;
+            case ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB:
+                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(zenodoPublishDepositDraftInDB, templateParams, mailAddrs, type);
                 break;
 
             default:

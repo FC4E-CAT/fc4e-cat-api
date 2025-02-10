@@ -111,6 +111,7 @@ public interface AssessmentMapper {
         var utility = CDI.current().select(Utility.class).get();
 
         var currentUser = utility.getUserUniqueIdentifier();
+        System.out.println("share is current user : "+currentUser);
         var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment
         return assessment.getShared() && sameUser; //if the assessment is shared and the user is the owner, the assessment is shared by the user
     }
@@ -131,8 +132,10 @@ public interface AssessmentMapper {
 
     default Boolean isSharedToUser(String userId) {
 
+        System.out.println("user is is : "+userId);
         var utility = CDI.current().select(Utility.class).get();
         var currentUser = utility.getUserUniqueIdentifier();
+        System.out.println("get current user is : "+currentUser);
 
         return !currentUser.equals(userId);
     }

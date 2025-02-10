@@ -38,5 +38,8 @@ public interface ZenodoClient {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     Map<String, Object> uploadFile(@HeaderParam("Authorization") String token, @PathParam("id") String depositionId, byte[] fileBytes, @HeaderParam("Content-Type") String contentType) throws WebApplicationException, ProcessingException;
+    @GET
+    @Path("/api/deposit/depositions/{id}")
+    Map<String, Object> getDeposit(@HeaderParam("Authorization") String token, @PathParam("id") String id) throws WebApplicationException, ProcessingException;
 
 }

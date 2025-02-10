@@ -762,6 +762,65 @@ public class AssessmentsV2Endpoint {
     }
 
 
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Publish a Zenodo  deposit.",
+            description = "Allows a user to publish a specific deposit.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment published successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/zenodo/deposit/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON) // This consumes binary data
+    @Registration
+    public Response publishZenodoDeposit(@Parameter(
+            description = "The ID of the deposit to publish to Zenodo",
+            required = true,
+            example = "183367",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                         String id) throws IOException, InterruptedException, ExecutionException {
+          zenodoService.publishDepositToZenodo(id,utility.getUserUniqueIdentifier());
+        var response=new InformativeResponse();
+        response.code=202;
+        response.message="Process to publish Deposit with ID: "+id+" is in progress... You will be informed via email when completed.";
+
+        return Response.ok().entity(response).build();
+    }
     private boolean isValidPdf(byte[] fileContent) {
         // Check the magic number for PDF files: %PDF- (hex: 0x25 0x50 0x44 0x46)
         if (fileContent.length < 4) {
