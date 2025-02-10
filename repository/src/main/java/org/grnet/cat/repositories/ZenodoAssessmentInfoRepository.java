@@ -2,6 +2,7 @@ package org.grnet.cat.repositories;
 
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.grnet.cat.entities.*;
 
 import java.util.Optional;
@@ -35,8 +36,13 @@ public class ZenodoAssessmentInfoRepository implements Repository<ZenodoAssessme
         return find("id.depositId = ?1", Sort.by("uploadedAt", Sort.Direction.Descending), depositId).firstResultOptional();
     }
 
-    public Optional<ZenodoAssessmentInfo> getAssessmentByDepositIdAndAssessmentId( String depositId,String assessmentId) {
-        return find("id.depositId = ?1 and id.assessmentId = ?2", Sort.by("uploadedAt", Sort.Direction.Descending), depositId,assessmentId).firstResultOptional();
+    public Optional<ZenodoAssessmentInfo> getAssessmentByDepositIdAndAssessmentId(String depositId, String assessmentId) {
+        return find("id.depositId = ?1 and id.assessmentId = ?2", Sort.by("uploadedAt", Sort.Direction.Descending), depositId, assessmentId).firstResultOptional();
+    }
+
+    @Transactional
+    public long removeAll() {
+        return deleteAll();
     }
 
 }

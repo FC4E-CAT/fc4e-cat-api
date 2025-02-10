@@ -2,6 +2,8 @@
 package org.grnet.cat.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
@@ -9,10 +11,13 @@ import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.dtos.UpdateUserProfileDto;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
+import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.repositories.registry.MetricDefinitionRepository;
 import org.grnet.cat.repositories.registry.MotivationPrincipleRepository;
 import org.grnet.cat.services.CommentService;
@@ -21,6 +26,7 @@ import org.grnet.cat.services.UserService;
 import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.registry.CriterionService;
+import org.grnet.cat.services.zenodo.ZenodoClient;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
@@ -29,13 +35,16 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.mockito.ArgumentMatchers.any;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Base test class for Keycloak-related tests.
@@ -50,6 +59,10 @@ public class KeycloakTest {
     URI baseUri;
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
+
+    @Inject
+    @RestClient
+    ZenodoClient zenodoClient;
 
     @Inject
     UserService userService;
@@ -75,6 +88,11 @@ public class KeycloakTest {
     @Inject
     MetricDefinitionRepository metricDefinitionRepository;
 
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
+
+    @Inject
+    ZenodoAssessmentInfoRepository zenodoAssessmentInfoRepository;
     //@BeforeEach
     protected String adminToken;
     protected String aliceToken;
@@ -89,13 +107,14 @@ public class KeycloakTest {
 
         var mockAdminService = Mockito.mock(KeycloakAdminService.class);
         Mockito.doNothing().when(mockAdminService).addEntitlementsToUser(any(), any());
-        Mockito.when(mockAdminService.getUserEntitlements(any())).thenReturn(Collections.emptyList());
+        when(mockAdminService.getUserEntitlements(any())).thenReturn(Collections.emptyList());
         QuarkusMock.installMockForType(mockAdminService, KeycloakAdminService.class);
 
         var mockAdminRepository = Mockito.mock(KeycloakAdminRepository.class);
         Role role = new Role("identified_id", "identified", "The identified role");
-        Mockito.when(mockAdminRepository.fetchUserRoles(any())).thenReturn(List.of(role));
+        when(mockAdminRepository.fetchUserRoles(any())).thenReturn(List.of(role));
         QuarkusMock.installMockForType(mockAdminRepository, KeycloakAdminRepository.class);
+
 
         commentService.deleteAll();
         jsonAssessmentService.deleteAll();
@@ -104,6 +123,9 @@ public class KeycloakTest {
         criterionService.deleteAll();
         motivationPrincipleRepository.removeAll();
         metricDefinitionRepository.removeAll();
+        motivationPrincipleRepository.removeAll();
+        motivationAssessmentRepository.removeAll();
+        zenodoAssessmentInfoRepository.removeAll();
 
         register("admin");
         register("alice");
@@ -115,6 +137,7 @@ public class KeycloakTest {
         validatedToken = getAccessToken("validated");
         evaldToken = getAccessToken("evald");
         bobToken = getAccessToken("bob");
+
     }
 
     protected UserProfileDto register(String username) {

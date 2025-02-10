@@ -13,7 +13,6 @@ import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -34,7 +33,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     private static UserJsonRegistryAssessmentResponse publicAssessment;
 
     @BeforeAll
-    public void initMakeValidation()  throws IOException{
+    public void initMakeValidation() throws IOException {
         makeValidation("validated", "pid_graph:B5CC396B");
         assessment = createRegistryAssessment(validatedToken);
         publicAssessment = createRegistryAssessment(validatedToken);
@@ -53,7 +52,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
-    public void getAssessment(){
+    public void getAssessment() {
 
         var fetchedAssessment = fetchAssessment(validatedToken, assessment.id);
         assertEquals(assessment.id, fetchedAssessment.id);
@@ -61,7 +60,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
-    public void accessAssessmentCreatedByOtherUser(){
+    public void accessAssessmentCreatedByOtherUser() {
         var errorResponse = fetchAssessmentNotValid(getAccessToken("bob"), assessment.id);
 
         assertEquals("You do not have permission to access this resource.", errorResponse.message);
@@ -99,10 +98,10 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
-    public void getComments(){
+    public void getComments() {
 
         var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment."+ UUID.randomUUID();
+        commentRequest.text = "This is a test comment." + UUID.randomUUID();
 
         addComment(validatedToken, assessment.id, commentRequest);
 
@@ -144,7 +143,8 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     public void deleteCommentNotPermitted() {
 
         var commentRequest = new CommentRequestDto();
-        commentRequest.text = "Comment to delete." + UUID.randomUUID();;
+        commentRequest.text = "Comment to delete." + UUID.randomUUID();
+        ;
 
         var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
 
@@ -173,11 +173,13 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(ValidationResponse.class);
 
     }
+
     private ValidationResponse makeValidation(String username, String actorId) {
 
         var response = makeValidationRequest(username, actorId);
         return approveValidation(response.id);
     }
+
     private ValidationResponse makeValidationRequest(String username, String actorId) {
 
         var request = new ValidationRequest();
@@ -218,6 +220,49 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(UserJsonRegistryAssessmentResponse.class);
+    }
+    private UserJsonRegistryAssessmentResponse createRegistryPublicAssessment(String token) throws IOException {
+        var request = new JsonRegistryAssessmentRequest();
+        request.assessmentDoc = makeRegistryJsonDoc();
+
+
+        var assessment= given()
+                .auth()
+                .oauth2(token)
+                .basePath("/v2/assessments")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+
+
+        given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .put("/{id}/publish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        return given()
+                .auth()
+                .oauth2(token)
+                .basePath("/v2/assessments")
+                .get("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+
+
     }
 
     private UserJsonRegistryAssessmentResponse fetchAssessment(String token, String assessmentId) {
@@ -330,7 +375,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         String doc = "{\n" +
                 "    \"status\": \"PRIVATE\",\n" +
-                "    \"published\": "+published+",\n" +
+                "    \"published\": " + published + ",\n" +
                 "    \"version\": \"1\",\n" +
                 "    \"name\": \"first assessment\",\n" +
                 "    \"timestamp\": \"2023-03-28T23:23:24Z\",\n" +
@@ -344,7 +389,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 "      \"name\": \"eosc pid policy\"\n" +
                 "    },\n" +
                 "    \"actor\": {\n" +
-                "      \"id\": "+actor+",\n" +
+                "      \"id\": " + actor + ",\n" +
                 "      \"name\": \"PID Owner\"\n" +
                 "    },\n" +
                 "    \"organisation\": {\n" +
@@ -687,6 +732,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         return objectMapper.readValue(doc, TemplateDto.class);
     }
+
     @Test
     public void publishUnpublish() throws IOException {
 
@@ -723,7 +769,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(200,response.code);
+        assertEquals(200, response.code);
         assertEquals("Assessment is published successfully", response.message);
 
         response = given()
@@ -736,7 +782,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
-        assertEquals(200,response.code);
+        assertEquals(200, response.code);
         assertEquals("Assessment is unpublished successfully", response.message);
 
         var error = given()
@@ -776,6 +822,6 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(200)
                 .extract()
                 .as(UserJsonRegistryAssessmentResponse.class);
-        assertEquals(assessment.id,publicAssessment.id);
+        assertEquals(assessment.id, publicAssessment.id);
     }
 }

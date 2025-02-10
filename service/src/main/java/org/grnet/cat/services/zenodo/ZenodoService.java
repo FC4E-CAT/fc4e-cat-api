@@ -6,6 +6,7 @@ import io.quarkus.security.ForbiddenException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
@@ -30,6 +31,7 @@ import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
+import org.grnet.cat.utils.Utility;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -92,7 +94,8 @@ public class ZenodoService {
         var zenodoAssessmentInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(assessmentId);
         if (zenodoAssessmentInfoOpt.isPresent()) {
             String isPublished = zenodoAssessmentInfoOpt.get().getIsPublished() ? "PUBLISHED" : "DRAFT";
-           throw new RuntimeException("Assessment with ID: " + assessmentId + " is already in Zenodo under deposit with ID: " + zenodoAssessmentInfoOpt.get().getId().getDepositId() + " and it's publication status is: " + isPublished);
+            throw new RuntimeException("Assessment with ID: " + assessmentId + " is already in Zenodo under deposit with ID: " + zenodoAssessmentInfoOpt.get().getId().getDepositId() + " and it's publication status is: " + isPublished);
+
         }
         var activeUser = userRepository.fetchUser(userId);
         List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
@@ -113,45 +116,91 @@ public class ZenodoService {
                 "You will be informed via email when assessment is uploaded to zenodo. ";
     }
 
-    @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
+    // @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public ZenodoAssessmentInfoResponse getAssessment(String assessmentId) throws IOException, InterruptedException {
-
+    public ZenodoAssessmentInfoResponse getAssessment(String assessmentId, Utility utility) {
 
         var assessmentOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(assessmentId);
         if (assessmentOpt.isEmpty()) {
-            throw new RuntimeException("Not found zenodo assessment information for assessment with ID: " + assessmentId+" to exist in CAT");
+            throw new RuntimeException("Not found zenodo assessment information for assessment with ID: " + assessmentId + " to exist in CAT");
+        }
+
+        if (assessmentOpt.isPresent() && !assessmentOpt.get().getIsPublished()) {
+            try {
+             var   userIdentifier = utility.getUserUniqueIdentifier();
+
+            } catch (BadRequestException e) {
+                throw new BadRequestException("Please ensure you are logged in to CAT, in order to view assessment in draft status.");
+            }
+            var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(
+                    assessmentOpt.get().getAssessment(), utility.getUserUniqueIdentifier()
+            );
+
+            List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
+                    ShareableEntityType.ASSESSMENT.getValue() + ENTITLEMENTS_DELIMITER + assessmentOpt.get().getAssessment().getId()
+            );
+
+            // Ensure the user has access
+            if (!dbAssessmentToJson.getUserId().equals(utility.getUserUniqueIdentifier()) && !sharedUserIds.contains(utility.getUserUniqueIdentifier())) {
+                throw new BadRequestException("User does not have permission to view this zenodo assessment info.");
+            }
+
         }
 
         return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get());
     }
     @Transactional
-    public ZenodoDepositResponse getDeposit(String depositId, String userId)  {
+    public ZenodoAssessmentInfoResponse getAdminAssessment(String assessmentId) {
 
+        var assessmentOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(assessmentId);
+        if (assessmentOpt.isEmpty()) {
+            throw new RuntimeException("Not found zenodo assessment information for assessment with ID: " + assessmentId + " to exist in CAT");
+        }
+        return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get());
+    }
+
+    @Transactional
+    public ZenodoDepositResponse getDeposit(String depositId, Utility utility) {
 
         var zenodoAssessmentInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByDepositId(depositId);
         if (zenodoAssessmentInfoOpt.isEmpty()) {
             throw new RuntimeException("Not found zenodo assessment information for deposit with ID: " + depositId);
         }
         var zenodoAssessmentInfo = zenodoAssessmentInfoOpt.get();
+        if (!zenodoAssessmentInfo.getIsPublished()) {
+            try {
+               var userIdentifier = utility.getUserUniqueIdentifier();
 
-        var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(),userId);
+            } catch (BadRequestException e) {
 
-        List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
-                ShareableEntityType.ASSESSMENT.getValue() + ENTITLEMENTS_DELIMITER + zenodoAssessmentInfo.getAssessment().getId()
-        );
+                throw new BadRequestException("Please ensure you are logged in to CAT in order to view deposit in draft status.");
+            }
 
-        // Ensure the user has access
-        if (!dbAssessmentToJson.getUserId().equals(userId) && !sharedUserIds.contains(userId)) {
-            throw new ForbiddenException("User does not have permission to publish this assessment.");
+            var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(), utility.getUserUniqueIdentifier());
+
+
+            List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
+                    ShareableEntityType.ASSESSMENT.getValue() + ENTITLEMENTS_DELIMITER + zenodoAssessmentInfo.getAssessment().getId()
+            );
+
+            // Ensure the user has access
+            if (!dbAssessmentToJson.getUserId().equals(utility.getUserUniqueIdentifier()) && !sharedUserIds.contains(utility.getUserUniqueIdentifier())) {
+                throw new BadRequestException("User does not have permission to get info of this deposit.");
+            }
+
+        }
+        var response = zenodoClient.getDeposit(getAccessToken(), depositId);
+        return ZenodoAssessmentInfoMapper.INSTANCE.entityToZenodoDepositResponse(response);
+    }
+    @Transactional
+    public ZenodoDepositResponse getAdminDeposit(String depositId) {
+
+        var zenodoAssessmentInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByDepositId(depositId);
+        if (zenodoAssessmentInfoOpt.isEmpty()) {
+            throw new RuntimeException("Not found zenodo assessment information for deposit with ID: " + depositId);
         }
 
-
-        var response=zenodoClient.getDeposit(getAccessToken(),depositId);
-
-
-       Boolean submitted=(Boolean) response.get("submitted");
-        System.out.println("submitted is : "+submitted);
+        var response = zenodoClient.getDeposit(getAccessToken(), depositId);
         return ZenodoAssessmentInfoMapper.INSTANCE.entityToZenodoDepositResponse(response);
     }
 
@@ -164,7 +213,7 @@ public class ZenodoService {
             throw new NotFoundException("No assessment info found for deposit with ID: " + depositId + " in service");
         }
         var zenodoAssessmentInfo = zenodoAssessmentInfoOpt.get();
-        var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(),userId);
+        var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(), userId);
 
         List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
                 ShareableEntityType.ASSESSMENT.getValue() + ENTITLEMENTS_DELIMITER + zenodoAssessmentInfo.getAssessment().getId()
@@ -205,35 +254,42 @@ public class ZenodoService {
                 })
                 .thenRunAsync(() -> {
                             stateRef.set(ZenodoState.PROCESS_COMPLETED);
-                            mailerService.sendMails(
-                                    zenodoAssessmentInfoRef.get().getAssessment(),
-                                    depositId,
-                                    activeUser.getName(),
-                                    MailType.ZENODO_PUBLISH_DEPOSIT,
-                                    List.of(activeUser.getEmail())
-                            );
+                            if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
+                                mailerService.sendMails(
+                                        zenodoAssessmentInfoRef.get().getAssessment(),
+                                        depositId,
+                                        activeUser.getName(),
+                                        MailType.ZENODO_PUBLISH_DEPOSIT,
+                                        List.of(activeUser.getEmail())
+                                );
+                            }
                         }
                 )
                 .thenApply(v -> ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(zenodoAssessmentInfoRef.get()))
                 .exceptionally(ex -> {
                     Log.error("Error publishing deposit to Zenodo", ex);
                     if (stateRef.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
-                        mailerService.sendMails(
-                                zenodoAssessmentInfoRef.get().getAssessment(),
-                                depositId,
-                                activeUser.getName(),
-                                MailType.ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB,
-                                List.of(activeUser.getEmail())
-                        );
-                    } else if (stateRef.get().equals(ZenodoState.FILE_UPLOADED_TO_DEPOSIT)) {
-                        mailerService.sendMails(
-                                zenodoAssessmentInfoRef.get().getAssessment(),
-                                depositId,
-                                activeUser.getName(),
-                                MailType.ZENODO_FAILED_PUBLISH_DEPOSIT,
-                                List.of(activeUser.getEmail())
-                        );
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
 
+                            mailerService.sendMails(
+                                    zenodoAssessmentInfoRef.get().getAssessment(),
+                                    depositId,
+                                    activeUser.getName(),
+                                    MailType.ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB,
+                                    List.of(activeUser.getEmail())
+                            );
+                        }
+                    } else if (stateRef.get().equals(ZenodoState.FILE_UPLOADED_TO_DEPOSIT)) {
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
+
+                            mailerService.sendMails(
+                                    zenodoAssessmentInfoRef.get().getAssessment(),
+                                    depositId,
+                                    activeUser.getName(),
+                                    MailType.ZENODO_FAILED_PUBLISH_DEPOSIT,
+                                    List.of(activeUser.getEmail())
+                            );
+                        }
                     }
                     return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(zenodoAssessmentInfoRef.get());  // Avoid rethrowing if you want graceful failure handling
                 });
@@ -273,8 +329,6 @@ public class ZenodoService {
                 .thenApply(depositId -> {
                     // Step 2: Upload to Zenodo
                     state.set(ZenodoState.DEPOSIT_CREATED);
-
-                    System.out.println("Step 2: Uploading to Zenodo...");
                     try {
                         uploadFile(assessment, binaryContent, depositIdRef.get());
                         return depositId;
@@ -299,8 +353,10 @@ public class ZenodoService {
                         System.err.println("DB write failed, rolling back Zenodo deposit...");
                         zenodoClient.deleteDeposit(getAccessToken(), depositIdRef.get()); // Cleanup
                         state.set(ZenodoState.PROCESS_FAILED);
-                        mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_FAILED_PUBLISH_PROCESS, List.of(activeUser.getEmail()));
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
 
+                            mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_FAILED_PUBLISH_PROCESS, List.of(activeUser.getEmail()));
+                        }
                         throw new RuntimeException("DB write failed, rolling back deposit: " + dbException.getMessage());
                     }
                 })
@@ -308,7 +364,6 @@ public class ZenodoService {
                     // Step 4: Publish deposit only after DB write succeeds
                     System.out.println("Step 4: Publishing deposit...");
                     publishDeposit(depositIdRef.get());
-
                     return depositId;
                 })
                 .thenAccept(depositId -> {
@@ -316,15 +371,20 @@ public class ZenodoService {
                     state.set(ZenodoState.DEPOSIT_PUBLISHED);
 
                     var zenodoAssessmentInfo = updateInDatabase(zenodoAssessmentInfoRef.get());
-
                     zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
                     state.set(ZenodoState.PROCESS_COMPLETED);
                     if (state.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
-                        mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_PUBLISH_ASSESSMENT, List.of(activeUser.getEmail()));
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
+
+                            mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_PUBLISH_ASSESSMENT, List.of(activeUser.getEmail()));
+                        }
                         System.out.println("Step 5: Email sent successfully...");
                     } else if (state.get().equals(ZenodoState.PROCESS_COMPLETED)) {
-                        mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_COMPLETED_PUBLISH_PROCESS, List.of(activeUser.getEmail()));
-                        System.out.println("Step 5: Email sent successfully...");
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
+
+                            mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_COMPLETED_PUBLISH_PROCESS, List.of(activeUser.getEmail()));
+                            System.out.println("Step 5: Email sent successfully...");
+                        }
                     }
                 })
                 .exceptionally(ex -> {
@@ -334,12 +394,19 @@ public class ZenodoService {
                         if (depositIdRef.get() != null) {
                             zenodoClient.deleteDeposit(getAccessToken(), depositIdRef.get());
                         }
-                        mailerService.sendMails(assessment, null, activeUser.getName(), MailType.ZENODO_FAILED_PUBLISH_PROCESS, List.of(activeUser.getEmail()));
-                    } else if (state.get() == ZenodoState.FILE_UPLOADED_TO_DEPOSIT) { //the process has failed when try to publish the deposit, the deposit remains in draft state in zenodo
-                        mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_DRAFT_DEPOSIT, List.of(activeUser.getEmail()));
-                    } else { //the process fails when trying to update the database , the deposit is published but this info does not appear in db
-                        mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_PUBLISH_ASSESSMENT, List.of(activeUser.getEmail()));
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
 
+                            mailerService.sendMails(assessment, null, activeUser.getName(), MailType.ZENODO_FAILED_PUBLISH_PROCESS, List.of(activeUser.getEmail()));
+                        }
+                    } else if (state.get() == ZenodoState.FILE_UPLOADED_TO_DEPOSIT) { //the process has failed when try to publish the deposit, the deposit remains in draft state in zenodo
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
+
+                            mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_DRAFT_DEPOSIT, List.of(activeUser.getEmail()));
+                        }
+                    } else { //the process fails when trying to update the database , the deposit is published but this info does not appear in db
+                        if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
+                            mailerService.sendMails(assessment, depositIdRef.get(), activeUser.getName(), MailType.ZENODO_PUBLISH_ASSESSMENT, List.of(activeUser.getEmail()));
+                        }
                     }
                     return null;
                 });
@@ -425,8 +492,8 @@ public class ZenodoService {
     }
 
     public Map<String, Object> createDeposit(Map<String, Object> metadata) {
-        Map<String, Object> deposit = zenodoClient.createDeposit(getAccessToken(), metadata);
 
+        Map<String, Object> deposit = zenodoClient.createDeposit(getAccessToken(), metadata);
         return deposit;
     }
 
