@@ -13,6 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.constraints.ValidZenodoAction;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
+import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.User;
@@ -91,7 +92,7 @@ public class ZenodoService {
         var zenodoAssessmentInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(assessmentId);
         if (zenodoAssessmentInfoOpt.isPresent()) {
             String isPublished = zenodoAssessmentInfoOpt.get().getIsPublished() ? "PUBLISHED" : "DRAFT";
-            throw new RuntimeException("Assessment with ID: " + assessmentId + " is already in Zenodo under deposit with ID: " + zenodoAssessmentInfoOpt.get().getId().getDepositId() + " and it's publication status is: " + isPublished);
+           throw new RuntimeException("Assessment with ID: " + assessmentId + " is already in Zenodo under deposit with ID: " + zenodoAssessmentInfoOpt.get().getId().getDepositId() + " and it's publication status is: " + isPublished);
         }
         var activeUser = userRepository.fetchUser(userId);
         List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
@@ -119,10 +120,39 @@ public class ZenodoService {
 
         var assessmentOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(assessmentId);
         if (assessmentOpt.isEmpty()) {
-            throw new RuntimeException("Assessment not found in zenodo for ID: " + assessmentId);
+            throw new RuntimeException("Not found zenodo assessment information for assessment with ID: " + assessmentId+" to exist in CAT");
         }
 
         return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get());
+    }
+    @Transactional
+    public ZenodoDepositResponse getDeposit(String depositId, String userId)  {
+
+
+        var zenodoAssessmentInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByDepositId(depositId);
+        if (zenodoAssessmentInfoOpt.isEmpty()) {
+            throw new RuntimeException("Not found zenodo assessment information for deposit with ID: " + depositId);
+        }
+        var zenodoAssessmentInfo = zenodoAssessmentInfoOpt.get();
+
+        var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(),userId);
+
+        List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
+                ShareableEntityType.ASSESSMENT.getValue() + ENTITLEMENTS_DELIMITER + zenodoAssessmentInfo.getAssessment().getId()
+        );
+
+        // Ensure the user has access
+        if (!dbAssessmentToJson.getUserId().equals(userId) && !sharedUserIds.contains(userId)) {
+            throw new ForbiddenException("User does not have permission to publish this assessment.");
+        }
+
+
+        var response=zenodoClient.getDeposit(getAccessToken(),depositId);
+
+
+       Boolean submitted=(Boolean) response.get("submitted");
+        System.out.println("submitted is : "+submitted);
+        return ZenodoAssessmentInfoMapper.INSTANCE.entityToZenodoDepositResponse(response);
     }
 
     @Transactional
@@ -134,17 +164,15 @@ public class ZenodoService {
             throw new NotFoundException("No assessment info found for deposit with ID: " + depositId + " in service");
         }
         var zenodoAssessmentInfo = zenodoAssessmentInfoOpt.get();
-        var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(), userId);
+        var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(zenodoAssessmentInfo.getAssessment(),userId);
 
         List<String> sharedUserIds = keycloakAdminService.getIdsOfSharedUsers(
                 ShareableEntityType.ASSESSMENT.getValue() + ENTITLEMENTS_DELIMITER + zenodoAssessmentInfo.getAssessment().getId()
         );
-
         // Ensure the user has access
         if (!dbAssessmentToJson.getUserId().equals(userId) && !sharedUserIds.contains(userId)) {
             throw new ForbiddenException("User does not have permission to publish this assessment.");
         }
-
 
         if (zenodoAssessmentInfo.getIsPublished()) {
             throw new RuntimeException("The deposit with ID: " + depositId + " is already published to Zenodo");
@@ -211,7 +239,6 @@ public class ZenodoService {
                 });
 
     }
-
 
     private void uploadFile(MotivationAssessment assessment, byte[] binaryContent, String depositId) throws IOException {
         File tempFile = new File(assessment.getId());
@@ -418,6 +445,7 @@ public class ZenodoService {
     @Transactional
     public Map<String, Object> createMetadata(MotivationAssessment assessment, User activeUser, List<String> sharedUsersIds) {
         Map<String, Object> metadata = new HashMap<>();
+
         var dbAssessmentToJson = AssessmentMapper.INSTANCE.zenodoUserRegistryAssessmentToJsonAssessment(assessment, activeUser.getId());
         String title = generateTitle(dbAssessmentToJson);
         String description = "Publishing assessment " + dbAssessmentToJson.assessmentDoc.name + " to Zenodo";

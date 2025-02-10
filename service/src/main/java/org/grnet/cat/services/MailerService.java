@@ -201,6 +201,7 @@ public class MailerService {
 
                 notifyUser(zenodoCompletedPublishProcess, templateParams, mailAddrs, type);
                 break;
+//
             case ZENODO_PUBLISH_ASSESSMENT:
                 templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);

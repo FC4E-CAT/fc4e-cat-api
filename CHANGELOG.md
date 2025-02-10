@@ -28,6 +28,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#467](https://github.com/FC4E-CAT/fc4e-cat-api/pull/467) CAT-832 Add 127.0.0.1 to Keycloak Public Client to Accept Requests.
 - [#468](https://github.com/FC4E-CAT/fc4e-cat-api/pull/468) CAT-827 CAT-829 CAT-828 Publish Assessment in Zenodo / Store zenodo info in database/ Notifications to creator.
 - [#469](https://github.com/FC4E-CAT/fc4e-cat-api/pull/469) CAT-830 Publish deposit to Zenodo
+- [#470](https://github.com/FC4E-CAT/fc4e-cat-api/pull/470) CAT-836 Get deposit info from Zenodo 
 
 
 ## 1.9.2 - 2025-02-26
