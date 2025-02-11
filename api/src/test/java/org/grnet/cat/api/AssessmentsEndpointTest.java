@@ -31,11 +31,24 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class AssessmentsEndpointTest extends KeycloakTest {
 
     private static UserJsonRegistryAssessmentResponse assessment;
+    private static UserJsonRegistryAssessmentResponse publicAssessment;
 
     @BeforeAll
     public void initMakeValidation()  throws IOException{
         makeValidation("validated", "pid_graph:B5CC396B");
         assessment = createRegistryAssessment(validatedToken);
+        publicAssessment = createRegistryAssessment(validatedToken);
+        var response = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .put("/{id}/publish", publicAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
     }
 
     @Test
@@ -753,5 +766,21 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         assertEquals("You do not have permission to access this resource.", error.message);
 
     }
+    @Test
+    public void getPublicAssessment() throws IOException {
+
+
+
+        var assessment = given()
+                .basePath("/v2/assessments")
+                .get("/public/{id}", publicAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+        assertEquals(assessment.id,publicAssessment.id);
+    }
+
 
 }
