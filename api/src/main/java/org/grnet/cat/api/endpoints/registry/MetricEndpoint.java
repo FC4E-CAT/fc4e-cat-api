@@ -324,7 +324,7 @@ public class MetricEndpoint {
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
                     examples = {
                             @ExampleObject(name = "Last Touch", value = "lastTouch"),
-                            @ExampleObject(name = "Metric", value = "metric"),
+                            @ExampleObject(name = "MTR", value = "metric.MTR"),
                             @ExampleObject(name = "Benchmark Value", value = "valueBenchmark")},
                     description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
             @DefaultValue("lastTouch")
@@ -351,7 +351,7 @@ public class MetricEndpoint {
             @Context UriInfo uriInfo) {
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("lastTouch", "metric", "valueBenchmark");
+        var sortValues = List.of("lastTouch", "metric.MTR", "valueBenchmark");
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 

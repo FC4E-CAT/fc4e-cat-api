@@ -27,26 +27,27 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         joiner.add("from MetricDefinitionJunction m")
                 .add("left join fetch m.metric met")
                 .add("left join fetch m.typeBenchmark tb");
-
         joiner.add("where 1=1");
 
         var map = new HashMap<String, Object>();
 
         if (StringUtils.isNotEmpty(search)) {
-            joiner.add("and (m.metric.id like :search")
-                    .add("or m.typeBenchmark.id like :search")
-                    .add("or m.motivation.Id like :search")
-                    .add("or m.metricDefinition like :search")
-                    .add("or m.lodReference like :search")
-                    .add("or m.valueBenchmark like :search")
-                    .add("or m.motivationX like :search)");
+            joiner.add("and (m.metric.id ilike :search")
+                    .add("or m.metric.MTR ilike :search")
+                    .add("or m.typeBenchmark.id ilike :search")
+                    .add("or m.typeBenchmark.label ilike :search")
+                    .add("or m.motivation.id ilike :search")
+                    .add("or m.metricDefinition ilike :search")
+                    .add("or m.lodReference ilike :search")
+                    .add("or m.valueBenchmark ilike :search")
+                    .add("or m.motivationX ilike :search)");
 
             map.put("search", "%" + search + "%");
         }
 
         joiner.add("order by");
         joiner.add("m."+ sort);
-        joiner.add(order + ", m.id ASC");
+        joiner.add(order + ", m.metric.id ASC");
 
         var panache = find(joiner.toString(), map).page(page, size);
 
@@ -74,23 +75,11 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return pageable;
     }
 
-//    public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionByPage(int page, int size){
-//
-//        var panache = find("from MetricDefinitionJunction", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
-//
-//        var pageable = new PageQueryImpl<MetricDefinitionJunction>();
-//        pageable.list = panache.list();
-//        pageable.index = page;
-//        pageable.size = size;
-//        pageable.count = panache.count();
-//        pageable.page = Page.of(page, size);
-//
-//        return pageable;
-//    }
-
-
-
-    public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionByPage(String search, String sort, String order, int page, int size){
+    /**
+     * Retrieves a page of Metric And it's definition.
+     * @return A page of MetricDefinitionJunction objects representing the Metric and it's definitions.
+     */
+    public PageQuery<MetricDefinitionJunction> fetchMetricAndDefinitionByPage(String search, String sort, String order, int page, int size){
 
         var joiner = new StringJoiner(StringUtils.SPACE);
 
@@ -103,20 +92,20 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         var map = new HashMap<String, Object>();
 
         if (StringUtils.isNotEmpty(search)) {
-            joiner.add("and (m.metric.id like :search")
-                    .add("or m.metric.MTR like :search")
-                    .add("or m.typeBenchmark.id like :search")
-                    .add("or m.typeBenchmark.labelBenchmarkType like :search")
-                    .add("or m.motivation.Id like :search")
-                    .add("or m.valueBenchmark like :search")
-                    .add("or m.motivationX like :search)");
+            joiner.add("and (m.metric.id ilike :search")
+                    .add("or m.metric.MTR ilike :search")
+                    .add("or m.typeBenchmark.id ilike :search")
+                    .add("or m.typeBenchmark.labelBenchmarkType ilike :search")
+                    .add("or m.motivation.id ilike :search")
+                    .add("or m.valueBenchmark ilike :search")
+                    .add("or m.motivationX ilike :search)");
 
             map.put("search", "%" + search + "%");
         }
 
         joiner.add("order by");
         joiner.add("m."+ sort);
-        joiner.add(order + ", m.id ASC");
+        joiner.add(order + ", m.metric.id ASC");
 
         var panache = find(joiner.toString(), map).page(page, size);
         var pageable = new PageQueryImpl<MetricDefinitionJunction>();

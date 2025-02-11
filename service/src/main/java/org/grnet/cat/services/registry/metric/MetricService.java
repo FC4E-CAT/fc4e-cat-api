@@ -54,20 +54,6 @@ public class MetricService {
 
     private static final Logger LOG = Logger.getLogger(MetricService.class);
 
-//    /**
-//     * Retrieves a specific Metric item by its ID.
-//     *
-//     * @param id The unique ID of the Metric item.
-//     * @return The corresponding Metric DTO.
-//     */
-//    public MetricResponseDto getMetricById(String id) {
-//
-//        var metric = metricRepository.findById(id);
-//
-//        return MetricMapper.INSTANCE.metricToDto(metric);
-//    }
-
-
     /**
      * Retrieves a specific Metric item by its ID.
      *
@@ -193,7 +179,7 @@ public class MetricService {
      */
     public PageResource<MetricDefinitionExtendedResponse> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitionPage = metricDefinitionRepository.fetchMetricDefinitionByPage(search,sort, order, page, size);
+        var metricDefinitionPage = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search,sort, order, page, size);
 
         var metricDefinitionDtos = MetricMapper.INSTANCE
                 .metricAndDefinitionToDtos(metricDefinitionPage.list());
