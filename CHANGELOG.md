@@ -103,6 +103,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#429](https://github.com/FC4E-CAT/fc4e-cat-api/pull/429) CAT-744 Issue when actor- criteria vary betwen 2 motivations which are parent-child(cloned)
 - [#431](https://github.com/FC4E-CAT/fc4e-cat-api/pull/431) CAT-745 C7 criterion fails due to wrong benchmark value
 - [#439](https://github.com/FC4E-CAT/fc4e-cat-api/pull/439) CAT-749 API call: admin publish assessment gets 403 when admin
+- [#441](https://github.com/FC4E-CAT/fc4e-cat-api/pull/441) CAT-783 CAT-791 API- GET Public Assessment 400 error/Assessment's id inside assessment_doc is null 
 
 
 ### Removed

@@ -107,13 +107,20 @@ public class JsonAssessmentService {
         assessment.setPublished(request.assessmentDoc.published);
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
         motivationAssessmentRepository.persist(assessment);
+        var doc = assessment.getAssessmentDoc();
+        ObjectNode jsonNode = null;
+        try {
+            jsonNode = (ObjectNode) objectMapper.readTree(doc);
+            jsonNode.put("id", assessment.getId());
 
-        request.assessmentDoc.id = assessment.getId();
+            assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         //assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
 
         keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
-
         return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
     }
 
@@ -502,7 +509,7 @@ public class JsonAssessmentService {
 
         var assessment = motivationAssessmentRepository.findById(assessmentId);
 
-        var assessmentDto = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+        var assessmentDto = AssessmentMapper.INSTANCE.publicUserRegistryAssessmentToJsonAssessment(assessment);
 
         if (!assessment.getPublished()) {
             throw new ForbiddenException("Not Permitted.");

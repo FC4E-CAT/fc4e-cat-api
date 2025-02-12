@@ -136,4 +136,18 @@ public interface AssessmentMapper {
 
         return !currentUser.equals(userId);
     }
+
+    @Named("publicMapWithRegistryExpression")
+    @Mapping(target = "assessmentDoc", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()))")
+    @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
+    @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
+    @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
+    @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
+    @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
+    @Mapping(target = "sharedToUser", ignore = true)
+    @Mapping(target = "sharedByUser", ignore = true)
+    @Mapping(target = "published", source = "assessment.published")
+
+    UserJsonRegistryAssessmentResponse publicUserRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
+
 }
