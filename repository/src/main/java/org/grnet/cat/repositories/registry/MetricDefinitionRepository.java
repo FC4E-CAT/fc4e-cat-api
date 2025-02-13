@@ -8,6 +8,7 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.MetricDefinitionJunction;
+import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.repositories.Repository;
 
@@ -128,8 +129,17 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return pageable;
     }
 
+    @Transactional
+    public List<Motivation> getMotivationIdsByMetric(String metricId) {
 
+        var db = "SELECT DISTINCT m FROM Motivation m " +
+                "LEFT JOIN MetricDefinitionJunction md ON md.motivation.id = m.id " +
+                "WHERE md.metric.id = :metricId";
 
+        return getEntityManager().createQuery(db, Motivation.class)
+                .setParameter("metricId", metricId)
+                .getResultList();
+    }
 
 
     public MetricDefinitionJunction fetchMetricDefinitionByMotivationAndMetricId(String motivationId, String metricId) {

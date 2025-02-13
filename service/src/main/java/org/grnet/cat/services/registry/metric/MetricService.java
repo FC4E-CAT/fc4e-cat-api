@@ -12,10 +12,17 @@ import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
+import org.grnet.cat.dtos.registry.test.TestAndTestDefinitionResponse;
+import org.grnet.cat.entities.registry.MetricDefinitionJunction;
+import org.grnet.cat.entities.registry.Test;
+import org.grnet.cat.entities.registry.TestDefinition;
+import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.MetricDefinitionMapper;
+import org.grnet.cat.mappers.registry.MotivationMapper;
+import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
@@ -69,9 +76,10 @@ public class MetricService {
      */
     public MetricDefinitionExtendedResponse getMetricById(String id) {
 
-        var metric = metricDefinitionRepository.fetchMetricDefinitionByMetricId(id);
+        var junction = metricDefinitionRepository.fetchMetricDefinitionByMetricId(id);
+        var metric = junction.getMetric();
 
-        return MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponse(metric);
+        return metricResponseWithMotivations(metric, junction);
     }
 
 
@@ -191,6 +199,28 @@ public class MetricService {
                 .metricAndDefinitionToDtos(metricDefinitionPage.list());
 
         return new PageResource<>(metricDefinitionPage, metricDefinitionDtos, uriInfo);
+    }
+
+
+    /**
+     * This method takes a Metric entity, converts it to a PrincipleResponseDto, retrieves and maps
+     * any associated motivations, and then sets the motivations in the response.
+     *
+     * @param metric The Test entity to be converted and enhanced.
+     * @return A PrincipleResponseDto with associated motivations.
+     */
+    private MetricDefinitionExtendedResponse metricResponseWithMotivations(Metric metric, MetricDefinitionJunction junction) {
+
+        var metricAndDefinitionToDto = MetricMapper.INSTANCE.metricAndDefinitionToDto(metric, junction);
+
+        var motivations = metricDefinitionRepository.getMotivationIdsByMetric(metric.getId());
+        var motivationResponses = motivations.stream()
+                .map(MotivationMapper.INSTANCE::mapPartialMotivation)
+                .collect(Collectors.toList());
+
+        metricAndDefinitionToDto.setMotivations(motivationResponses);
+
+        return metricAndDefinitionToDto;
     }
 
 }

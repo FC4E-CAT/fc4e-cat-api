@@ -1,9 +1,14 @@
 package org.grnet.cat.dtos.registry;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
+
+import java.util.List;
 
 @Schema(name="MetricDefinitionExtendedResponse", description="This object represents a response for a Metric Definition.")
 public class MetricDefinitionExtendedResponse {
@@ -133,4 +138,14 @@ public class MetricDefinitionExtendedResponse {
     )
     @JsonProperty("value_benchmark")
     public String valueBenchmark;
+
+    @Setter
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = PartialMotivationResponse.class,
+            description = "List of motivations related to this test."
+    )
+    @JsonProperty("used_by_motivations")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<PartialMotivationResponse> motivations;
 }
