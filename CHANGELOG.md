@@ -105,6 +105,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#439](https://github.com/FC4E-CAT/fc4e-cat-api/pull/439) CAT-749 API call: admin publish assessment gets 403 when admin
 - [#443](https://github.com/FC4E-CAT/fc4e-cat-api/pull/443) CAT-792: Retrieve Associated Motivations for Metrics
 - [#441](https://github.com/FC4E-CAT/fc4e-cat-api/pull/441) CAT-783 CAT-791 API- GET Public Assessment 400 error/Assessment's id inside assessment_doc is null 
+- [#442](https://github.com/FC4E-CAT/fc4e-cat-api/pull/442) CAT-788: Wrong sort values for /registry/metrics
 
 
 ### Removed
