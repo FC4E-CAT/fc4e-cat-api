@@ -198,19 +198,44 @@ public class ValidationRepository implements Repository<Validation, Long> {
 
 
     /**
-     * Retrieves the list of assessment types and registry actors for which the user is eligible to create assessments.
+     * Retrieves the list of published assessment types and registry actors for which the user is eligible to create assessments.
      *
      * @param page   The index of the page to retrieve (starting from 0).
      * @param size   The maximum number of validation requests to include in a page.
      * @param userID the ID of the user
      * @return a structured list of organizations, assessment types, and registry actors
      */
-    public PageQuery<UserRegistryAssessmentEligibility> fetchUserRegistryAssessmentEligibility(int page, int size, String userID){
+    public PageQuery<UserRegistryAssessmentEligibility> fetchUserRegistryAssessmentEligibility( int page, int size, String userID){
 
         var panache = find("select v.organisationId, v.organisationName, v.organisationSource, v.organisationRole, " +
                         "ra.id as actorId, ra.labelActor as actorName, m.id as assessmentTypeId, m.label as assessmentTypeName from Validation v inner join MotivationActorJunction ma on v.registryActor.id = ma.id.actorId inner join RegistryActor ra on ma.id.actorId = ra.id inner join Motivation m on ma.id.motivationId = m.id " +
                         "where v.user.id = : userID and v.status = : status and ma.published = : published",
                 Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED).and("published",Boolean.TRUE)).project(UserRegistryAssessmentEligibility.class).page(page, size);
+
+        var pageable = new PageQueryImpl<UserRegistryAssessmentEligibility>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
+     * Retrieves the list of all assessment types and registry actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and registry actors
+     */
+    public PageQuery<UserRegistryAssessmentEligibility> fetchUserRegistryAssessmentEligibilityAll( int page, int size, String userID){
+
+        var panache = find("select v.organisationId, v.organisationName, v.organisationSource, v.organisationRole, " +
+                        "ra.id as actorId, ra.labelActor as actorName, m.id as assessmentTypeId, m.label as assessmentTypeName from Validation v inner join MotivationActorJunction ma on v.registryActor.id = ma.id.actorId inner join RegistryActor ra on ma.id.actorId = ra.id inner join Motivation m on ma.id.motivationId = m.id " +
+                        "where v.user.id = : userID and v.status = : status ",
+                Parameters.with("userID", userID).and("status", ValidationStatus.APPROVED)).project(UserRegistryAssessmentEligibility.class).page(page, size);
 
         var pageable = new PageQueryImpl<UserRegistryAssessmentEligibility>();
         pageable.list = panache.list();

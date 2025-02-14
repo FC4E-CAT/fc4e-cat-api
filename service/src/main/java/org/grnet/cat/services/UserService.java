@@ -299,9 +299,15 @@ public class UserService {
         roleRepository.removeRoles(userId, List.of("deny_access"));
     }
 
-    public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo) {
+    public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibility( int page, int size, String userID, UriInfo uriInfo) {
 
         var list = validationService.getUserRegistryAssessmentEligibility(page, size, userID);
+
+        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserRegistryRegistryAssessmentEligibilityToDto(list.list()), uriInfo);
+    }
+    public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibilityAll( int page, int size, String userID, UriInfo uriInfo) {
+
+        var list = validationService.getUserRegistryAssessmentEligibilityAll(page, size, userID);
 
         return new PageResource<>(list, UserMapper.INSTANCE.listOfUserRegistryRegistryAssessmentEligibilityToDto(list.list()), uriInfo);
     }

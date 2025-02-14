@@ -111,14 +111,14 @@ public class MetricTestRepository implements Repository<MetricTestJunction, Stri
     }
 
     public boolean existTestInStatus(String testId, boolean status) {
-        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.id.testId= ?1 AND ma.published= ?2", testId, status)
+        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId and mt.id.motivationId =cm.id.motivationId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId and ca.id.motivationId=cm.id.motivationId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId and ma.id.motivationId=ca.id.motivationId WHERE mt.id.testId= ?1 AND ma.published= ?2", testId, status)
                 .firstResultOptional()
                 .isPresent();
 
     }
 
     public boolean existTestDefinitionInStatus(String testId, boolean status) {
-        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId   WHERE mt.testDefinition.id= ?1 AND ma.published= ?2", testId, status)
+        return find("SELECT 1 FROM MetricTestJunction mt inner join CriterionMetricJunction cm on mt.id.metricId=cm.id.metricId and mt.id.motivationId =cm.id.motivationId INNER JOIN CriterionActorJunction ca on ca.id.criterionId=cm.id.criterionId and ca.id.motivationId=cm.id.motivationId INNER JOIN MotivationActorJunction ma ON ca.id.actorId=ma.id.actorId and ma.id.motivationId=ca.id.motivationId   WHERE mt.testDefinition.id= ?1 AND ma.published= ?2", testId, status)
                 .firstResultOptional()
                 .isPresent();
 
