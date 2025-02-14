@@ -53,6 +53,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750: Retrieve Associated Motivations for Tests.
 - [#437](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-759: API - healthcheck.
 - [#438](https://github.com/FC4E-CAT/fc4e-cat-api/pull/438) CAT-755 [API] - Make statistics publicly available
+- [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445) CAT-804: Library Metric View: Type Algorithm and Type Metric description
 
 ### Fix
 
