@@ -12,17 +12,12 @@ import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
-import org.grnet.cat.dtos.registry.test.TestAndTestDefinitionResponse;
-import org.grnet.cat.entities.registry.MetricDefinitionJunction;
-import org.grnet.cat.entities.registry.Test;
-import org.grnet.cat.entities.registry.TestDefinition;
+import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.registry.MetricDefinitionMapper;
 import org.grnet.cat.mappers.registry.MotivationMapper;
-import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
@@ -32,6 +27,7 @@ import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 import org.jboss.logging.Logger;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -179,17 +175,43 @@ public class MetricService {
      */
     public PageResource<MetricDefinitionExtendedResponse> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitionPage = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search,sort, order, page, size);
+        var metricDefinitionPage = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search, sort, order, page, size);
+        var junctions = metricDefinitionPage.list();
 
-        var metricDefinitionDtos = MetricMapper.INSTANCE
-                .metricAndDefinitionToDtos(metricDefinitionPage.list());
+        if (junctions.isEmpty()) {
+            return new PageResource<>(metricDefinitionPage, List.of(), uriInfo);
+        }
 
-        return new PageResource<>(metricDefinitionPage, metricDefinitionDtos, uriInfo);
+        var metricIds = junctions.stream()
+                .map(j -> j.getMetric().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        var motivationsList = metricDefinitionRepository.getMotivationsForMetricIds(metricIds);
+        var motivationsMap = motivationsList.stream()
+                .collect(Collectors.groupingBy(
+                        result -> (String) result[0],
+                        Collectors.mapping(result -> (Motivation) result[1], Collectors.toList())
+                ));
+
+        var dtoList = junctions.stream()
+                .map(junction -> {
+                    var dto = metricResponseWithMotivations(junction.getMetric(), junction);
+
+                    var motivations = motivationsMap.getOrDefault(junction.getMetric().getId(), List.of());
+                    dto.setMotivations(motivations.stream()
+                            .map(MotivationMapper.INSTANCE::mapPartialMotivation)
+                            .collect(Collectors.toList()));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(metricDefinitionPage, dtoList, uriInfo);
     }
 
 
     /**
-     * This method takes a Metric entity, converts it to a PrincipleResponseDto, retrieves and maps
+     * This method takes a Metric entity, converts it to a MetricDefinitionResponseDto, retrieves and maps
      * any associated motivations, and then sets the motivations in the response.
      *
      * @param metric The Test entity to be converted and enhanced.

@@ -12,10 +12,8 @@ import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.repositories.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MetricDefinitionRepository implements Repository<MetricDefinitionJunction, String> {
@@ -144,6 +142,17 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
 
         return find("SELECT md FROM MetricDefinitionJunction md WHERE md.metric.id = ?1", metricId).firstResult();
     }
+
+    @Transactional
+    public List<Object[]> getMotivationsForMetricIds(List<String> metricIds) {
+        var query = "SELECT DISTINCT md.metric.id, md.motivation FROM MetricDefinitionJunction md " +
+                "WHERE md.metric.id IN :metricIds";
+
+        return getEntityManager().createQuery(query, Object[].class)
+                .setParameter("metricIds", metricIds)
+                .getResultList();
+    }
+
 
     @Transactional
     public long removeAll(){
