@@ -70,6 +70,15 @@ public class MetricDefinitionExtendedResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "The Type Algorithm Description.",
+            example = "The metric is the same as the test result without any modification"
+    )
+    @JsonProperty("type_algorithm_description")
+    public String typeAlgorithmDescription;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The Metric Type Label.",
             example = "pid_graph:EBCEBED1"
     )
@@ -80,10 +89,19 @@ public class MetricDefinitionExtendedResponse {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The Metric Type Label.",
-            example = "pid_graph:EBCEBED1"
+            example = "Binary"
     )
     @JsonProperty("type_metric_label")
     public String typeMetricLabel;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Metric Type Description.",
+            example = "pid_graph:EBCEBED1"
+    )
+    @JsonProperty("type_metric_description")
+    public String typeMetricDescription;
 
 
     @Schema(
