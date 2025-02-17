@@ -19,6 +19,7 @@ import org.grnet.cat.repositories.registry.MotivationActorRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.repositories.registry.RegistryTemplateRepository;
+import org.grnet.cat.utils.TestParamsTransformer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,10 +69,10 @@ public class TemplateService {
 
                 if(row.getLabelTestMethod().contains("Evidence")){
 
-                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), row.getTestParams(), row.getToolTip());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 } else {
 
-                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), row.getTestParams(), row.getToolTip());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 }
 
                 return tn;
@@ -127,10 +128,10 @@ public class TemplateService {
 
                 if(row.getLabelTestMethod().contains("Evidence")){
 
-                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), row.getTestParams(), row.getToolTip());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 } else {
 
-                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), row.getTestParams(), row.getToolTip());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 }
 
                 return tn;

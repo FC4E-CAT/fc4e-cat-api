@@ -22,7 +22,7 @@ public interface TestDefinitionMapper {
     @Named("mapTestDefinition")
     @Mapping(target = "testMethodId", expression = "java(testDefinition.getTestMethod().getId())")
     @Mapping(target = "lodTESV", ignore = true)
-    @Mapping(target = "testParams", expression = "java(TestParamsTransformer.transformTestParams(testDefinition.getTestParams()))")
+    @Mapping(target = "testParams", expression = "java(testDefinition.getTestParams())")
     TestDefinitionResponseDto testDefinitionToDto(TestDefinition testDefinition);
 
     @Named("mapWithExpression")
@@ -44,7 +44,7 @@ public interface TestDefinitionMapper {
 
     @Mapping(target = "labelTestDefinition", expression = "java(StringUtils.isNotEmpty(request.labelTestDefinition) ? request.labelTestDefinition : testDefinition.getLabelTestDefinition())")
     @Mapping(target = "paramType", expression = "java(StringUtils.isNotEmpty(request.paramType) ? request.paramType : testDefinition.getParamType())")
-    @Mapping(target = "testParams", expression = "java(StringUtils.isNotEmpty(request.testParams) ? TestParamsTransformer.transformTestParams(request.testParams) : testDefinition.getTestParams())")
+    @Mapping(target = "testParams", expression = "java(StringUtils.isNotEmpty(request.testParams) ? request.testParams : testDefinition.getTestParams())")
     @Mapping(target = "testQuestion", expression = "java(StringUtils.isNotEmpty(request.testQuestion) ? request.testQuestion : testDefinition.getTestQuestion())")
     @Mapping(target = "toolTip", expression = "java(StringUtils.isNotEmpty(request.toolTip) ? request.toolTip : testDefinition.getToolTip())")
     @Mapping(target = "testMethod", ignore = true)
