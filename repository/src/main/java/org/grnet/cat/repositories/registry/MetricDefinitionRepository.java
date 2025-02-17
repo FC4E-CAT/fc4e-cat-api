@@ -91,6 +91,7 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
 
         if (StringUtils.isNotEmpty(search)) {
             joiner.add("and (m.metric.id ilike :search")
+                    .add("or m.metric.labelMetric ilike :search")
                     .add("or m.metric.MTR ilike :search")
                     .add("or m.typeBenchmark.id ilike :search")
                     .add("or m.typeBenchmark.labelBenchmarkType ilike :search")

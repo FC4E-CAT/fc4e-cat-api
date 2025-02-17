@@ -108,7 +108,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#441](https://github.com/FC4E-CAT/fc4e-cat-api/pull/441) CAT-783 CAT-791 API- GET Public Assessment 400 error/Assessment's id inside assessment_doc is null 
 - [#442](https://github.com/FC4E-CAT/fc4e-cat-api/pull/442) CAT-788: Wrong sort values for /registry/metrics
 - [#444](https://github.com/FC4E-CAT/fc4e-cat-api/pull/444/) CAT-792: Retrieve Associated Motivations for Metrics (fix)
-
+- [#448](https://github.com/FC4E-CAT/fc4e-cat-api/pull/448/) CAT-807 Metrics search doesnt return results 
 
 ### Removed
 
