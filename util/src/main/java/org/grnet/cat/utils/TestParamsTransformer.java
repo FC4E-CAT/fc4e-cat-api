@@ -76,30 +76,14 @@ public class TestParamsTransformer {
             return testParams;
         }
 
-        // Split the testParams by '|'
-        String[] tokens = testParams.split("\\|");
-
-        // Transform each token
-        String transformed = java.util.Arrays.stream(tokens)
+        var tokens = testParams.split("\\|");
+        var transformed = java.util.Arrays.stream(tokens)
                 .map(token -> {
-                    // Trim whitespace and remove surrounding quotes if any
-                    String trimmed = token.trim().replaceAll("^['“”\"]|['“”\"]$", "");
-
-                    // Apply specific replacement if exists
-                    return  SPECIFIC_REPLACEMENTS.getOrDefault(trimmed, convertCamelToSnake(trimmed));
+                    var trimmed = token.trim().replaceAll("^['“”\"]|['“”\"]$", "");
+                    return SPECIFIC_REPLACEMENTS.getOrDefault(trimmed, trimmed);
                 })
                 .collect(Collectors.joining("|"));
 
         return transformed;
-    }
-
-    /**
-     * Converts a camelCase or PascalCase string to snake_case.
-     *
-     * @param input The original string in camelCase or PascalCase.
-     * @return The converted string in snake_case.
-     */
-    private static String convertCamelToSnake(String input) {
-        return input.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase();
     }
 }

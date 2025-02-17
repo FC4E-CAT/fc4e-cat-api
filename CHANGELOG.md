@@ -50,10 +50,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#418](https://github.com/FC4E-CAT/fc4e-cat-api/pull/418) CAT-727 Publish assessment.
 - [#420](https://github.com/FC4E-CAT/fc4e-cat-api/pull/420) CAT-729 Implement Search Functionality for Test Library.
 - [#427](https://github.com/FC4E-CAT/fc4e-cat-api/pull/427) Admin view Validations / Order by status with pending on top.
-- [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750: Retrieve Associated Motivations for Tests.
-- [#437](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-759: API - healthcheck.
+- [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750 Retrieve Associated Motivations for Tests.
+- [#437](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-759 API - healthcheck.
 - [#438](https://github.com/FC4E-CAT/fc4e-cat-api/pull/438) CAT-755 [API] - Make statistics publicly available
-- [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445) CAT-804: Library Metric View: Type Algorithm and Type Metric description
+- [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445) CAT-804 Library Metric View: Type Algorithm and Type Metric description
 
 ### Fix
 
@@ -104,13 +104,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#429](https://github.com/FC4E-CAT/fc4e-cat-api/pull/429) CAT-744 Issue when actor- criteria vary betwen 2 motivations which are parent-child(cloned)
 - [#431](https://github.com/FC4E-CAT/fc4e-cat-api/pull/431) CAT-745 C7 criterion fails due to wrong benchmark value
 - [#439](https://github.com/FC4E-CAT/fc4e-cat-api/pull/439) CAT-749 API call: admin publish assessment gets 403 when admin
-- [#443](https://github.com/FC4E-CAT/fc4e-cat-api/pull/443) CAT-792: Retrieve Associated Motivations for Metrics
+- [#443](https://github.com/FC4E-CAT/fc4e-cat-api/pull/443) CAT-792 Retrieve Associated Motivations for Metrics
 - [#441](https://github.com/FC4E-CAT/fc4e-cat-api/pull/441) CAT-783 CAT-791 API- GET Public Assessment 400 error/Assessment's id inside assessment_doc is null 
-- [#442](https://github.com/FC4E-CAT/fc4e-cat-api/pull/442) CAT-788: Wrong sort values for /registry/metrics
-- [#444](https://github.com/FC4E-CAT/fc4e-cat-api/pull/444/) CAT-792: Retrieve Associated Motivations for Metrics (fix)
-- [#450](https://github.com/FC4E-CAT/fc4e-cat-api/pull/450) CAT-806: Metrics view displays the same metric multiple times
+- [#442](https://github.com/FC4E-CAT/fc4e-cat-api/pull/442) CAT-788 Wrong sort values for /registry/metrics
+- [#444](https://github.com/FC4E-CAT/fc4e-cat-api/pull/444/) CAT-792 Retrieve Associated Motivations for Metrics (fix)
+- [#450](https://github.com/FC4E-CAT/fc4e-cat-api/pull/450) CAT-806 Metrics view displays the same metric multiple times
 - [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445/) CAT-800 Cannot change test that belongs to unpublished motivation - still says published #446
 - [#449](https://github.com/FC4E-CAT/fc4e-cat-api/pull/449/) CAT-749 API call: admin publish assessment gets 403 when admin -version 2
+- [#451](https://github.com/FC4E-CAT/fc4e-cat-api/pull/451) CAT-810 Test Update Not Working Properly
 
 
 ### Removed
