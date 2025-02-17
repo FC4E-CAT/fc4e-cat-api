@@ -23,6 +23,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 ---
 
+## 1.8.2 - 2025-02-17
+---
+
 ### Added
 
 - [#330](https://github.com/FC4E-CAT/fc4e-cat-api/pull/330) CAT-432 Add demo data to local installation.
