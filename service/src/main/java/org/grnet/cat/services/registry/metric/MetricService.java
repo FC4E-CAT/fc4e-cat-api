@@ -177,7 +177,7 @@ public class MetricService {
      */
     public PageResource<MetricDefinitionExtendedResponse> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitionPage = metricDefinitionRepository.findUniqueMetrics(search, sort, order, page, size);
+        var metricDefinitionPage = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search, sort, order, page, size);
 
         var junctions = metricDefinitionPage.list();
 

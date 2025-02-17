@@ -112,7 +112,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445/) CAT-800 Cannot change test that belongs to unpublished motivation - still says published #446
 - [#449](https://github.com/FC4E-CAT/fc4e-cat-api/pull/449/) CAT-749 API call: admin publish assessment gets 403 when admin -version 2
 - [#451](https://github.com/FC4E-CAT/fc4e-cat-api/pull/451) CAT-810 Test Update Not Working Properly
-
+- [#452](https://github.com/FC4E-CAT/fc4e-cat-api/pull/452/) CAT-807 Metrics search doesnt return results
 
 ### Removed
 

@@ -318,13 +318,15 @@ public class MetricEndpoint {
                     description = "The \"search\" parameter allows clients to search " +
                             "for matches in specific fields in the MetricDefinition entity. " +
                             "The search will be conducted in the following fields: " +
-                            "metric ID, metric MTR, type benchmark ID, type benchmark Label, motivation ID")
+                            "metric ID, metric MTR, metric Label, type benchmark ID, type benchmark Label, motivation ID")
             @QueryParam("search") String search,
             @Parameter(name = "Sort", in = QUERY,
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
                     examples = {
                             @ExampleObject(name = "Last Touch", value = "lastTouch"),
                             @ExampleObject(name = "MTR", value = "metric.MTR"),
+                            @ExampleObject(name = "Label", value = "metric.metricLabel"),
+                            @ExampleObject(name = "Description", value = "metric.descrMetric"),
                             @ExampleObject(name = "Benchmark Value", value = "valueBenchmark")},
                     description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
             @DefaultValue("lastTouch")
@@ -351,7 +353,7 @@ public class MetricEndpoint {
             @Context UriInfo uriInfo) {
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("lastTouch", "metric.MTR", "valueBenchmark");
+        var sortValues = List.of("lastTouch", "metric.MTR","metric.metricLabel","metric.metricDescr", "valueBenchmark");
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 
