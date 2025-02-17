@@ -1,9 +1,12 @@
 package org.grnet.cat.repositories.registry;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.NamedQuery;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -73,44 +76,27 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return pageable;
     }
 
-    /**
-     * Retrieves a page of Metric And it's definition.
-     * @return A page of MetricDefinitionJunction objects representing the Metric and it's definitions.
-     */
-    public PageQuery<MetricDefinitionJunction> fetchMetricAndDefinitionByPage(String search, String sort, String order, int page, int size){
+    public PageQuery<MetricDefinitionJunction> findUniqueMetrics(String search, String sort, String order, int page, int size){
+
+        var em = Panache.getEntityManager();
 
         var joiner = new StringJoiner(StringUtils.SPACE);
+        joiner.add("SELECT DISTINCT ON (metric_lodMTR) * FROM p_Metric_Definition ORDER BY metric_lodMTR");
 
-        joiner.add("from MetricDefinitionJunction m")
-                .add("left join m.metric met")
-                .add("left join m.typeBenchmark tb");
+        var query = em.createNativeQuery(joiner.toString(), MetricDefinitionJunction.class);
 
-        joiner.add("where 1=1");
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT metric_lodMTR)  FROM p_Metric_Definition", Long.class);
 
-        var map = new HashMap<String, Object>();
+        var list = (List<MetricDefinitionJunction>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
 
-        if (StringUtils.isNotEmpty(search)) {
-            joiner.add("and (m.metric.id ilike :search")
-                    .add("or m.metric.MTR ilike :search")
-                    .add("or m.typeBenchmark.id ilike :search")
-                    .add("or m.typeBenchmark.labelBenchmarkType ilike :search")
-                    .add("or m.motivation.id ilike :search")
-                    .add("or m.valueBenchmark ilike :search")
-                    .add("or m.motivationX ilike :search)");
-
-            map.put("search", "%" + search + "%");
-        }
-
-        joiner.add("order by");
-        joiner.add("m."+ sort);
-        joiner.add(order + ", m.metric.id ASC");
-
-        var panache = find(joiner.toString(), map).page(page, size);
         var pageable = new PageQueryImpl<MetricDefinitionJunction>();
-        pageable.list = panache.list();
+        pageable.list = list;
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.count();
+        pageable.count = (Long) countQuery.getSingleResult();
         pageable.page = Page.of(page, size);
 
         return pageable;

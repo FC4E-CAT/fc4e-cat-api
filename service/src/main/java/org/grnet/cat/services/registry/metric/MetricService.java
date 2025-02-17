@@ -27,7 +27,9 @@ import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 import org.jboss.logging.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -175,7 +177,8 @@ public class MetricService {
      */
     public PageResource<MetricDefinitionExtendedResponse> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitionPage = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search, sort, order, page, size);
+        var metricDefinitionPage = metricDefinitionRepository.findUniqueMetrics(search, sort, order, page, size);
+
         var junctions = metricDefinitionPage.list();
 
         if (junctions.isEmpty()) {
@@ -188,6 +191,7 @@ public class MetricService {
                 .collect(Collectors.toList());
 
         var motivationsList = metricDefinitionRepository.getMotivationsForMetricIds(metricIds);
+
         var motivationsMap = motivationsList.stream()
                 .collect(Collectors.groupingBy(
                         result -> (String) result[0],
