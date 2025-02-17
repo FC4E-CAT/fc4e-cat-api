@@ -577,11 +577,12 @@ public class JsonAssessmentService {
         ObjectNode jsonNode = null;
         try {
             jsonNode = (ObjectNode) objectMapper.readTree(doc);
+            jsonNode.put("published", publish);
             assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        assessment.setPublished(true);
+        assessment.setPublished(publish);
         return String.format("Assessment is %s successfully", publish ? "published" : "unpublished");
 
     }
