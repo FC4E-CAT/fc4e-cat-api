@@ -20,47 +20,7 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MetricDefinitionRepository implements Repository<MetricDefinitionJunction, String> {
-    @Transactional
-    public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionWithSearch(String search, String sort, String order, int page, int size) {
 
-        var joiner = new StringJoiner(StringUtils.SPACE);
-
-        joiner.add("from MetricDefinitionJunction m")
-                .add("left join fetch m.metric met")
-                .add("left join fetch m.typeBenchmark tb");
-        joiner.add("where 1=1");
-
-        var map = new HashMap<String, Object>();
-
-        if (StringUtils.isNotEmpty(search)) {
-            joiner.add("and (m.metric.id ilike :search")
-                    .add("or m.metric.MTR ilike :search")
-                    .add("or m.typeBenchmark.id ilike :search")
-                    .add("or m.typeBenchmark.label ilike :search")
-                    .add("or m.motivation.id ilike :search")
-                    .add("or m.metricDefinition ilike :search")
-                    .add("or m.lodReference ilike :search")
-                    .add("or m.valueBenchmark ilike :search")
-                    .add("or m.motivationX ilike :search)");
-
-            map.put("search", "%" + search + "%");
-        }
-
-        joiner.add("order by");
-        joiner.add("m."+ sort);
-        joiner.add(order + ", m.metric.id ASC");
-
-        var panache = find(joiner.toString(), map).page(page, size);
-
-        var pageable = new PageQueryImpl<MetricDefinitionJunction>();
-        pageable.list = panache.list();
-        pageable.index = page;
-        pageable.size = size;
-        pageable.count = panache.count();
-        pageable.page = Page.of(page, size);
-
-        return pageable;
-    }
 
     public PageQuery<MetricDefinitionJunction> fetchMetricDefinitionByMotivation(String motivationId, int page, int size) {
 
@@ -76,30 +36,100 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return pageable;
     }
 
-    public PageQuery<MetricDefinitionJunction> findUniqueMetrics(String search, String sort, String order, int page, int size){
+//    public PageQuery<MetricDefinitionJunction> findUniqueMetrics(String search, String sort, String order, int page, int size){
+//
+//        var em = Panache.getEntityManager();
+//
+//        var joiner = new StringJoiner(StringUtils.SPACE);
+//        joiner.add("SELECT DISTINCT ON (metric_lodMTR) * FROM p_Metric_Definition ORDER BY metric_lodMTR");
+//
+//        var query = em.createNativeQuery(joiner.toString(), MetricDefinitionJunction.class);
+//
+//        var countQuery = em.createNativeQuery("SELECT count(DISTINCT metric_lodMTR)  FROM p_Metric_Definition", Long.class);
+//
+//        var list = (List<MetricDefinitionJunction>) query
+//                .setFirstResult(page * size)
+//                .setMaxResults(size)
+//                .getResultList();
+//
+//        var pageable = new PageQueryImpl<MetricDefinitionJunction>();
+//        pageable.list = list;
+//        pageable.index = page;
+//        pageable.size = size;
+//        pageable.count = (Long) countQuery.getSingleResult();
+//        pageable.page = Page.of(page, size);
+//
+//        return pageable;
+//    }
 
-        var em = Panache.getEntityManager();
+
+    /**
+     * Retrieves a page of Metric And it's definition.
+     * @return A page of MetricDefinitionJunction objects representing the Metric and it's definitions.
+     */
+    public PageQuery<MetricDefinitionJunction> fetchMetricAndDefinitionByPage(String search, String sort, String order, int page, int size){
 
         var joiner = new StringJoiner(StringUtils.SPACE);
-        joiner.add("SELECT DISTINCT ON (metric_lodMTR) * FROM p_Metric_Definition ORDER BY metric_lodMTR");
 
-        var query = em.createNativeQuery(joiner.toString(), MetricDefinitionJunction.class);
+        joiner.add("from MetricDefinitionJunction m")
+                .add("left join m.metric met")
+                .add("left join m.typeBenchmark tb");
 
-        var countQuery = em.createNativeQuery("SELECT count(DISTINCT metric_lodMTR)  FROM p_Metric_Definition", Long.class);
+        joiner.add("where 1=1");
 
-        var list = (List<MetricDefinitionJunction>) query
-                .setFirstResult(page * size)
-                .setMaxResults(size)
-                .getResultList();
+        var map = new HashMap<String, Object>();
 
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("and (m.metric.id ilike :search")
+                    .add("or m.metric.labelMetric ilike :search")
+                    .add("or m.metric.descrMetric ilike :search")
+                    .add("or m.metric.MTR ilike :search")
+                    .add("or m.typeBenchmark.id ilike :search")
+                    .add("or m.typeBenchmark.labelBenchmarkType ilike :search")
+                    .add("or m.motivation.id ilike :search")
+                    .add("or m.valueBenchmark ilike :search")
+                    .add("or m.motivationX ilike :search)");
+
+            map.put("search", "%" + search + "%");
+        }
+
+        // Order by criteria
+        joiner.add("order by");
+        joiner.add("m." + sort);
+        joiner.add(order + ", m.metric.id ASC");
+
+        // Execute the query and get the list
+        var panache = find(joiner.toString(), map);
+        List<MetricDefinitionJunction> list = panache.list();
+
+        // Apply distinct by m.metric.id
+        List<MetricDefinitionJunction> distinctList = list.stream()
+                .filter(distinctByKey(m -> m.getMetric().getId())) // Custom filter to ensure distinct metric.id
+                .collect(Collectors.toList());
+
+        // Pagination logic: Get the total number of distinct items
+        int totalItems = distinctList.size();
+        int start = Math.min(page * size, totalItems); // Start index for the page
+        int end = Math.min((page + 1) * size, totalItems); // End index for the page
+
+        // Slice the list to get only the items for the current page
+        List<MetricDefinitionJunction> paginatedList = distinctList.subList(start, end);
+
+        // Create and return the pageable object
         var pageable = new PageQueryImpl<MetricDefinitionJunction>();
-        pageable.list = list;
+        pageable.list = paginatedList;
         pageable.index = page;
         pageable.size = size;
-        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.count = totalItems; // Total count of distinct items (before pagination)
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+    // Helper method to get distinct elements by key (in this case, metric.id)
+    public static <T> java.util.function.Predicate<T> distinctByKey(java.util.function.Function<? super T, ?> keyExtractor) {
+        Map<Object, Boolean> seen = new HashMap<>();
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
     @Transactional
@@ -124,7 +154,7 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
         return find("SELECT md FROM MetricDefinitionJunction md WHERE md.motivation.id = ?1", motivationId).list();
     }
 
-    public MetricDefinitionJunction fetchMetricDefinitionByMetricId(String metricId){
+    public MetricDefinitionJunction fetchMetricDefinitionByMetricId(String metricId) {
 
         return find("SELECT md FROM MetricDefinitionJunction md WHERE md.metric.id = ?1", metricId).firstResult();
     }
@@ -141,7 +171,7 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
 
 
     @Transactional
-    public long removeAll(){
+    public long removeAll() {
         return deleteAll();
     }
 }
