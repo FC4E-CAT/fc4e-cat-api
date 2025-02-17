@@ -216,16 +216,29 @@ public class ValidationService {
     }
 
     /**
-     * Retrieves the list of assessment types and registry actors for which the user is eligible to create assessments.
+     * Retrieves the list of published assessment types and registry actors for which the user is eligible to create assessments.
      *
      * @param page   The index of the page to retrieve (starting from 0).
      * @param size   The maximum number of validation requests to include in a page.
      * @param userID the ID of the user
      * @return a structured list of organizations, assessment types, and registry actors
      */
-    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibility(int page, int size, String userID){
+    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibility( int page, int size, String userID){
 
-        return validationRepository.fetchUserRegistryAssessmentEligibility(page, size, userID);
+        return validationRepository.fetchUserRegistryAssessmentEligibility( page, size, userID);
+    }
+
+    /**
+     * Retrieves the list of all assessment types and registry actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and registry actors
+     */
+    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibilityAll( int page, int size, String userID){
+
+        return validationRepository.fetchUserRegistryAssessmentEligibilityAll( page, size, userID);
     }
 
     @Transactional

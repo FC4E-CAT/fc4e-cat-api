@@ -237,6 +237,50 @@ public class UsersEndpoint {
         return Response.ok().entity(userProfile).build();
     }
 
+    @Tag(name = "User")
+    @Operation(
+            summary = "Get user registry eligibility for editing new assessments.",
+            description = "Returns a structured list of organizations, assessment types, and registry actors for which the user is eligible to create new assessments.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successful response.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableRegistryAssessmentEligibility.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Path("/registry-assessment-eligibility-all")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response userRegistryAssessmentEligibilityAll(@Parameter(name = "page", in = QUERY,
+                                                              description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                                      @Parameter(name = "size", in = QUERY,
+                                                              description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
+                                                      @Max(value = 20, message = "Page size must be between 1 and 20.") @QueryParam("size") int size, @Context UriInfo uriInfo) {
+
+        var userProfile = userService.getUserRegistryAssessmentEligibilityAll(page-1, size, utility.getUserUniqueIdentifier(), uriInfo);
+
+        return Response.ok().entity(userProfile).build();
+    }
+
     public static class PageableUserProfile extends PageResource<UserProfileDto> {
 
         private List<UserProfileDto> content;

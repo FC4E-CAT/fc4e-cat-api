@@ -109,6 +109,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#442](https://github.com/FC4E-CAT/fc4e-cat-api/pull/442) CAT-788: Wrong sort values for /registry/metrics
 - [#444](https://github.com/FC4E-CAT/fc4e-cat-api/pull/444/) CAT-792: Retrieve Associated Motivations for Metrics (fix)
 - [#450](https://github.com/FC4E-CAT/fc4e-cat-api/pull/450) CAT-806: Metrics view displays the same metric multiple times
+- [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445/) CAT-800 Cannot change test that belongs to unpublished motivation - still says published #446
+
 
 ### Removed
 
