@@ -4,72 +4,78 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.KeycloakTest;
-import org.grnet.cat.api.endpoints.registry.MetricEndpoint;
 import org.grnet.cat.api.endpoints.registry.TypeAlgorithmEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.registry.metric.*;
+import org.grnet.cat.dtos.registry.metric.TypeAlgorithmResponseDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 @TestHTTPEndpoint(TypeAlgorithmEndpoint.class)
 public class TypeAlgorithmEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTypeAlgorithmNotPermitted() {
-        register("alice");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", "pid_graph:7A976659")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
+        var error = getTypeAlgorithmUnauthorized("pid_graph:7A976659");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
+
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTypeAlgorithm() {
+        var response = getTypeAlgorithm("pid_graph:7A976659");
+        assertNotNull(response);
+        assertEquals("pid_graph:7A976659", response.id);
+    }
 
-        register("admin");
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getTypeAlgorithmNotFound() {
+        var error = getTypeAlgorithmError("notfound");
+        assertEquals("There is no Type Algorithm with the following id: notfound", error.message);
+    }
 
-        var response = given()
+    private TypeAlgorithmResponseDto getTypeAlgorithm(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get("/{id}", "pid_graph:7A976659")
+                .get("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TypeAlgorithmResponseDto.class);
-
-        assertEquals(response.id, "pid_graph:7A976659");
     }
 
-    @Test
-    public void getTypeAlgorithmNotFound() {
-
-        register("admin");
-
-        var error = given()
+    private InformativeResponse getTypeAlgorithmUnauthorized(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/{id}", "notfound")
+                .get("/{id}", id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private InformativeResponse getTypeAlgorithmError(String id) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .get("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("There is no Type Algorithm with the following id: notfound", error.message);
     }
-
 }

@@ -22,7 +22,7 @@ public class CommentRepository implements Repository<Comment, Long> {
      */
     public PageQuery<Comment> fetchCommentsByAssessmentId(String assessmentId, int page, int size) {
         var joiner = new StringJoiner(" ");
-        joiner.add("from Comment c where c.assessment.id = :assessmentId");
+        joiner.add("from Comment c where c.motivationAssessment.id = :assessmentId");
 
         var params = new HashMap<String, Object>();
         params.put("assessmentId", assessmentId);

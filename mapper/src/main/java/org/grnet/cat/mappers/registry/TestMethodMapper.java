@@ -4,10 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.test.*;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.entities.registry.TestMethod;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
 import java.sql.Timestamp;
@@ -19,6 +16,7 @@ public interface TestMethodMapper {
 
     TestMethodMapper INSTANCE = Mappers.getMapper(TestMethodMapper.class);
 
+    @IterableMapping(qualifiedByName="map")
     List<TestMethodResponseDto> testMethodToDtos(List<TestMethod> entities);
 
     @Named("map")
@@ -28,6 +26,9 @@ public interface TestMethodMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+    @Mapping(target = "responseFragment", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "lodTMEV", ignore = true)
     TestMethod testMethodToEntity(TestMethodRequestDto request);
 
     @Mapping(target = "UUID", expression = "java(StringUtils.isNotEmpty(request.UUID) ? request.UUID : testMethod.getUUID())")
@@ -41,6 +42,9 @@ public interface TestMethodMapper {
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "responseFragment", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "lodTMEV", ignore = true)
     void updateTestMethodFromDto(TestMethodUpdateDto request, @MappingTarget TestMethod testMethod);
 
 }

@@ -44,12 +44,4 @@ public class UpdateMotivationRequest {
     @JsonProperty(value = "motivation_type_id")
     public String motivationTypeId;
 
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Motivation parent identifier.",
-            example = "pid_graph:986123FA"
-    )
-    @JsonProperty(value = "motivation_parent_id")
-    public String lodMtvP;
 }

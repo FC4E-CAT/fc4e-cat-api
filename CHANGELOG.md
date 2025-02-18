@@ -23,13 +23,112 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 ---
 
+## 1.8.2 - 2025-02-17
+---
+
+### Added
+
+- [#330](https://github.com/FC4E-CAT/fc4e-cat-api/pull/330) CAT-432 Add demo data to local installation.
+- [#334](https://github.com/FC4E-CAT/fc4e-cat-api/pull/334) CAT-593 Add registry_actor_id Column and Perform Update in Validation Table.
+- [#336](https://github.com/FC4E-CAT/fc4e-cat-api/pull/336) CAT-595 Delete Actor from Motivation.
+- [#338](https://github.com/FC4E-CAT/fc4e-cat-api/pull/338) CAT-599 Add published as status in a Motivation.
+- [#339](https://github.com/FC4E-CAT/fc4e-cat-api/pull/339) CAT-600 Permit actions depending on Motivation publish status.
+- [#340](https://github.com/FC4E-CAT/fc4e-cat-api/pull/340) CAT-603 Unpublish a published motivation.
+- [#343](https://github.com/FC4E-CAT/fc4e-cat-api/pull/343) CAT-605 Unpublish a published motivation.
+- [#345](https://github.com/FC4E-CAT/fc4e-cat-api/pull/345) CAT-608 Implement Search and Retrieve Associated Motivations for Principles and Criteria.
+- [#346](https://github.com/FC4E-CAT/fc4e-cat-api/pull/346) CAT-613 Publish/Unpublish motivation actor relationship.
+- [#350](https://github.com/FC4E-CAT/fc4e-cat-api/pull/350) CAT-612 Include Related Metrics in Criterion Response.
+- [#355](https://github.com/FC4E-CAT/fc4e-cat-api/pull/355) CAT-617 API Create a principle under motivation.
+- [#351](https://github.com/FC4E-CAT/fc4e-cat-api/pull/351) CAT-616 Create New Version Endpoint for Generating Assessments Based on Motivation Actor Templates.
+- [#361](https://github.com/FC4E-CAT/fc4e-cat-api/pull/361) CAT-628 Assessment Update.
+- [#360](https://github.com/FC4E-CAT/fc4e-cat-api/pull/360) CAT-622 Create an endpoint to check if a url is a valid https.
+- [#396](https://github.com/FC4E-CAT/fc4e-cat-api/pull/396) CAT-680 Create an API endpoint to establish a relationship between a criterion and a metric.
+- [#400](https://github.com/FC4E-CAT/fc4e-cat-api/pull/400) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation.
+- [#401](https://github.com/FC4E-CAT/fc4e-cat-api/pull/401) CAT-693 Create POST and PUT Endpoints for Metric-Test Relationship.
+- [#405](https://github.com/FC4E-CAT/fc4e-cat-api/pull/405) CAT-695 Implement GET and PUT /metric - definition by Motivation API Endpoint.
+- [#398](https://github.com/FC4E-CAT/fc4e-cat-api/pull/398) CAT-653 Delete & Update Principle in a motivation.
+- [#404](https://github.com/FC4E-CAT/fc4e-cat-api/pull/404) CAT-650 Automated Tests for ARCC-G071.
+- [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-720 Create Endpoint to Update Metric and Metric Definition.
+- [#415](https://github.com/FC4E-CAT/fc4e-cat-api/pull/415) CAT-641 Should we keep extra info on automated tests.
+- [#418](https://github.com/FC4E-CAT/fc4e-cat-api/pull/418) CAT-727 Publish assessment.
+- [#420](https://github.com/FC4E-CAT/fc4e-cat-api/pull/420) CAT-729 Implement Search Functionality for Test Library.
+- [#427](https://github.com/FC4E-CAT/fc4e-cat-api/pull/427) Admin view Validations / Order by status with pending on top.
+- [#434](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-750 Retrieve Associated Motivations for Tests.
+- [#437](https://github.com/FC4E-CAT/fc4e-cat-api/pull/434) CAT-759 API - healthcheck.
+- [#438](https://github.com/FC4E-CAT/fc4e-cat-api/pull/438) CAT-755 [API] - Make statistics publicly available
+- [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445) CAT-804 Library Metric View: Type Algorithm and Type Metric description
+
+### Fix
+
+- [#326](https://github.com/FC4E-CAT/fc4e-cat-api/pull/326) CAT-584 Resolve Unique Constraint Violation When Updating Principle with Existing PRI.
+- [#331](https://github.com/FC4E-CAT/fc4e-cat-api/pull/331) CAT-589 Change copy Motivation to insert value on db field lodMTV_P.
+- [#329](https://github.com/FC4E-CAT/fc4e-cat-api/pull/329) CAT-573 Jenkins warnings.
+- [#332](https://github.com/FC4E-CAT/fc4e-cat-api/pull/332) CAT-590 Fix CriterionActorJunction key to keep Motivation id.
+- [#333](https://github.com/FC4E-CAT/fc4e-cat-api/pull/333) CAT-586 Principles are displayed multiple times in motivation/actor/criteria selection.
+- [#342](https://github.com/FC4E-CAT/fc4e-cat-api/pull/342) CAT-604 CRI duplicate warning on criterion update with same CRI.
+- [#344](https://github.com/FC4E-CAT/fc4e-cat-api/pull/344) CAT-607 Template's view issue when unpublished motivation , during preview motivation.
+- [#352](https://github.com/FC4E-CAT/fc4e-cat-api/pull/352) CAT-619 Permit actions on published/unpublished relation motivation-actor.
+- [#365](https://github.com/FC4E-CAT/fc4e-cat-api/pull/365) CAT-628 Shared Users.
+- [#367](https://github.com/FC4E-CAT/fc4e-cat-api/pull/367) CAT-633 Public Objects.
+- [#369](https://github.com/FC4E-CAT/fc4e-cat-api/pull/369) CAT-627 public assessments.
+- [#366](https://github.com/FC4E-CAT/fc4e-cat-api/pull/366) CAT-632 Change GET motivation response to show the published status of motivation-actor.
+- [#370](https://github.com/FC4E-CAT/fc4e-cat-api/pull/370) CAT-626 Show subjects per assessment.
+- [#373](https://github.com/FC4E-CAT/fc4e-cat-api/pull/373) CAT-635 Subject (objects) filters for non-public assessments.
+- [#374](https://github.com/FC4E-CAT/fc4e-cat-api/pull/374) CAT-636 Error when filtering public assessment per subject.
+- [#375](https://github.com/FC4E-CAT/fc4e-cat-api/pull/375) CAT-638 Change call GET /v1/registry/tests/check-automated-test/https-url definition.
+- [#378](https://github.com/FC4E-CAT/fc4e-cat-api/pull/378) CAT-640 Auto-Check-Url-Binary Test value - allow to be string.
+- [#376](https://github.com/FC4E-CAT/fc4e-cat-api/pull/376) CAT-643 Strange json response in /v2/assessments/objects.
+- [#377](https://github.com/FC4E-CAT/fc4e-cat-api/pull/377) CAT-645 Create AutomatedCheck resource.
+- [#381](https://github.com/FC4E-CAT/fc4e-cat-api/pull/381) CAT-644 Fix Test T14 to Value-Based Percentage Test.
+- [#383](https://github.com/FC4E-CAT/fc4e-cat-api/pull/383) CAT-652 Principles created under a motivation dont show the motivation item in used_by_motivation field.
+- [#384](https://github.com/FC4E-CAT/fc4e-cat-api/pull/384) CAT-662 Missing junit tests for publish/unpublish motivation/motivation-actor to be added.
+- [#386](https://github.com/FC4E-CAT/fc4e-cat-api/pull/386) CAT-660 A principle with the identifier '...' already exists should return conflict 409 not 200.
+- [#387](https://github.com/FC4E-CAT/fc4e-cat-api/pull/387) CAT-661 Consistency in backend responses.
+- [#388](https://github.com/FC4E-CAT/fc4e-cat-api/pull/388) CAT-651 REJECTED Validation email should follow the other emails.
+- [#389](https://github.com/FC4E-CAT/fc4e-cat-api/pull/389) CAT-669 Fix 404 Error Response for Assessment Comments API Endpoint.
+- [#391](https://github.com/FC4E-CAT/fc4e-cat-api/pull/391) CAT-671 Fix Uniqueness Constraint on MTR field in Metric.
+- [#395](https://github.com/FC4E-CAT/fc4e-cat-api/pull/395) CAT-679 Script to delete secondary principles from EOSC PID POLICY motivation.
+- [#397](https://github.com/FC4E-CAT/fc4e-cat-api/pull/397) CAT-570 DB: Cannot find user friendly that describe the parameters for tests.
+- [#399](https://github.com/FC4E-CAT/fc4e-cat-api/pull/399) CAT-687 Publish/Unpublish motivation not to change motivation-actor publish status.
+- [#403](https://github.com/FC4E-CAT/fc4e-cat-api/pull/403) CAT-689 Change POST /registry/metrics to insert full metric/metric-definition relation (fix).
+- [#406](https://github.com/FC4E-CAT/fc4e-cat-api/pull/406) CAT-698 Support test-metric relations of a specific metric in a motivation.
+- [#407](https://github.com/FC4E-CAT/fc4e-cat-api/pull/407) CAT-697 Update /registry/tests Endpoints to Include All test and test-definition Fields.
+- [#409](https://github.com/FC4E-CAT/fc4e-cat-api/pull/409) CAT-699 Cleanup DB: in benchmark type Binary-Binary has a whitespace at the end.
+- [#410](https://github.com/FC4E-CAT/fc4e-cat-api/pull/410) CAT-703 Provide MTR id in motivation/{id}/metric-definition call.
+- [#411](https://github.com/FC4E-CAT/fc4e-cat-api/pull/411) CAT-702 Pagination info in motivation-metric-tests call.
+- [#412](https://github.com/FC4E-CAT/fc4e-cat-api/pull/412) CAT-706 Give the ability to update tests with the same info as CREATE.
+- [#413](https://github.com/FC4E-CAT/fc4e-cat-api/pull/413) CAT-618 Change metadata xml validation automated checks 
+- [#416](https://github.com/FC4E-CAT/fc4e-cat-api/pull/416) CAT-722 Update /registry/metric Endpoints to Include All metric and metric-definition Fields
+- [#419](https://github.com/FC4E-CAT/fc4e-cat-api/pull/419) CAT-726 CAT-725 CAT-724 Quote typos in MD1 related tests - Auto MD1 related tests inform about wrong parameters-Auto MD1 related test return 500 when metadata not valid.
+- [#417](https://github.com/FC4E-CAT/fc4e-cat-api/pull/417) CAT-728 Extend Search Functionality for Principles and Criteria
+- [#424](https://github.com/FC4E-CAT/fc4e-cat-api/pull/424) CAT-734 Change assessment_doc to include published.
+- [#426](https://github.com/FC4E-CAT/fc4e-cat-api/pull/426) CAT-554 API: Motivation Clone Missing MotivationActors in Cloned Item
+- [#428](https://github.com/FC4E-CAT/fc4e-cat-api/pull/428) CAT-741 Motivation preview displays wrong json when add/remove elements in motivation
+- [#429](https://github.com/FC4E-CAT/fc4e-cat-api/pull/429) CAT-744 Issue when actor- criteria vary betwen 2 motivations which are parent-child(cloned)
+- [#431](https://github.com/FC4E-CAT/fc4e-cat-api/pull/431) CAT-745 C7 criterion fails due to wrong benchmark value
+- [#439](https://github.com/FC4E-CAT/fc4e-cat-api/pull/439) CAT-749 API call: admin publish assessment gets 403 when admin
+- [#443](https://github.com/FC4E-CAT/fc4e-cat-api/pull/443) CAT-792 Retrieve Associated Motivations for Metrics
+- [#441](https://github.com/FC4E-CAT/fc4e-cat-api/pull/441) CAT-783 CAT-791 API- GET Public Assessment 400 error/Assessment's id inside assessment_doc is null 
+- [#442](https://github.com/FC4E-CAT/fc4e-cat-api/pull/442) CAT-788 Wrong sort values for /registry/metrics
+- [#444](https://github.com/FC4E-CAT/fc4e-cat-api/pull/444/) CAT-792 Retrieve Associated Motivations for Metrics (fix)
+- [#450](https://github.com/FC4E-CAT/fc4e-cat-api/pull/450) CAT-806 Metrics view displays the same metric multiple times
+- [#445](https://github.com/FC4E-CAT/fc4e-cat-api/pull/445/) CAT-800 Cannot change test that belongs to unpublished motivation - still says published #446
+- [#449](https://github.com/FC4E-CAT/fc4e-cat-api/pull/449/) CAT-749 API call: admin publish assessment gets 403 when admin -version 2
+- [#451](https://github.com/FC4E-CAT/fc4e-cat-api/pull/451) CAT-810 Test Update Not Working Properly
+- [#452](https://github.com/FC4E-CAT/fc4e-cat-api/pull/452/) CAT-807 Metrics search doesnt return results
+
+### Removed
+
+- [#335](https://github.com/FC4E-CAT/fc4e-cat-api/pull/335) CAT-592 Delete All Motivations Except Specific Entries. 
+- [#435](https://github.com/FC4E-CAT/fc4e-cat-api/pull/435) CAT-766 Update validation actors to PID Service Provider.
+- [#436](https://github.com/FC4E-CAT/fc4e-cat-api/pull/436) CAT-767 Delete the PID Service(Component) from CAT.
+
 ## 1.8.1 - 2024-10-17
 ---
 
 ### Removed
 
 - [#320](https://github.com/FC4E-CAT/fc4e-cat-api/pull/320) CAT-579 Remove criteria ordering logic based on unique names.
-
 
 ## 1.8.0 - 2024-10-16
 ---
@@ -134,7 +233,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Changed
 - [#212](https://github.com/FC4E-CAT/fc4e-cat-api/pull/212) CAT-402 Duplicate test in assessment template.
-- [#213](https://github.com/FC4E-CAT/fc4e-cat-api/pull/213) CAT-418 Fix Service Provider template to support thresholds in tests
+- [#213](https://github.com/FC4E-CAT/fc4e-cat-api/pull/213) CAT-418 Fix Service Provider template to support thresholds in tests.
 - [#214](https://github.com/FC4E-CAT/fc4e-cat-api/pull/214) CAT-419 Flag thresholds as locked when having a required default value.
 
 
@@ -215,7 +314,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ### Fixed
 
-- Assign validated role to user upon auto-approve validation
+- Assign validated role to user upon auto-approve validation.
 
 ## 1.2.1 - 2024-02-12
 

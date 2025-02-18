@@ -1,33 +1,27 @@
 package org.grnet.cat.mappers.registry;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.dtos.registry.test.TestRequestDto;
-import org.grnet.cat.dtos.registry.test.TestResponseDto;
-import org.grnet.cat.dtos.registry.test.TestUpdateDto;
+import org.grnet.cat.dtos.registry.test.*;
 import org.grnet.cat.entities.registry.Test;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
+import org.grnet.cat.entities.registry.TestDefinition;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
-@Mapper(imports = {StringUtils.class, Timestamp.class, Instant.class})
+@Mapper(imports = {StringUtils.class, Timestamp.class, Instant.class}, uses = {TestDefinitionMapper.class})
 public interface TestMapper {
 
     TestMapper INSTANCE = Mappers.getMapper(TestMapper.class);
 
+    @IterableMapping(qualifiedByName="mapTest")
     List<TestResponseDto> testToDtos(List<Test> entities);
 
-    @Named("map")
+    @Named("mapTest")
     TestResponseDto testToDto(Test test);
 
-    @Named("mapWithExpression")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     Test testToEntity(TestRequestDto request);
 
@@ -37,6 +31,17 @@ public interface TestMapper {
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "lodTES_V", ignore = true)
+    @Mapping(target = "upload", ignore = true)
+    @Mapping(target = "dataType", ignore = true)
     void updateTestFromDto(TestUpdateDto request, @MappingTarget Test test);
+
+    @Named("mapTestAndTestDefinition")
+    @Mapping(source = "test", target = "testResponse", qualifiedByName = "mapTest")
+    @Mapping(source = "testDefinition", target = "testDefinitionResponse", qualifiedByName = "mapTestDefinition")
+    @Mapping(target = "motivations", ignore = true)
+    TestAndTestDefinitionResponse testAndTestDefinitionToDto(Test test, TestDefinition testDefinition);
+
 
 }

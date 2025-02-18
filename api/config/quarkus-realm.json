@@ -952,6 +952,50 @@
             "icon_uri": ""
           },
           {
+            "name": "Automated Check Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Automated Check Resource",
+            "attributes": {},
+            "_id": "92j19ls10a-ded3-43de-99cc-24d6d8169653",
+            "uris": [
+              "/v1/automated/*"
+            ],
+            "scopes": [
+              {
+                "name": "cat.create"
+              },
+              {
+                "name": "cat.update"
+              },
+              {
+                "name": "cat.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
+            "name": "Motivation Assessment Resource",
+            "ownerManagedAccess": false,
+            "displayName": "Motivation Assessment Resource",
+            "attributes": {},
+            "_id": "c9bb5be4-led3-43de-bb6f-24d6d8169653",
+            "uris": [
+              "/v2/assessments/*"
+            ],
+            "scopes": [
+              {
+                "name": "cat.create"
+              },
+              {
+                "name": "cat.update"
+              },
+              {
+                "name": "cat.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Read Assessment Objects by Actor",
             "ownerManagedAccess": false,
             "displayName": "Read Assessment Objects by Actor",
@@ -1242,7 +1286,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1266,7 +1310,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Assessment Resource\",\"Subject Resource\"]",
+              "resources": "[\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           },

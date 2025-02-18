@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class PriNode extends Node{
+
     private String id;
     
     private String name;

@@ -18,11 +18,9 @@ public class CriterionMetricEndpointTest extends KeycloakTest {
     @Test
     public void getCriterionMetricNotPermitted() {
 
-        register("alice");
-
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
                 .get("/")
                 .then()

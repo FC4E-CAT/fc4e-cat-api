@@ -10,51 +10,36 @@ import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 @TestHTTPEndpoint(CriteriaEndpoint.class)
 public class CriteriaEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createCriteria() {
 
-        register("admin");
-
-        var request = new CriterionRequest();
-        request.cri = "C100";
-        request.label = "Minimum Operations";
-        request.description = "Service providers SHOULD provide a common Application Programming Interface to interact with PIDs, supporting a minimum set of operations (create, resolve and modify PID and PID Kernel Information)";
-        request.imperative = "pid_graph:BED209B9";
-        request.typeCriterion = "pid_graph:A2719B92";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CriterionResponse.class);
+        var request = createUniqueCriterionRequest();
+        var response = createCriterion(request);
 
         assertNotNull(response.id);
+        assertEquals(request.cri, response.cri);
         assertEquals(request.label, response.label);
         assertEquals(request.description, response.description);
         assertEquals(request.imperative, response.imperative);
         assertEquals(request.typeCriterion, response.typeCriterion);
     }
 
-
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createCriteriaWithInvalidImperative() {
-
-        register("admin");
 
         var request = new CriterionRequest();
         request.cri = "C101";
@@ -65,7 +50,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
 
         given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -75,80 +60,32 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createCriteriaWithNonUniqueCriteriaCode() {
 
-        register("admin");
-
-        var request1 = new CriterionRequest();
-        request1.cri = "C102";
-        request1.label = "Unique UUID";
-        request1.description = "This should succeed.";
-        request1.imperative = "pid_graph:BED209B9";
-        request1.typeCriterion = "pid_graph:A2719B92";
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request1)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CriterionResponse.class);
+        var request1 = createUniqueCriterionRequest();
+        createCriterion(request1);
 
         var request2 = new CriterionRequest();
-        request2.cri = "C102";
+        request2.cri = request1.cri;
         request2.label = "Unique UUID";
-        request2.description = "This should succeed.";
+        request2.description = "This should fail due to non-unique criteria code.";
         request2.imperative = "pid_graph:BED209B9";
         request2.typeCriterion = "pid_graph:A2719B92";
 
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request2)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(409);
+        var response = createCriterionNotValid(request2,409);
+
+        assertEquals("The value '" + request2.cri + "' for field 'cri' is not unique.", response.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getCriteria() {
 
-        register("admin");
+        var request = createUniqueCriterionRequest();
+        var createdResponse = createCriterion(request);
 
-        var request = new CriterionRequest();
-        request.cri = "C100";
-        request.label = "Extended Operations";
-        request.description = "This should succeed.";
-        request.imperative = "pid_graph:BED209B9";
-        request.typeCriterion = "pid_graph:A2719B92";
-
-        var createdResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CriterionResponse.class);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .get("/{id}", createdResponse.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(CriterionResponse.class);
+        var response = getCriterion(createdResponse.id);
 
         assertEquals(createdResponse.id, response.id);
         assertEquals(createdResponse.cri, response.cri);
@@ -158,20 +95,48 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateCriteria() {
 
-        register("admin");
+        var request = createUniqueCriterionRequest();
+        var createdResponse = createCriterion(request);
 
+        var updateRequest = new CriterionUpdate();
+        updateRequest.cri = request.cri + "-UPDATED";
+        updateRequest.imperative = "pid_graph:2981F3DD";
+
+        var updatedResponse = updateCriterion(createdResponse.id, updateRequest);
+
+        assertEquals(updateRequest.imperative, updatedResponse.imperative);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteCriteria() {
+
+        var request = createUniqueCriterionRequest();
+        var createdResponse = createCriterion(request);
+
+        var success = deleteCriterion(createdResponse.id);
+
+        assertEquals("Criterion has been successfully deleted.", success.message);
+    }
+
+    private CriterionRequest createUniqueCriterionRequest() {
+        var uniqueCri = ("CRI" + UUID.randomUUID()).toUpperCase();
         var request = new CriterionRequest();
-        request.cri = "C100";
-        request.label = "Basic Operations";
-        request.description = "Service providers SHOULD provide basic operations for PIDs.";
+        request.cri = uniqueCri;
+        request.label = "Performance Metric";
+        request.description = "This metric measures performance.";
         request.imperative = "pid_graph:BED209B9";
         request.typeCriterion = "pid_graph:A2719B92";
+        return request;
+    }
 
-        var createdResponse = given()
+    private CriterionResponse createCriterion(CriterionRequest request) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -180,61 +145,59 @@ public class CriteriaEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(CriterionResponse.class);
+    }
 
-        var updatedRequest = new CriterionUpdate();
-
-        updatedRequest.imperative = "pid_graph:2981F3DD";
-
-        var updatedResponse = given()
+    private CriterionResponse getCriterion(String criterionId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(updatedRequest)
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .patch("/{id}", createdResponse.id)
+                .get("/{id}", criterionId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(CriterionResponse.class);
-
-        assertEquals(updatedRequest.imperative, updatedResponse.imperative);
     }
 
-    @Test
-    public void deleteCriteria() {
-
-        register("admin");
-
-        var request = new CriterionRequest();
-        request.cri = "C100";
-        request.label = "Advanced Operations";
-        request.description = "Service providers MUST provide advanced operations for PIDs.";
-        request.imperative = "pid_graph:BED209B9";
-        request.typeCriterion = "pid_graph:A2719B92";
-
-        var createdResponse = given()
+    private CriterionResponse updateCriterion(String criterionId, CriterionUpdate updateRequest) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
+                .oauth2(adminToken)
+                .body(updateRequest)
                 .contentType(ContentType.JSON)
-                .post()
+                .patch("/{id}", criterionId)
                 .then()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(200)
                 .extract()
                 .as(CriterionResponse.class);
+    }
 
-        var success = given()
+    private InformativeResponse deleteCriterion(String criterionId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .delete("/{id}", createdResponse.id)
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .delete("/{id}", criterionId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
+    }
 
-        assertEquals("Criterion has been successfully deleted.", success.message);
-
+    private InformativeResponse createCriterionNotValid(CriterionRequest request, int expectedStatus) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(expectedStatus)
+                .extract()
+                .as(InformativeResponse.class);
     }
 }

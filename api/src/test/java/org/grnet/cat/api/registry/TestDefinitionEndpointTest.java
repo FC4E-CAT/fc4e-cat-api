@@ -10,38 +10,83 @@ import org.grnet.cat.dtos.registry.test.TestDefinitionRequestDto;
 import org.grnet.cat.dtos.registry.test.TestDefinitionResponseDto;
 import org.grnet.cat.dtos.registry.test.TestDefinitionUpdateDto;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.UUID;
 
 @QuarkusTest
 @TestHTTPEndpoint(TestDefinitionEndpoint.class)
 public class TestDefinitionEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTestDefinitionNotPermitted() {
-
-        register("alice");
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", "pid_graph:7B428EA4")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
+        var error = getTestDefinitionForbidden("pid_graph:7B428EA4");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createTestDefinition() {
+        var request = createUniqueTestDefinitionRequest();
 
-        register("admin");
+        var response = createTestDefinition(request);
 
+        assertNotNull(response.id);
+        assertEquals("Manual confirmation of user authentication required for access to sensitive metadata.", response.labelTestDefinition);
+        assertEquals("onscreen", response.paramType);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getTestDefinition() {
+        var request = createUniqueTestDefinitionRequest();
+        var createdResponse = createTestDefinition(request);
+
+        var response = getTestDefinition(createdResponse.id);
+
+        assertEquals("Manual confirmation of user authentication required for access to sensitive metadata.", response.labelTestDefinition);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getTestDefinitionNotFound() {
+        var error = getTestDefinitionNotFound("non_existent_id");
+        assertEquals("There is no Test Definition with the following id: non_existent_id", error.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void updateTestDefinition() {
+        var request = createUniqueTestDefinitionRequest();
+        var createdResponse = createTestDefinition(request);
+
+        var updateRequest = createTestDefinitionUpdateRequest(request);
+
+        var updatedResponse = updateTestDefinition(createdResponse.id, updateRequest);
+
+        assertEquals("Updated confirmation of user authentication", updatedResponse.labelTestDefinition);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteTestDefinition() {
+        var request = createUniqueTestDefinitionRequest();
+        var createdResponse = createTestDefinition(request);
+
+        var success = deleteTestDefinition(createdResponse.id);
+
+        assertEquals(200, success.code);
+
+        var error = getTestDefinitionNotFound(createdResponse.id);
+        assertEquals("There is no Test Definition with the following id: " + createdResponse.id, error.message);
+    }
+
+    private TestDefinitionRequestDto createUniqueTestDefinitionRequest() {
         var request = new TestDefinitionRequestDto();
         request.testMethodId = "pid_graph:03615660";
         request.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.";
@@ -49,10 +94,24 @@ public class TestDefinitionEndpointTest extends KeycloakTest {
         request.testParams = "userAuth|evidence";
         request.testQuestion = "Does access to Sensitive PID Kernel Metadata require user authentication?";
         request.toolTip = "A document, web page, or publication describing provisions";
+        return request;
+    }
 
-        var response = given()
+    private TestDefinitionUpdateDto createTestDefinitionUpdateRequest(TestDefinitionRequestDto originalRequest) {
+        var updateRequest = new TestDefinitionUpdateDto();
+        updateRequest.testMethodId = originalRequest.testMethodId;
+        updateRequest.labelTestDefinition = "Updated confirmation of user authentication";
+        updateRequest.paramType = "onscreen";
+        updateRequest.testParams = "userAuth|updated_evidence";
+        updateRequest.testQuestion = "Updated question";
+        updateRequest.toolTip = "Updated tooltip";
+        return updateRequest;
+    }
+
+    private TestDefinitionResponseDto createTestDefinition(TestDefinitionRequestDto request) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post("/")
@@ -61,158 +120,71 @@ public class TestDefinitionEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(TestDefinitionResponseDto.class);
-
-        assertEquals("Manual confirmation of user authentication required for access to sensitive metadata.", response.labelTestDefinition);
-        assertEquals("onscreen", response.paramType);
     }
 
-    @Test
-    public void getTestDefinition() {
-
-        register("admin");
-
-        var createRequest = new TestDefinitionRequestDto();
-        createRequest.testMethodId = "pid_graph:03615660";
-        createRequest.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.";
-        createRequest.paramType = "onscreen";
-        createRequest.testParams = "userAuth|evidence";
-        createRequest.testQuestion = "Does access to Sensitive PID Kernel Metadata require user authentication?";
-        createRequest.toolTip = "A document, web page, or publication describing provisions";
-
-        var createdTestDefinition = given()
+    private TestDefinitionResponseDto getTestDefinition(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .post("/")
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(TestDefinitionResponseDto.class);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", createdTestDefinition.id)
+                .get("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TestDefinitionResponseDto.class);
-
-        assertEquals(response.labelTestDefinition , "Manual confirmation of user authentication required for access to sensitive metadata.");
     }
 
-    @Test
-    public void getTestDefinitionNotFound() {
-
-        register("admin");
-
-        var error = given()
+    private InformativeResponse getTestDefinitionForbidden(String id) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
-                .get("/{id}", "non_existent_id")
+                .get("/{id}", id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private InformativeResponse getTestDefinitionNotFound(String id) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .get("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(404)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("There is no Test Definition with the following id: non_existent_id", error.message);
     }
 
-    @Test
-    public void updateTestDefinition() {
-
-        register("admin");
-
-        var createRequest = new TestDefinitionRequestDto();
-        createRequest.testMethodId = "pid_graph:03615660";
-        createRequest.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.";
-        createRequest.paramType = "onscreen";
-        createRequest.testParams = "userAuth|evidence";
-        createRequest.testQuestion = "Does access to Sensitive PID Kernel Metadata require user authentication?";
-        createRequest.toolTip = "A document, web page, or publication describing provisions";
-
-        var createdTestDefinition = given()
+    private TestDefinitionResponseDto updateTestDefinition(String id, TestDefinitionUpdateDto updateRequest) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
-                .contentType(ContentType.JSON)
-                .post("/")
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(TestDefinitionResponseDto.class);
-
-        var updateRequest = new TestDefinitionUpdateDto();
-        updateRequest.testMethodId = "pid_graph:03615660";
-        updateRequest.labelTestDefinition = "Updated confirmation of user authentication";
-        updateRequest.paramType = "onscreen";
-        updateRequest.testParams = "userAuth|updated_evidence";
-        updateRequest.testQuestion = "Updated question";
-        updateRequest.toolTip = "Updated tooltip";
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .body(updateRequest)
                 .contentType(ContentType.JSON)
-                .put("/{id}", createdTestDefinition.id)
+                .put("/{id}", id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(TestDefinitionResponseDto.class);
-
-        assertEquals("Updated confirmation of user authentication", updatedResponse.labelTestDefinition);
     }
 
-    @Test
-    public void deleteTestDefinition() {
-
-        register("admin");
-
-        var createRequest = new TestDefinitionRequestDto();
-        createRequest.testMethodId = "pid_graph:03615660";
-        createRequest.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.";
-        createRequest.paramType = "onscreen";
-        createRequest.testParams = "userAuth|evidence";
-        createRequest.testQuestion = "Does access to Sensitive PID Kernel Metadata require user authentication?";
-        createRequest.toolTip = "A document, web page, or publication describing provisions";
-
-        var createdTestDefinition = given()
+    private InformativeResponse deleteTestDefinition(String testDefinitionId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .post("/")
+                .delete("/{id}", testDefinitionId)
                 .then()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(200)
                 .extract()
-                .as(TestDefinitionResponseDto.class);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}", createdTestDefinition.id)
-                .then()
-                .assertThat()
-                .statusCode(200);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", createdTestDefinition.id)
-                .then()
-                .assertThat()
-                .statusCode(404);
+                .as(InformativeResponse.class);
     }
 }

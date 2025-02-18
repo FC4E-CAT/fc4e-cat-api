@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.assessment.CommentRequestDto;
 import org.grnet.cat.dtos.assessment.CommentResponseDto;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.entities.Assessment;
+import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.User;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.mappers.CommentMapper;
@@ -20,7 +20,6 @@ import io.quarkus.hibernate.orm.panache.Panache;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @ApplicationScoped
 public class CommentService {
@@ -43,12 +42,12 @@ public class CommentService {
     @Transactional
     public CommentResponseDto addComment(String assessmentId, String userId, CommentRequestDto commentRequestDto) {
 
-        var assessment = Panache.getEntityManager().getReference(Assessment.class, assessmentId);
+        var assessment = Panache.getEntityManager().getReference(MotivationAssessment.class, assessmentId);
         var user = Panache.getEntityManager().getReference(User.class, userId);
 
         var comment = CommentMapper.INSTANCE.commentRequestToEntity(commentRequestDto);
 
-        comment.setAssessment(assessment);
+        comment.setMotivationAssessment(assessment);
         comment.setUser(user);
         comment.setText(commentRequestDto.text);
         comment.setCreatedOn(Timestamp.from(Instant.now()));
@@ -60,7 +59,7 @@ public class CommentService {
 
     @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public CommentResponseDto updateComment(String assessmentId, Long commentId, CommentRequestDto commentRequestDto, String userId) {
+    public CommentResponseDto updateComment(Long commentId, CommentRequestDto commentRequestDto, String userId) {
 
         var comment = commentRepository.findById(commentId);
 
@@ -76,7 +75,7 @@ public class CommentService {
 
     @ShareableEntity(type= ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public void deleteComment(String assessmentId, Long commentId, String userId ) {
+    public void deleteComment(Long commentId, String userId ) {
 
         var comment = commentRepository.findById(commentId);
 
@@ -85,7 +84,6 @@ public class CommentService {
         }
 
         commentRepository.deleteById(commentId);
-
     }
 
     @Transactional

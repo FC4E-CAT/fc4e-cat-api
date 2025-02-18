@@ -2,17 +2,15 @@ package org.grnet.cat.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.enums.Source;
-import org.grnet.cat.repositories.ActorRepository;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 
 @Schema(name="ValidationRequest", description="Request promotion to validated user.")
 public class ValidationRequest {
-
 
     @Schema(
             type = SchemaType.STRING,
@@ -69,14 +67,14 @@ public class ValidationRequest {
     public String organisationWebsite;
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
+            type = SchemaType.STRING,
+            implementation = String.class,
             required = true,
-            description = "The ID of Actor. It should refer to one of the available Actors.",
-            example = "5"
+            description = "The ID of Registry Actor. It should refer to one of the available Registry Actors.",
+            example = "pid_graph:0E00C332"
     )
-    @JsonProperty("actor_id")
-    @NotNull(message = "actor_id may not be empty.")
-    @NotFoundEntity(repository = ActorRepository.class, message = "There is no Actor with the following id:")
-    public Long actorId;
+    @JsonProperty("registry_actor_id")
+    @NotEmpty(message = "registry_actor_id may not be empty.")
+    @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Registry Actor with the following id:")
+    public String registryActorId;
 }

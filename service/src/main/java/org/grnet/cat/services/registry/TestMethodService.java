@@ -2,12 +2,14 @@ package org.grnet.cat.services.registry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.test.TestMethodRequestDto;
 import org.grnet.cat.dtos.registry.test.TestMethodResponseDto;
 import org.grnet.cat.dtos.registry.test.TestMethodUpdateDto;
 import org.grnet.cat.mappers.registry.TestMethodMapper;
+import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestMethodRepository;
 import org.jboss.logging.Logger;
 
@@ -18,6 +20,8 @@ public class TestMethodService {
     @Inject
     TestMethodRepository testMethodRepository;
 
+    @Inject
+    MetricTestRepository metricTestRepository;
     private static final Logger LOG = Logger.getLogger(TestMethodService.class);
 
     /**
@@ -62,6 +66,9 @@ public class TestMethodService {
      */
     @Transactional
     public TestMethodResponseDto updateTestMethod(String id, String userId, TestMethodUpdateDto request) {
+        if (metricTestRepository.existTestMethodInStatus(id, Boolean.TRUE)) {
+            throw new ForbiddenException("No action permitted, test method exists in a published motivation");
+        }
 
         var testMethod = testMethodRepository.findById(id);
 
@@ -79,6 +86,9 @@ public class TestMethodService {
      */
     @Transactional
     public boolean deleteTestMethod(String id) {
+        if (metricTestRepository.existTestMethodInStatus(id, Boolean.TRUE)) {
+            throw new ForbiddenException("No action permitted, test method exists in a published motivation");
+        }
 
         return testMethodRepository.deleteById(id);
     }

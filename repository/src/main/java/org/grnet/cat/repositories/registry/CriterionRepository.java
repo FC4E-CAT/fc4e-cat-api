@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories.registry;
 
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
@@ -24,9 +23,25 @@ public class CriterionRepository implements Repository<Criterion, String> {
      * @param size   The maximum number of criteria to include in a page.
      * @return A PageQuery of criteria items.
      */
-    public PageQuery<Criterion> fetchCriteriaByPage(int page, int size) {
+    public PageQuery<Criterion> fetchCriteriaByPage(String search, String sort, String order, int page, int size) {
 
-        var panache = find("from Criterion", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Criterion c");
+
+        var map = new HashMap<String, Object>();
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("where (c.id ilike :search")
+                    .add("or c.label ilike :search")
+                    .add("or c.cri ilike :search")
+                    .add("or c.description ilike :search)");
+
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by c." + sort + " " + order + ", c.id ASC");
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Criterion>();
         pageable.list = panache.list();
@@ -103,7 +118,9 @@ public class CriterionRepository implements Repository<Criterion, String> {
                         "        tm.labelTestMethod,\n"+
                         "        td.testQuestion,\n"+
                         "        td.testParams,\n"+
-                        "        td.toolTip\n"+
+                        "        td.toolTip,\n"+
+                        "        ta.labelAlgorithmType,\n" +
+                        "        tmt.labelTypeMetric\n" +
                         "    FROM\n" +
                         "        t_Type_Benchmark tb \n" +
                         "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
@@ -113,6 +130,8 @@ public class CriterionRepository implements Repository<Criterion, String> {
                         "        INNER JOIN t_TestMethod tm ON td.lodTME = tm.lodTME\n" +
                         "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
                         "        INNER JOIN p_Criterion_Metric cm ON m.lodMTR = cm.metric_lodMTR\n" +
+                        "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
+                        "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
                         "    WHERE\n" +
                         "        md.motivation_lodMTV = :motivationId\n" +
                         "        AND mt.motivation_lodMTV = :motivationId\n" +

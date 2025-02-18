@@ -69,7 +69,7 @@ public class MetricRequestDto {
             implementation = String.class,
             description = "The ID of the Type Metric associated with this metric",
             required = true,
-            example = "pid_graph:TMT1234"
+            example = "pid_graph:35966E2B"
     )
     @NotEmpty(message = "type_metric_id may not be empty.")
     @NotFoundEntity(repository = TypeMetricRepository.class, message = "There is no Metric Type with the following id:")

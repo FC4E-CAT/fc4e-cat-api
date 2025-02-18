@@ -33,7 +33,7 @@ public class MetricDefinitionService {
      */
     public PageResource<MetricDefinitionResponseDto> getMetricDefinitionsWithSearch(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitions = metricDefinitionRepository.fetchMetricDefinitionWithSearch(search, sort, order ,page, size);
+        var metricDefinitions = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search, sort, order ,page, size);
         var metricDefinitionsDtos = MetricDefinitionMapper.INSTANCE.metricDefinitionToResponseDtos(metricDefinitions.list());
 
         return new PageResource<>(metricDefinitions, metricDefinitionsDtos , uriInfo);

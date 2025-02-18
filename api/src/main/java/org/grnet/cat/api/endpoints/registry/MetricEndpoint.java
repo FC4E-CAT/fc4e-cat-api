@@ -15,6 +15,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -25,17 +26,14 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.metric.*;
-import org.grnet.cat.repositories.registry.MotivationRepository;
+import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
+import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
+import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
+import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
-import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
-import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
-import org.grnet.cat.repositories.registry.metric.TypeReproducibilityRepository;
 import org.grnet.cat.services.registry.metric.MetricService;
-import org.grnet.cat.services.registry.metric.TypeAlgorithmService;
-import org.grnet.cat.services.registry.metric.TypeMetricService;
-import org.grnet.cat.services.registry.metric.TypeReproducibilityService;
 import org.grnet.cat.utils.Utility;
+import org.grnet.cat.validators.SortAndOrderValidator;
 
 import java.util.List;
 
@@ -52,6 +50,7 @@ public class MetricEndpoint {
 
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
+
     @Tag(name = "Metrics")
     @Operation(
             summary = "Get Metric by ID",
@@ -62,7 +61,7 @@ public class MetricEndpoint {
             description = "The corresponding Metric item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricResponseDto.class))
+                    implementation = MetricDefinitionExtendedResponse.class))
     )
     @APIResponse(
             responseCode = "404",
@@ -122,6 +121,12 @@ public class MetricEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -170,6 +175,12 @@ public class MetricEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "500",
             description = "Internal Server Error.",
             content = @Content(schema = @Schema(
@@ -189,6 +200,7 @@ public class MetricEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id,
+
             @Valid MetricUpdateDto metricUpdateDto) {
 
         var updatedDto = metricService.updateMetric(id, utility.getUserUniqueIdentifier(), metricUpdateDto);
@@ -302,35 +314,65 @@ public class MetricEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response listMetrics(
-                @Parameter(name = "page", in = QUERY,
+            @Parameter(name="Search", in = QUERY,
+                    description = "The \"search\" parameter allows clients to search " +
+                            "for matches in specific fields in the MetricDefinition entity. " +
+                            "The search will be conducted in the following fields: " +
+                            "metric ID, metric MTR, metric Label, type benchmark ID, type benchmark Label, motivation ID")
+            @QueryParam("search") String search,
+            @Parameter(name = "Sort", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                    examples = {
+                            @ExampleObject(name = "Last Touch", value = "lastTouch"),
+                            @ExampleObject(name = "MTR", value = "metric.MTR"),
+                            @ExampleObject(name = "Label", value = "metric.metricLabel"),
+                            @ExampleObject(name = "Description", value = "metric.descrMetric"),
+                            @ExampleObject(name = "Benchmark Value", value = "valueBenchmark")},
+                    description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
+            @DefaultValue("lastTouch")
+            @QueryParam("sort") String sort,
+            @Parameter(name = "Order", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                    examples = {
+                            @ExampleObject(name = "Ascending", value = "ASC"),
+                            @ExampleObject(name = "Descending", value = "DESC")},
+                    description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
+            @DefaultValue("DESC")
+            @QueryParam("order") String order,
+            @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.")
-                @DefaultValue("1")
-                @Min(value = 1, message = "Page number must be >= 1.")
-                @QueryParam("page") int page,
-                @Parameter(name = "size", in = QUERY,
-                        description = "The page size.")
-                @DefaultValue("10")
-                @Min(value = 1, message = "Page size must be between 1 and 100.")
-                @Max(value = 100, message = "Page size must be between 1 and 100.")
-                @QueryParam("size") int size,
-                @Context UriInfo uriInfo) {
+            @DefaultValue("1")
+            @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
 
-        var metrics = metricService.getMetriclistAll(page - 1, size, uriInfo);
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("lastTouch", "metric.MTR","metric.metricLabel","metric.metricDescr", "valueBenchmark");
+
+        SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
+
+        var metrics = metricService.getMetricListAll(search, sort, order, page - 1, size, uriInfo);
 
         return Response.ok().entity(metrics).build();
     }
 
-    public static class PageableMetricResponse extends PageResource<MetricResponseDto> {
+    public static class PageableMetricResponse extends PageResource<MetricDefinitionExtendedResponse> {
 
-        private List<MetricResponseDto> content;
+        private List<MetricDefinitionExtendedResponse> content;
 
         @Override
-        public List<MetricResponseDto> getContent() {
+        public List<MetricDefinitionExtendedResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<MetricResponseDto> content) {
+        public void setContent(List<MetricDefinitionExtendedResponse> content) {
             this.content = content;
         }
     }

@@ -8,7 +8,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@JsonPropertyOrder({ "id", "name", "type", "benchmark_value", "tests" })
+@JsonPropertyOrder({ "id", "name", "type", "benchmark_value", "label_algorithm_type", "label_type_metric", "tests" })
 @Getter
 @Setter
 @AllArgsConstructor
@@ -22,6 +22,12 @@ public class MetricNode extends Node {
 
     @JsonProperty("benchmark_value")
     private Number benchmarkValue;
+
+    @JsonProperty("label_algorithm_type")
+    private String labelAlgorithmType;
+
+    @JsonProperty("label_type_metric")
+    private String labelTypeMetric;
 
     @JsonProperty("tests")
     public List<Node> getChildren() {

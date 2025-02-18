@@ -15,6 +15,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -25,13 +26,12 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.test.TestRequestDto;
-import org.grnet.cat.dtos.registry.test.TestResponseDto;
-import org.grnet.cat.dtos.registry.test.TestUpdateDto;
+import org.grnet.cat.dtos.registry.test.*;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.grnet.cat.services.registry.TestService;
 import org.grnet.cat.utils.Utility;
+import org.grnet.cat.validators.SortAndOrderValidator;
 
 import java.util.List;
 
@@ -45,8 +45,11 @@ public class TestEndpoint {
 
     @Inject
     TestService testService;
+
     @ConfigProperty(name = "api.server.url")
     String serverUrl;
+
+
     @Tag(name = "Test")
     @Operation(
             summary = "Get Test by ID",
@@ -57,7 +60,7 @@ public class TestEndpoint {
             description = "The corresponding Test item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class))
+                    implementation = TestAndTestDefinitionResponse.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -95,17 +98,16 @@ public class TestEndpoint {
                     example = "pid_graph:9F1A6267",
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
-            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id)
-    {
+            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
-        var response = testService.getTestById(id);
+        var response = testService.getTestAndTestDefinitionById(id);
 
         return Response.ok(response).build();
     }
 
     @Tag(name = "Test")
     @Operation(
-            summary     = "Create new Test",
+            summary = "Create new Test",
             description = "Creates a new Test item."
     )
     @APIResponse(
@@ -144,12 +146,12 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response createTest(
-            @Valid @NotNull(message = "The request body is empty.") TestRequestDto testRequestDto, @Context UriInfo uriInfo) {
+            @Valid @NotNull(message = "The request body is empty.") TestAndTestDefinitionRequest request, @Context UriInfo uriInfo) {
 
-        var test = testService.createTest(utility.getUserUniqueIdentifier(),testRequestDto);
+        var test = testService.createTestAndTestDefinition(utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.id)).build()).entity(test).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.testResponse.id)).build()).entity(test).build();
     }
 
     @Tag(name = "Test")
@@ -162,7 +164,7 @@ public class TestEndpoint {
             description = "Subject was updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestResponseDto.class)))
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -188,7 +190,7 @@ public class TestEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
-    @PUT
+    @PATCH
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Registration
@@ -201,11 +203,15 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestUpdateDto testUpdateDto) {
+            @Valid TestAndTestDefinitionUpdateRequest testUpdateDto) {
 
-        var updatedDto = testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
+        testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
 
-        return Response.ok(updatedDto).build();
+        var response = new InformativeResponse();
+        response.code = 200;
+        response.message = "Test was successfully updated.";
+
+        return Response.ok(response).build();
     }
 
     @Tag(name = "Test")
@@ -256,13 +262,13 @@ public class TestEndpoint {
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
-        var deleted =  testService.deleteTest(id);
+        var deleted = testService.deleteTest(id);
 
         InformativeResponse informativeResponse = new InformativeResponse();
 
         if (!deleted) {
 
-            informativeResponse.code =500;
+            informativeResponse.code = 500;
             informativeResponse.message = "Test hasn't been deleted. An error occurred.";
         } else {
 
@@ -314,6 +320,30 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response listTests(
+            @Parameter(name="Search", in = QUERY,
+                    description = "The \"search\" parameter allows clients to search " +
+                            "for matches in specific fields in the Test entity. " +
+                            "The search will be conducted in the following fields: " +
+                            "test's id, tes, label and description.")
+            @QueryParam("search") String search,
+            @Parameter(name = "Sort", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                    examples = {
+                            @ExampleObject(name = "Last Touch", value = "lastTouch"),
+                            @ExampleObject(name = "TES", value = "TES"),
+                            @ExampleObject(name = "Label", value = "labelTest"),
+                            @ExampleObject(name = "Description", value = "descTest")},
+                    description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
+            @DefaultValue("lastTouch")
+            @QueryParam("sort") String sort,
+            @Parameter(name = "Order", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                    examples = {
+                            @ExampleObject(name = "Ascending", value = "ASC"),
+                            @ExampleObject(name = "Descending", value = "DESC")},
+                    description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
+            @DefaultValue("DESC")
+            @QueryParam("order") String order,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.")
             @DefaultValue("1")
@@ -327,23 +357,30 @@ public class TestEndpoint {
             @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var tests = testService.getTestlistAll(page - 1, size, uriInfo);
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("lastTouch", "TES", "labelTest", "descTest");
+
+        SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
+
+        var tests = testService.getTestAndTestDefinitionListAll(search, sort, order,page - 1, size, uriInfo);
 
         return Response.ok().entity(tests).build();
     }
 
-    public static class PageableTestResponse extends PageResource<TestResponseDto> {
+    public static class PageableTestResponse extends PageResource<TestAndTestDefinitionResponse> {
 
-        private List<TestResponseDto> content;
+        private List<TestAndTestDefinitionResponse> content;
 
         @Override
-        public List<TestResponseDto> getContent() {
+        public List<TestAndTestDefinitionResponse> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<TestResponseDto> content) {
+        public void setContent(List<TestAndTestDefinitionResponse> content) {
             this.content = content;
         }
     }
+
+
 }

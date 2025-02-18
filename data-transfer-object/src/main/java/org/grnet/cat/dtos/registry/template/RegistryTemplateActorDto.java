@@ -11,6 +11,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @AllArgsConstructor
 public class RegistryTemplateActorDto {
 
+    public RegistryTemplateActorDto() {
+    }
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -23,7 +26,7 @@ public class RegistryTemplateActorDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The name of Actor.",
-            example = "Compliance Monitoring (Role)"
+            example = "PID Owner (Role)"
     )
     private String name;
 }

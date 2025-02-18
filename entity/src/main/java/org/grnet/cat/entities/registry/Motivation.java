@@ -1,14 +1,6 @@
 package org.grnet.cat.entities.registry;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,7 +9,6 @@ import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 @Entity
@@ -55,6 +46,9 @@ public class Motivation extends Registry {
     @Column(name = "lodMTV_V")
     private String lodMtvV;
 
+    @Column
+    private Boolean  published;
+
     @OneToMany(
             mappedBy = "motivation",
             cascade = CascadeType.ALL,
@@ -80,8 +74,9 @@ public class Motivation extends Registry {
 
     public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
 
-        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch);
+        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch,Boolean.FALSE);
         actors.add(actorMotivation);
+
         actorMotivation.getMotivation().actors.add(actorMotivation);
 
     }

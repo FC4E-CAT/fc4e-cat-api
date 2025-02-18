@@ -25,7 +25,7 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The actor of the template.")
+            description = "The actor.")
     @JsonProperty("actor")
     public String actor;
 
@@ -38,14 +38,15 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     @JsonProperty("organisation")
     public String organisation;
 
-    @Schema(
-            type = SchemaType.BOOLEAN,
-            implementation = Boolean.class,
-            description = "Whether the assessment has been published.",
-            example = "true"
-    )
-    @JsonProperty("published")
-    public boolean published;
+//
+//    @Schema(
+//            type = SchemaType.BOOLEAN,
+//            implementation = Boolean.class,
+//            description = "Whether the assessment has been published.",
+//            example = "true"
+//    )
+//    @JsonProperty("published")
+//    public boolean published;
 
     @Schema(
             type = SchemaType.STRING,
@@ -91,4 +92,5 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     )
     @JsonProperty("shared")
     public Boolean shared;
+
 }

@@ -9,23 +9,28 @@ import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.registry.test.TestRequestDto;
 import org.grnet.cat.dtos.registry.test.TestResponseDto;
 import org.grnet.cat.dtos.registry.test.TestUpdateDto;
+import org.grnet.cat.dtos.AutomatedCheckRequest;
+import org.grnet.cat.dtos.registry.test.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 @TestHTTPEndpoint(TestEndpoint.class)
 public class TestEndpointTest extends KeycloakTest {
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTestNotPermitted() {
-
-        register("alice");
-
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("alice"))
+                .oauth2(aliceToken)
                 .contentType(ContentType.JSON)
                 .get("/{id}", "pid_graph:D8C4E63E")
                 .then()
@@ -34,79 +39,43 @@ public class TestEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
+        assertNotNull(error);
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void createTest() {
+        var request = createUniqueTestRequest();
+        var response = createTest(request);
 
-        register("admin");
+        assertEquals(request.getTestRequest().TES, response.testResponse.TES);
+        assertEquals(request.getTestRequest().labelTest, response.testResponse.labelTest);
+        assertEquals(request.getTestRequest().descTest, response.testResponse.descTest);
 
-        var request = new TestRequestDto();
-        request.TES = "T12";
-        request.labelTest = "Performance Test";
-        request.descTest = "This Test measures performance.";
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post("/")
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(TestResponseDto.class);
-
-        assertEquals("Performance Test", response.labelTest);
-        assertEquals("This Test measures performance.", response.descTest);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTest() {
+        var request = createUniqueTestRequest();
+        var createdTest = createTest(request);
 
-        register("admin");
+        var fetchedTest = getTest(createdTest.testResponse.id);
 
-        var createRequest = new TestRequestDto();
-        createRequest.TES = "T12";
-        createRequest.labelTest = "Performance Test";
-        createRequest.descTest = "This Test measures performance.";
-
-        var createdTest = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
-                .contentType(ContentType.JSON)
-                .post("/")
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(TestResponseDto.class);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", createdTest.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(TestResponseDto.class);
-
-        assertEquals(response.TES , "T12");
+        assertNotNull(fetchedTest);
+        assertEquals(request.getTestRequest().TES, fetchedTest.testResponse.TES);
+        assertEquals(request.getTestRequest().labelTest, fetchedTest.testResponse.labelTest);
+        assertEquals(request.getTestRequest().descTest, fetchedTest.testResponse.descTest);
+        assertEquals(request.getTestDefinitionRequest().testMethodId, fetchedTest.testDefinitionResponse.testMethodId);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void getTestNotFound() {
-
-        register("admin");
-
         var error = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
                 .get("/{id}", "notfound")
                 .then()
@@ -115,92 +84,135 @@ public class TestEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
+        assertNotNull(error);
         assertEquals("There is no Test with the following id: notfound", error.message);
     }
 
     @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateTest() {
+        var request = createUniqueTestRequest();
+        var createdTest = createTest(request);
 
-        register("admin");
+        var updateRequest = new TestAndTestDefinitionUpdateRequest();
+        var testUpdate = new TestUpdateDto();
+        var testDefUpdate = new TestDefinitionUpdateDto();
 
-        var createRequest = new TestRequestDto();
-        createRequest.TES = "T12";
-        createRequest.labelTest = "Performance Test";
-        createRequest.descTest = "This Test measures performance.";
+        testUpdate.TES = createdTest.testResponse.TES + "-UPDATED";
+        testUpdate.labelTest = "Updated Performance Test";
+        testUpdate.descTest = "Updated description for performance test.";
 
-        var createdTest = given()
+        testDefUpdate.labelTestDefinition = "UPDATED Manual confirmation of user authentication required for access to sensitive metadata.\"";
+        testDefUpdate.paramType = "UPDATED";
+
+        updateRequest.setTestRequest(testUpdate);
+        updateRequest.setTestDefinitionRequest(testDefUpdate);
+
+        var updatedTest = updateTest(createdTest.testResponse.id, updateRequest);
+
+        assertEquals(200, updatedTest.code);
+
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteTest() {
+        var request = createUniqueTestRequest();
+        var createdTest = createTest(request);
+
+        var success = deleteTest(createdTest.testResponse.id);
+
+        assertEquals(200, success.code);
+
+        var error = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .get("/{id}", createdTest.testResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(404)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertNotNull(error);
+        assertEquals("There is no Test with the following id: " + createdTest.testResponse.id, error.message);
+    }
+
+    private TestAndTestDefinitionRequest createUniqueTestRequest() {
+        //var uniqueTES = ("TES" + UUID.randomUUID()).toUpperCase();
+
+        var request = new TestAndTestDefinitionRequest();
+        var test  = new TestRequestDto();
+        var testDef =  new TestDefinitionRequestDto();
+
+        test.TES = ("TES" + UUID.randomUUID()).toUpperCase();
+        test.labelTest = "Performance Test";
+        test.descTest = "This Test measures performance.";
+        testDef.testMethodId = "pid_graph:B733A7D5";
+        testDef.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.\"";
+        testDef.paramType = "onscreen";
+        testDef.testParams = "userAuth\"|\"evidence";
+        testDef.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
+        testDef.toolTip = "\"\\\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\\\"|\\\"A document, web page, or publication describing provisions\\\"\"";
+
+        request.setTestRequest(test);
+        request.setTestDefinitionRequest(testDef);
+
+        return request;
+    }
+
+    private TestAndTestDefinitionResponse createTest(TestAndTestDefinitionRequest request) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .body(request)
                 .contentType(ContentType.JSON)
                 .post("/")
                 .then()
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(TestResponseDto.class);
+                .as(TestAndTestDefinitionResponse.class);
+    }
 
-        var updateRequest = new TestUpdateDto();
-        updateRequest.TES = "T12-Updated";
-        updateRequest.labelTest = "Updated Performance Test";
-        updateRequest.descTest = "Updated description for performance test.";
-
-        var updatedResponse = given()
+    private TestAndTestDefinitionResponse getTest(String testId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(updateRequest)
+                .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .put("/{id}", createdTest.id)
+                .get("/{id}", testId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TestResponseDto.class);
-
-        assertEquals("T12-Updated", updatedResponse.TES);
-        assertEquals("Updated Performance Test", updatedResponse.labelTest);
-        assertEquals("Updated description for performance test.", updatedResponse.descTest);
+                .as(TestAndTestDefinitionResponse.class);
     }
 
-    @Test
-    public void deleteTest() {
-
-        register("admin");
-
-        var createRequest = new TestRequestDto();
-        createRequest.TES = "T12";
-        createRequest.labelTest = "Performance Test";
-        createRequest.descTest = "This Test measures performance.";
-
-        var createdTest = given()
+    private InformativeResponse updateTest(String testId, TestAndTestDefinitionUpdateRequest updateRequest) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(createRequest)
+                .oauth2(adminToken)
+                .body(updateRequest)
                 .contentType(ContentType.JSON)
-                .post("/")
+                .patch("/{id}", testId)
                 .then()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(200)
                 .extract()
-                .as(TestResponseDto.class);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}", createdTest.id)
-                .then()
-                .assertThat()
-                .statusCode(200);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .get("/{id}", createdTest.id)
-                .then()
-                .assertThat()
-                .statusCode(404);
+                .as(InformativeResponse.class);
     }
 
+    private InformativeResponse deleteTest(String testId) {
+        return given()
+                .auth()
+                .oauth2(adminToken)
+                .contentType(ContentType.JSON)
+                .delete("/{id}", testId)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+    }
 }

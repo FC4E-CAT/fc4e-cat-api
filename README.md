@@ -134,9 +134,9 @@ This command will start the application in development mode and automatically la
 
 To access the database, please execute the following command:
 
-`mysql -h localhost -P 3306 -u cat -p cat --protocol=tcp`
+`psql -h localhost -U cat -d cat`
 
-The development database name is `cat`.
+The development password is `cat`.
 
 ### Obtain an access token from Dev Service Keycloak
 

@@ -4,7 +4,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -18,13 +20,16 @@ import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.mappers.ValidationMapper;
 import org.grnet.cat.repositories.*;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.utils.Utility;
 import org.jboss.logging.Logger;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -52,16 +57,7 @@ public class UserService {
     ValidationRepository validationRepository;
 
     @Inject
-    AssessmentRepository assessmentRepository;
-
-    @Inject
     JsonAssessmentService jsonAssessmentService;
-
-    /**
-     * Injection point for the Actor repository
-     */
-    @Inject
-    ActorRepository actorRepository;
 
     /**
      * Injection point for the Role repository
@@ -80,8 +76,17 @@ public class UserService {
     @Named("keycloak-service")
     RoleService roleService;
 
+    @Inject
+    RegistryActorRepository registryActorRepository;
+
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
+
     @ConfigProperty(name = "api.cat.validations.approve.auto")
     boolean autoApprove;
+
+    @Inject
+    Utility utility;
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
 
@@ -121,7 +126,7 @@ public class UserService {
         info.validatedOn = userProfile.validatedOn;
         info.updatedOn = userProfile.updatedOn;
         info.totalValidationsCount = validationRepository.countValidationsByUserId(info.id);
-        info.totalAssessmentsCount = assessmentRepository.countAllAssessmentsByUser(info.id);
+        info.totalAssessmentsCount = motivationAssessmentRepository.countAllAssessmentsByUser(info.id);
 
         return info;
     }
@@ -199,20 +204,16 @@ public class UserService {
      *
      * @param id                The ID of the identified user requesting promotion.
      * @param validationRequest The promotion request information.
-     * @return The submitted validation requesgt.
+     * @return The submitted validation request.
      */
     @Transactional
-
     public ValidationResponse validate(String id, ValidationRequest validationRequest) {
+
         ValidationStatus status = ValidationStatus.REVIEW;
 
-        validationService.hasPromotionRequest(id, validationRequest);
-
-        var user = userRepository.findById(id);
-
-        var actor = actorRepository.findById(validationRequest.actorId);
-
         var validation = new Validation();
+
+        validationService.hasPromotionRequestWithRegistryActor(id, validationRequest.organisationId, validationRequest.organisationSource, validationRequest.registryActorId);
 
         if (autoApprove) {
             status = ValidationStatus.APPROVED;
@@ -221,17 +222,19 @@ public class UserService {
             validation.setValidatedOn(Timestamp.from(Instant.now()));
         }
 
-        validation.setUser(user);
-        validation.setActor(actor);
-        validation.setCreatedOn(Timestamp.from(Instant.now()));
+        var user = userRepository.findById(id);
 
+        validation.setUser(user);
+        validation.setCreatedOn(Timestamp.from(Instant.now()));
         validation.setStatus(status);
         validation.setOrganisationId(validationRequest.organisationId);
         validation.setOrganisationName(validationRequest.organisationName);
         validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
         validation.setOrganisationWebsite(validationRequest.organisationWebsite);
         validation.setOrganisationRole(validationRequest.organisationRole);
+        validation.setRegistryActor(registryActorRepository.findById(validationRequest.registryActorId));
         validationService.store(validation);
+
 
         CompletableFuture.supplyAsync(() ->
                 mailerService.retrieveAdminEmails()
@@ -284,6 +287,7 @@ public class UserService {
      */
     @Transactional
     public void removeDenyAccessRole(String adminId, String userId, String reason) {
+
         var history = new History();
         history.setAction(reason);
         history.setUserId(adminId);
@@ -295,11 +299,16 @@ public class UserService {
         roleRepository.removeRoles(userId, List.of("deny_access"));
     }
 
-    public PageResource<UserAssessmentEligibilityResponse> getUserAssessmentEligibility(int page, int size, String userID, UriInfo uriInfo) {
+    public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibility( int page, int size, String userID, UriInfo uriInfo) {
 
-        var list = validationService.getUserAssessmentEligibility(page, size, userID);
+        var list = validationService.getUserRegistryAssessmentEligibility(page, size, userID);
 
-        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserAssessmentEligibilityToDto(list.list()), uriInfo);
+        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserRegistryRegistryAssessmentEligibilityToDto(list.list()), uriInfo);
     }
+    public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibilityAll( int page, int size, String userID, UriInfo uriInfo) {
 
+        var list = validationService.getUserRegistryAssessmentEligibilityAll(page, size, userID);
+
+        return new PageResource<>(list, UserMapper.INSTANCE.listOfUserRegistryRegistryAssessmentEligibilityToDto(list.list()), uriInfo);
+    }
 }

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
 
-import java.sql.Timestamp;
+import java.util.List;
 
 @Schema(name="PrincipleResponse", description="This object represents a principle item.")
 public class PrincipleResponseDto {
@@ -73,4 +74,17 @@ public class PrincipleResponseDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty(value = "motivation_id")
     public String lodMTV;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = PartialMotivationResponse.class,
+            description = "List of motivations related to this principle."
+    )
+    @JsonProperty("used_by_motivations")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<PartialMotivationResponse> motivations;
+
+    public void setMotivations(List<PartialMotivationResponse> motivations) {
+        this.motivations = motivations;
+    }
 }

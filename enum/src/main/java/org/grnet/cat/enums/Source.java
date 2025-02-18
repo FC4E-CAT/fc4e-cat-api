@@ -165,8 +165,7 @@ public enum Source {
             list.add(returnOrgInfo(item));
         }
         return  new RorSearchInfo(total, list);
-                
-                }
+    }
 
     private String[] returnOrgInfo(JsonObject jRoot) {
 
@@ -192,7 +191,6 @@ public enum Source {
             acronym=jRoot.get("abbreviation").getAsString();
         }
         return new String[]{id,name,website,acronym};
-
     }
     
     public class RorSearchInfo{

@@ -25,6 +25,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -41,6 +42,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.repositories.registry.PrincipleRepository;
 import org.grnet.cat.services.registry.PrincipleService;
 import org.grnet.cat.utils.Utility;
+import org.grnet.cat.validators.SortAndOrderValidator;
 
 import java.util.List;
 
@@ -190,6 +192,12 @@ public class PrincipleEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = PageablePrincipleResponse.class)))
     @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
             content = @Content(schema = @Schema(
@@ -210,14 +218,50 @@ public class PrincipleEndpoint {
     @SecurityRequirement(name = "Authentication")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listAllPrinciples(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                      @Parameter(name = "size", in = QUERY,
-                                              description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                      @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                      @Context UriInfo uriInfo) {
+    public Response listAllPrinciples(
+            @Parameter(name="Search", in = QUERY,
+                    description = "The \"search\" parameter allows clients to search " +
+                            "for matches in specific fields in the Principle entity. " +
+                            "The search will be conducted in the following fields: " +
+                            "principle's id, pri, label and description.")
+            @QueryParam("search") String search,
+            @Parameter(name = "Sort", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
+                    examples = {
+                            @ExampleObject(name = "Last Touch", value = "lastTouch"),
+                            @ExampleObject(name = "PRI", value = "pri"),
+                            @ExampleObject(name = "Label", value = "label")},
+                    description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
+            @DefaultValue("lastTouch")
+            @QueryParam("sort") String sort,
+            @Parameter(name = "Order", in = QUERY,
+                    schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                    examples = {
+                            @ExampleObject(name = "Ascending", value = "ASC"),
+                            @ExampleObject(name = "Descending", value = "DESC")},
+                    description = "The \"order\" parameter specifies the order in which the sorted results should be returned.")
+            @DefaultValue("DESC")
+            @QueryParam("order") String order,
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+            @DefaultValue("1")
+            @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size,
+            @Context UriInfo uriInfo) {
 
-        var principles = principleService.listAll(page - 1, size, uriInfo);
+        var orderValues = List.of("ASC", "DESC");
+        var sortValues = List.of("lastTouch", "pri", "label");
+
+        SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
+
+        var principles = principleService.listAll(search, sort, order, page - 1, size, uriInfo);
+
         return Response.ok(principles).build();
     }
 

@@ -12,14 +12,14 @@ import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Validation;
-import org.grnet.cat.entities.projections.UserAssessmentEligibility;
+import org.grnet.cat.entities.projections.UserRegistryAssessmentEligibility;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.ValidationMapper;
-import org.grnet.cat.repositories.ActorRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.validators.ValidationRequestValidator;
 
 import org.jboss.logging.Logger;
@@ -41,15 +41,13 @@ public class ValidationService {
     MailerService mailerService;
     @Inject
     ValidationRepository validationRepository;
-
-    @Inject
-    ActorRepository actorRepository;
     @Inject
     @Named("keycloak-service")
     RoleService roleService;
 
     @Inject
-    ActorService actorService;
+    RegistryActorRepository registryActorRepository;
+
     private static final Logger LOG = Logger.getLogger(ValidationService.class);
 
     BiConsumer<String, ValidationStatus> handleValidationStatus = (userId, status) -> {
@@ -66,16 +64,18 @@ public class ValidationService {
     };
 
     /**
-     * Checks if there is a promotion request for a specific user and organization.
+     * Checks if there is a promotion request for a specific user, organization and registry actor.
      *
      * @param userId  The ID of the user.
-     * @param request The promotion request information.
-     * @throws ConflictException if a promotion request exists for the user and organization.
+     * @param organisationId The organisation id.
+     * @param organisationSource The organisation source.
+     * @param registryActorId The actor id.
+     * @throws ConflictException if a promotion request exists for the user, organization and registry actor.
      */
-    public void hasPromotionRequest(String userId, ValidationRequest request) {
+    public void hasPromotionRequestWithRegistryActor(String userId, String organisationId, String organisationSource, String registryActorId) {
 
         // Call the repository method to check if a promotion request exists
-        var exists = validationRepository.hasPromotionRequest(userId, request.organisationId, request.organisationSource, request.actorId);
+        var exists = validationRepository.hasPromotionRequestWithRegistryActor(userId, organisationId, organisationSource, registryActorId);
 
         if (exists) {
             throw new ConflictException("There is a promotion request for this user and organisation.");
@@ -149,14 +149,11 @@ public class ValidationService {
 
         var validation = validationRepository.findById(id);
 
-        var actor = actorRepository.findById(validationRequest.actorId);
-
         validation.setOrganisationWebsite(validationRequest.organisationWebsite);
         validation.setOrganisationName(validationRequest.organisationName);
         validation.setOrganisationId(validationRequest.organisationId);
         validation.setOrganisationRole(validationRequest.organisationRole);
         validation.setOrganisationSource(Source.valueOf(validationRequest.organisationSource));
-        validation.setActor(actor);
 
         return ValidationMapper.INSTANCE.validationToDto(validation);
     }
@@ -219,21 +216,33 @@ public class ValidationService {
     }
 
     /**
-     * Retrieves the list of assessment types and actors for which the user is eligible to create assessments.
+     * Retrieves the list of published assessment types and registry actors for which the user is eligible to create assessments.
      *
      * @param page   The index of the page to retrieve (starting from 0).
      * @param size   The maximum number of validation requests to include in a page.
      * @param userID the ID of the user
-     * @return a structured list of organizations, assessment types, and actors
+     * @return a structured list of organizations, assessment types, and registry actors
      */
-    public PageQuery<UserAssessmentEligibility> getUserAssessmentEligibility(int page, int size, String userID){
+    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibility( int page, int size, String userID){
 
-        return validationRepository.fetchUserAssessmentEligibility(page, size, userID);
+        return validationRepository.fetchUserRegistryAssessmentEligibility( page, size, userID);
+    }
+
+    /**
+     * Retrieves the list of all assessment types and registry actors for which the user is eligible to create assessments.
+     *
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of validation requests to include in a page.
+     * @param userID the ID of the user
+     * @return a structured list of organizations, assessment types, and registry actors
+     */
+    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibilityAll( int page, int size, String userID){
+
+        return validationRepository.fetchUserRegistryAssessmentEligibilityAll( page, size, userID);
     }
 
     @Transactional
     public void deleteAll() {
         validationRepository.deleteAll();
     }
-
 }

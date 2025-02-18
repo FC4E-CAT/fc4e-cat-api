@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories.registry;
 
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -23,9 +22,25 @@ public class PrincipleRepository implements Repository<Principle, String> {
      * @param size   The maximum number of guidance items to include in a page.
      * @return A PageQuery of guidance items.
      */
-    public PageQuery<Principle> fetchPrincipleByPage(int page, int size) {
+    public PageQuery<Principle> fetchPrincipleByPage(String search, String sort, String order, int page, int size) {
 
-        var panache = find("from Principle", Sort.descending("lastTouch").and("id", Sort.Direction.Ascending)).page(page, size);
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Principle p");
+
+        var map = new HashMap<String, Object>();
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("where (p.id ilike :search")
+                    .add("or p.label ilike :search")
+                    .add("or p.pri ilike :search")
+                    .add("or p.description ilike :search)");
+
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("order by p." + sort + " " + order + ", p.id ASC");
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Principle>();
         pageable.list = panache.list();
@@ -42,9 +57,10 @@ public class PrincipleRepository implements Repository<Principle, String> {
 
         var joiner = new StringJoiner(StringUtils.SPACE);
 
-        joiner.add("select DISTINCT pri FROM PrincipleCriterionJunction cm")
-                .add("join cm.principle pri")
-                .add("where cm.motivation.id = :motivationId");
+        joiner.add("select DISTINCT pri FROM Principle pri")
+                .add("where (exists (select 1 from PrincipleCriterionJunction cm where cm.principle.id = pri.id and cm.motivation.id = :motivationId)")
+                .add("or exists (select 1 from MotivationPrincipleJunction mp where mp.principle.id = pri.id and mp.motivation.id = :motivationId))");
+
 
         var map = new HashMap<String, Object>();
         map.put("motivationId", motivationId);
@@ -79,5 +95,6 @@ public class PrincipleRepository implements Repository<Principle, String> {
                 .getSingleResult();
         return count > 0;
     }
+
 }
 

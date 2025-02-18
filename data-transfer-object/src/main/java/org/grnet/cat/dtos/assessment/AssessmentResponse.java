@@ -1,9 +1,10 @@
 package org.grnet.cat.dtos.assessment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
+@Getter
 public class AssessmentResponse {
 
     @Schema(
@@ -57,4 +58,13 @@ public class AssessmentResponse {
     )
     @JsonProperty("updated_by")
     public String updatedBy;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicates that the assessment is published.",
+            example = "true"
+    )
+    @JsonProperty("published")
+    public Boolean published;
 }

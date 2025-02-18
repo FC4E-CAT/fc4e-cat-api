@@ -32,18 +32,16 @@ import org.grnet.cat.dtos.ValidationResponse;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.access.DenyAccess;
 import org.grnet.cat.dtos.access.PermitAccess;
-import org.grnet.cat.dtos.assessment.AdminJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.JsonAssessmentRequest;
-import org.grnet.cat.dtos.guidance.GuidanceUpdateDto;
+import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
+import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.guidance.GuidanceRequestDto;
-import org.grnet.cat.dtos.guidance.GuidanceResponseDto;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.*;
 import org.grnet.cat.services.*;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.services.registry.RegistryActorService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.Arrays;
@@ -74,7 +72,6 @@ public class AdminEndpoint {
     @Inject
     JsonAssessmentService assessmentService;
 
-
     /**
      * Injection point for the User Service
      */
@@ -85,7 +82,7 @@ public class AdminEndpoint {
      * Injection point for the Actor Service
      */
     @Inject
-    ActorService actorService;
+    RegistryActorService actorService;
 
     /**
      * Injection point for the KeycloakAdminRole Service
@@ -98,9 +95,6 @@ public class AdminEndpoint {
      */
     @Inject
     Utility utility;
-
-    @Inject
-    GuidanceService guidanceService;
 
     @Tag(name = "Admin")
     @Operation(
@@ -144,12 +138,12 @@ public class AdminEndpoint {
                                 @Parameter(name = "search", in = QUERY,
                                         description = "The \"search\" parameter is a query parameter that allows clients to specify a text string that will be used to search for matches in specific fields in Validation entity. The search will be conducted in the following fields : id, organization's name, user's name.") @QueryParam("search") String search,
                                 @Parameter(name = "sort", in = QUERY,
-                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "createdOn"),
-                                        examples = {@ExampleObject(name = "Organization name", value = "organisationName"), @ExampleObject(name = "Created On", value = "createdOn")},
-                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("createdOn") @QueryParam("sort") String sort,
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
+                                        examples = {@ExampleObject(name = "Organization name", value = "organisationName"), @ExampleObject(name = "Created On", value = "createdOn"), @ExampleObject(name = "Status", value = "status")},
+                                        description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.") @DefaultValue("") @QueryParam("sort") String sort,
                                 @Parameter(name = "order",
                                         in = QUERY,
-                                        schema = @Schema(type = SchemaType.STRING, defaultValue = "DESC"),
+                                        schema = @Schema(type = SchemaType.STRING, defaultValue = ""),
                                         examples = {@ExampleObject(name = "Ascending", value = "ASC"), @ExampleObject(name = "Descending", value = "DESC")},
                                         description = "The \"order\" parameter specifies the order in which the sorted results should be returned.") @DefaultValue("DESC") @QueryParam("order") String order,
                                 @Parameter(name = "status",
@@ -163,7 +157,7 @@ public class AdminEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("organisationName", "createdOn");
+        var sortValues = List.of("organisationName", "createdOn", "", "status");
 
         if (!orderValues.contains(order)) {
 
@@ -395,9 +389,9 @@ public class AdminEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        assessmentService.deletePrivateAssessment(id);
+        assessmentService.delete(id);
 
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
@@ -676,7 +670,7 @@ public class AdminEndpoint {
             description = "Assessment updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AdminJsonAssessmentResponse.class)))
+                    implementation = UserJsonRegistryAssessmentResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -715,12 +709,12 @@ public class AdminEndpoint {
     public Response updateAssessment(@Parameter(
             description = "The ID of the assessment to be updated.",
             required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER))
-                                     @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no assessment with the following id:") String id,
-                                     @Valid @NotNull(message = "The request body is empty.") JsonAssessmentRequest updateJsonAssessmentRequest) {
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING))
+                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id,
+                                     @Valid @NotNull(message = "The request body is empty.") JsonRegistryAssessmentRequest request) {
 
-        var response = assessmentService.update(id, updateJsonAssessmentRequest);
+        var response = assessmentService.update(id, request);
 
         return Response.ok().entity(response).build();
     }
@@ -765,6 +759,7 @@ public class AdminEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAllAssessmentsByPage(page - 1, size, search, uriInfo);
+//        assessments.getContent().stream().forEach(e-> System.out.println("is published-- ? "+e.getPublished()));
 
         return Response.ok().entity(assessments).build();
     }
@@ -778,7 +773,7 @@ public class AdminEndpoint {
             description = "The corresponding assessment.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AdminJsonAssessmentResponse.class)))
+                    implementation = UserJsonRegistryAssessmentResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -814,285 +809,11 @@ public class AdminEndpoint {
             required = true,
             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
-                                  @Valid @NotFoundEntity(repository = AssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
+                                  @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id) {
 
-        var assessment = assessmentService.getDtoAssessment(id);
+        var assessment = assessmentService.getRegistryDtoAssessment(id);
 
         return Response.ok().entity(assessment).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "List all guidance items.",
-            description = "Retrieves a paginated list of all guidance items.")
-    @APIResponse(
-            responseCode = "200",
-            description = "List of guidance items.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = PageableGuidanceResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/guidances")
-    @Registration
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response listAllGuidances(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                     @Parameter(name = "size", in = QUERY,
-                                             description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                     @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                     @Context UriInfo uriInfo) {
-
-        var guidances = guidanceService.listAll(page - 1, size, uriInfo);
-        return Response.ok(guidances).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Get Guidance by ID.",
-            description = "Retrieves a specific guidance item by ID.")
-    @APIResponse(
-            responseCode = "200",
-            description = "The corresponding guidance item.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = GuidanceResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid UUID: must be a string of letters and numbers",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = GuidanceResponseDto.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/guidances/{id}")
-    @Registration
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response findGuidanceById(@Parameter(
-            description = "The ID of the guidance item to retrieve.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                     @NotNull(message = "The ID cannot be null.") Long id) {
-
-        var guidance = guidanceService.findById(id);
-        if (guidance == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(guidance).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Create New Guidance Item.",
-            description = "Creates a new guidance item.")
-    @APIResponse(
-            responseCode = "201",
-            description = "Guidance item created.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = GuidanceResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid request payload.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @POST
-    @Path("/guidances")
-    @Registration
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createGuideline(@Valid @NotNull(message = "The request body is empty.") GuidanceRequestDto guidanceRequestDto, @Context UriInfo uriInfo) {
-
-        var guidance = guidanceService.create(guidanceRequestDto, utility.getUserUniqueIdentifier());
-
-        return Response.status(Response.Status.CREATED).entity(guidance).type(MediaType.APPLICATION_JSON).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Update Guidance Item.",
-            description = "Updates an existing guidance item.")
-    @APIResponse(
-            responseCode = "200",
-            description = "Guidance item updated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = GuidanceResponseDto.class)))
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid request payload.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "409",
-            description = "Unique constraint violation.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @PUT
-    @Path("/guidances/{id}")
-    @Registration
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateGuideline(@Parameter(
-            description = "The ID of the guidance item to update.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                           @Valid @NotFoundEntity(repository = GuidanceRepository.class, message = "There is no Guidance with the following id:") Long id,
-                           @Valid @NotNull(message = "The request body is empty.") GuidanceUpdateDto guidanceUpdateDto) {
-
-        var guidance = guidanceService.update(id, guidanceUpdateDto, utility.getUserUniqueIdentifier());
-        return Response.ok(guidance).build();
-    }
-
-    @Tag(name = "Admin")
-    @Operation(
-            summary = "Delete Guidance Item.",
-            description = "Deletes a specific guidance item by ID.")
-    @APIResponse(
-            responseCode = "204",
-            description = "Guidance item deleted.")
-    @APIResponse(
-            responseCode = "401",
-            description = "User has not been authenticated.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "403",
-            description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "500",
-            description = "Internal Server Error.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @SecurityRequirement(name = "Authentication")
-    @DELETE
-    @Path("/guidances/{id}")
-    @Registration
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteGuidance(@Parameter(
-            description = "The ID of the guidance item to delete.",
-            required = true,
-            example = "1",
-            schema = @Schema(type = SchemaType.NUMBER)) @PathParam("id")
-                                   @NotNull(message = "The ID cannot be null.") Long id) {
-
-        boolean deleted = guidanceService.delete(id);
-        if (!deleted) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.noContent().build();
     }
 
     public static class PageablePartialAssessmentResponse extends PageResource<AdminPartialJsonAssessmentResponse> {
@@ -1110,18 +831,121 @@ public class AdminEndpoint {
         }
     }
 
-    public static class PageableGuidanceResponse extends PageResource<GuidanceResponseDto> {
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Publish an existing assessment.",
+            description = "Allows an admin to publish an existing assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment published successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/assessments/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response publishAssessment(@Parameter(
+                                             description = "The ID of the assessment to be updated.",
+                                             required = true,
+                                             example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                             schema = @Schema(type = SchemaType.STRING))
+                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id) {
 
-        private List<GuidanceResponseDto> content;
+        var message = assessmentService.managePublishAssessmentByAdmin(id,true);
+        var response=new InformativeResponse();
+        response.code=200;
+        response.message=message;
+        return Response.ok().entity(response).build();
+    }
 
-        @Override
-        public List<GuidanceResponseDto> getContent() {
-            return content;
-        }
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Unpublish an existing assessment.",
+            description = "Allows an admin to unpublish an existing assessment.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment unpublished successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/assessments/{id}/unpublish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response unpublishAssessment(@Parameter(
+                                              description = "The ID of the assessment to be updated.",
+                                              required = true,
+                                              example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                              schema = @Schema(type = SchemaType.STRING))
+                                      @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id) {
 
-        @Override
-        public void setContent(List<GuidanceResponseDto> content) {
-            this.content = content;
-        }
+        var message = assessmentService.managePublishAssessmentByAdmin(id,false);
+        var response=new InformativeResponse();
+        response.code=200;
+        response.message=message;
+        return Response.ok().entity(response).build();
     }
 }

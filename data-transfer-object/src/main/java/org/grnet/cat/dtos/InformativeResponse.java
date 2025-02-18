@@ -37,12 +37,12 @@ public class InformativeResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Set<String> errors;
 
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = Arrays.class,
-            description = "An array of  message that informs whether a specific request has been completed.",
-            example = "An array of informative message relative to the process"
-    )
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<String> messages;
+//    @Schema(
+//            type = SchemaType.ARRAY,
+//            implementation = Arrays.class,
+//            description = "An array of  message that informs whether a specific request has been completed.",
+//            example = "An array of informative message relative to the process"
+//    )
+//    @JsonInclude(JsonInclude.Include.NON_NULL)
+//    public List<String> messages;
 }

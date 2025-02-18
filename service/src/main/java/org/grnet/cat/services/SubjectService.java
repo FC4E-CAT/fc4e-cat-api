@@ -16,11 +16,9 @@ import org.grnet.cat.entities.Subject;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.SubjectMapper;
-import org.grnet.cat.repositories.AssessmentRepository;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.SubjectRepository;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -31,7 +29,7 @@ public class SubjectService {
 
 
     @Inject
-    AssessmentRepository assessmentRepository;
+    MotivationAssessmentRepository assessmentRepository;
 
     @Inject
     SubjectRepository subjectRepository;
@@ -49,7 +47,6 @@ public class SubjectService {
 
         var subject = SubjectMapper.INSTANCE.dtoToSubject(request);
         subject.setCreatedBy(userId);
-        subject.setCreatedOn(Timestamp.from(Instant.now()));
 
         var optional = subjectRepository.fetchSubjectByNameAndTypeAndSubjectId(request.name, request.type, request.id, userId);
 
@@ -153,18 +150,16 @@ public class SubjectService {
         }
 
         SubjectMapper.INSTANCE.updateSubjectFromDto(request, subject);
-
         return SubjectMapper.INSTANCE.subjectToDto(subject);
     }
 
     public PageResource<AdminPartialJsonAssessmentResponse> getAssessmentsPerSubject(int page , int size, Long id, UriInfo uriInfo){
 
-
         var assessments = assessmentRepository.fetchAssessmentsPerSubjectAndPage(page, size, id);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.adminAssessmentsToJsonAssessments(assessments.list());
+        var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
 
     }
 }

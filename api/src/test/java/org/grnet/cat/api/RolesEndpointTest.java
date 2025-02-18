@@ -3,10 +3,13 @@ package org.grnet.cat.api;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.RolesEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.RoleAssignmentRequest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.util.List;
 
@@ -15,93 +18,62 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 @TestHTTPEndpoint(RolesEndpoint.class)
-public class RolesEndpointTest extends KeycloakTest{
+public class RolesEndpointTest extends KeycloakTest {
 
     @Test
-    public void assignRolesNotPermitted(){
-
-        register("alice");
-
-        var request = new RoleAssignmentRequest();
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .body(request)
-                .put("/assign-roles")
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", response.message);
+    @Execution(ExecutionMode.CONCURRENT)
+    public void assignRolesNotPermitted() {
+        var request = createRoleAssignmentRequest("alice_voperson_id", List.of("validated"));
+        var error = assignRoles(request, aliceToken, 403);
+        assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
-    public void assignRolesRequestBodyIsEmpty(){
-
-        register("admin");
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .put("/assign-roles")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("The request body is empty.", response.message);
+    @Execution(ExecutionMode.CONCURRENT)
+    public void assignRolesRequestBodyIsEmpty() {
+        var error = assignRoles(null, adminToken, 400);
+        assertEquals("The request body is empty.", error.message);
     }
 
     @Test
-    public void assignRolesUserIdIsEmpty(){
-
-        register("admin");
-
-        var request = new RoleAssignmentRequest();
-        request.roles = List.of("validated");
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .body(request)
-                .put("/assign-roles")
-                .then()
-                .assertThat()
-                .statusCode(400)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("user_id may not be empty.", response.message);
+    @Execution(ExecutionMode.CONCURRENT)
+    public void assignRolesUserIdIsEmpty() {
+        var request = createRoleAssignmentRequest(null, List.of("validated"));
+        var error = assignRoles(request, adminToken, 400);
+        assertEquals("user_id may not be empty.", error.message);
     }
 
     @Test
-    public void assignRolesIsEmpty(){
+    @Execution(ExecutionMode.CONCURRENT)
+    public void assignRolesIsEmpty() {
+        var request = createRoleAssignmentRequest("alice_voperson_id", null);
+        var error = assignRoles(request, adminToken, 400);
+        assertEquals("roles may not be empty.", error.message);
+    }
 
-        register("admin");
-        var alice = register("alice");
-
+    private RoleAssignmentRequest createRoleAssignmentRequest(String userId, List<String> roles) {
         var request = new RoleAssignmentRequest();
-        request.userId = alice.id;
+        request.userId = userId;
+        request.roles = roles;
+        return request;
+    }
 
-        var response = given()
+    private InformativeResponse assignRoles(RoleAssignmentRequest request, String token, int expectedStatus) {
+        var requestSpec = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .contentType(ContentType.JSON)
-                .body(request)
+                .oauth2(token)
+                .contentType(ContentType.JSON);
+
+        if (request != null) {
+            requestSpec.body(request);
+        }
+
+        return requestSpec
                 .put("/assign-roles")
                 .then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(expectedStatus)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("roles may not be empty.", response.message);
     }
 }

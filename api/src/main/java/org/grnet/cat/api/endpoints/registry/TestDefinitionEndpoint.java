@@ -140,9 +140,9 @@ public class TestDefinitionEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response createTestDefinition(
-            @Valid @NotNull(message = "The request body is empty.") TestDefinitionRequestDto testRequestDto, @Context UriInfo uriInfo) {
+            @Valid @NotNull(message = "The request body is empty.") TestDefinitionRequestDto request, @Context UriInfo uriInfo) {
 
-        var testDefinition= testDefinitionService.createTestDefinition(utility.getUserUniqueIdentifier(),testRequestDto);
+        var testDefinition= testDefinitionService.createTestDefinition(utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
         return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(testDefinition.id)).build()).entity(testDefinition).build();

@@ -20,7 +20,6 @@ public interface MetricTestMapper {
 
     List<MetricTestResponseDto> metricTestToDtos(List<MetricTestJunction> entities);
 
-    @Mapping(target = "metricId", expression = "java(metricTest.getMetric().getId())")
     @Mapping(target = "testId", expression = "java(metricTest.getTest().getId())")
     @Mapping(target = "testDefinitionId", expression = "java(metricTest.getTestDefinition().getId())")
     @Mapping(target = "motivationId", expression = "java(metricTest.getMotivation().getId())")

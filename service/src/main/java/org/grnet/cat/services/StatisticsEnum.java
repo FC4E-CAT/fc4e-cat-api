@@ -79,14 +79,13 @@ public class StatisticsEnum{
         ACCEPTED {
             @Override
             public Long getStatistics(ValidationRepository validationRepository) {
-                return validationRepository.find("from Validation val where val.status =?1 or val.status=?2 ", ValidationStatus.PENDING, ValidationStatus.REVIEW).stream().count();
-
+                return validationRepository.find("from Validation val where val.status =?1 ", ValidationStatus.APPROVED).stream().count();
             }
         },
         PENDING {
             @Override
             public Long getStatistics(ValidationRepository validationRepository) {
-                return validationRepository.find("from Validation val where val.status =?1 ", ValidationStatus.APPROVED).stream().count();
+                return validationRepository.find("from Validation val where val.status =?1 or val.status=?2 ", ValidationStatus.PENDING, ValidationStatus.REVIEW).stream().count();
 
             }
         };
@@ -99,29 +98,35 @@ public class StatisticsEnum{
     public enum Assessment {
         TOTAL {
             @Override
-            public Long getStatistics(AssessmentRepository assessmentRepository) {
-                return assessmentRepository.find("from Assessment as").stream().count();
+            public Long getStatistics(MotivationAssessmentRepository assessmentRepository) {
+                return assessmentRepository.find("from MotivationAssessment as").stream().count();
 
             }
         },
         PUBLIC {
             @Override
-            public Long getStatistics(AssessmentRepository assessmentRepository) {
+            public Long getStatistics(MotivationAssessmentRepository assessmentRepository) {
                 var em = Panache.getEntityManager();
-                return em.createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM Assessment a WHERE JSON_EXTRACT(a.assessment_doc, '$.published') = true").getResultStream().count();
+                return (Long) em.createNativeQuery("SELECT COUNT(a) " +
+                        "FROM MotivationAssessment a " +
+                        "WHERE (a.assessment_doc->>'published')::::boolean = :param")
+                        .setParameter("param", true)
+                        .getSingleResult();
             }
         },
         PRIVATE {
             @Override
-            public Long getStatistics(AssessmentRepository assessmentRepository) {
+            public Long getStatistics(MotivationAssessmentRepository assessmentRepository) {
                 var em = Panache.getEntityManager();
-                return em.createNativeQuery("SELECT count(DISTINCT JSON_EXTRACT(a.assessment_doc, '$.subject')) FROM Assessment a WHERE JSON_EXTRACT(a.assessment_doc, '$.published') = false").getResultStream().count();
-
+                return (Long) em.createNativeQuery("SELECT COUNT(a) " +
+                                "FROM MotivationAssessment a " +
+                                "WHERE (a.assessment_doc->>'published')::::boolean = :param")
+                        .setParameter("param", false)
+                        .getSingleResult();
             }
         };
 
-
-        public abstract Long getStatistics(AssessmentRepository assessmentRepository);
+        public abstract Long getStatistics(MotivationAssessmentRepository assessmentRepository);
     }
 
 

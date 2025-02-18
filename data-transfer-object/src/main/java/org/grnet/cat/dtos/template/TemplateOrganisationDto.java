@@ -10,7 +10,7 @@ public class TemplateOrganisationDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "Organisation Id",
-            example = "00tjv0s33"
+            example = "05tcasm11"
     )
     @JsonProperty("id")
     public String id = "";
@@ -19,7 +19,7 @@ public class TemplateOrganisationDto {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "Organisation Name",
-            example = "Keimyung University"
+            example = "National Infrastructures for Research and Technology -  GRNET S.A"
     )
     @JsonProperty("name")
     public String name = "";

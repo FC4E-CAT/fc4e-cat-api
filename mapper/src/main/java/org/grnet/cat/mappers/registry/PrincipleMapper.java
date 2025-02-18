@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
+
 /**
  * The PrincipleMapper is responsible for mapping Principle entities to DTOs and vice versa.
  */
@@ -21,6 +22,7 @@ public interface PrincipleMapper {
     List<PrincipleResponseDto> principleToDtos(List<Principle> principles);
 
     @Named("mapWithExpression")
+    @Mapping(target = "motivations", ignore = true)
     PrincipleResponseDto principleToDto(Principle principle);
 
     @Mapping(target = "pri", expression = "java(principleRequestDto.pri.toUpperCase())")
@@ -28,14 +30,20 @@ public interface PrincipleMapper {
     @Mapping(target = "lodPriV", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "motivations", ignore = true)
+    @Mapping(target = "criteria", ignore = true)
     Principle principleToEntity(PrincipleRequestDto principleRequestDto);
 
-    @Mapping(target = "pri", expression = "java(StringUtils.isNotEmpty(request.pri) ? request.pri : principle.getPri())")
+    @Mapping(target = "pri", expression = "java(StringUtils.isNotEmpty(request.pri) ? request.pri.toUpperCase() : principle.getPri().toUpperCase())")
     @Mapping(target = "label", expression = "java(StringUtils.isNotEmpty(request.label) ? request.label : principle.getLabel())")
     @Mapping(target = "description", expression = "java(StringUtils.isNotEmpty(request.description) ? request.description : principle.getDescription())")
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lodPriV", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
+    @Mapping(target = "motivations", ignore = true)
+    @Mapping(target = "criteria", ignore = true)
     void updatePrinciple(PrincipleUpdateDto request, @MappingTarget Principle principle);
 }

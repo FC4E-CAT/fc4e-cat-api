@@ -9,6 +9,8 @@ import org.grnet.cat.entities.registry.MotivationActorId;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.repositories.Repository;
 
+import java.util.Optional;
+
 @ApplicationScoped
 public class MotivationActorRepository  implements Repository<MotivationActorJunction, MotivationActorId> {
 
@@ -37,5 +39,19 @@ public class MotivationActorRepository  implements Repository<MotivationActorJun
         return find("SELECT 1 FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV = ?3", motivationId, actorId, lodMAV)
                 .firstResultOptional()
                 .isPresent();
+    }
+    public boolean existsByStatus(String motivationId, String actorId, Boolean status) {
+        return find("SELECT 1 FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.published = ?3", motivationId, actorId, status)
+                .firstResultOptional()
+                .isPresent();
+    }
+    public Optional<MotivationActorJunction> fetchByMotivationAndActorAndVersion(String motivationId, String actorId, Integer lodMAV) {
+        return find("FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV = ?3", motivationId, actorId, lodMAV)
+                .firstResultOptional();
+    }
+
+        public void deleteByMotivationAndActorAndVersion(String motivationId, String actorId, Integer lodMAV) {
+
+        delete("DELETE FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV = ?3", motivationId, actorId, lodMAV);
     }
 }

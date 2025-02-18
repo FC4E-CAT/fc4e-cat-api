@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories.registry;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -66,6 +67,51 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
 
     }
 
+    /**
+     * Retrieves all Criterion IDs associated with a specific Motivation and Actor.
+     *
+     * @param motivationId The ID of the Motivation.
+     * @param actorId      The ID of the Actor.
+     * @return A list of Criterion IDs.
+     */
+    @Transactional
+    public List<String> getCriterionIdsByMotivationAndActor(String motivationId, String actorId) {
+
+        //var panache = find("SELECT ca.criterion.id FROM CriterionActorJunction ca WHERE ca.motivation.id = ?1 AND ca.id.actorId = ?2 ", motivationId, actorId);
+
+        var db = "SELECT ca.criterion.id FROM CriterionActorJunction ca WHERE ca.motivation.id = :motivationId AND ca.actor.id = :actorId";
+
+        var query = getEntityManager().createQuery(db, String.class)
+                .setParameter("motivationId", motivationId)
+                .setParameter("actorId", actorId);
+
+        return query.getResultList();
+    }
+
+//    @Transactional
+//    public boolean existCriterionInStatus(String criterionId,boolean status) {
+//
+//
+//        var db = "SELECT COUNT(*) ca.criterion.id FROM CriterionActorJunction ca inner join RegistryActor act on act.id=ca.actor.id inner join MotivationActorJunction ma on ma.actor.id=act.id WHERE ca.criterion.id = :criterionId AND ma.actor.published = :status";
+//
+//        var query = getEntityManager().createQuery(db, Integer.class)
+//                .setParameter("criterionId", criterionId)
+//                .setParameter("status",status);
+//
+//        int count = query.getSingleResult();
+//        if (count > 0) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
+
+    public boolean existCriterionInStatus(String criterionId,boolean status) {
+        return find("SELECT 1 FROM CriterionActorJunction ca INNER JOIN MotivationActorJunction ma ON ca.motivation.id=ma.motivation.id   WHERE ca.id.criterionId = ?1 AND ma.published= ?2", criterionId,status)
+                .firstResultOptional()
+                .isPresent();
+    }
+
     public Optional<CriterionActorJunction> findByMotivationAndActorAndCriterion(String motivationId, String actorId, String criterionId, Integer lodMAV) {
         return find(
                 "FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 AND c.id.criterionId = ?3 AND  c.id.lodCAV = ?4",
@@ -80,8 +126,18 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
         ).firstResultOptional().isPresent();
     }
 
-   // @Transactional
+    // @Transactional
     public void delete(CriterionActorJunction ac) {
         delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 and c.actor.id =?2 and c.criterion.id =?3", ac.getMotivation().getId(), ac.getActor().getId(), ac.getCriterion().getId());
+    }
+
+    public boolean existsByMotivationAndActor(String motivationId, String actorId, Integer lodMAV) {
+        return find("SELECT 1 FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.id.actorId = ?2 AND c.id.lodCAV = ?3", motivationId, actorId, lodMAV)
+                .firstResultOptional()
+                .isPresent();
+    }
+
+    public void deleteByActorId(String motivationId, String actorId) {
+        delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 AND c.id.actorId = ?2", motivationId, actorId);
     }
 }

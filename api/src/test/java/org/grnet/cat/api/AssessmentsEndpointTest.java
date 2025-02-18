@@ -1,392 +1,157 @@
 package org.grnet.cat.api;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.grnet.cat.api.endpoints.AssessmentsEndpoint;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.assessment.*;
+import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
+import org.grnet.cat.dtos.assessment.registry.RegistryAssessmentDto;
+import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.template.TemplateDto;
-import org.grnet.cat.dtos.registry.template.TemplateResponse;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
 @TestHTTPEndpoint(AssessmentsEndpoint.class)
+@QuarkusTestResource(DatabaseTestResource.class)
 public class AssessmentsEndpointTest extends KeycloakTest {
 
-    @Test
-    public void createAssessment() throws IOException {
+    private static UserJsonRegistryAssessmentResponse assessment;
+    private static UserJsonRegistryAssessmentResponse publicAssessment;
 
-        register("validated");
-        register("admin");
-
-        var validation = makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
+    @BeforeAll
+    public void initMakeValidation()  throws IOException{
+        makeValidation("validated", "pid_graph:B5CC396B");
+        assessment = createRegistryAssessment(validatedToken);
+        publicAssessment = createRegistryAssessment(validatedToken);
         var response = given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        assertEquals(validation.id, response.validationId);
-    }
-
-    @Test
-    public void createAssessmentNotAuthorizedNotOwner() throws IOException {
-
-        register("alice");
-        register("admin");
-        register("validated");
-
-        makeValidation("alice", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotAuthorizedNotApproved() throws IOException {
-
-        register("alice");
-        register("admin");
-        register("validated");
-
-        makeValidationRequest("alice", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(403, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotExistValidation() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404, response.code);
-    }
-
-    @Test
-    public void createAssessmentNotExistTemplate() throws  IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 200L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(404, response.code);
-    }
-
-    @Test
-    public void createAssessmentMismatch() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 1L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no approved validation request.", informativeResponse.message);
-    }
-
-    @Test
-    public void getAssessment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get("/{id}", assessment.id)
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .put("/{id}/publish", publicAssessment.id)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        assertEquals(assessment.id, response.id);
-
-        var error = given()
-                .auth()
-                .oauth2(getAccessToken("evald"))
-                .get("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
-    public void getAssessments() throws IOException {
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getAssessment(){
 
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var pageResource = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get()
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(PageResource.class);
-
-        assertEquals(1, pageResource.getTotalElements());
+        var fetchedAssessment = fetchAssessment(validatedToken, assessment.id);
+        assertEquals(assessment.id, fetchedAssessment.id);
     }
 
     @Test
-    public void updateAssessment() throws IOException {
+    @Execution(ExecutionMode.CONCURRENT)
+    public void accessAssessmentCreatedByOtherUser(){
+        var errorResponse = fetchAssessmentNotValid(getAccessToken("bob"), assessment.id);
 
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc = makeJsonDocUpdated();
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(updateRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}",response.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var json = makeJsonDocUpdated();
-        assertEquals(json.status , updatedResponse.assessmentDoc.status);
+        assertEquals("You do not have permission to access this resource.", errorResponse.message);
     }
 
     @Test
-    public void updateAssessmentNotExists() throws IOException {
+    public void deleteRegistryAssessment() throws IOException {
+        var assessment = createRegistryAssessment(validatedToken);
+        var response = deleteAssessment(validatedToken, assessment.id, 200);
 
-        register("validated");
-        register("admin");
-
-        var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc =makeJsonDocUpdated();
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(updateRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}",1L)
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-       assertEquals(404,updatedResponse.code);
+        assertEquals("Assessment has been successfully deleted.", response.message);
     }
 
     @Test
-    public void updateAssessmentNotAuthorizedUser() throws IOException {
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createComment() {
 
-        register("validated");
-        register("admin");
-        register("alice");
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Create comment" + UUID.randomUUID();
 
-        makeValidation("validated", 6L);
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var updateRequest = new UpdateJsonAssessmentRequest();
-        updateRequest.assessmentDoc =makeJsonDocUpdated();
-
-        var updatedResponse = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(updateRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}",response.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(403,updatedResponse.code);
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+        assertEquals(commentRequest.text, commentResponse.text);
     }
 
     @Test
-    public void getAssessmentNotExist() {
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createCommentNotAuthorized() {
 
-        register("validated");
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Unauthorized comment.";
 
-        var response = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get("/{id}", 8L)
-                .then()
-                .assertThat()
-                .statusCode(404)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("There is no Assessment with the following id: "+8, response.message);
+        var errorResponse = addCommentNotPermitted(aliceToken, assessment.id, commentRequest);
+        assertEquals("You do not have permission to access this resource.", errorResponse.message);
     }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void getComments(){
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "This is a test comment."+ UUID.randomUUID();
+
+        addComment(validatedToken, assessment.id, commentRequest);
+
+        var comments = fetchComments(validatedToken, assessment.id);
+        assertFalse(comments.getContent().isEmpty(), "Comments list should not be empty.");
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void updateComment() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Original comment." + UUID.randomUUID();
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+
+        var updatedCommentRequest = new CommentRequestDto();
+        updatedCommentRequest.text = "Updated comment.";
+
+        var updatedComment = updateComment(validatedToken, assessment.id, commentResponse.id, updatedCommentRequest);
+        assertEquals(updatedCommentRequest.text, updatedComment.text);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteComment() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Comment to delete." + UUID.randomUUID();
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+
+        var response = deleteComment(validatedToken, assessment.id, commentResponse.id, 200);
+        assertEquals("Comment has been successfully deleted.", response.message);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void deleteCommentNotPermitted() {
+
+        var commentRequest = new CommentRequestDto();
+        commentRequest.text = "Comment to delete." + UUID.randomUUID();;
+
+        var commentResponse = addComment(validatedToken, assessment.id, commentRequest);
+
+        var errorResponse = deleteComment(aliceToken, assessment.id, commentResponse.id, 403);
+        assertEquals("You do not have permission to access this resource.", errorResponse.message);
+    }
+
 
     private ValidationResponse approveValidation(Long valId) {
 
@@ -396,7 +161,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         return given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
+                .oauth2(adminToken)
                 .basePath("/v1/admin/validations")
                 .contentType(ContentType.JSON)
                 .body(updateStatus)
@@ -408,8 +173,12 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(ValidationResponse.class);
 
     }
+    private ValidationResponse makeValidation(String username, String actorId) {
 
-    private ValidationResponse makeValidationRequest(String username, Long actorId) {
+        var response = makeValidationRequest(username, actorId);
+        return approveValidation(response.id);
+    }
+    private ValidationResponse makeValidationRequest(String username, String actorId) {
 
         var request = new ValidationRequest();
         request.organisationRole = "Manager";
@@ -417,9 +186,9 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         request.organisationName = "Keimyung University";
         request.organisationSource = "ROR";
         request.organisationWebsite = "http://www.kmu.ac.kr/main.jsp";
-        request.actorId = actorId;
+        request.registryActorId = actorId;
 
-        var response = given()
+        return given()
                 .auth()
                 .oauth2(getAccessToken(username))
                 .basePath("/v1/validations")
@@ -431,39 +200,16 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .statusCode(201)
                 .extract()
                 .as(ValidationResponse.class);
-        return response;
     }
 
-    public TemplateResponse fetchTemplateByActorAndType() {
+    private UserJsonRegistryAssessmentResponse createRegistryAssessment(String token) throws IOException {
+        var request = new JsonRegistryAssessmentRequest();
+        request.assessmentDoc = makeRegistryJsonDoc();
 
-        var response = given()
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .basePath("/v1/templates")
-                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 6L)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(TemplateResponse.class);
-        return response;
-    }
-
-    @Test
-    public void getPublishedAssessments() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(true, 6L);
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(token)
+                .basePath("/v2/assessments")
                 .body(request)
                 .contentType(ContentType.JSON)
                 .post()
@@ -471,438 +217,113 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(UserJsonAssessmentResponse.class);
+                .as(UserJsonRegistryAssessmentResponse.class);
+    }
 
-        var response = given()
+    private UserJsonRegistryAssessmentResponse fetchAssessment(String token, String assessmentId) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(token)
+                .basePath("/v2/assessments")
+                .get("/{id}", assessmentId)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+    }
+
+    private InformativeResponse fetchAssessmentNotValid(String token, String assessmentId) {
+        return given()
+                .auth()
+                .oauth2(token)
+                .basePath("/v2/assessments")
+                .get("/{id}", assessmentId)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private InformativeResponse deleteAssessment(String token, String assessmentId, int expectedStatus) {
+        return given()
+                .auth()
+                .oauth2(token)
+                .basePath("/v2/assessments")
+                .delete("/{id}", assessmentId)
+                .then()
+                .assertThat()
+                .statusCode(expectedStatus)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private CommentResponseDto addComment(String token, String assessmentId, CommentRequestDto request) {
+        return given()
+                .auth()
+                .oauth2(token)
                 .body(request)
                 .contentType(ContentType.JSON)
-                .get("/by-type/{type-id}/by-actor/{actor-id}", 1L, 6L)
+                .post("/{id}/comments", assessmentId)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CommentResponseDto.class);
+    }
+
+    private InformativeResponse addCommentNotPermitted(String token, String assessmentId, CommentRequestDto request) {
+        return given()
+                .auth()
+                .oauth2(token)
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post("/{id}/comments", assessmentId)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+    }
+
+    private PageResource fetchComments(String token, String assessmentId) {
+        return given()
+                .auth()
+                .oauth2(token)
+                .get("/{id}/comments", assessmentId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(PageResource.class);
-
-        assertEquals(1, response.getTotalElements());
     }
 
-    @Test
-    public void deletePrivateAssessment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
+    private CommentResponseDto updateComment(String token, String assessmentId, Long commentId, CommentRequestDto request) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
+                .oauth2(token)
                 .body(request)
                 .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Assessment has been successfully deleted.", informativeResponse.message);
-    }
-
-    @Test
-    public void deletePublishedAssessmentIsNotPermitted() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(true, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-       var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("Assessment has been successfully deleted.", informativeResponse.message);
-    }
-
-    @Test
-    public void deleteAssessmentCreatedByOtherUser() throws IOException {
-
-        register("validated");
-        register("admin");
-        register("bob");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var request = new JsonAssessmentRequest();
-        request.assessmentDoc = makeJsonDoc(true, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(request)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("bob"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
-    }
-    @Test
-    public void createComment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var validation = makeValidation("validated", 6L);
-
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        assertEquals(commentRequest.text, responseComment.text);
-    }
-
-    @Test
-    public void createCommentNotAuthorized() throws IOException {
-
-        register("alice");
-        register("admin");
-        register("validated");
-
-        var validation = makeValidation("validated", 6L);
-
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals(403, responseComment.code);
-    }
-
-    @Test
-    public void getComments() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        makeValidation("validated", 6L);
-        fetchTemplateByActorAndType();
-
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments/", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var pageResource = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .get("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(PageResource.class);
-
-        assertEquals(1, pageResource.getTotalElements());
-    }
-
-    @Test
-    public void updateComment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var validation = makeValidation("validated", 6L);
-
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var updatedCommentRequest = new CommentRequestDto();
-        updatedCommentRequest.text = "This is an updated test comment.";
-
-        var updatedCommentResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(updatedCommentRequest)
-                .contentType(ContentType.JSON)
-                .put("/{id}/comments/{comment-id}", assessment.id, responseComment.id)
+                .put("/{id}/comments/{comment-id}", assessmentId, commentId)
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(CommentResponseDto.class);
-
-        assertEquals(updatedCommentRequest.text, updatedCommentResponse.text);
     }
 
-    @Test
-    public void deleteComment() throws IOException {
-
-        register("validated");
-        register("admin");
-
-        var validation = makeValidation("validated", 6L);
-
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
+    private InformativeResponse deleteComment(String token, String assessmentId, Long commentId, int expectedStatus) {
+        return given()
                 .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(requestAssessment)
+                .oauth2(token)
                 .contentType(ContentType.JSON)
-                .post()
+                .delete("/{id}/comments/{comment-id}", assessmentId, commentId)
                 .then()
                 .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .contentType(ContentType.JSON)
-                .delete("/{id}/comments/{comment-id}", assessment.id, responseComment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
+                .statusCode(expectedStatus)
                 .extract()
                 .as(InformativeResponse.class);
-
-        assertEquals("Comment has been successfully deleted.", informativeResponse.message);
-    }
-
-    @Test
-    public void deleteCommentNotPermitted() throws IOException {
-
-        register("validated");
-        register("admin");
-        register("alice");
-
-        var validation = makeValidation("validated", 6L);
-
-        var requestAssessment = new JsonAssessmentRequest();
-        requestAssessment.assessmentDoc = makeJsonDoc(false, 6L);
-
-        var assessment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(requestAssessment)
-                .contentType(ContentType.JSON)
-                .post()
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(UserJsonAssessmentResponse.class);
-
-        var commentRequest = new CommentRequestDto();
-        commentRequest.text = "This is a test comment.";
-
-        var responseComment = given()
-                .auth()
-                .oauth2(getAccessToken("validated"))
-                .body(commentRequest)
-                .contentType(ContentType.JSON)
-                .post("/{id}/comments", assessment.id)
-                .then()
-                .assertThat()
-                .statusCode(201)
-                .extract()
-                .as(CommentResponseDto.class);
-
-        var informativeResponse = given()
-                .auth()
-                .oauth2(getAccessToken("alice"))
-                .contentType(ContentType.JSON)
-                .delete("/comments/{id}", responseComment.id)
-                .then()
-                .assertThat()
-                .statusCode(403)
-                .extract()
-                .as(InformativeResponse.class);
-
-        assertEquals("You do not have permission to access this resource.", informativeResponse.message);
-    }
-
-    private ValidationResponse makeValidation(String username, Long actorId) {
-
-        var response = makeValidationRequest(username, actorId);
-        return approveValidation(response.id);
     }
 
     private TemplateDto makeJsonDoc(boolean published, Long actor) throws IOException {
@@ -980,6 +401,218 @@ public class AssessmentsEndpointTest extends KeycloakTest {
         return objectMapper.readValue(doc, TemplateDto.class);
     }
 
+    private RegistryAssessmentDto makeRegistryJsonDoc() throws IOException {
+
+        String doc = "{\n" +
+                "  \"name\": \"\",\n" +
+                "  \"published\": false,\n" +
+                "  \"timestamp\": \"\",\n" +
+                "  \"status\": \"PRIVATE\",\n" +
+                "  \"version\": \"\",\n" +
+                "  \"actor\": {\n" +
+                "    \"id\": \"pid_graph:B5CC396B\",\n" +
+                "    \"name\": \"PID Owner (Role)\"\n" +
+                "  },\n" +
+                "  \"organisation\": {\n" +
+                "    \"id\": \"00tjv0s33\",\n" +
+                "    \"name\": \"test\"\n" +
+                "  },\n" +
+                "  \"subject\": {\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"type\": \"PID POLICY \",\n" +
+                "    \"name\": \"services pid policy\"\n" +
+                "  },\n" +
+                "  \"result\": {\n" +
+                "    \"compliance\": null,\n" +
+                "    \"ranking\": null\n" +
+                "  },\n" +
+                "  \"principles\": [\n" +
+                "    {\n" +
+                "      \"id\": \"P12\",\n" +
+                "      \"name\": \"Viable, Trusted\",\n" +
+                "      \"description\": \"The PID Policy concentrates on principles, desired results and governance which are designed to establish a viable, trusted PID infrastructure suitable for the long-term sustainability of the EOSC.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C20\",\n" +
+                "          \"name\": \"Openly Available\",\n" +
+                "          \"description\": \"Services MUST be available to all researchers in the EU.\",\n" +
+                "          \"imperative\": \"MUST\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M20\",\n" +
+                "            \"name\": \"Openly Available Services\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T20\",\n" +
+                "                \"name\": \"Services are Open\",\n" +
+                "                \"description\": \"Services (Providers) need to supply public evidence of open availability of services.\",\n" +
+                "                \"text\": \"Can you supply public evidence of open availability of your service?|Link to evidence:\",\n" +
+                "                \"type\": \"Binary-Manual-Evidence\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"evidence_url\": [" +
+                "                 {\n" +
+                "                    \"url\": \"http://google.gr\",\n" +
+                "                    \"description\": \"search engine\"\n" +
+                "                  }],\n" +
+                "                \"params\": \"openData|evidence\",\n" +
+                "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P11\",\n" +
+                "      \"name\": \"FAIR\",\n" +
+                "      \"description\": \"The PID Policy should enable an environment of research practice, and services that satisfy the FAIR principles as appropriate for the particular domains of use. Central to the realisation of FAIR are FAIR Digital Objects and PIDs are core to the idea of FAIR Digital Objects, as highlighted in the Turning FAIR Into Reality report (FAIR Expert Group, 2018).\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C4\",\n" +
+                "          \"name\": \"Maintenance\",\n" +
+                "          \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "          \"imperative\": \"SHOULD\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M4\",\n" +
+                "            \"name\": \"Owner Maintenance\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T4\",\n" +
+                "                \"name\": \"Maintenance\",\n" +
+                "                \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
+                "                \"text\": \"Do you maintain the metadata for your object as and when required?\",\n" +
+                "                \"type\": \"Binary-Manual\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"params\": \"metaMaintain\",\n" +
+                "                \"tool_tip\": \"Owners maintain and update metadata as and when required\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P1\",\n" +
+                "      \"name\": \"Unambiguous (Ownership and Identification)\",\n" +
+                "      \"description\": \"PID application depends on unambiguous ownership, proper maintenance, and unambiguous identification of the entity being referenced.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C4\",\n" +
+                "          \"name\": \"Maintenance\",\n" +
+                "          \"description\": \"The PID owner SHOULD maintain PID attributes.\",\n" +
+                "          \"imperative\": \"SHOULD\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M4\",\n" +
+                "            \"name\": \"Owner Maintenance\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T4\",\n" +
+                "                \"name\": \"Maintenance\",\n" +
+                "                \"description\": \"A test to determine if the entity (PID) attributes are being maintained.\",\n" +
+                "                \"text\": \"Do you maintain the metadata for your object as and when required?\",\n" +
+                "                \"type\": \"Binary-Manual\",\n" +
+                "                \"value\": false,\n" +
+                "                \"result\": null,\n" +
+                "                \"params\": \"metaMaintain\",\n" +
+                "                \"tool_tip\": \"Owners maintain and update metadata as and when required\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P8\",\n" +
+                "      \"name\": \"Integrated\",\n" +
+                "      \"description\": \"Services need to integrate well with European Research Infrastructures, but not at the exclusion of the broader research community.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C20\",\n" +
+                "          \"name\": \"Openly Available\",\n" +
+                "          \"description\": \"Services MUST be available to all researchers in the EU.\",\n" +
+                "          \"imperative\": \"MUST\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M20\",\n" +
+                "            \"name\": \"Openly Available Services\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T20\",\n" +
+                "                \"name\": \"Services are Open\",\n" +
+                "                \"description\": \"Services (Providers) need to supply public evidence of open availability of services.\",\n" +
+                "                \"text\": \"Can you supply public evidence of open availability of your service?|Link to evidence:\",\n" +
+                "                \"type\": \"Binary-Manual-Evidence\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"evidence_url\": [],\n" +
+                "                \"params\": \"openData|evidence\",\n" +
+                "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"P20\",\n" +
+                "      \"name\": \"Preferred Reference to Entities\",\n" +
+                "      \"description\": \"The policy should result in a future where PIDs can be used as the preferred method of referring to its assigned entity, where appropriate, alongside human-readable means e.g. the common name. Multiple PIDs may identify any given entity and users should be able to use whichever they are most comfortable with.\",\n" +
+                "      \"criteria\": [\n" +
+                "        {\n" +
+                "          \"id\": \"C20\",\n" +
+                "          \"name\": \"Openly Available\",\n" +
+                "          \"description\": \"Services MUST be available to all researchers in the EU.\",\n" +
+                "          \"imperative\": \"MUST\",\n" +
+                "          \"metric\": {\n" +
+                "            \"id\": \"M20\",\n" +
+                "            \"name\": \"Openly Available Services\",\n" +
+                "            \"type\": \"Binary-Binary\",\n" +
+                "            \"benchmark_value\": 1,\n" +
+                "            \"value\": null,\n" +
+                "            \"result\": null,\n" +
+                "            \"tests\": [\n" +
+                "              {\n" +
+                "                \"id\": \"T20\",\n" +
+                "                \"name\": \"Services are Open\",\n" +
+                "                \"description\": \"Services (Providers) need to supply public evidence of open availability of services.\",\n" +
+                "                \"text\": \"Can you supply public evidence of open availability of your service?|Link to evidence:\",\n" +
+                "                \"type\": \"Binary-Manual-Evidence\",\n" +
+                "                \"value\": null,\n" +
+                "                \"result\": null,\n" +
+                "                \"evidence_url\": [],\n" +
+                "                \"params\": \"openData|evidence\",\n" +
+                "                \"tool_tip\": \"PID kernel metadata should be openly available, except for sensitive elements|A document, web page, or publication describing the plan\"\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"assessment_type\": {\n" +
+                "    \"id\": \"pid_graph:3E109BBA\",\n" +
+                "    \"name\": \"EOSC PID Policy\"\n" +
+                "  }\n" +
+                "}\n";
+        return objectMapper.readValue(doc, RegistryAssessmentDto.class);
+    }
+
     private TemplateDto makeJsonDocUpdated() throws IOException {
         String doc = "{\n" +
                 "    \"status\": \"PRIVATE\",\n" +
@@ -1054,5 +687,100 @@ public class AssessmentsEndpointTest extends KeycloakTest {
 
         return objectMapper.readValue(doc, TemplateDto.class);
     }
-}
+    @Test
+    public void publishUnpublish() throws IOException {
 
+        //register("validated");
+        //register("admin");
+        //register("evald");
+
+        //makeValidation("validated", "pid_graph:B5CC396B");
+
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
+
+        var assessment = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments")
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+
+        var response = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .put("/{id}/publish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(200,response.code);
+        assertEquals("Assessment is published successfully", response.message);
+
+        response = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .put("/{id}/unpublish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+        assertEquals(200,response.code);
+        assertEquals("Assessment is unpublished successfully", response.message);
+
+        var error = given()
+                .auth()
+                .oauth2(adminToken)
+                .basePath("/v2/assessments")
+                .put("/{id}/publish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+
+        error = given()
+                .auth()
+                .oauth2(adminToken)
+                .basePath("/v2/assessments")
+                .put("/{id}/unpublish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(403)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals("You do not have permission to access this resource.", error.message);
+
+    }
+    @Test
+    public void getPublicAssessment() throws IOException {
+
+
+
+        var assessment = given()
+                .basePath("/v2/assessments")
+                .get("/public/{id}", publicAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+        assertEquals(assessment.id,publicAssessment.id);
+    }
+
+
+}

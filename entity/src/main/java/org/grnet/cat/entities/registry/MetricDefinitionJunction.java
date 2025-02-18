@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.grnet.cat.entities.registry.metric.Metric;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -60,20 +59,17 @@ public class MetricDefinitionJunction extends Registry{
     private String dataType;
 
 
-    public MetricDefinitionJunction(Metric metric, TypeBenchmark typeBenchmark, Motivation motivation, String valueBenchmark, String metricDefinition, String motivationX, String version, Integer lodMTBV, String lodReference2, String lodReference, LocalDate upload, String dataType) {
+    public MetricDefinitionJunction(Motivation motivation, Metric metric, TypeBenchmark typeBenchmark,  String valueBenchmark, String motivationX, Integer lodMTBV, LocalDate upload, String populatedBy, Timestamp lastTouch) {
 
         this.motivation = motivation;
         this.metric = metric;
         this.typeBenchmark = typeBenchmark;
-        this.metricDefinition = metricDefinition;
         this.valueBenchmark = valueBenchmark;
-        this.version = version;
-        this.lodReference = lodReference;
-        this.lodReference2 = lodReference2;
         this.motivationX = motivationX;
         this.upload = upload;
-        this.dataType = dataType;
         this.id = new MetricDefinitionId(metric.getId(), typeBenchmark.getId(), motivation.getId(), lodMTBV);
+        this.setPopulatedBy(populatedBy);
+        this.setLastTouch(lastTouch);
     }
 
     public MetricDefinitionJunction() {
