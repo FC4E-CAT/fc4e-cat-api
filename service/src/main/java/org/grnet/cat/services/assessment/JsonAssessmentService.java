@@ -17,9 +17,8 @@ import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
-import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
@@ -41,6 +40,7 @@ import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.SubjectService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
@@ -106,11 +106,13 @@ public class JsonAssessmentService {
         assessment.setShared(Boolean.FALSE);
         assessment.setPublished(request.assessmentDoc.published);
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
+
         motivationAssessmentRepository.persist(assessment);
         var doc = assessment.getAssessmentDoc();
         ObjectNode jsonNode = null;
         try {
             jsonNode = (ObjectNode) objectMapper.readTree(doc);
+
             jsonNode.put("id", assessment.getId());
 
             assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
@@ -331,11 +333,11 @@ public class JsonAssessmentService {
         request.assessmentDoc.id = dbAssessment.getId();
         request.assessmentDoc.version = dbAssessmentToJson.assessmentDoc.version;
         request.assessmentDoc.status = dbAssessmentToJson.assessmentDoc.status;
-      //  request.assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor; ---please remove the comment
+        //  request.assessmentDoc.actor = dbAssessmentToJson.assessmentDoc.actor; ---please remove the comment
         request.assessmentDoc.subject = dbAssessmentToJson.assessmentDoc.subject;
         request.assessmentDoc.organisation = dbAssessmentToJson.assessmentDoc.organisation;
         request.assessmentDoc.timestamp = dbAssessmentToJson.assessmentDoc.timestamp;
-       // request.assessmentDoc.published = dbAssessmentToJson.assessmentDoc.published;
+        // request.assessmentDoc.published = dbAssessmentToJson.assessmentDoc.published;
         dbAssessment.setPublished(request.assessmentDoc.published);
         dbAssessment.setUpdatedBy(utility.getUserUniqueIdentifier());
         dbAssessment.setUpdatedOn(Timestamp.from(Instant.now()));
@@ -554,7 +556,7 @@ public class JsonAssessmentService {
     @SneakyThrows
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
-    public String managePublishAssessment(String id,boolean publish) {
+    public String managePublishAssessment(String id, boolean publish) {
         var assessment = motivationAssessmentRepository.findById(id);
         var doc = assessment.getAssessmentDoc();
         ObjectNode jsonNode = null;
@@ -570,8 +572,9 @@ public class JsonAssessmentService {
         return String.format("Assessment is %s successfully", publish ? "published" : "unpublished");
 
     }
+
     @Transactional
-    public String managePublishAssessmentByAdmin(String id,boolean publish) {
+    public String managePublishAssessmentByAdmin(String id, boolean publish) {
         var assessment = motivationAssessmentRepository.findById(id);
         var doc = assessment.getAssessmentDoc();
         ObjectNode jsonNode = null;
@@ -586,4 +589,5 @@ public class JsonAssessmentService {
         return String.format("Assessment is %s successfully", publish ? "published" : "unpublished");
 
     }
+
 }

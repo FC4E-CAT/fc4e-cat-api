@@ -22,6 +22,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 ---
+### Added
+
+### Fix
+- [#456](https://github.com/FC4E-CAT/fc4e-cat-api/pull/456) CAT-825 Missing label_algorithm , label_type_metric from assessment doc
+
 
 ## 1.8.2 - 2025-02-17
 ---
