@@ -31,7 +31,6 @@ import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
-import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
