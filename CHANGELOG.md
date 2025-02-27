@@ -22,16 +22,22 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 ---
-## 1.9.2 - 2025-02-26
 
+### Added
+- [#465](https://github.com/FC4E-CAT/fc4e-cat-api/pull/465) CAT-822 Assessment type view and fill put order in criteria.
+
+
+## 1.9.2 - 2025-02-26
 ---
+
+### Fix
+- Fix POM version number
+
 ## 1.9.1 - 2025-02-25
 ---
 
-### Added
-
 ### Fix
-- [#458](https://github.com/FC4E-CAT/fc4e-cat-api/pull/458) CAT-825 Missing label_algorithm , label_type_metric from assessment doc
+- [#458](https://github.com/FC4E-CAT/fc4e-cat-api/pull/458) CAT-825 Missing label_algorithm , label_type_metric from assessment doc.
 
 
 ## 1.9.0 - 2025-02-17

@@ -23,6 +23,7 @@ import org.grnet.cat.utils.TestParamsTransformer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 
 @ApplicationScoped
@@ -112,10 +113,10 @@ public class TemplateService {
 
         var list = registryTemplateRepository.findByActorAndMotivation(actorId, motivationId);
 
-        var priMap = new HashMap<String, PriNode>();
-        var criMap = new HashMap<String, CriNode>();
-        var mtrMap = new HashMap<String, TemplateMetricNode>();
-        var testMap = new HashMap<String, TemplateTestNode>();
+        var priMap = new TreeMap<String, PriNode>();
+        var criMap = new TreeMap<String, CriNode>();
+        var mtrMap = new TreeMap<String, TemplateMetricNode>();
+        var testMap = new TreeMap<String, TemplateTestNode>();
 
         for (var row : list) {
 
