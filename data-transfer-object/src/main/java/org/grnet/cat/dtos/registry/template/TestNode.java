@@ -9,10 +9,7 @@ import lombok.Setter;
 @JsonPropertyOrder({ "id", "name", "description", "type", "text", "params", "tool_tip"})
 @Getter
 @Setter
-@AllArgsConstructor
 public class TestNode extends Node {
-
-    private String id;
 
     private String name;
 
@@ -27,4 +24,14 @@ public class TestNode extends Node {
     @JsonProperty("tool_tip")
     private String toolTip;
 
+    public TestNode(String id, String name, String description, String type, String text, String params, String toolTip) {
+
+        super(id);
+        this.name = name;
+        this.description = description;
+        this.type = type;
+        this.text = text;
+        this.params = params;
+        this.toolTip = toolTip;
+    }
 }
