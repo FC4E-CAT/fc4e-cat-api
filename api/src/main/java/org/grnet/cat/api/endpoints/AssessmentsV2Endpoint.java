@@ -6,15 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -32,6 +24,7 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
@@ -39,7 +32,13 @@ import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.services.zenodo.ZenodoService;
 import org.grnet.cat.utils.Utility;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletableFuture;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -51,6 +50,8 @@ public class AssessmentsV2Endpoint {
 
     @Inject
     JsonAssessmentService assessmentService;
+    @Inject
+    ZenodoService zenodoService;
 
     @Inject
     Utility utility;
@@ -635,5 +636,138 @@ public class AssessmentsV2Endpoint {
         response.message = message;
         response.code = 200;
         return Response.ok().entity(response).build();
+    }
+
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Zenodo publish an assessment.",
+            description = "Allows a user to publish an assessment to zenodo.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment published successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ZenodoAssessmentInfoResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/zenodo/publish/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM) // This consumes binary data
+    @Registration
+    public Response createZenodoDeposit(@Parameter(
+                                                description = "The ID of the assessment to publish to zenodo.",
+                                                required = true,
+                                                example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                                schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id,
+
+                                        byte[] pdfFile) throws IOException, InterruptedException, ExecutionException {
+
+        if (!isValidPdf(pdfFile)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid PDF file format.")
+                    .build();
+        }
+       var message= zenodoService.publishAssessment(id, pdfFile,utility.getUserUniqueIdentifier());
+        var response=new InformativeResponse();
+        response.code=202;
+        response.message=  message;
+        return Response.ok(response).build();
+    }
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get a Zenodo  assessment.",
+            description = "Allows a user to view an assessment in zenodo.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment published successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/zenodo/assessment/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON) // This consumes binary data
+    @Registration
+    public Response getZenodoAssessment(@Parameter(
+                                                description = "The ID of the assessment uploaded to zenodo.",
+                                                required = true,
+                                                example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+                                                schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String id) throws IOException, InterruptedException, ExecutionException {
+     var response=   zenodoService.getAssessment(id);
+        return Response.ok().entity(response).build();
+    }
+
+
+    private boolean isValidPdf(byte[] fileContent) {
+        // Check the magic number for PDF files: %PDF- (hex: 0x25 0x50 0x44 0x46)
+        if (fileContent.length < 4) {
+            return false;
+        }
+        return (fileContent[0] == 0x25 && fileContent[1] == 0x50 &&
+                fileContent[2] == 0x44 && fileContent[3] == 0x46);
     }
 }
