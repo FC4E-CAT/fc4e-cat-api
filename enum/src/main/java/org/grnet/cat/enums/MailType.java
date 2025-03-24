@@ -280,9 +280,35 @@ public enum MailType {
                     .data("contactMail", templateParams.get("contactMail"))
                     .render();
 
-            return new MailTemplate("[" + templateParams.get("title") + "] -  Publish Deposit to Zenodo : " + templateParams.get("depositId"), body);
+            return new MailTemplate("[" + templateParams.get("title") + "] -  Failed to Publish Deposit to Zenodo : " + templateParams.get("depositId"), body);
+        }
+    },
+    ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+
+            URL url;
+            String urlString = templateParams.get("depositUrl");
+            try {
+                url = new URL(urlString);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+
+            String body = emailTemplate.data("depositUrl", url.toString())
+                    .data("depositId", templateParams.get("depositId"))
+                    .data("image", templateParams.get("image"))
+                    .data("image1", templateParams.get("image1"))
+                    .data("image2", templateParams.get("image2"))
+                    .data("image3", templateParams.get("image3"))
+                    .data("image4", templateParams.get("image4"))
+                    .data("name",templateParams.get("name"))
+                    .data("contactMail", templateParams.get("contactMail"))
+                    .render();
+
+            return new MailTemplate("[" + templateParams.get("title") + "] -  Publish Deposit to Zenodo/Draft db state : " + templateParams.get("depositId"), body);
         }
     };
+
 
     public abstract MailTemplate execute(Template mailTemplate, HashMap<String, String> templateParams);
 
