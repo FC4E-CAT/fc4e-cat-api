@@ -134,16 +134,13 @@ public interface ZenodoAssessmentInfoMapper {
 
     default List<ZenodoFileInfoDto> mapFiles(Map<String, Object> response) {
             Object files = response.get("files");
-            System.out.println("files? "+files);
 
             if (files instanceof List<?>) {
                 return ((List<?>) files).stream()
                         .filter(Map.class::isInstance)
                         .map(obj -> {
                             Map<String, Object> fileMap = (Map<String, Object>) obj;
-                            System.out.println("file map: "+fileMap);
                             ZenodoFileInfoDto fileInfo = new ZenodoFileInfoDto();
-                            System.out.println("filename is : "+fileMap.get("filename"));
                             fileInfo.setFileName((String) fileMap.get("filename"));
                             fileInfo.setFileSize(((Number) fileMap.getOrDefault("filesize", 0L)).longValue());
                              Map<String,Object> links=(Map<String,Object>)fileMap.get("links");
