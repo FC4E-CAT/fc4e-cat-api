@@ -31,6 +31,9 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#470](https://github.com/FC4E-CAT/fc4e-cat-api/pull/470) CAT-836 Get deposit info from Zenodo 
 - [#471](https://github.com/FC4E-CAT/fc4e-cat-api/pull/471) CAT-830 Configure zenodo feature in cat
 
+### Fixed 
+- [#472](https://github.com/FC4E-CAT/fc4e-cat-api/pull/472) CAT-856 Fix keycloak CORS policy towards 127.0.0.1
+
 
 ## 1.9.2 - 2025-02-26
 ---
