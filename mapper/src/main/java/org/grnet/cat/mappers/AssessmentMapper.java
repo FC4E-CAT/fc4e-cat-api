@@ -3,6 +3,7 @@ package org.grnet.cat.mappers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.inject.spi.CDI;
+import jdk.jshell.execution.Util;
 import lombok.SneakyThrows;
 import org.grnet.cat.dtos.assessment.AssessmentDoc;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
@@ -108,9 +109,10 @@ public interface AssessmentMapper {
     default Boolean isRegistryAssessmentSharedByUser(MotivationAssessment assessment, String userId) {
 
         var utility = CDI.current().select(Utility.class).get();
-        var currentUser = utility.getUserUniqueIdentifier();
-        var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment
 
+        var currentUser = utility.getUserUniqueIdentifier();
+        System.out.println("share is current user : "+currentUser);
+        var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment
         return assessment.getShared() && sameUser; //if the assessment is shared and the user is the owner, the assessment is shared by the user
     }
 
@@ -130,9 +132,10 @@ public interface AssessmentMapper {
 
     default Boolean isSharedToUser(String userId) {
 
+        System.out.println("user is is : "+userId);
         var utility = CDI.current().select(Utility.class).get();
-
         var currentUser = utility.getUserUniqueIdentifier();
+        System.out.println("get current user is : "+currentUser);
 
         return !currentUser.equals(userId);
     }
@@ -149,5 +152,20 @@ public interface AssessmentMapper {
     @Mapping(target = "published", source = "assessment.published")
 
     UserJsonRegistryAssessmentResponse publicUserRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
+
+
+
+    @Named("mapZenodoWithRegistryExpression")
+    @Mapping(target = "assessmentDoc", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()))")
+    @Mapping(target = "validationId", expression = "java(assessment.getValidation().getId())")
+    @Mapping(target = "createdOn", expression = "java(assessment.getCreatedOn().toString())")
+    @Mapping(target = "userId", expression = "java(assessment.getValidation().getUser().getId())")
+    @Mapping(target = "updatedOn", expression = "java(assessment.getUpdatedOn() != null ? assessment.getUpdatedOn().toString() : \"\")")
+    @Mapping(target = "updatedBy", expression = "java(assessment.getUpdatedBy() != null ? assessment.getUpdatedBy() : \"\")")
+    @Mapping(target = "sharedToUser", expression = "java(!uniqueIdentifier.equals(assessment.getValidation().getUser().getId()))")
+    @Mapping(target = "sharedByUser", expression = "java(assessment.getShared() && assessment.getValidation() != null && assessment.getValidation().getUser() != null && uniqueIdentifier.equals(assessment.getValidation().getUser().getId()))")
+    @Mapping(target = "published", source = "assessment.published")
+
+    UserJsonRegistryAssessmentResponse zenodoUserRegistryAssessmentToJsonAssessment(MotivationAssessment assessment,String  uniqueIdentifier);
 
 }

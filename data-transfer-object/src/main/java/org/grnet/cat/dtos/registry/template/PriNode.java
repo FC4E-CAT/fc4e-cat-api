@@ -7,21 +7,25 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 @JsonPropertyOrder({ "id", "name", "description", "criteria" })
 @Getter
 @Setter
-@AllArgsConstructor
 public class PriNode extends Node{
 
-    private String id;
-    
     private String name;
 
     private String description;
 
+    public PriNode(String id, String name, String description) {
+        super(id);
+        this.name = name;
+        this.description = description;
+    }
+
     @JsonProperty("criteria")
-    public List<Node> getChildren() {
+    public Set<Node> getChildren() {
         return super.getChildren();
     }
 }

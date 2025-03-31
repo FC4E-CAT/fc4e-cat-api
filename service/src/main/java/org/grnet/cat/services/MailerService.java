@@ -38,6 +38,9 @@ public class MailerService {
     UserRepository userRepository;
     @ConfigProperty(name = "api.ui.url")
     String uiBaseUrl;
+    @ConfigProperty(name = "quarkus.rest-client.\"org.grnet.cat.services.zenodo.ZenodoClient\".url")
+    String zenodoUrl;
+
     @ConfigProperty(name = "api.server.url")
     String serviceUrl;
 
@@ -59,7 +62,27 @@ public class MailerService {
     @Inject
     @Location("shared_assessment_notification")
     Template userSharedAssessmentTemplate;
-    private static final Logger LOG = Logger.getLogger(MailerService.class);
+    @Inject
+    @Location("zenodo_publish_assessment_notification")
+    Template zenodoPublishAssessment;
+    @Inject
+    @Location("zenodo_completed_publish_process_notification")
+    Template zenodoCompletedPublishProcess;
+    @Inject
+    @Location("zenodo_publish_deposit_notification")
+    Template zenodoPublishDeposit;
+    @Inject
+    @Location("zenodo_failed_publish_process_notification")
+    Template zenodoFailedPublishProcess;
+    @Inject
+    @Location("zenodo_draft_deposit_notification")
+    Template zenodoDraftDeposit;
+    @Inject
+    @Location("zenodo_failed_publish_deposit_notification")
+    Template zenodoFailedPublishDeposit;
+    @Inject
+    @Location("zenodo_publish_deposit_draft_in_db_notification")
+    Template zenodoPublishDepositDraftInDB;
 
     @Inject
     KeycloakAdminRepository keycloakAdminRepository;
@@ -68,6 +91,7 @@ public class MailerService {
 
     @ConfigProperty(name = "api.name")
     String apiName;
+    private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     public List<String> retrieveAdminEmails() {
 
@@ -142,7 +166,85 @@ public class MailerService {
         }
     }
 
+    public void sendMails(MotivationAssessment assessment,String depositId, String name,MailType type, List<String> mailAddrs) {
 
+        HashMap<String, String> templateParams = new HashMap<>();
+        templateParams.put("contactMail", contactMail);
+        templateParams.put("image", serviceUrl + "/v1/images/logo.png");
+        templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
+        templateParams.put("image2", serviceUrl + "/v1/images/logo-grnet.png");
+        templateParams.put("image3", serviceUrl + "/v1/images/logo-datacite.png");
+        templateParams.put("image4", serviceUrl + "/v1/images/logo-gwdg.png");
+        templateParams.put("name", name);
+        templateParams.put("title", apiName.toUpperCase());
+
+        switch (type) {
+            case ZENODO_DRAFT_DEPOSIT:
+                templateParams.put("depositUrl", zenodoUrl + "/uploads/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
+                templateParams.put("assessmentId", assessment.getId());
+
+                LOG.info("zenodo publish assessment Template parameters: " + templateParams);
+                notifyUser(zenodoDraftDeposit, templateParams, mailAddrs, type);
+                break;
+
+            case ZENODO_COMPLETED_PUBLISH_PROCESS:
+                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
+                templateParams.put("assessmentId", assessment.getId());
+
+                LOG.info("zenodo publish assessment Template parameters: " + templateParams);
+
+                notifyUser(zenodoCompletedPublishProcess, templateParams, mailAddrs, type);
+                break;
+//
+            case ZENODO_PUBLISH_ASSESSMENT:
+                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
+                templateParams.put("assessmentId", assessment.getId());
+
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(zenodoPublishAssessment, templateParams, mailAddrs, type);
+                break;
+            case ZENODO_PUBLISH_DEPOSIT:
+                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(zenodoPublishDeposit, templateParams, mailAddrs, type);
+                break;
+            case ZENODO_FAILED_PUBLISH_PROCESS:
+                templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
+                templateParams.put("assessmentId", assessment.getId());
+
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(zenodoFailedPublishProcess, templateParams, mailAddrs, type);
+                break;
+            case ZENODO_FAILED_PUBLISH_DEPOSIT:
+                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(zenodoFailedPublishDeposit, templateParams, mailAddrs, type);
+                break;
+            case ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB:
+                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositId", depositId);
+
+                LOG.info("Template parameters: " + templateParams);
+                notifyUser(zenodoPublishDepositDraftInDB, templateParams, mailAddrs, type);
+                break;
+
+            default:
+                break;
+        }
+    }
 
     public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
 
@@ -153,7 +255,8 @@ public class MailerService {
         return mail;
     }
 
-    private void notifyUser(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs, MailType mailType) {
+    private void notifyUser(Template
+                                    emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs, MailType mailType) {
 
 
         var mail = buildEmail(emailTemplate, templateParams, mailType);
@@ -167,7 +270,8 @@ public class MailerService {
         }
     }
 
-    private void notifyAdmins(Template emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs) {
+    private void notifyAdmins(Template
+                                      emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs) {
 
         var mail = buildEmail(emailTemplate, templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION);
         mail.setBcc(mailAddrs);

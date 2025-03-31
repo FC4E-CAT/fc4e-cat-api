@@ -11,13 +11,7 @@ import org.grnet.cat.enums.UserType;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -77,13 +71,13 @@ public class UserRepository implements UserRepositoryI<User, String> {
     /**
      * Retrieves a page of users from the database.
      *
-     * @param search  Enables clients to specify a text string for searching specific fields within User entity.
-     * @param sort Specifies the field by which the results to be sorted.
-     * @param order Specifies the order in which the sorted results should be returned.
+     * @param search Enables clients to specify a text string for searching specific fields within User entity.
+     * @param sort   Specifies the field by which the results to be sorted.
+     * @param order  Specifies the order in which the sorted results should be returned.
      * @param status Indicates whether the user is active or deleted.
-     * @param type Filters the results based on the type of user.
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of users to include in a page.
+     * @param type   Filters the results based on the type of user.
+     * @param page   The index of the page to retrieve (starting from 0).
+     * @param size   The maximum number of users to include in a page.
      * @return A list of UserProfile objects representing the users in the
      * requested page.
      */
@@ -94,7 +88,7 @@ public class UserRepository implements UserRepositoryI<User, String> {
 
         var map = new HashMap<String, Object>();
 
-        if(StringUtils.isNotEmpty(status)){
+        if (StringUtils.isNotEmpty(status)) {
 
             joiner.add("where user.banned = :banned");
             map.put("banned", status.equals("active") ? Boolean.FALSE : Boolean.TRUE);
@@ -109,17 +103,18 @@ public class UserRepository implements UserRepositoryI<User, String> {
             map.put("banned", list);
         }
 
-        if(StringUtils.isNotEmpty(type)){
+        if (StringUtils.isNotEmpty(type)) {
 
             var usersForSearching = roleRepository.fetchRolesMembers(UserType.getRoleByType(UserType.valueOf(type)));
 
             var vopersonIds = usersForSearching
                     .stream()
-                    .filter(user->{
+                    .filter(user -> {
                         var roles = roleRepository.fetchUserRoles(user.getAttributes().get(attribute).get(0));
                         var userType = findUserType(roles);
 
-                        return UserType.valueOf(type).equals(userType);})
+                        return UserType.valueOf(type).equals(userType);
+                    })
                     .map(users -> users.getAttributes().get(attribute))
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList());
@@ -135,16 +130,16 @@ public class UserRepository implements UserRepositoryI<User, String> {
         }
 
         joiner.add("order by");
-        joiner.add("user."+sort);
+        joiner.add("user." + sort);
         joiner.add(order);
 
         var panache = find(joiner.toString(), map).page(page, size);
 
-        var users =  panache.list();
+        var users = panache.list();
 
         var addedRolesAndUserType = users
                 .stream()
-                .map(user->{
+                .map(user -> {
                     var roles = roleRepository.fetchUserRoles(user.getId());
                     user.setRoles(roles);
                     user.setType(findUserType(roles));
@@ -166,10 +161,10 @@ public class UserRepository implements UserRepositoryI<User, String> {
     /**
      * Updates the metadata for a user's profile.
      *
-     * @param id The ID of the user whose metadata is being updated.
-     * @param name The user's name.
+     * @param id      The ID of the user whose metadata is being updated.
+     * @param name    The user's name.
      * @param surname The user's surname.
-     * @param email The user's email address.
+     * @param email   The user's email address.
      * @param orcidId The user's orcid id.
      * @return The updated user's profile
      */
@@ -182,7 +177,7 @@ public class UserRepository implements UserRepositoryI<User, String> {
         user.setName(name);
         user.setSurname(surname);
         user.setEmail(email);
-        if(StringUtils.isNotEmpty(orcidId)){
+        if (StringUtils.isNotEmpty(orcidId)) {
             user.setOrcidId(orcidId);
         }
         user.setUpdatedOn(Timestamp.from(Instant.now()));
@@ -190,7 +185,7 @@ public class UserRepository implements UserRepositoryI<User, String> {
         return user;
     }
 
-    public UserType findUserType(List<Role> roles){
+    public UserType findUserType(List<Role> roles) {
 
         var set = roles
                 .stream()
@@ -201,7 +196,7 @@ public class UserRepository implements UserRepositoryI<User, String> {
         return UserType.mostSeverity(set);
     }
 
-    public Set<UserType> findUserTypes(List<Role> roles){
+    public Set<UserType> findUserTypes(List<Role> roles) {
 
         return roles
                 .stream()
@@ -210,21 +205,21 @@ public class UserRepository implements UserRepositoryI<User, String> {
                 .collect(Collectors.toSet());
     }
 
-    public UserType findUserTypeById(String id){
+    public UserType findUserTypeById(String id) {
 
         var roles = roleRepository.fetchUserRoles(id);
 
         return findUserType(roles);
     }
 
-    public Set<UserType> findUserTypesById(String id){
+    public Set<UserType> findUserTypesById(String id) {
 
         var roles = roleRepository.fetchUserRoles(id);
 
         return findUserTypes(roles);
     }
 
-    public List<User> fetchUsers(List<String> ids) {
+        public List<User> fetchUsers(List<String> ids) {
 
         return find("from User user where user.id in ?1", ids).list();
     }

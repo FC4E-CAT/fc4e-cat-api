@@ -35,6 +35,7 @@ import org.grnet.cat.dtos.access.PermitAccess;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
+import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
@@ -42,8 +43,10 @@ import org.grnet.cat.repositories.*;
 import org.grnet.cat.services.*;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.registry.RegistryActorService;
+import org.grnet.cat.services.zenodo.ZenodoService;
 import org.grnet.cat.utils.Utility;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -89,12 +92,19 @@ public class AdminEndpoint {
      */
     @Inject
     KeycloakAdminRoleService adminService;
+    /**
+     * Injection point for the Zenodo Service
+     */
+    @Inject
+    ZenodoService zenodoService;
 
     /**
      * Injection point for the Utility service
      */
+
     @Inject
     Utility utility;
+
 
     @Tag(name = "Admin")
     @Operation(
@@ -759,7 +769,6 @@ public class AdminEndpoint {
                                 @Context UriInfo uriInfo) {
 
         var assessments = assessmentService.getAllAssessmentsByPage(page - 1, size, search, uriInfo);
-//        assessments.getContent().stream().forEach(e-> System.out.println("is published-- ? "+e.getPublished()));
 
         return Response.ok().entity(assessments).build();
     }
@@ -948,4 +957,118 @@ public class AdminEndpoint {
         response.message=message;
         return Response.ok().entity(response).build();
     }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get a Zenodo  assessment.",
+            description = "Allows an admin to view information of an assessment in zenodo, as it is stored to CAT service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Information of zenodo assessment, in CAT service, displayed successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/zenodo/assessment/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON) // This consumes binary data
+    @Registration
+    public Response getZenodoAssessment(@Parameter(
+            description = "The ID of the assessment uploaded to zenodo.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                        @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String assessmentId) throws IOException, InterruptedException {
+
+        var response = zenodoService.getAdminAssessment(assessmentId);
+        return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Get Info about a deposit in Zenodo.",
+            description = "Allows an admin to view deposit info  existing in zenodo, as the info exist in the CAT service.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Zenodo deposit information displayed successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = ZenodoDepositResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Assessment not found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/zenodo/deposit/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+     @Registration
+    public Response getZenodoDeposit(@Parameter(
+            description = "The ID of the deposit existing in zenodo.",
+            required = true,
+            example = "13467",
+            schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
+                                     String depositId) {
+        var response = zenodoService.getAdminDeposit(depositId);
+        return Response.ok().entity(response).build();
+    }
+
 }

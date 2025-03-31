@@ -22,16 +22,34 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 ---
-## 1.9.2 - 2025-02-26
 
----
-## 1.9.1 - 2025-02-25
+## 2.0.0 - 2025-03-31
 ---
 
 ### Added
+- [#465](https://github.com/FC4E-CAT/fc4e-cat-api/pull/465) CAT-822 Assessment type view and fill put order in criteria.
+- [#467](https://github.com/FC4E-CAT/fc4e-cat-api/pull/467) CAT-832 Add 127.0.0.1 to Keycloak Public Client to Accept Requests.
+- [#468](https://github.com/FC4E-CAT/fc4e-cat-api/pull/468) CAT-827 CAT-829 CAT-828 Publish Assessment in Zenodo / Store zenodo info in database/ Notifications to creator.
+- [#469](https://github.com/FC4E-CAT/fc4e-cat-api/pull/469) CAT-834 Publish deposit to Zenodo
+- [#470](https://github.com/FC4E-CAT/fc4e-cat-api/pull/470) CAT-836 Get deposit info from Zenodo 
+- [#471](https://github.com/FC4E-CAT/fc4e-cat-api/pull/471) CAT-830 Configure zenodo feature in cat
+
+### Fixed 
+- [#472](https://github.com/FC4E-CAT/fc4e-cat-api/pull/472) CAT-856 Fix keycloak CORS policy towards 127.0.0.1
+
+
+## 1.9.2 - 2025-02-26
+---
 
 ### Fix
-- [#458](https://github.com/FC4E-CAT/fc4e-cat-api/pull/458) CAT-825 Missing label_algorithm , label_type_metric from assessment doc
+- Fix POM version number
+
+## 1.9.1 - 2025-02-25
+---
+#### Added
+
+### Fix
+- [#458](https://github.com/FC4E-CAT/fc4e-cat-api/pull/458) CAT-825 Missing label_algorithm , label_type_metric from assessment doc.
 
 
 ## 1.9.0 - 2025-02-17

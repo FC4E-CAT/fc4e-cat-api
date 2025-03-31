@@ -2,19 +2,15 @@ package org.grnet.cat.dtos.registry.template;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @JsonPropertyOrder({ "id", "name", "type", "benchmark_value", "label_algorithm_type", "label_type_metric", "tests" })
 @Getter
 @Setter
-@AllArgsConstructor
 public class MetricNode extends Node {
-
-    private String id;
 
     private String name;
 
@@ -29,8 +25,17 @@ public class MetricNode extends Node {
     @JsonProperty("label_type_metric")
     private String labelTypeMetric;
 
+    public MetricNode(String id, String name, String type, Number benchmarkValue, String labelAlgorithmType, String labelTypeMetric) {
+        super(id);
+        this.name = name;
+        this.type = type;
+        this.benchmarkValue = benchmarkValue;
+        this.labelAlgorithmType = labelAlgorithmType;
+        this.labelTypeMetric = labelTypeMetric;
+    }
+
     @JsonProperty("tests")
-    public List<Node> getChildren() {
+    public Set<Node> getChildren() {
         return super.getChildren();
     }
 }
