@@ -45,4 +45,5 @@ public class TestNodeDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private TestExtraInfoNodeDto lastRun;
 
+    private Boolean changed = Boolean.FALSE;
 }

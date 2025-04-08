@@ -98,7 +98,6 @@ public class TestEndpointTest extends KeycloakTest {
         var testUpdate = new TestUpdateDto();
         var testDefUpdate = new TestDefinitionUpdateDto();
 
-        testUpdate.TES = createdTest.testResponse.TES + "-UPDATED";
         testUpdate.labelTest = "Updated Performance Test";
         testUpdate.descTest = "Updated description for performance test.";
 

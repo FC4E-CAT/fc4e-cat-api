@@ -99,7 +99,6 @@ public class TestDefinitionEndpointTest extends KeycloakTest {
 
     private TestDefinitionUpdateDto createTestDefinitionUpdateRequest(TestDefinitionRequestDto originalRequest) {
         var updateRequest = new TestDefinitionUpdateDto();
-        updateRequest.testMethodId = originalRequest.testMethodId;
         updateRequest.labelTestDefinition = "Updated confirmation of user authentication";
         updateRequest.paramType = "onscreen";
         updateRequest.testParams = "userAuth|updated_evidence";
