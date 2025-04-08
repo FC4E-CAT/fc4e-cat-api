@@ -1,6 +1,5 @@
 package org.grnet.cat.dtos.assessment.registry;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -9,7 +8,6 @@ import org.grnet.cat.dtos.registry.template.RegistryTemplateMotivationDto;
 import org.grnet.cat.dtos.template.TemplateOrganisationDto;
 import org.grnet.cat.dtos.template.TemplateResultDto;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
-import org.junit.Ignore;
 
 import java.util.List;
 
@@ -40,7 +38,6 @@ public class RegistryAssessmentDto {
     @JsonProperty(value = "assessment_type")
     public RegistryTemplateMotivationDto motivation;
 
-//    @JsonIgnore
     public boolean published;
 
     public String timestamp = "";

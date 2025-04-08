@@ -69,6 +69,4 @@ public class TestDefinition {
 
     @Column(name = "dataType")
     private String dataType;
-
-
 }

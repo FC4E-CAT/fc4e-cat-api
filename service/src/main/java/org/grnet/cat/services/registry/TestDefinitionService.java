@@ -99,20 +99,15 @@ public class TestDefinitionService {
     @Transactional
     public TestDefinitionResponseDto updateTestDefinition(String id, String userId, TestDefinitionUpdateDto request) {
 
-        if (metricTestRepository.existTestDefinitionInStatus(id, Boolean.TRUE)) {
-            throw new ForbiddenException("No action permitted, test definition exists in a published motivation");
-        }
+//        if (metricTestRepository.existTestDefinitionInStatus(id, Boolean.TRUE)) {
+//            throw new ForbiddenException("No action permitted, test definition exists in a published motivation");
+//        }
 
         var testDefinition = testDefinitionRepository.findById(id);
 
         TestDefinitionMapper.INSTANCE.updateTestDefinitionFromDto(request, testDefinition);
         testDefinition.setPopulatedBy(userId);
 
-        if(!Objects.isNull(request.testMethodId)){
-
-            testMethodRepository.findByIdOptional(request.testMethodId).orElseThrow(()-> new NotFoundException("There is no Algorithm Type with the following id: "+request.testMethodId));
-            testDefinition.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
-        }
         return TestDefinitionMapper.INSTANCE.testDefinitionToDto(testDefinition);
     }
 

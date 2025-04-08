@@ -25,10 +25,10 @@ public interface TestMapper {
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
     Test testToEntity(TestRequestDto request);
 
-    @Mapping(target = "TES", expression = "java(StringUtils.isNotEmpty(request.TES) ? request.TES : test.getTES())")
+    @Mapping(target = "TES", ignore = true)
     @Mapping(target = "labelTest", expression = "java(StringUtils.isNotEmpty(request.labelTest) ? request.labelTest : test.getLabelTest())")
     @Mapping(target = "descTest", expression = "java(StringUtils.isNotEmpty(request.descTest) ? request.descTest : test.getDescTest())")
-    @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+    @Mapping(target = "lastTouch", ignore = true)
     @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "lodMTV", ignore = true)

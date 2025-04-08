@@ -18,7 +18,9 @@ import lombok.SneakyThrows;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.CriNodeDto;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
+import org.grnet.cat.dtos.assessment.registry.TestNodeDto;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
@@ -285,7 +287,7 @@ public class JsonAssessmentService {
 
         var assessment = motivationAssessmentRepository.findById(assessmentId);
 
-        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonUpdatedWithLatestChangesAssessment(assessment);
     }
 
     /**
@@ -327,6 +329,29 @@ public class JsonAssessmentService {
     public UserJsonRegistryAssessmentResponse update(String id, JsonRegistryAssessmentRequest request) {
 
         var dbAssessment = motivationAssessmentRepository.findById(id);
+
+        var hasUpdates = request
+                .assessmentDoc
+                .principles
+                .stream()
+                .flatMap(pri->pri.criteria.stream())
+                .map(CriNodeDto::getMetric)
+                .flatMap(metric->metric.getTests().stream())
+                .anyMatch(TestNodeDto::getChanged);
+
+        if(hasUpdates){
+
+            request
+                    .assessmentDoc
+                    .principles
+                    .stream()
+                    .flatMap(pri->pri.criteria.stream())
+                    .map(CriNodeDto::getMetric)
+                    .flatMap(metric->metric.getTests().stream())
+                    .forEach(test->test.setChanged(false));
+
+            dbAssessment.setCreatedOn(Timestamp.from(Instant.now()));
+        }
 
         var dbAssessmentToJson = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);
 

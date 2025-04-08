@@ -3,20 +3,8 @@ package org.grnet.cat.dtos.registry.test;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.repositories.registry.TestMethodRepository;
 
 public class TestDefinitionUpdateDto {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The unique identifier of the test method",
-            example = "pid_graph:B733A7D5"
-    )
-    @JsonProperty("test_method_id")
-    @NotFoundEntity(repository = TestMethodRepository.class, message = "There is no Test Method with the following id:")
-    public String testMethodId;
 
     @Schema(
             type = SchemaType.STRING,

@@ -11,6 +11,7 @@ import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.repositories.Repository;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
@@ -76,5 +77,9 @@ public class TestRepository implements Repository<Test, String> {
                 .setParameter(1, value)
                 .getSingleResult();
         return count > 0;
+    }
+
+    public List<Test> getUpdatedTests(Timestamp assessmentCreatedTime) {
+        return find("lastTouch > ?1", assessmentCreatedTime).list();
     }
 }

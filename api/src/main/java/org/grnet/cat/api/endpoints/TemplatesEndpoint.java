@@ -91,7 +91,7 @@ public class TemplatesEndpoint {
                                         @Parameter(
                                                 description = "The Actor to retrieve template.",
                                                 required = true,
-                                                example = "pid_graph:E92B9B49",
+                                                example = "pid_graph:D42428D7",
                                                 schema = @Schema(type = SchemaType.STRING))
                                         @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
 

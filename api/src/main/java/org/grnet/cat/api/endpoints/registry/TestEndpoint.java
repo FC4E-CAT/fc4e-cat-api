@@ -203,7 +203,7 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestAndTestDefinitionUpdateRequest testUpdateDto) {
+            @Valid @NotNull(message = "The request body is empty.") TestAndTestDefinitionUpdateRequest testUpdateDto) {
 
         testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
 
