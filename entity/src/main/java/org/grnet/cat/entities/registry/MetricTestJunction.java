@@ -6,9 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.metric.Metric;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.sql.Array;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
 @Entity(name = "MetricTestJunction")
@@ -45,6 +49,9 @@ public class MetricTestJunction extends Registry{
     @JoinColumn(name = "lodREL")
     @NotNull
     private Relation relation;
+
+    @Column(name = "version_info")
+    private String[] versionInfo;
 
     public MetricTestJunction(Motivation motivation, Metric metric, Test test, TestDefinition testDefinition, Relation relation, String motivationX, Integer lodMTTDV) {
 

@@ -21,25 +21,11 @@ public interface TestDefinitionMapper {
 
     @Named("mapTestDefinition")
     @Mapping(target = "testMethodId", expression = "java(testDefinition.getTestMethod().getId())")
-    @Mapping(target = "lodTESV", ignore = true)
     @Mapping(target = "testParams", expression = "java(testDefinition.getTestParams())")
     TestDefinitionResponseDto testDefinitionToDto(TestDefinition testDefinition);
 
     @Named("mapWithExpression")
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "labelTestDefinition", ignore = true)
-//    @Mapping(target = "populatedBy", ignore = true)
     @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
-//    @Mapping(target = "testMethod", ignore = true)
-//    @Mapping(target = "lodMTV", ignore = true)
-//    @Mapping(target = "lodTES", ignore = true)
-//    @Mapping(target = "lodDFV", ignore = true)
-//    @Mapping(target = "upload", ignore = true)
-//    @Mapping(target = "dataType", ignore = true)
-//    @Mapping(target = "toolTip", ignore = true)
-//    @Mapping(target = "testQuestion", ignore = true)
-//    @Mapping(target = "testParams", ignore = true)
-//    @Mapping(target = "paramType", ignore = true)
     TestDefinition testDefinitionToEntity(TestDefinitionRequestDto request);
 
     @Mapping(target = "labelTestDefinition", expression = "java(StringUtils.isNotEmpty(request.labelTestDefinition) ? request.labelTestDefinition : testDefinition.getLabelTestDefinition())")
@@ -56,5 +42,10 @@ public interface TestDefinitionMapper {
     @Mapping(target = "lodDFV", ignore = true)
     @Mapping(target = "upload", ignore = true)
     @Mapping(target = "dataType", ignore = true)
+    @Mapping(target = "version",ignore = true)
     void updateTestDefinitionFromDto(TestDefinitionUpdateDto request, @MappingTarget TestDefinition testDefinition);
+
+
+    @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+    TestDefinition versionTestDefinitionToEntity(TestDefinitionVersionDto request);
 }

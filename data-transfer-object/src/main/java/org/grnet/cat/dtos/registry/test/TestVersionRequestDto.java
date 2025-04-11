@@ -1,0 +1,39 @@
+package org.grnet.cat.dtos.registry.test;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotEmpty;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+public class TestVersionRequestDto {
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Test Name",
+            example = "T12"
+    )
+    @JsonProperty("tes")
+    @NotEmpty(message = "tes may not be empty.")
+    public String TES;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Label for the test",
+            example = "PID Persistence - Service - Evidence"
+    )
+    @JsonProperty("label")
+    @NotEmpty(message = "labelTest may not be empty.")
+    public String labelTest;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Description of the test",
+            example = "Evidence is provided by the service that PIDs cannot be deleted."
+    )
+    @JsonProperty("description")
+    @NotEmpty(message = "descTest may not be empty.")
+    public String descTest;
+}

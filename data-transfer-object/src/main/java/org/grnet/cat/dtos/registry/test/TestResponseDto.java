@@ -70,7 +70,13 @@ public class TestResponseDto {
 
     @Schema(
             type = SchemaType.STRING,
+            description = "Test parent")
+    @JsonProperty("lodTES_V")
+    public String lodTES_V;
+
+    @Schema(
+            type = SchemaType.STRING,
             description = "Test version")
     @JsonProperty("version")
-    public String lodTES_V;
+    public String version;
 }

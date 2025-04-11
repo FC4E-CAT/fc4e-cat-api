@@ -88,6 +88,9 @@ public class MotivationService {
     MetricTestRepository metricTestRepository;
 
     @Inject
+    TestRepository testRepository;
+
+    @Inject
     TestDefinitionRepository testDefinitionRepository;
 
     @Inject
@@ -540,7 +543,10 @@ public class MotivationService {
             metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
             metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
             metric.setPopulatedBy(userId);
+            metric.setVersion(1);
             metricRepository.persist(metric);
+
+            metric.setLodMTRV(metric.getId());
 
             var metricDefinitionJunction = new MetricDefinitionJunction(
                     Panache.getEntityManager().getReference(Motivation.class, id),
@@ -698,9 +704,17 @@ public class MotivationService {
 
         var resultMessages = new ArrayList<String>();
         request.stream().iterator().forEachRemaining(req -> {
+
             var testDefinitionOpt = testDefinitionRepository.fetchTestDefinitionByTest(req.testId);
          if(!testDefinitionOpt.isEmpty()){
                 var testDefintion = testDefinitionOpt.get();
+
+             var versionInfoArray = new String[]{
+                     metricRepository.findById(metricId).getLodMTRV(),
+                     testRepository.findById(req.testId).getLodTES_V(),
+                     testDefintion.getLodDFV(),
+                     motivationId
+             };
 
                 if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionOpt.get().getId(), 1)) {
 
@@ -712,6 +726,7 @@ public class MotivationService {
                             motivationId,
                             1);
 
+                    metricTest.setVersionInfo(versionInfoArray);
                     metricTest.setPopulatedBy(userId);
                     metricTest.setLastTouch(Timestamp.from(Instant.now()));
 
@@ -773,19 +788,71 @@ public class MotivationService {
     @Transactional
     public void updateTestMetricRelation(String motivationId, String metricId, MetricTestRequest req, String testDefinitionId, String userId) {
 
+        //-------------------------------------------------------------------------------------------------------
+        // APPROACH WITH CHILDREN
+        //-------------------------------------------------------------------------------------------------------
+        var versionArray = new String[]{
+                metricRepository.findById(metricId).getLodMTRV(),
+                testRepository.findById(req.testId).getLodTES_V(),
+                testDefinitionRepository.findById(testDefinitionId).getLodDFV(),
+                motivationId
+        };
+
+        var version = (int) metricTestRepository.countMatchingVersionInfo(versionArray);
+
         var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
                 Panache.getEntityManager().getReference(Metric.class, metricId),
                 Panache.getEntityManager().getReference(Test.class, req.testId),
                 Panache.getEntityManager().getReference(TestDefinition.class, testDefinitionId),
                 Panache.getEntityManager().getReference(Relation.class, req.relation),
                 motivationId,
-                1);
+                version + 1);
+
+        var versionInfoArray = new String[]{
+                metricRepository.findById(metricId).getLodMTRV(),
+                testRepository.findById(req.testId).getLodTES_V(),
+                testDefinitionRepository.findById(testDefinitionId).getLodDFV(),
+                motivationId
+        };
+
+        metricTest.setVersionInfo(versionInfoArray);
+        metricTest.setPopulatedBy(userId);
+        metricTest.setLastTouch(Timestamp.from(Instant.now()));
 
         metricTest.setPopulatedBy(userId);
         metricTest.setLastTouch(Timestamp.from(Instant.now()));
 
         metricTestRepository.persist(metricTest);
 
+
+        //-------------------------------------------------------------------------------------------------------
+        // APPROACH WITH PARENTS
+        //-------------------------------------------------------------------------------------------------------
+        var versionParents = new String[]{
+                String.valueOf(metricRepository.findById(metricId).getVersion()),
+                String.valueOf(testRepository.findById(req.testId).getVersion()),
+                String.valueOf(testDefinitionRepository.findById(testDefinitionId).getVersion()),
+                "1"
+        };
+
+        var versionParent = (int) metricTestRepository.countParents(motivationId, metricRepository.findById(metricId).getLodMTRV(), testRepository.findById(req.testId).getLodTES_V(), testDefinitionRepository.findById(testDefinitionId).getLodDFV());
+
+        var metricTestParents = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                Panache.getEntityManager().getReference(Metric.class, metricRepository.findById(metricId).getLodMTRV()),
+                Panache.getEntityManager().getReference(Test.class, testRepository.findById(req.testId).getLodTES_V()),
+                Panache.getEntityManager().getReference(TestDefinition.class, testDefinitionRepository.findById(testDefinitionId).getLodDFV()),
+                Panache.getEntityManager().getReference(Relation.class, req.relation),
+                motivationId,
+                versionParent + 1);
+
+        metricTestParents.setVersionInfo(versionParents);
+        metricTestParents.setPopulatedBy(userId);
+        metricTestParents.setLastTouch(Timestamp.from(Instant.now()));
+
+        metricTestParents.setPopulatedBy(userId);
+        metricTestParents.setLastTouch(Timestamp.from(Instant.now()));
+
+        metricTestRepository.persist(metricTestParents);
     }
 
     /**
@@ -812,11 +879,38 @@ public class MotivationService {
                 var junction = metricTestRepository.findByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionId, 1);
 
                 if (junction.isPresent()) {
+                    //-------------------------------------------------------------------------------------------------------
+                    // APPROACH WITH CHILDREN
+                    //-------------------------------------------------------------------------------------------------------
+                    var versionInfoArray = new String[]{
+                            metricRepository.findById(metricId).getLodMTRV(),
+                            testRepository.findById(req.testId).getLodTES_V(),
+                            testDefinitionRepository.findById(testDefinitionId).getLodDFV(),
+                            motivationId
+                    };
 
                     var existingJunction = junction.get();
+                    existingJunction.setVersionInfo(versionInfoArray);
                     existingJunction.setLastTouch(Timestamp.from(Instant.now()));
                     existingJunction.setPopulatedBy(userId);
                     existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
+
+                    //-------------------------------------------------------------------------------------------------------
+                    // APPROACH WITH PARENTS
+                    //-------------------------------------------------------------------------------------------------------
+                    var versionParents = new String[]{
+                            String.valueOf(metricRepository.findById(metricId).getVersion()),
+                            String.valueOf(testRepository.findById(req.testId).getVersion()),
+                            String.valueOf(testDefinitionRepository.findById(testDefinitionId).getVersion()),
+                            "1"
+                    };
+
+                    var existingJunctionParent = junction.get();
+                    existingJunctionParent.setVersionInfo(versionParents);
+                    existingJunctionParent.setLastTouch(Timestamp.from(Instant.now()));
+                    existingJunctionParent.setPopulatedBy(userId);
+                    existingJunctionParent.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
+
 
                     resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully updated.");
                 } else {
@@ -830,21 +924,18 @@ public class MotivationService {
         return resultMessages;
     }
 
-    private void removeMetricDefinitionRelationship(String
-                                                            motivationId, Set<MetricDefinitionRequest> request, List<String> resultMessages) {
+    private void removeMetricDefinitionRelationship(String motivationId, Set<MetricDefinitionRequest> request, List<String> resultMessages) {
 
         var mdList = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId);
 
         mdList
                 .iterator()
                 .forEachRemaining(md -> {
-
                     var temp = new MetricDefinitionRequest();
                     temp.metricId = md.getId().getMetricId();
                     temp.typeBenchmarkId = md.getId().getTypeBenchmarkId();
 
                     if (!request.contains(temp)) {
-
                         metricDefinitionRepository.delete(md);
                         resultMessages.add("principle-criterion with ids :: " + temp.metricId + " - " + temp.typeBenchmarkId + " removed from Motivation.");
                     }

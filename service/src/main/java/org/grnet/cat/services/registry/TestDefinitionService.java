@@ -84,6 +84,8 @@ public class TestDefinitionService {
         testDefinition.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
 
         testDefinitionRepository.persist(testDefinition);
+        testDefinition.setLodDFV(testDefinition.getId());
+        testDefinition.setVersion(1);
 
         return testDefinition;
     }
@@ -129,6 +131,14 @@ public class TestDefinitionService {
         return testDefinitionRepository.deleteById(id);
     }
 
+    @Transactional
+    public void deleteTestDefinitionAllVersions(String id) {
+
+        var testDefinition = testDefinitionRepository.fetchTestDefinitionByTestId(id).getLodDFV();
+
+        testDefinitionRepository.deleteAllVersions(testDefinition);
+    }
+
     /**
      * Retrieves a page of TestDefinition items.
      *
@@ -144,4 +154,22 @@ public class TestDefinitionService {
 
         return new PageResource<>(testDefinitionPage, testDefinitionDtos, uriInfo);
     }
+
+
+    @Transactional
+    public TestDefinition versionTestDefinition(String parentVersion, String userId, TestDefinitionVersionDto request, String lodTES, Integer newVersion) {
+
+        var testDefinition = TestDefinitionMapper.INSTANCE.versionTestDefinitionToEntity(request);
+
+        testDefinition.setPopulatedBy(userId);
+        testDefinition.setLodTES(lodTES);
+        testDefinition.setLodDFV(parentVersion);
+        testDefinition.setVersion(newVersion);
+        testDefinition.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
+
+        testDefinitionRepository.persist(testDefinition);
+
+        return testDefinition;
+    }
 }
+
