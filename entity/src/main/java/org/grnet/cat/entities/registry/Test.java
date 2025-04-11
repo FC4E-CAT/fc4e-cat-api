@@ -47,6 +47,9 @@ public class Test {
     @Column(name = "lodTES_V")
     private String lodTES_V;
 
+    @Column(name = "version")
+    private Integer version;
+
     @Column(name = "upload")
     private LocalDate upload;
 

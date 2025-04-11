@@ -64,6 +64,9 @@ public class TestDefinition {
     @Column(name = "lodTDF_V")
     private String lodDFV;
 
+    @Column(name = "version")
+    private Integer version;
+
     @Column(name = "upload")
     private LocalDate upload;
 

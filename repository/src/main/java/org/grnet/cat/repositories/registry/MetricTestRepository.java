@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories.registry;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -130,6 +131,24 @@ public class MetricTestRepository implements Repository<MetricTestJunction, Stri
                 .isPresent();
 
     }
+
+    public long countMatchingVersionInfo(String[] versionInfo) {
+        String query = "SELECT COUNT(*) FROM p_Metric_Test mt WHERE mt.version_info @> CAST(:versionInfo AS text[])";
+
+        // Execute the query with the array parameter
+        return (long) getEntityManager()
+                .createNativeQuery(query)
+                .setParameter("versionInfo", versionInfo)  // Pass the version info array
+                .getSingleResult();
+    }
+
+
+    public long countParents(String motivationId, String metricId, String testId, String testDefinitionId) {
+
+        return count("FROM MetricTestJunction mt WHERE mt.id.motivationId = ?1 AND mt.id.metricId = ?2 AND mt.id.testId = ?3 AND mt.id.testDefinitionId = ?4", motivationId, metricId, testId, testDefinitionId);
+    }
+
+
 
     @SuppressWarnings("unchecked")
     public List<MetricTestProjection> fetchMotivationMetricTests(String motivationId, String metricId) {

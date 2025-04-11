@@ -106,7 +106,13 @@ public class TestDefinitionResponseDto {
 
     @Schema(
             type = SchemaType.STRING,
+            description = "Test Definition parent")
+    @JsonProperty("lodDFV")
+    public String lodDFV;
+
+    @Schema(
+            type = SchemaType.STRING,
             description = "Test version")
     @JsonProperty("version")
-    public String lodTESV;
+    public String version;
 }

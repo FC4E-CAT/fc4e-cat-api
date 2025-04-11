@@ -35,6 +35,7 @@ public interface TestMapper {
     @Mapping(target = "lodTES_V", ignore = true)
     @Mapping(target = "upload", ignore = true)
     @Mapping(target = "dataType", ignore = true)
+    @Mapping(target = "version",ignore = true)
     void updateTestFromDto(TestUpdateDto request, @MappingTarget Test test);
 
     @Named("mapTestAndTestDefinition")
@@ -42,6 +43,9 @@ public interface TestMapper {
     @Mapping(source = "testDefinition", target = "testDefinitionResponse", qualifiedByName = "mapTestDefinition")
     @Mapping(target = "motivations", ignore = true)
     TestAndTestDefinitionResponse testAndTestDefinitionToDto(Test test, TestDefinition testDefinition);
+
+    @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+    Test versionTestToEntity(TestVersionRequestDto request);
 
 
 }
