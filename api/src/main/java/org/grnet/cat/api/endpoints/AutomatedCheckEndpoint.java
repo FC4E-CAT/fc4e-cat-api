@@ -16,16 +16,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
-import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.enums.ArccTestType;
-import org.grnet.cat.enums.ValidationStatus;
-import org.grnet.cat.repositories.MotivationAssessmentRepository;
-import org.grnet.cat.services.ArccValidationService;
+import org.grnet.cat.services.arcc.ArccValidationService;
 import org.grnet.cat.services.AutomatedCheckService;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Authenticated
 @Path("/v1/automated")
