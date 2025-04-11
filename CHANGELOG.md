@@ -23,6 +23,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ## Unreleased
 ---
 
+### Added
+- [#477](https://github.com/FC4E-CAT/fc4e-cat-api/pull/477) CAT-861 Implement Automated Test AARC-G069 to Validate NACO Entitlements Claim.
+
+
 ## 2.0.0 - 2025-03-31
 ---
 

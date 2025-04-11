@@ -932,6 +932,22 @@
             "icon_uri": ""
           },
           {
+            "name": "AARC-G069 Resource",
+            "ownerManagedAccess": false,
+            "displayName": "AARC-G069 Resource",
+            "attributes": {},
+            "_id": "752d14f4-4460-407c-340f-e1c7056449e9",
+            "uris": [
+              "/v1/aarc-g069/*"
+            ],
+            "scopes": [
+              {
+                "name": "cat.read"
+              }
+            ],
+            "icon_uri": ""
+          },
+          {
             "name": "Assessment Resource",
             "ownerManagedAccess": false,
             "displayName": "Assessment Resource",
@@ -1310,7 +1326,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\",\"AARC-G069 Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
             }
           },
@@ -1334,7 +1350,7 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\"]",
+              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Subject Resource\",\"AARC-G069 Resource\"]",
               "applyPolicies": "[\"Any Validated Policy\"]"
             }
           },
