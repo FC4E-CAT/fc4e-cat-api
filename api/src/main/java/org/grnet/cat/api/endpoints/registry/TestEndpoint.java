@@ -367,6 +367,131 @@ public class TestEndpoint {
         return Response.ok().entity(tests).build();
     }
 
+
+    @Tag(name = "Test")
+    @Operation(
+            summary = "Create version Test",
+            description = "Creates a new version of Test item."
+    )
+    @APIResponse(
+            responseCode = "201",
+            description = "Test item versioned.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = TestResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("{id}/version")
+    public Response versionTest(
+            @Parameter(
+                    description = "The ID of the Test to version.",
+                    required = true,
+                    example = "pid_graph:9F1A6267",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
+            @Valid TestAndTestDefinitionVersionRequest request, @Context UriInfo uriInfo ) {
+
+        var versionTest = testService.versionTest(id, utility.getUserUniqueIdentifier(), request);
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(versionTest.testResponse.id)).build()).entity(versionTest).build();
+    }
+
+
+    @Tag(name = "Test")
+    @Operation(
+            summary = "Delete Test",
+            description = "Deletes a specific Test item by ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Test item deleted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("{id}/version")
+    public Response deleteTestAllVersions(
+            @Parameter(
+                    description = "The ID of the Test to be deleted.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
+
+        var deleted = testService.deleteTestAllVersions(id);
+
+        InformativeResponse informativeResponse = new InformativeResponse();
+
+        if (!deleted) {
+
+            informativeResponse.code = 500;
+            informativeResponse.message = "Test hasn't been deleted. An error occurred.";
+        } else {
+
+            informativeResponse.code = 200;
+            informativeResponse.message = "All versions of Test has been successfully deleted.";
+        }
+
+        return Response.ok().entity(informativeResponse).build();
+
+    }
+
     public static class PageableTestResponse extends PageResource<TestAndTestDefinitionResponse> {
 
         private List<TestAndTestDefinitionResponse> content;

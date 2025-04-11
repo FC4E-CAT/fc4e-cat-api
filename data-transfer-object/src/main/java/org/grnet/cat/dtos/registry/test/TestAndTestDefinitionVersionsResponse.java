@@ -9,7 +9,7 @@ import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
 
 import java.util.List;
 
-public class TestAndTestDefinitionResponse {
+public class TestAndTestDefinitionVersionsResponse {
     @Schema(
             type = SchemaType.OBJECT,
             implementation = Object.class,
@@ -35,14 +35,4 @@ public class TestAndTestDefinitionResponse {
     @JsonProperty("used_by_motivations")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<PartialMotivationResponse> motivations;
-
-    @Setter
-    @Schema(
-            type = SchemaType.ARRAY,
-            implementation = TestAndTestDefinitionResponse.class,
-            description = "List of versions of this test."
-    )
-    @JsonProperty("test_versions")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<TestAndTestDefinitionResponse> versions;
 }

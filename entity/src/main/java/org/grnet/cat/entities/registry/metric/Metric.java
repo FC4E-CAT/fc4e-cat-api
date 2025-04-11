@@ -89,6 +89,9 @@ public class Metric {
     @Column(name = "dataType")
     private String dataType;
 
+    @Column(name = "lodMTR_V")
+    private String lodMTRV;
+
     @OneToMany(
             mappedBy = "metric",
             cascade = CascadeType.ALL,
