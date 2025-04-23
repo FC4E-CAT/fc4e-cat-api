@@ -12,7 +12,7 @@ public class ArccValidationResult {
             type = SchemaType.BOOLEAN,
             implementation = Boolean.class,
             description = "A boolean flag showing whether the validation passed.",
-            example = "true"
+            example = "false"
     )
     @JsonProperty("is_valid")
     public boolean isValid;
@@ -21,7 +21,7 @@ public class ArccValidationResult {
             type = SchemaType.STRING,
             implementation = String.class,
             description = "The reason of the failed check.",
-            example = " The test is failed."
+            example = "entitlements claim is missing."
     )
     @JsonProperty("message")
     @NotNull
