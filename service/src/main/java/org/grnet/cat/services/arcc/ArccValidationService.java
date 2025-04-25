@@ -2,23 +2,20 @@ package org.grnet.cat.services.arcc;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.ServerErrorException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.dtos.AarcG069ValidationResult;
 import org.grnet.cat.dtos.ArccValidationRequest;
 import org.grnet.cat.dtos.ArccValidationResponse;
 import org.grnet.cat.dtos.ArccValidationResult;
-import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.services.arcc.g069.NacoClient;
-import org.grnet.cat.services.arcc.g069.NacoEntryResponse;
 import org.grnet.cat.validators.XmlMetadataValidator.GeneralMetadataValidator;
 import org.grnet.cat.validators.XmlMetadataValidator.XmlSchemaValidator;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
@@ -33,8 +30,8 @@ public class ArccValidationService {
     @RestClient
     NacoClient nacoClient;
 
-    @ConfigProperty(name = "naco.service.api.key")
-    String API_KEY;
+    @ConfigProperty(name = "naco.service.key")
+    String SERVICE_KEY;
 
     // Define the regex pattern for AARC-G069 entitlements
     private static final String AARC_G069_REGEX = "^([a-zA-Z0-9][a-zA-Z0-9:._-]*):group:([a-zA-Z0-9._-]+(?:[:][a-zA-Z0-9._-]+)*)(:role=[a-zA-Z0-9._-]+)?(#.+)?$";
@@ -87,6 +84,14 @@ public class ArccValidationService {
         return response;
     }
 
+    public Set<String> getAarcG069Entries(){
+
+        var entries = nacoClient.getEntries(SERVICE_KEY);
+
+        return entries.keySet();
+
+    }
+
     public AarcG069ValidationResult validateAarcG069(String aaiProviderId){
 
         var result = new AarcG069ValidationResult();
@@ -95,7 +100,7 @@ public class ArccValidationService {
 
         var entitlementsInIntrospection = new ArccValidationResult();
 
-        var response = nacoClient.getEntry(aaiProviderId, API_KEY);
+        var response = nacoClient.getEntry(aaiProviderId, SERVICE_KEY);
 
         if(Objects.isNull(response.getIntrospectionInfo())){
 
@@ -143,6 +148,12 @@ public class ArccValidationService {
 
         result.entitlementsInUserInfo = entitlementsInUserInfo;
         result.entitlementsInIntrospection = entitlementsInIntrospection;
+
+        result.lastRun = DateTimeFormatter
+                .ofPattern("yyyy-MM-dd HH:mm:ss")
+                .format(ZonedDateTime.now());
+
+        result.code = 200;
 
         return result;
     }

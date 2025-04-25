@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -137,7 +138,7 @@ public class AutomatedCheckEndpoint {
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
-                    description = "Validation result for the AARC-G069 compliance check",
+                    description = "Validation result for the AARC-G069 compliance check.",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON,
                             schema = @Schema(implementation = AarcG069ValidationResult.class))),
@@ -167,18 +168,67 @@ public class AutomatedCheckEndpoint {
                             implementation = InformativeResponse.class)))
     })
     @SecurityRequirement(name = "Authentication")
-    @GET
-    @Path("/aarc-g069/{aai-provider-id}")
+    @POST
+    @Path("/aarc-g069")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validateProvider(
-            @Parameter(
-                    description = "The AAI Provider ID to query from NACO.",
-                    required = true,
-                    example = "egi",
-                    schema = @Schema(type = SchemaType.STRING)) @PathParam("aai-provider-id")  String aaiProviderId) {
+    public Response validateProvider(@Valid @NotNull(message = "The request body is empty.") AarcG069Request request) {
 
 
-        var response = arccValidationService.validateAarcG069(aaiProviderId);
+        var response = arccValidationService.validateAarcG069(request.aaiProviderId);
+
+        return Response.ok(response).build();
+    }
+
+    @Tag(name = "Automated Check")
+    @Operation(
+            summary = "Get available AAI provider identifiers",
+            description = "Returns a list of keys representing available AAI providers."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "A list of AAI provider identifiers.",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(
+                                    type = SchemaType.ARRAY,
+                                    implementation = String.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "aaiIdentifiers",
+                                            summary = "AAI provider identifier list.",
+                                            value = "[\"nfdi-regapp\", \"login\", \"egi\", \"bildungsproxy-student\", \"nfdiinfrastaging\", \"academic-id\", \"cilogon\"]"
+                                    )
+                            }
+                    )
+
+            ),
+            @APIResponse(
+                    responseCode = "401",
+                    description = "User has not been authenticated.",
+                    content = @Content(schema = @Schema(
+                            type = SchemaType.OBJECT,
+                            implementation = InformativeResponse.class))),
+            @APIResponse(
+                    responseCode = "403",
+                    description = "Not permitted.",
+                    content = @Content(schema = @Schema(
+                            type = SchemaType.OBJECT,
+                            implementation = InformativeResponse.class))),
+            @APIResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error.",
+                    content = @Content(schema = @Schema(
+                            type = SchemaType.OBJECT,
+                            implementation = InformativeResponse.class)))
+    })
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/aarc-g069")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAarcG069Entries() {
+
+        var response = arccValidationService.getAarcG069Entries();
 
         return Response.ok(response).build();
     }
