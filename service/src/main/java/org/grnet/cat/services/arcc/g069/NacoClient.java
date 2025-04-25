@@ -11,6 +11,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+import java.util.Map;
+
 @Path("/naco")
 @RegisterRestClient(configKey = "naco-service")
 public interface NacoClient {
@@ -19,6 +21,11 @@ public interface NacoClient {
     @Path("/get_entry/{aai-provider-id}")
     @Produces(MediaType.APPLICATION_JSON)
     NacoEntryResponse getEntry(@PathParam("aai-provider-id") String aaiProviderId, @QueryParam("apikey") String apiKey);
+
+    @GET
+    @Path("/list_entries")
+    @Produces(MediaType.APPLICATION_JSON)
+    Map<String, String> getEntries(@QueryParam("apikey") String apiKey);
 
     @ClientExceptionMapper
     static WebApplicationException toException(Response response) {
