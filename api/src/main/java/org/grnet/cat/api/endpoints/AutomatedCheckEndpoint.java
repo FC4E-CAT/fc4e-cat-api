@@ -141,7 +141,7 @@ public class AutomatedCheckEndpoint {
                     description = "Validation result for the AARC-G069 compliance check.",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON,
-                            schema = @Schema(implementation = AarcG069ValidationResult.class))),
+                            schema = @Schema(implementation = AutomatedTestResponse.class))),
             @APIResponse(
                     responseCode = "401",
                     description = "User has not been authenticated.",
