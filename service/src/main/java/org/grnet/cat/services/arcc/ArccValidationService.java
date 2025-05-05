@@ -4,10 +4,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.grnet.cat.dtos.AarcG069ValidationResult;
 import org.grnet.cat.dtos.ArccValidationRequest;
 import org.grnet.cat.dtos.ArccValidationResponse;
 import org.grnet.cat.dtos.ArccValidationResult;
+import org.grnet.cat.dtos.AutomatedTestResponse;
+import org.grnet.cat.dtos.AutomatedTestStatus;
 import org.grnet.cat.services.arcc.g069.NacoClient;
 import org.grnet.cat.validators.XmlMetadataValidator.GeneralMetadataValidator;
 import org.grnet.cat.validators.XmlMetadataValidator.XmlSchemaValidator;
@@ -92,9 +93,7 @@ public class ArccValidationService {
 
     }
 
-    public AarcG069ValidationResult validateAarcG069(String aaiProviderId){
-
-        var result = new AarcG069ValidationResult();
+    public AutomatedTestResponse validateAarcG069(String aaiProviderId){
 
         var entitlementsInUserInfo = new ArccValidationResult();
 
@@ -110,7 +109,7 @@ public class ArccValidationService {
         } else if (Objects.isNull(response.getIntrospectionInfo().getEntitlements())){
 
             entitlementsInIntrospection.isValid = false;
-            entitlementsInIntrospection.message = "entitlements claim is missing from the introspection_info section.";
+            entitlementsInIntrospection.message = "entitlements claim is missing from the Token Introspection response.";
         } else{
 
             if(response.getIntrospectionInfo().getEntitlements().stream().anyMatch(this::isValidEntitlement)){
@@ -132,7 +131,7 @@ public class ArccValidationService {
         } else if (Objects.isNull(response.getUserInfo().getEntitlements())){
 
             entitlementsInUserInfo.isValid = false;
-            entitlementsInUserInfo.message = "entitlements claim is missing from the user_info section.";
+            entitlementsInUserInfo.message = "entitlements claim is missing from the UserInfo response.";
         } else{
 
             if(response.getUserInfo().getEntitlements().stream().anyMatch(this::isValidEntitlement)){
@@ -146,16 +145,26 @@ public class ArccValidationService {
             }
         }
 
-        result.entitlementsInUserInfo = entitlementsInUserInfo;
-        result.entitlementsInIntrospection = entitlementsInIntrospection;
+        var arccResponse = new AutomatedTestResponse();
 
-        result.lastRun = DateTimeFormatter
-                .ofPattern("yyyy-MM-dd HH:mm:ss")
-                .format(ZonedDateTime.now());
+        arccResponse.additionalInfo.put("entitlements_in_user_info", entitlementsInUserInfo);
+        arccResponse.additionalInfo.put("entitlements_in_introspection", entitlementsInIntrospection);
 
-        result.code = 200;
+        var status = new AutomatedTestStatus();
+        status.message = "All validations were executed successfully during the test run.";
 
-        return result;
+        if(entitlementsInUserInfo.isValid && entitlementsInIntrospection.isValid){
+
+            status.isValid = true;
+
+        } else{
+
+            status.isValid = false;
+        }
+
+        arccResponse.testStatus = status;
+
+        return arccResponse;
     }
 
     private boolean isValidEntitlement(String value) {
