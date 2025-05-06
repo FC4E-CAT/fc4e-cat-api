@@ -44,7 +44,13 @@ public class AutomatedCheckEndpoint {
             description = "URL successfully checked.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AutomatedCheckResponse.class)))
+                    implementation = AutomatedTestResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
     @APIResponse(
             responseCode = "401",
             description = "User has not been authenticated.",
@@ -54,12 +60,6 @@ public class AutomatedCheckEndpoint {
     @APIResponse(
             responseCode = "403",
             description = "Not permitted.",
-            content = @Content(schema = @Schema(
-                    type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
-    @APIResponse(
-            responseCode = "404",
-            description = "Entity Not Found.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
@@ -142,6 +142,12 @@ public class AutomatedCheckEndpoint {
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON,
                             schema = @Schema(implementation = AutomatedTestResponse.class))),
+            @APIResponse(
+                    responseCode = "400",
+                    description = "Invalid request payload.",
+                    content = @Content(schema = @Schema(
+                            type = SchemaType.OBJECT,
+                            implementation = InformativeResponse.class))),
             @APIResponse(
                     responseCode = "401",
                     description = "User has not been authenticated.",
