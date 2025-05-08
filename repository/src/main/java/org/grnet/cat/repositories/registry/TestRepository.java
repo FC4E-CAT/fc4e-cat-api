@@ -1,6 +1,5 @@
 package org.grnet.cat.repositories.registry;
 
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +42,8 @@ public class TestRepository implements Repository<Test, String> {
             map.put("search", "%" + search + "%");
         }
 
+        joiner.add("where t.version = (select max(t2.version) from Test t2 where t2.lodTES_V = t.lodTES_V)");
+
         joiner.add("order by t." + sort + " " + order + ", t.id ASC");
 
         var panache = find(joiner.toString(), map).page(page, size);
@@ -76,5 +77,25 @@ public class TestRepository implements Repository<Test, String> {
                 .setParameter(1, value)
                 .getSingleResult();
         return count > 0;
+    }
+
+
+    public List<Test> fetchTestAllVersions(String lodTES_V) {
+        return find("SELECT t FROM Test t WHERE t.lodTES_V = ?1 ORDER BY t.version DESC", lodTES_V).list();
+    }
+
+
+    public boolean deleteAllVersions(String lodTES_V) {
+
+        delete("DELETE FROM Test t WHERE t.lodTES_V = ?1", lodTES_V);
+
+        return true;
+    }
+
+    public long countVersion(String id) {
+        var query = "SELECT COUNT(t) FROM Test t WHERE t.lodTES_V = :lodTES_V";
+        return getEntityManager().createQuery(query, Long.class)
+                .setParameter("lodTES_V", id)
+                .getSingleResult();
     }
 }

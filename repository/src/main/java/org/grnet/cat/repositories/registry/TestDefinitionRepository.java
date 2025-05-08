@@ -58,6 +58,20 @@ public class TestDefinitionRepository implements Repository<TestDefinition, Stri
     public List<TestDefinition> fetchTestDefinitionsByTestIds(List<String> testIds){
         return list("from TestDefinition td where td.lodTES in :testIds", Parameters.with("testIds", testIds));
     }
+
+    public boolean deleteAllVersions(String lodTES_V) {
+
+        delete("DELETE FROM TestDefinition td WHERE td.lodTES_V = ?1", lodTES_V);
+
+        return true;
+    }
+
+    public long countVersion(String id) {
+        var query = "SELECT COUNT(td) FROM TestDefinition td WHERE td.lodDFV = :lodDFV";
+        return getEntityManager().createQuery(query, Long.class)
+                .setParameter("lodDFV", id)
+                .getSingleResult();
+    }
 }
 
 

@@ -699,7 +699,7 @@ public class MotivationService {
         var resultMessages = new ArrayList<String>();
         request.stream().iterator().forEachRemaining(req -> {
             var testDefinitionOpt = testDefinitionRepository.fetchTestDefinitionByTest(req.testId);
-         if(!testDefinitionOpt.isEmpty()){
+            if(!testDefinitionOpt.isEmpty()){
                 var testDefintion = testDefinitionOpt.get();
 
                 if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionOpt.get().getId(), 1)) {
