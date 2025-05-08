@@ -27,15 +27,15 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     @Execution(ExecutionMode.CONCURRENT)
     public void testValidHttpsUrl() {
         var request = createValidHttpsRequest("https://google.com");
-        var response = performCheckUrl(request, adminToken, 200, AutomatedCheckResponse.class);
-        assertEquals(200, response.code);
+        var response = performCheckUrl(request, adminToken, 200, AutomatedTestResponse.class);
+        assertEquals(200, response.testStatus.code);
     }
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void testInvalidHttpsUrl() {
         var request = createValidHttpsRequest("https://google1.com");
-        var response = performCheckUrl(request, adminToken, 200, AutomatedCheckResponse.class);
+        var response = performCheckUrl(request, adminToken, 400, InformativeResponse.class);
         assertEquals("Failed to connect to the URL: " + request.url + ". IOException: " + request.url.replace("https://", ""), response.message);
         assertEquals(400, response.code);
     }
@@ -52,9 +52,9 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     @Execution(ExecutionMode.CONCURRENT)
     public void testNoHttpsUrl() {
         var request = createValidHttpsRequest("http://google.com");
-        var response = performCheckUrl(request, adminToken, 200, AutomatedCheckResponse.class);
-        assertEquals("Failed to connect to the URL: " + request.url + ". The URL is not a secure HTTPS connection.", response.message);
-        assertEquals(503, response.code);
+        var response = performCheckUrl(request, adminToken, 200, AutomatedTestResponse.class);
+        assertEquals("Failed to connect to the URL: " + request.url + ". The URL is not a secure HTTPS connection.", response.testStatus.message);
+        assertEquals(503, response.testStatus.code);
     }
 
     @Test
