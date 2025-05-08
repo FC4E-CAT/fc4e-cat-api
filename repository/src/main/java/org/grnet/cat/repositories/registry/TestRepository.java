@@ -37,12 +37,12 @@ public class TestRepository implements Repository<Test, String> {
             joiner.add("where (t.id ilike :search")
                     .add("or t.labelTest ilike :search")
                     .add("or t.TES ilike :search")
-                    .add("or t.descTest ilike :search)");
-
+                    .add("or t.descTest ilike :search)")
+                    .add("and t.version = (select max(t2.version) from Test t2 where t2.lodTES_V = t.lodTES_V)"); // Ensure only the latest version
             map.put("search", "%" + search + "%");
+        } else {
+            joiner.add("where t.version = (select max(t2.version) from Test t2 where t2.lodTES_V = t.lodTES_V)"); // Ensure only the latest version
         }
-
-        joiner.add("where t.version = (select max(t2.version) from Test t2 where t2.lodTES_V = t.lodTES_V)");
 
         joiner.add("order by t." + sort + " " + order + ", t.id ASC");
 
