@@ -2,10 +2,11 @@ package org.grnet.cat.services.arcc;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ServerErrorException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.dtos.ArccValidationRequest;
-import org.grnet.cat.dtos.ArccValidationResponse;
 import org.grnet.cat.dtos.ArccValidationResult;
 import org.grnet.cat.dtos.AutomatedTestResponse;
 import org.grnet.cat.dtos.AutomatedTestStatus;
@@ -39,49 +40,54 @@ public class ArccValidationService {
     private static final Pattern PATTERN = Pattern.compile(AARC_G069_REGEX);
 
 
-    public ArccValidationResponse validateMetadataByTestType(String type, ArccValidationRequest request) {
+    public AutomatedTestResponse validateMetadataByTestType(String type, ArccValidationRequest request) {
 
         var validatedResponse = xmlSchemaValidator.validateSchema(request.metadataUrl);
-        var response = new ArccValidationResponse();
+        var response = new AutomatedTestResponse();
+
+        var status =  new AutomatedTestStatus();
+        response.testStatus = status;
         response.lastRun = DateTimeFormatter
                 .ofPattern("yyyy-MM-dd HH:mm:ss")
                 .format(ZonedDateTime.now());
 
         if (!validatedResponse.isSchemaValid()) {
-            response.isValid = false;
+            status.isValid = false;
+            status.message = validatedResponse.getMessage();
             switch (validatedResponse.getCode()) {
+
                 case "VALIDATION_ERROR":
-                    response.code = 422;
+                    status.code = 422;
                     break;
                 case "NOT_FOUND_ERROR":
-                    response.code = 404;
-                    break;
+                    throw new NotFoundException( validatedResponse.getMessage());
                 case "GENERIC_ERROR":
                 default:
-                    response.code = 500;
-
+                    throw new ServerErrorException(validatedResponse.getMessage(), 500);
             }
-            response.message = validatedResponse.getMessage();
             return response;
         }
         var documentResponse = xmlSchemaValidator.parseXmlFromUrl(request.metadataUrl);
+
         if (documentResponse.getDocument() == null) {
-            response.isValid = false;
-            response.message = documentResponse.getMessage();
-            response.code = documentResponse.getCode();
+            status.isValid = false;
+            status.message = documentResponse.getMessage();
+            status.code = documentResponse.getCode();
             return response;
         }
         var testValidationResult = metadataValidator.validate(type, documentResponse.getDocument());
 
         if (!testValidationResult.isCompliant) {
-           response.isValid=false;
-           response.code=400;
-           response.message=testValidationResult.feedback;
+
+            status.isValid = false;
+            status.code = 400;
+            status.message = testValidationResult.feedback;
             return response;
         }
-        response.isValid = testValidationResult.isCompliant;
-        response.code = 200;
-        response.message="Successful schema validation";
+
+        status.isValid = true;
+        status.code = 200;
+        status.message="Successful schema validation";
         return response;
     }
 

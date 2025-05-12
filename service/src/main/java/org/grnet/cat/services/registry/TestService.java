@@ -158,6 +158,7 @@ public class TestService {
      */
     @Transactional
     public boolean deleteTest(String id) {
+
         if (metricTestRepository.existTestInStatus(id, Boolean.TRUE)) {
             throw new ForbiddenException("No action permitted, test exists in a published motivation");
         }

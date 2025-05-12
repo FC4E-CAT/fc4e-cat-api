@@ -15,6 +15,7 @@ public class GeneralMetadataValidator implements MetadataValidator {
 
     @Override
     public ValidationResult validate(String testId, Document document) {
+
         var attributes = metadataValidationFactory.getAttributes(testId);
         var validationRule = metadataValidationFactory.getValidationRule(testId);
 
