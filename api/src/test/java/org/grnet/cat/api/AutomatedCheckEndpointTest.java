@@ -14,7 +14,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 @TestHTTPEndpoint(AutomatedCheckEndpoint.class)
@@ -70,8 +69,8 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     public void testMd1aValid() {
         var request = createArccValidationRequest("https://meta.sram.surf.nl/metadata/proxy_sp.xml");
         var response = performValidation(request, adminToken, "MD-1a", 200);
-        Assertions.assertTrue(response.isValid);
-        assertEquals(200, response.code);
+        Assertions.assertTrue(response.testStatus.isValid);
+        assertEquals(200, response.testStatus.code);
     }
 
     @Test
@@ -79,8 +78,8 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     public void testMd1b1Valid() {
         var request = createArccValidationRequest("https://meta.sram.surf.nl/metadata/proxy_sp.xml");
         var response = performValidation(request, adminToken, "MD-1a", 200);
-        Assertions.assertTrue(response.isValid);
-        assertEquals(200, response.code);
+        Assertions.assertTrue(response.testStatus.isValid);
+        assertEquals(200, response.testStatus.code);
     }
 
     @Test
@@ -88,8 +87,8 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     public void testMd1b2Invalid_NoTelephoneNumber() {
         var request = createArccValidationRequest("https://meta.sram.surf.nl/metadata/proxy_sp.xml");
         var response = performValidation(request, adminToken, "MD-1b2", 200);
-        assertEquals("MD-1b2 validation failed: No operational security TelephoneNumber found.", response.message);
-        assertEquals(400, response.code);
+        assertEquals("MD-1b2 validation failed: No operational security TelephoneNumber found.", response.testStatus.message);
+        assertEquals(400, response.testStatus.code);
     }
 
     private AutomatedCheckRequest createValidHttpsRequest(String url) {
@@ -118,7 +117,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
                 .as(responseType);
     }
 
-    private ArccValidationResponse performValidation(ArccValidationRequest request, String token, String testId, int expectedStatus) {
+    private AutomatedTestResponse performValidation(ArccValidationRequest request, String token, String testId, int expectedStatus) {
         return given()
                 .auth()
                 .oauth2(token)
@@ -129,6 +128,6 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(expectedStatus)
                 .extract()
-                .as(ArccValidationResponse.class);
+                .as(AutomatedTestResponse.class);
     }
 }

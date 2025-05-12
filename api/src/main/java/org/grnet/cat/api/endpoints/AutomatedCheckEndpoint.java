@@ -94,7 +94,7 @@ public class AutomatedCheckEndpoint {
             description = "Metadata validated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = AutomatedCheckResponse.class)))
+                    implementation = AutomatedTestResponse.class)))
     @APIResponse(
             responseCode = "400",
             description = "Validation failed.",
