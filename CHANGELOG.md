@@ -26,6 +26,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Added
 - [#477](https://github.com/FC4E-CAT/fc4e-cat-api/pull/477) CAT-861 Implement Automated Test AARC-G069 to Validate NACO Entitlements Claim.
 - [#476](https://github.com/FC4E-CAT/fc4e-cat-api/pull/476) CAT-860: Version Tests in Library
+- [#485](https://github.com/FC4E-CAT/fc4e-cat-api/pull/485) CAT-871 Version a Metric in Motivation and view metric versions on Library
 
 
 ### Fix

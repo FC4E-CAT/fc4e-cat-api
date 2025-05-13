@@ -198,19 +198,53 @@ public class MetricService {
                         Collectors.mapping(result -> (Motivation) result[1], Collectors.toList())
                 ));
 
-        var dtoList = junctions.stream()
-                .map(junction -> {
-                    var dto = metricResponseWithMotivations(junction.getMetric(), junction);
+        var metricParentIds = junctions.stream()
+                .map(j -> j.getMetric().getLodMTRV())
+                .distinct()
+                .collect(Collectors.toList());
+
+        var latestMetrics = metricRepository.fetchLatestVersionMetrics(metricParentIds);
+
+        var dtoList = latestMetrics.stream()
+                .map(metric -> {
+
+                    var junction = junctions.stream()
+                            .filter(j -> j.getMetric().getLodMTRV().equals(metric.getLodMTRV()))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Junction not found"));
+
+                    var dto = metricResponseWithMotivations(metric, junction);
+
+                    var versions = getMetricVersions(metric.getLodMTRV(), metric.getVersion());
 
                     var motivations = motivationsMap.getOrDefault(junction.getMetric().getId(), List.of());
+
                     dto.setMotivations(motivations.stream()
                             .map(MotivationMapper.INSTANCE::mapPartialMotivation)
                             .collect(Collectors.toList()));
+
+                    dto.setVersions(versions);  // Set the versions list here
+
+
                     return dto;
                 })
                 .collect(Collectors.toList());
 
+        // Return the paginated result with the list of DTOs
         return new PageResource<>(metricDefinitionPage, dtoList, uriInfo);
+    }
+
+    private List<MetricDefinitionExtendedResponse> getMetricVersions(String metricParent, Integer latestVersion) {
+
+        var metricVersions = metricDefinitionRepository.fetchMetricAndDefinitionVersion(metricParent);
+
+        return metricVersions.stream()
+                .filter(junction -> !junction.getMetric().getVersion().equals(latestVersion)) // Exclude the latest version
+                .map(junction -> {
+                    var dto = metricResponseWithMotivations(junction.getMetric(), junction);
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
 

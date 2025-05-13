@@ -540,7 +540,11 @@ public class MotivationService {
             metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
             metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
             metric.setPopulatedBy(userId);
+            metric.setVersion(1);
             metricRepository.persist(metric);
+
+            metric.setLodMTRV(metric.getId());
+
 
             var metricDefinitionJunction = new MetricDefinitionJunction(
                     Panache.getEntityManager().getReference(Motivation.class, id),
@@ -558,6 +562,65 @@ public class MotivationService {
 
             response.code = 200;
             response.message = "A metric and a Metric Definition successfully created and linked to the specified motivation.";
+        } else {
+            response.code = 409;
+            response.message = "A metric with the identifier '" + request.MTR.toUpperCase() + "' already exists.";
+        }
+
+        return response;
+    }
+
+    @Transactional
+    public InformativeResponse createMetricDefinitionVersionForMotivation(String motivationId, String metricId, MotivationMetricExtendedRequest request, String userId) {
+
+        var response = new InformativeResponse();
+
+        var metricParent = metricRepository.findById(metricId);
+
+        if (Objects.equals(metricParent.getMTR(), request.MTR)) {
+
+            var metricRequest = new MetricRequestDto();
+            metricRequest.MTR = request.MTR;
+            metricRequest.urlMetric = request.urlMetric;
+            metricRequest.typeMetricId = request.typeMetricId;
+            metricRequest.typeAlgorithmId = request.typeAlgorithmId;
+            metricRequest.labelMetric = request.labelMetric;
+            metricRequest.descrMetric = request.descrMetric;
+
+            var metric = MetricMapper.INSTANCE.metricToEntity(metricRequest);
+
+            metric.setLodMTV(motivationId);
+            metric.setPopulatedBy(userId);
+            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
+            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
+            metric.setPopulatedBy(userId);
+            metric.setLodMTRV(metricParent.getLodMTRV());
+
+            var parentMetricVersion = metricRepository.countVersion(metricId);
+            metric.setVersion((int) (parentMetricVersion + 1));
+
+
+            metricRepository.persist(metric);
+
+            var metricDefinitionJunction = new MetricDefinitionJunction(
+                    Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                    Panache.getEntityManager().getReference(Metric.class, metric.getId()),
+                    Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId),
+                    request.valueBenchmark,
+                    motivationId,
+                    1,
+                    (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
+                    userId,
+                    Timestamp.from(Instant.now())
+            );
+
+            metricDefinitionRepository.persist(metricDefinitionJunction);
+
+            var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMetricId(metricParent.getLodMTRV());
+            metricDefinitionJunction.setMetricDefinition(metricDefinition.getMetricDefinition());
+
+            response.code = 200;
+            response.message = "A version of a metric and a Metric Definition successfully created and linked to the specified motivation.";
         } else {
             response.code = 409;
             response.message = "A metric with the identifier '" + request.MTR.toUpperCase() + "' already exists.";

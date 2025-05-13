@@ -40,6 +40,8 @@ public interface MetricMapper {
     @Mapping(target = "upload", ignore = true)
     @Mapping(target = "dataType", ignore = true)
     @Mapping(target = "criteria", ignore = true)
+    @Mapping(target = "lodMTRV", ignore = true)
+    @Mapping(target = "version", ignore = true)
     Metric metricToEntity(MetricRequestDto request);
 
     @Mapping(target = "MTR", expression = "java(StringUtils.isNotEmpty(request.MTR) ? request.MTR : metric.getMTR())")
@@ -62,6 +64,7 @@ public interface MetricMapper {
     @Mapping(target = "metricMtr", expression = "java(metric.getMTR())")
     @Mapping(target = "metricLabel", expression = "java(metric.getLabelMetric())")
     @Mapping(target = "metricDescription", expression = "java(metric.getDescrMetric())")
+    @Mapping(target = "metricVersion", expression = "java(String.valueOf(metric.getVersion()))")
     @Mapping(target = "typeMetricId", expression = "java(metric.getTypeMetric().getId())")
     @Mapping(target = "typeMetricLabel", expression = "java(metric.getTypeMetric().getLabelTypeMetric())")
     @Mapping(target = "typeMetricDescription", expression = "java(metric.getTypeMetric().getDescTypeMetric())")
