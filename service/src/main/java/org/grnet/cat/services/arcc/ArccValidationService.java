@@ -154,19 +154,12 @@ public class ArccValidationService {
         var arccResponse = new AutomatedTestResponse();
 
         arccResponse.additionalInfo.put("entitlements_in_user_info", entitlementsInUserInfo);
-        arccResponse.additionalInfo.put("entitlements_in_introspection", entitlementsInIntrospection);
+        arccResponse.additionalInfo.put("entitlements_in_token_introspection", entitlementsInIntrospection);
 
         var status = new AutomatedTestStatus();
         status.message = "All validations were executed successfully during the test run.";
 
-        if(entitlementsInUserInfo.isValid && entitlementsInIntrospection.isValid){
-
-            status.isValid = true;
-
-        } else{
-
-            status.isValid = false;
-        }
+        status.isValid = entitlementsInUserInfo.isValid;
 
         arccResponse.testStatus = status;
 
