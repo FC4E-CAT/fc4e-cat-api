@@ -2,6 +2,7 @@ package org.grnet.cat.dtos.assessment.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateActorDto;
@@ -49,7 +50,7 @@ public class RegistryAssessmentDto {
 
     public TemplateOrganisationDto organisation;
 
-    public TemplateSubjectDto subject;
+    public @Valid TemplateSubjectDto subject;
 
     public TemplateResultDto result;
 
