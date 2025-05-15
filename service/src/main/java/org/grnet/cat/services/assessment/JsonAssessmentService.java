@@ -395,6 +395,26 @@ public class JsonAssessmentService {
     }
 
     /**
+     * Retrieves a page of published assessments categorized by actor, created by all users.
+     *
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessments to include in a page.
+     * @param uriInfo      The Uri Info.
+     * @param actorId      The Actor's id.
+     * @param subjectName  Subject name to search for.
+     * @param subjectType  Subject Type to search for.
+     * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
+     */
+    public PageResource<AdminPartialJsonAssessmentResponse> getPublishedAssessmentsByActorAndPage(int page, int size, String actorId, UriInfo uriInfo, String subjectName, String subjectType) {
+
+        var assessments = motivationAssessmentRepository.fetchPublishedAssessmentsByActorAndPage(page, size, actorId, subjectName, subjectType);
+
+        var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
+
+        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+    }
+
+    /**
      * Retrieves a page of public assessment objects by motivation and actor.
      *
      * @param page         The index of the page to retrieve (starting from 0).

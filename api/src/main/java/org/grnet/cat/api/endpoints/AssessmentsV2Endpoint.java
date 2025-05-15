@@ -460,6 +460,60 @@ public class AssessmentsV2Endpoint {
 
     @Tag(name = "Assessment")
     @Operation(
+            summary = "Get published assessments by actor.",
+            description = "This endpoint is public and any unauthenticated user can retrieve published assessments categorized by actor, created by all users." +
+                    "By default, the first page of 10 assessments will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of assessments.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AdminEndpoint.PageablePartialAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/by-actor/{actor-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assessmentsByActor(@Parameter(
+            description = "The Actor to retrieve assessments.",
+            required = true,
+            example = "pid_graph:B5CC396B",
+            schema = @Schema(type = SchemaType.STRING))
+                                                    @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+                                                    @Parameter(name = "page", in = QUERY,
+                                                            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                                    @Parameter(name = "size", in = QUERY,
+                                                            description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                                    @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                                    @Parameter(name = "subject_name", in = QUERY,
+                                                            description = "The subject name to filter.") @QueryParam("subject_name") @DefaultValue("") String subjectName,
+                                                    @Parameter(name = "subject_type", in = QUERY,
+                                                            description = "The subject type to filter.") @QueryParam("subject_type") @DefaultValue("") String subjectType,
+                                                    @Context UriInfo uriInfo) {
+
+        var assessments = assessmentService.getPublishedAssessmentsByActorAndPage(page - 1, size, actorId, uriInfo, subjectName, subjectType);
+
+        return Response.ok().entity(assessments).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
             summary = "Get public assessment.",
             description = "Returns a specific public assessment.")
     @APIResponse(
