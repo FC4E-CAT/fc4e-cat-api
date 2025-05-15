@@ -21,7 +21,6 @@ public interface MetricTestMapper {
     List<MetricTestResponseDto> metricTestToDtos(List<MetricTestJunction> entities);
 
     @Mapping(target = "testId", expression = "java(metricTest.getTest().getId())")
-    @Mapping(target = "testDefinitionId", expression = "java(metricTest.getTestDefinition().getId())")
     @Mapping(target = "motivationId", expression = "java(metricTest.getMotivation().getId())")
     @Mapping(target = "relation", expression = "java(metricTest.getRelation().getId())")
     MetricTestResponseDto metricTestToDto(MetricTestJunction metricTest);

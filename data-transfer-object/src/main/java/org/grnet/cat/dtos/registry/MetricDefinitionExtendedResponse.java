@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
-import org.grnet.cat.dtos.registry.test.TestAndTestDefinitionResponse;
 
 import java.util.List;
 
@@ -180,7 +179,7 @@ public class MetricDefinitionExtendedResponse {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = TestAndTestDefinitionResponse.class,
+            implementation = MetricDefinitionExtendedResponse.class,
             description = "List of versions of this metric."
     )
     @JsonProperty("metric_versions")
