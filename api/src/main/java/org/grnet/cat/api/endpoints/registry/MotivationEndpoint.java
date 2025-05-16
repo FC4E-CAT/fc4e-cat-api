@@ -2519,6 +2519,76 @@ public class MotivationEndpoint {
         return Response.ok().entity(informativeResponse).build();
     }
 
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Version a Metric - Definition relation for a Motivation.",
+            description = "Version a Metric Definition for a single motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Version of metric successfully created for the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/metric/{metric-id}/version-metric")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response versionMetric(
+            @Parameter(
+                    description = "The ID of the Motivation to version a metric for.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+            @Parameter(
+                description = "The ID of the Metric to version.",
+                required = true,
+                example = "pid_graph:9F1A6267",
+                schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
+            @Valid @NotNull(message = "The request body is empty.") MotivationMetricExtendedRequest request) {
+
+        var response = motivationService.createMetricDefinitionVersionForMotivation(id, metricId, request, utility.getUserUniqueIdentifier());
+
+        return Response.status(response.code).entity(response).build();
+    }
+
 
     public static class PageableMotivationResponse extends PageResource<MotivationResponse> {
 

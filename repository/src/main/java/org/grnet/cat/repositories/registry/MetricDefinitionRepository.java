@@ -1,6 +1,7 @@
 package org.grnet.cat.repositories.registry;
 
 import io.quarkus.hibernate.orm.panache.Panache;
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.NamedQuery;
@@ -93,6 +94,8 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
             map.put("search", "%" + search + "%");
         }
 
+        joiner.add("and m.metric.version = (select max(m2.version) from Metric m2 where m2.lodMTRV = m.metric.lodMTRV)"); // Ensure only latest version is fetched
+
         // Order by criteria
         joiner.add("order by");
         joiner.add("m." + sort);
@@ -130,6 +133,20 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
     public static <T> java.util.function.Predicate<T> distinctByKey(java.util.function.Function<? super T, ?> keyExtractor) {
         Map<Object, Boolean> seen = new HashMap<>();
         return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    }
+
+    public List<MetricDefinitionJunction> fetchMetricAndDefinitionVersion(String lodMTRV) {
+        var metricList = find("SELECT m FROM MetricDefinitionJunction m " +
+                        "LEFT JOIN m.metric met " +
+                        "LEFT JOIN m.typeBenchmark tb " +
+                        "WHERE met.lodMTRV = :lodMTRV " +
+                        "ORDER BY met.version DESC",
+                Parameters.with("lodMTRV", lodMTRV)).list();
+
+        // Apply distinct by m.metric.id
+        return metricList.stream()
+                .filter(distinctByKey(m -> m.getMetric().getId())) // Custom filter to ensure distinct metric.id
+                .collect(Collectors.toList());
     }
 
     @Transactional

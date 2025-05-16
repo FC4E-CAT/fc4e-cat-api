@@ -7,9 +7,11 @@ import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
+import org.grnet.cat.dtos.registry.test.TestAndTestDefinitionResponse;
 
 import java.util.List;
 
+@Setter
 @Schema(name="MetricDefinitionExtendedResponse", description="This object represents a response for a Metric Definition.")
 public class MetricDefinitionExtendedResponse {
 
@@ -48,6 +50,15 @@ public class MetricDefinitionExtendedResponse {
     )
     @JsonProperty("metric_description")
     public String metricDescription;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Metric Version.",
+            example = "2"
+    )
+    @JsonProperty("metric_version")
+    public String metricVersion;
 
     @Schema(
             type = SchemaType.STRING,
@@ -166,4 +177,13 @@ public class MetricDefinitionExtendedResponse {
     @JsonProperty("used_by_motivations")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<PartialMotivationResponse> motivations;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = TestAndTestDefinitionResponse.class,
+            description = "List of versions of this metric."
+    )
+    @JsonProperty("metric_versions")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<MetricDefinitionExtendedResponse> versions;
 }

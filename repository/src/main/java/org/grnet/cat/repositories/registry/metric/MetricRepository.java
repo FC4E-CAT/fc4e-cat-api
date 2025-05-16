@@ -1,5 +1,6 @@
 package org.grnet.cat.repositories.registry.metric;
 
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Page;
@@ -7,6 +8,8 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.repositories.Repository;
+
+import java.util.List;
 
 @ApplicationScoped
 public class MetricRepository implements Repository<Metric, String> {
@@ -30,6 +33,22 @@ public class MetricRepository implements Repository<Metric, String> {
         pageable.page = Page.of(page, size);
 
         return pageable;
+    }
+
+
+    public List<Metric> fetchLatestVersionMetrics(List<String> metricParentsId) {
+        // Query to fetch the latest version of each metric based on the metric ID
+        return find("SELECT m FROM Metric m WHERE m.lodMTRV IN :metricIds AND m.version = (SELECT MAX(m2.version) FROM Metric m2 WHERE m2.lodMTRV = m.lodMTRV) ORDER BY m.version DESC",
+                Parameters.with("metricIds", metricParentsId))
+                .list();
+    }
+
+
+    public long countVersion(String id) {
+        var query = "SELECT COUNT(t) FROM Metric t WHERE t.lodMTRV = :lodMTR_V";
+        return getEntityManager().createQuery(query, Long.class)
+                .setParameter("lodMTR_V", id)
+                .getSingleResult();
     }
 
     /**
