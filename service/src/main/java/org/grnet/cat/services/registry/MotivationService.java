@@ -88,9 +88,6 @@ public class MotivationService {
     MetricTestRepository metricTestRepository;
 
     @Inject
-    TestDefinitionRepository testDefinitionRepository;
-
-    @Inject
     MetricService metricService;
 
     /**
@@ -761,30 +758,23 @@ public class MotivationService {
 
         var resultMessages = new ArrayList<String>();
         request.stream().iterator().forEachRemaining(req -> {
-            var testDefinitionOpt = testDefinitionRepository.fetchTestDefinitionByTest(req.testId);
-            if(!testDefinitionOpt.isEmpty()){
-                var testDefintion = testDefinitionOpt.get();
 
-                if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionOpt.get().getId(), 1)) {
+            if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, 1)) {
 
-                    var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
-                            Panache.getEntityManager().getReference(Metric.class, metricId),
-                            Panache.getEntityManager().getReference(Test.class, req.testId),
-                            Panache.getEntityManager().getReference(TestDefinition.class, testDefintion.getId()),
-                            Panache.getEntityManager().getReference(Relation.class, req.relation),
-                            motivationId,
-                            1);
+                var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                        Panache.getEntityManager().getReference(Metric.class, metricId),
+                        Panache.getEntityManager().getReference(Test.class, req.testId),
+                        Panache.getEntityManager().getReference(Relation.class, req.relation),
+                        motivationId,
+                        1);
 
                     metricTest.setPopulatedBy(userId);
                     metricTest.setLastTouch(Timestamp.from(Instant.now()));
 
                     metricTestRepository.persist(metricTest);
                     resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully added to Motivation.");
-                } else {
-                    resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " already exists to Motivation.");
-                }
             } else {
-                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " can not be added because there does not exist any test-definition for the test.");
+                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " already exists to Motivation.");
             }
         });
 
@@ -834,12 +824,11 @@ public class MotivationService {
     }
 
     @Transactional
-    public void updateTestMetricRelation(String motivationId, String metricId, MetricTestRequest req, String testDefinitionId, String userId) {
+    public void updateTestMetricRelation(String motivationId, String metricId, MetricTestRequest req, String userId) {
 
         var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
                 Panache.getEntityManager().getReference(Metric.class, metricId),
                 Panache.getEntityManager().getReference(Test.class, req.testId),
-                Panache.getEntityManager().getReference(TestDefinition.class, testDefinitionId),
                 Panache.getEntityManager().getReference(Relation.class, req.relation),
                 motivationId,
                 1);
@@ -867,27 +856,19 @@ public class MotivationService {
 
         request.stream().iterator().forEachRemaining(req -> {
 
-            var testDefinitionOpt = testDefinitionRepository.fetchTestDefinitionByTest(req.testId);
+            var junction = metricTestRepository.findByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, 1);
 
-            if (testDefinitionOpt.get() != null) {
+            if (junction.isPresent()) {
 
-                var testDefinitionId = testDefinitionOpt.get().getId();
-                var junction = metricTestRepository.findByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionId, 1);
+                var existingJunction = junction.get();
+                existingJunction.setLastTouch(Timestamp.from(Instant.now()));
+                existingJunction.setPopulatedBy(userId);
+                existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
 
-                if (junction.isPresent()) {
-
-                    var existingJunction = junction.get();
-                    existingJunction.setLastTouch(Timestamp.from(Instant.now()));
-                    existingJunction.setPopulatedBy(userId);
-                    existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
-
-                    resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully updated.");
-                } else {
-                    updateTestMetricRelation(motivationId, metricId, req, testDefinitionId, userId);
-                    resultMessages.add("principle-criterion with ids :: " + metricId + " - " + req.testId + " successfully added to Motivation.");
-                }
+                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully updated.");
             } else {
-                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " can not be added because there does not exist any test-definition for the test.");
+                updateTestMetricRelation(motivationId, metricId, req, userId);
+                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully added to Motivation.");
             }
         });
         return resultMessages;
@@ -985,7 +966,7 @@ public class MotivationService {
 
         mtList.iterator().forEachRemaining(mt -> {
 
-            if (mt.getId() != null && mt.getId().getTestId() != null && mt.getId().getTestDefinitionId() != null) {
+            if (mt.getId() != null && mt.getId().getTestId() != null) {
                 var temp = new MetricTestRequest();
                 temp.testId = mt.getId().getTestId();
                 temp.relation = mt.getRelation().getId();

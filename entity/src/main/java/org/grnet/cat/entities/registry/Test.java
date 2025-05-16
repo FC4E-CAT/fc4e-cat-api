@@ -55,4 +55,25 @@ public class Test {
 
     @Column(name = "dataType")
     private String dataType;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lodTME")
+    @NotNull
+    private TestMethod testMethod;
+
+    @Column(name = "labeltestdefinition")
+    private String labelTestDefinition;
+
+    @Column(name = "paramtype")
+    private String paramType;
+
+    @Column(name = "testparams")
+    private String testParams;
+
+    @Column(name = "testquestion")
+    private String testQuestion;
+
+    @Column(name = "tooltip")
+    @NotNull
+    private String toolTip;
 }

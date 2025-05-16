@@ -49,9 +49,9 @@ public class TestEndpointTest extends KeycloakTest {
         var request = createUniqueTestRequest();
         var response = createTest(request);
 
-        assertEquals(request.getTestRequest().TES, response.testResponse.TES);
-        assertEquals(request.getTestRequest().labelTest, response.testResponse.labelTest);
-        assertEquals(request.getTestRequest().descTest, response.testResponse.descTest);
+        assertEquals(request.TES, response.TES);
+        assertEquals(request.labelTest, response.labelTest);
+        assertEquals(request.descTest, response.descTest);
 
     }
 
@@ -61,13 +61,13 @@ public class TestEndpointTest extends KeycloakTest {
         var request = createUniqueTestRequest();
         var createdTest = createTest(request);
 
-        var fetchedTest = getTest(createdTest.testResponse.id);
+        var fetchedTest = getTest(createdTest.id);
 
         assertNotNull(fetchedTest);
-        assertEquals(request.getTestRequest().TES, fetchedTest.testResponse.TES);
-        assertEquals(request.getTestRequest().labelTest, fetchedTest.testResponse.labelTest);
-        assertEquals(request.getTestRequest().descTest, fetchedTest.testResponse.descTest);
-        assertEquals(request.getTestDefinitionRequest().testMethodId, fetchedTest.testDefinitionResponse.testMethodId);
+        assertEquals(request.TES, fetchedTest.TES);
+        assertEquals(request.labelTest, fetchedTest.labelTest);
+        assertEquals(request.descTest, fetchedTest.descTest);
+        assertEquals(request.testMethodId, fetchedTest.testMethodId);
     }
 
     @Test
@@ -94,21 +94,18 @@ public class TestEndpointTest extends KeycloakTest {
         var request = createUniqueTestRequest();
         var createdTest = createTest(request);
 
-        var updateRequest = new TestAndTestDefinitionUpdateRequest();
         var testUpdate = new TestUpdateDto();
-        var testDefUpdate = new TestDefinitionUpdateDto();
 
-        testUpdate.TES = createdTest.testResponse.TES;
+        testUpdate.TES = createdTest.TES;
         testUpdate.labelTest = "Updated Performance Test";
         testUpdate.descTest = "Updated description for performance test.";
+        testUpdate.testMethodId = "pid_graph:B733A7D5";
+        testUpdate.testParams = createdTest.testParams;
+        testUpdate.labelTestDefinition = "UPDATED Manual confirmation of user authentication required for access to sensitive metadata.\"";
+        testUpdate.paramType = "UPDATED";
+        testUpdate.tooltip = createdTest.toolTip;
 
-        testDefUpdate.labelTestDefinition = "UPDATED Manual confirmation of user authentication required for access to sensitive metadata.\"";
-        testDefUpdate.paramType = "UPDATED";
-
-        updateRequest.setTestRequest(testUpdate);
-        updateRequest.setTestDefinitionRequest(testDefUpdate);
-
-        var updatedTest = updateTest(createdTest.testResponse.id, updateRequest);
+        var updatedTest = updateTest(createdTest.id, testUpdate);
 
         assertEquals(200, updatedTest.code);
 
@@ -120,7 +117,7 @@ public class TestEndpointTest extends KeycloakTest {
         var request = createUniqueTestRequest();
         var createdTest = createTest(request);
 
-        var success = deleteTest(createdTest.testResponse.id);
+        var success = deleteTest(createdTest.id);
 
         assertEquals(200, success.code);
 
@@ -128,7 +125,7 @@ public class TestEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get("/{id}", createdTest.testResponse.id)
+                .get("/{id}", createdTest.id)
                 .then()
                 .assertThat()
                 .statusCode(404)
@@ -136,33 +133,28 @@ public class TestEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertNotNull(error);
-        assertEquals("There is no Test with the following id: " + createdTest.testResponse.id, error.message);
+        assertEquals("There is no Test with the following id: " + createdTest.id, error.message);
     }
 
-    private TestAndTestDefinitionRequest createUniqueTestRequest() {
+    private TestRequestDto createUniqueTestRequest() {
         //var uniqueTES = ("TES" + UUID.randomUUID()).toUpperCase();
 
-        var request = new TestAndTestDefinitionRequest();
-        var test  = new TestRequestDto();
-        var testDef =  new TestDefinitionRequestDto();
+        var request = new TestRequestDto();
 
-        test.TES = ("TES" + UUID.randomUUID()).toUpperCase();
-        test.labelTest = "Performance Test";
-        test.descTest = "This Test measures performance.";
-        testDef.testMethodId = "pid_graph:B733A7D5";
-        testDef.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.\"";
-        testDef.paramType = "onscreen";
-        testDef.testParams = "userAuth\"|\"evidence";
-        testDef.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
-        testDef.toolTip = "\"\\\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\\\"|\\\"A document, web page, or publication describing provisions\\\"\"";
-
-        request.setTestRequest(test);
-        request.setTestDefinitionRequest(testDef);
+        request.TES = ("TES" + UUID.randomUUID()).toUpperCase();
+        request.labelTest = "Performance Test";
+        request.descTest = "This Test measures performance.";
+        request.testMethodId = "pid_graph:B733A7D5";
+        request.labelTestDefinition = "Manual confirmation of user authentication required for access to sensitive metadata.\"";
+        request.paramType = "onscreen";
+        request.testParams = "\"userAuth\"|\"evidence\"";
+        request.testQuestion = "\"Does access to Sensitive PID Kernel Metadata require user authentication?\"|\"Provide evidence of this provision via a link to a specification, user guide, or API definition.\"";
+        request.toolTip = "\"\\\"Users need to be authenticated and requisite permissions must apply for access to sensitive metadata\\\"|\\\"A document, web page, or publication describing provisions\\\"\"";
 
         return request;
     }
 
-    private TestAndTestDefinitionResponse createTest(TestAndTestDefinitionRequest request) {
+    private TestResponseDto createTest(TestRequestDto request) {
         return given()
                 .auth()
                 .oauth2(adminToken)
@@ -173,10 +165,10 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(201)
                 .extract()
-                .as(TestAndTestDefinitionResponse.class);
+                .as(TestResponseDto.class);
     }
 
-    private TestAndTestDefinitionResponse getTest(String testId) {
+    private TestResponseDto getTest(String testId) {
         return given()
                 .auth()
                 .oauth2(adminToken)
@@ -186,10 +178,10 @@ public class TestEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(TestAndTestDefinitionResponse.class);
+                .as(TestResponseDto.class);
     }
 
-    private InformativeResponse updateTest(String testId, TestAndTestDefinitionUpdateRequest updateRequest) {
+    private InformativeResponse updateTest(String testId, TestUpdateDto updateRequest) {
         return given()
                 .auth()
                 .oauth2(adminToken)

@@ -1,20 +1,22 @@
 package org.grnet.cat.services.registry;
 
+import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.test.*;
 import org.grnet.cat.entities.registry.Test;
-import org.grnet.cat.entities.registry.TestDefinition;
+import org.grnet.cat.entities.registry.TestMethod;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.TestMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
-import org.grnet.cat.repositories.registry.TestDefinitionRepository;
+import org.grnet.cat.repositories.registry.TestMethodRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.jboss.logging.Logger;
@@ -32,10 +34,7 @@ public class TestService {
     MetricTestRepository metricTestRepository;
 
     @Inject
-    TestDefinitionService testDefinitionService;
-
-    @Inject
-    TestDefinitionRepository testDefinitionRepository;
+    TestMethodRepository testMethodRepository;
 
     private static final Logger LOG = Logger.getLogger(TestService.class);
 
@@ -53,20 +52,6 @@ public class TestService {
     }
 
 
-    /**
-     * Retrieves a specific Test item and related Test Definition item by its ID.
-     *
-     * @param id The unique ID of the Test item.
-     * @return The corresponding Test DTO.
-     */
-    public TestAndTestDefinitionResponse getTestAndTestDefinitionById(String id) {
-
-        var test = testRepository.findById(id);
-        var testDefinition = testDefinitionRepository.fetchTestDefinitionByTestId(id);
-
-        return testResponseWithMotivations(test, testDefinition);
-    }
-
 
     /**
      * This method takes a Principle entity, converts it to a PrincipleResponseDto, retrieves and maps
@@ -75,45 +60,40 @@ public class TestService {
      * @param test The Test entity to be converted and enhanced.
      * @return A PrincipleResponseDto with associated motivations.
      */
-    private TestAndTestDefinitionResponse testResponseWithMotivations(Test test, TestDefinition testDefinition) {
+    private TestResponseDto testResponseWithMotivations(Test test) {
 
-        var testAndTestDefinitionResponse = TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+        var testResponse = TestMapper.INSTANCE.testToDto(test);
 
         var motivations = testRepository.getMotivationIdsByTest(test.getId());
         var motivationResponses = motivations.stream()
                 .map(MotivationMapper.INSTANCE::mapPartialMotivation)
                 .collect(Collectors.toList());
 
-        testAndTestDefinitionResponse.setMotivations(motivationResponses);
+        testResponse.setMotivations(motivationResponses);
 
-        return testAndTestDefinitionResponse;
+        return testResponse;
     }
 
 
-    /**
-     * Creates a new Test item.
-     *
-     * @param userId  The user creating the Test.
-     * @param request The Test and Test Definition request data.
-     * @return The created Test DTO.
-     */
     @Transactional
-    public TestAndTestDefinitionResponse createTestAndTestDefinition(String userId, TestAndTestDefinitionRequest request) {
+    public TestResponseDto createTest(String userId, TestRequestDto request) {
 
-        if (testRepository.notUnique("TES", request.getTestRequest().TES.toUpperCase())) {
-            throw new UniqueConstraintViolationException("tes", request.getTestRequest().TES.toUpperCase());
+        if (testRepository.notUnique("TES", request.TES.toUpperCase())) {
+            throw new UniqueConstraintViolationException("tes", request.TES.toUpperCase());
         }
 
-        var test = TestMapper.INSTANCE.testToEntity(request.getTestRequest());
+        var test = TestMapper.INSTANCE.testToEntity(request);
+
+        test.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
         test.setPopulatedBy(userId);
+        //test.setTestParams(request.testParams);
         test.setVersion(1);
 
         testRepository.persist(test);
         test.setLodTES_V(test.getId());
 
-        var testDefinition = testDefinitionService.createTestDefinition(userId, request.getTestDefinitionRequest(), test.getId());
 
-        return TestMapper.INSTANCE.testAndTestDefinitionToDto(test, testDefinition);
+        return TestMapper.INSTANCE.testToDto(test);
     }
 
     /**
@@ -125,7 +105,7 @@ public class TestService {
      * @return The updated Test DTO.
      */
     @Transactional
-    public void updateTest(String id, String userId, TestAndTestDefinitionUpdateRequest request) {
+    public void updateTest(String id, String userId, TestUpdateDto request) {
 
         if (metricTestRepository.existTestInStatus(id, Boolean.TRUE)) {
             throw new ForbiddenException("No action permitted, test exists in a published motivation");
@@ -134,19 +114,20 @@ public class TestService {
         var test = testRepository.findById(id);
         test.setPopulatedBy(userId);
 
-        if (!Objects.isNull(request.getTestRequest())) {
+        if (!Objects.isNull(request)) {
 
-            if (!Objects.equals(test.getTES(), request.getTestRequest().TES)) {
+            if (!Objects.equals(test.getTES(), request.TES)) {
                 throw new ForbiddenException("The TES name must be the same.");
             }
 
-            TestMapper.INSTANCE.updateTestFromDto(request.getTestRequest(), test);
-        }
+            TestMapper.INSTANCE.updateTestFromDto(request, test);
 
-        if (!Objects.isNull(request.getTestDefinitionRequest())) {
+            if(!Objects.isNull(request.testMethodId)){
 
-            var testDefinition = testDefinitionRepository.fetchTestDefinitionByTestId(id);
-            testDefinitionService.updateTestDefinition(testDefinition.getId(), userId, request.getTestDefinitionRequest());
+                testMethodRepository.findByIdOptional(request.testMethodId).orElseThrow(()-> new NotFoundException("There is no Test Method with the following id: "+request.testMethodId));
+                test.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
+                test.setTestQuestion(request.testQuestion);
+            }
         }
 
     }
@@ -172,30 +153,25 @@ public class TestService {
     }
 
     @Transactional
-    public TestAndTestDefinitionResponse versionTest(String id, String userId, TestAndTestDefinitionVersionRequest request) {
+    public TestResponseDto versionTest(String id, String userId, TestVersionRequestDto request) {
 
-        if (!Objects.equals(testRepository.findById(id).getTES(), request.getTestRequest().TES)) {
+        if (!Objects.equals(testRepository.findById(id).getTES(), request.TES)) {
             throw new ForbiddenException("The TES name must be the same as the parent test: " + testRepository.findById(id).getTES());
         }
         var parentId = testRepository.findById(id).getLodTES_V();
         var parentTestVersion = testRepository.countVersion(parentId);
 
-        var childTest = TestMapper.INSTANCE.versionTestToEntity(request.getTestRequest());
+        var childTest = TestMapper.INSTANCE.versionTestToEntity(request);
         childTest.setPopulatedBy(userId);
         childTest.setLodTES_V(testRepository.findById(id).getLodTES_V());
+        childTest.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
 
-
-        var parentTestDefinitionId = testDefinitionRepository.fetchTestDefinitionByTestId(id).getLodDFV();
-        var parentTestDefinitionVersion = testDefinitionRepository.countVersion(parentTestDefinitionId); //MAYBE WE DONT NEED THIS BECAUSE THIS VERSION ALWAYS THE SAME AS TEST
-
-        var newVersion = (int) Math.max(parentTestVersion, parentTestDefinitionVersion) + 1 ;
+        var newVersion = (int) parentTestVersion + 1 ;
 
         childTest.setVersion(newVersion);
         testRepository.persist(childTest);
 
-        var childTestDefinition = testDefinitionService.versionTestDefinition(parentTestDefinitionId, userId, request.getTestDefinitionRequest(), childTest.getId(), newVersion);
-
-        return TestMapper.INSTANCE.testAndTestDefinitionToDto(childTest, childTestDefinition);
+        return TestMapper.INSTANCE.testToDto(childTest);
     }
 
     @Transactional
@@ -204,15 +180,12 @@ public class TestService {
         if (metricTestRepository.existTestInStatus(id, Boolean.TRUE)) {
             throw new ForbiddenException("No action permitted, test exists in a published motivation");
         }
-
         var test = testRepository.findById(id).getLodTES_V();
-
-        testDefinitionService.deleteTestDefinitionAllVersions(id); // THIS IS FOR NOT LEAVING TRASH
 
         return testRepository.deleteAllVersions(test);
     }
 
-    public List<TestAndTestDefinitionResponse> getTestAndTestDefinitionListAllVersions(String id, Integer latestVersion) {
+    public List<TestResponseDto> getTestListAllVersions(String id, Integer latestVersion) {
 
         var testParent = testRepository.findById(id);
         if (testParent == null) {
@@ -229,20 +202,8 @@ public class TestService {
         if (testVersionsWithoutLatest.isEmpty()) {
             return List.of();
         }
-
-        var testIds = testVersionsWithoutLatest.stream()
-                .map(Test::getId)
-                .collect(Collectors.toList());
-
-        var testDefinitions = testDefinitionRepository.fetchTestDefinitionsByTestIds(testIds);
-        var testDefinitionMap = testDefinitions.stream()
-                .collect(Collectors.toMap(TestDefinition::getLodTES, td -> td));
-
         var dtoList = testVersionsWithoutLatest.stream()
-                .map(test -> {
-                    var testDefinition = testDefinitionMap.get(test.getId());
-                    return testResponseWithMotivations(test, testDefinition);
-                })
+                .map(this::testResponseWithMotivations)
                 .collect(Collectors.toList());
 
         return dtoList;
@@ -250,7 +211,7 @@ public class TestService {
 
 
 
-    public PageResource<TestAndTestDefinitionResponse> getTestAndTestDefinitionListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
+    public PageResource<TestResponseDto> getTestListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
         var testPage = testRepository.fetchTestByPage(search, sort, order, page, size);
         var tests = testPage.list();
@@ -262,18 +223,12 @@ public class TestService {
                 .map(Test::getId)
                 .collect(Collectors.toList());
 
-        var testDefinitions = testDefinitionRepository.fetchTestDefinitionsByTestIds(testIds);
-        var testDefinitionMap = testDefinitions.stream()
-                .collect(Collectors.toMap(TestDefinition::getLodTES, td -> td));
-
         var dtoList = tests.stream()
                 .map(test -> {
-                    var testDefinition = testDefinitionMap.get(test.getId());
-
                     var latestVersion = test.getVersion();
-                    var versions = getTestAndTestDefinitionListAllVersions(test.getId(), latestVersion);
+                    var versions = getTestListAllVersions(test.getId(), latestVersion);
 
-                    var testResponse = testResponseWithMotivations(test, testDefinition);
+                    var testResponse = testResponseWithMotivations(test);
 
                     testResponse.setVersions(versions);
 
