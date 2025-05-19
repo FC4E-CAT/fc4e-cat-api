@@ -3,6 +3,7 @@ package org.grnet.cat.services.registry;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -27,6 +28,7 @@ import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.MetricTestNode;
+import org.grnet.cat.dtos.registry.test.TestAndTestDefinitionResponse;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
@@ -47,6 +49,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MotivationService {
@@ -108,11 +111,14 @@ public class MotivationService {
         motivation.setPopulatedBy(userId);
         motivation.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
         motivation.setPublished(Boolean.FALSE);
+        motivation.setVersion(1);
         motivationRepository.persist(motivation);
 
         if (request.basedOn != null && !request.basedOn.isEmpty()) {
             relationsService.copyRelationsToNewMotivation(motivation.getId(), request.basedOn);
         }
+
+        motivation.setLodMtvV(motivation.getId());
 
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
@@ -251,8 +257,28 @@ public class MotivationService {
      */
     public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String status, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
-        return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
+        var motivationPage = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
+        var motivations = motivationPage.list();
+
+        if (motivations.isEmpty()) {
+            return new PageResource<>(motivationPage, MotivationMapper.INSTANCE.motivationsToDto(motivations), uriInfo);
+        }
+
+        var dtoList = motivations.stream()
+                .map(motivation -> {
+
+                    var latestVersion = motivation.getVersion();
+                    var versions = getMotivationListAllVersions(motivation.getId(), latestVersion);
+
+                    var motivationResponse = MotivationMapper.INSTANCE.motivationToDto(motivation);
+
+                    motivationResponse.setVersions(versions);
+
+                    return motivationResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(motivationPage, dtoList, uriInfo);
     }
 
     /**
@@ -279,6 +305,72 @@ public class MotivationService {
 
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
+
+
+    /**
+     * Creates a new version of a Motivation.
+     *
+     * @param request The Motivation to be created.
+     * @param userId  The user who requests to create the Motivation.
+     * @return The created Motivation.
+     */
+    @Transactional
+    public MotivationResponse versionMotivation(String userId, MotivationVersionRequest request) {
+
+        var parentId = motivationRepository.findById(request.versionOf).getLodMtvV();
+        var parentMotivationVersion = motivationRepository.countVersion(parentId);
+
+        var motivationChild = MotivationMapper.INSTANCE.versionMotivationToEntity(request);
+
+        motivationChild.setPopulatedBy(userId);
+        motivationChild.setMtv(motivationRepository.findById(request.versionOf).getMtv());
+        motivationChild.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
+        motivationChild.setPublished(Boolean.FALSE);
+        motivationChild.setLodMtvV((motivationRepository.findById(request.versionOf).getLodMtvV()));
+
+        var newVersion = (int) parentMotivationVersion + 1 ;
+
+        motivationChild.setVersion(newVersion);
+
+        motivationRepository.persist(motivationChild);
+
+        if (request.versionOf != null && !request.versionOf.isEmpty()) {
+            relationsService.copyRelationsToVersionMotivation(motivationChild.getId(), request.versionOf);
+        }
+
+        return MotivationMapper.INSTANCE.motivationToDto(motivationChild);
+    }
+
+
+    public List<MotivationResponse> getMotivationListAllVersions(String id, Integer latestVersion) {
+
+        var motivationParent = motivationRepository.findById(id);
+        if (motivationParent == null) {
+            throw new EntityNotFoundException("Motivation with ID " + id + " not found.");
+        }
+        var lodMTR_V = motivationParent.getLodMtvV();
+
+        var motivationVersions = motivationRepository.fetchMotivationAllVersions(lodMTR_V);
+
+        var motivationVersionsWithoutLatest = motivationVersions.stream()
+                .filter(test -> !test.getVersion().equals(latestVersion)) // Filter out the latest version
+                .collect(Collectors.toList());
+
+        if (motivationVersionsWithoutLatest.isEmpty()) {
+            return List.of();
+        }
+
+        var dtoList = motivationVersionsWithoutLatest.stream()
+                .map(MotivationMapper.INSTANCE::motivationToDto)
+                .collect(Collectors.toList());
+
+        return dtoList;
+    }
+
+
+
+
+
 
     /**
      * Retrieves a page of the Actors of a Motivations.

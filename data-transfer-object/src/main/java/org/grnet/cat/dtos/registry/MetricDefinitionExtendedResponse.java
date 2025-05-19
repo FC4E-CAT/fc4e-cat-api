@@ -180,7 +180,7 @@ public class MetricDefinitionExtendedResponse {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = TestAndTestDefinitionResponse.class,
+            implementation = MetricDefinitionExtendedResponse.class,
             description = "List of versions of this metric."
     )
     @JsonProperty("metric_versions")

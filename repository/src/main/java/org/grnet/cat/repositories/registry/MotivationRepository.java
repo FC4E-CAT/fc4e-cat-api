@@ -8,6 +8,7 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
@@ -57,9 +58,11 @@ public class MotivationRepository implements Repository<Motivation, String> {
 
         // Condition for search term
         if (StringUtils.isNotEmpty(search)) {
-            joiner.add("and (m.mtv like :search or m.label like :search)");
+            joiner.add("and (m.mtv ilike :search or m.label ilike :search)");
             parameters.put("search", "%" + search + "%");
         }
+
+        joiner.add("and m.version = (select max(m2.version) from Motivation m2 where m2.lodMtvV = m.lodMtvV)");
 
         // Sorting
         joiner.add("order by m." + sort + " " + order);
@@ -122,6 +125,17 @@ public class MotivationRepository implements Repository<Motivation, String> {
     @Transactional
     public Motivation fetchById(String id) {
         return find("from Motivation m left join fetch m.motivationType mt left join fetch m.actors act left join fetch act.actor left join fetch m.principles pri left join fetch pri.principle where m.id = ?1", id).firstResult();
+    }
+
+    public List<Motivation> fetchMotivationAllVersions(String lodMTVV) {
+        return find("SELECT m FROM Motivation m WHERE m.lodMtvV = ?1 ORDER BY m.version DESC", lodMTVV).list();
+    }
+
+    public long countVersion(String id) {
+        var query = "SELECT COUNT(m) FROM Motivation m WHERE m.lodMtvV = :lodMTVV";
+        return getEntityManager().createQuery(query, Long.class)
+                .setParameter("lodMTVV", id)
+                .getSingleResult();
     }
 
 }
