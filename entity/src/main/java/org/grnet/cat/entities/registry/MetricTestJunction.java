@@ -29,11 +29,6 @@ public class MetricTestJunction extends Registry{
     private Test test;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("testDefinitionId")
-    @JoinColumn(name = "test_definition_lodTDF")
-    private TestDefinition testDefinition;
-
-    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("motivationId")
     private Motivation motivation;
 
@@ -46,15 +41,14 @@ public class MetricTestJunction extends Registry{
     @NotNull
     private Relation relation;
 
-    public MetricTestJunction(Motivation motivation, Metric metric, Test test, TestDefinition testDefinition, Relation relation, String motivationX, Integer lodMTTDV) {
+    public MetricTestJunction(Motivation motivation, Metric metric, Test test, Relation relation, String motivationX, Integer lodMTTDV) {
 
         this.motivation = motivation;
         this.metric = metric;
         this.test = test;
-        this.testDefinition = testDefinition;
         this.motivationX = motivationX;
         this.relation = relation;
-        this.id = new MetricTestId(motivation.getId(),metric.getId(), test.getId(), testDefinition.getId(), lodMTTDV);
+        this.id = new MetricTestId(motivation.getId(),metric.getId(), test.getId(), lodMTTDV);
     }
 
 

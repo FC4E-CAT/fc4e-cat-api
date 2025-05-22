@@ -60,7 +60,7 @@ public class TestEndpoint {
             description = "The corresponding Test item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestAndTestDefinitionResponse.class))
+                    implementation = TestResponseDto.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -100,7 +100,7 @@ public class TestEndpoint {
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
-        var response = testService.getTestAndTestDefinitionById(id);
+        var response = testService.getTestById(id);
 
         return Response.ok(response).build();
     }
@@ -146,12 +146,12 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response createTest(
-            @Valid @NotNull(message = "The request body is empty.") TestAndTestDefinitionRequest request, @Context UriInfo uriInfo) {
+            @Valid @NotNull(message = "The request body is empty.") TestRequestDto request, @Context UriInfo uriInfo) {
 
-        var test = testService.createTestAndTestDefinition(utility.getUserUniqueIdentifier(), request);
+        var test = testService.createTest(utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.testResponse.id)).build()).entity(test).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.id)).build()).entity(test).build();
     }
 
     @Tag(name = "Test")
@@ -203,7 +203,7 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestAndTestDefinitionUpdateRequest testUpdateDto) {
+            @Valid TestUpdateDto testUpdateDto) {
 
         testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
 
@@ -362,7 +362,7 @@ public class TestEndpoint {
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 
-        var tests = testService.getTestAndTestDefinitionListAll(search, sort, order,page - 1, size, uriInfo);
+        var tests = testService.getTestListAll(search, sort, order,page - 1, size, uriInfo);
 
         return Response.ok().entity(tests).build();
     }
@@ -417,12 +417,12 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestAndTestDefinitionVersionRequest request, @Context UriInfo uriInfo ) {
+            @Valid TestVersionRequestDto request, @Context UriInfo uriInfo ) {
 
         var versionTest = testService.versionTest(id, utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(versionTest.testResponse.id)).build()).entity(versionTest).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(versionTest.id)).build()).entity(versionTest).build();
     }
 
 
@@ -492,17 +492,17 @@ public class TestEndpoint {
 
     }
 
-    public static class PageableTestResponse extends PageResource<TestAndTestDefinitionResponse> {
+    public static class PageableTestResponse extends PageResource<TestResponseDto> {
 
-        private List<TestAndTestDefinitionResponse> content;
+        private List<TestResponseDto> content;
 
         @Override
-        public List<TestAndTestDefinitionResponse> getContent() {
+        public List<TestResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<TestAndTestDefinitionResponse> content) {
+        public void setContent(List<TestResponseDto> content) {
             this.content = content;
         }
     }
