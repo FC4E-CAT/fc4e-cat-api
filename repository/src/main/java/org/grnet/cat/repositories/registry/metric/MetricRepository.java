@@ -51,6 +51,13 @@ public class MetricRepository implements Repository<Metric, String> {
                 .getSingleResult();
     }
 
+    public List<Metric> fetchMetricsByIds(List<String> metricIds) {
+        // Query to fetch all metrics based on the list of metricIds
+        return find("SELECT m FROM Metric m WHERE m.id IN :metricIds ORDER BY m.version DESC",
+                Parameters.with("metricIds", metricIds))
+                .list();
+    }
+
     /**
      * Checks if the specified value for a given field in the Metric entity is not unique.
      *
