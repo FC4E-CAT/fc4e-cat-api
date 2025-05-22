@@ -47,6 +47,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MotivationService {
@@ -734,9 +735,57 @@ public class MotivationService {
 
         var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId, page, size);
 
-        var metricDefinitionResponse = MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponses(metricDefinition.list());
+        var junctions = metricDefinition.list();
 
-        return new PageResource<>(metricDefinition, metricDefinitionResponse, uriInfo);
+        if (junctions.isEmpty()) {
+            return new PageResource<>(metricDefinition, List.of(), uriInfo);
+        }
+
+        var metricIds = junctions.stream()
+                .map(j -> j.getMetric().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        var metrics = metricRepository.fetchMetricsByIds(metricIds);
+
+        // Create the response for each metric, including its versions (excluding the version in use)
+        var dtoList = metrics.stream()
+                .map(metric -> {
+                    // Find the junction related to this metric
+                    var junction = junctions.stream()
+                            .filter(j -> j.getMetric().getId().equals(metric.getId()))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("Junction not found"));
+
+                    // Create the DTO for the metric
+                    var dto = metricService.metricResponseWithMotivations(metric, junction);
+
+                    // Fetch all versions for this metric, excluding the version in use
+                    var versions = getMetricVersionsExcludingInUse(metric.getLodMTRV(), metric.getVersion());
+
+                    // Add the versions to the DTO
+                    dto.setVersions(versions);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // Return the paginated result with the list of DTOs
+        return new PageResource<>(metricDefinition, dtoList, uriInfo);
+    }
+
+
+    private List<MetricDefinitionExtendedResponse> getMetricVersionsExcludingInUse(String lodMTRV, Integer currentVersion) {
+        // Fetch all versions of the metric based on its lodMTRV
+        var metricVersions = metricDefinitionRepository.fetchMetricAndDefinitionVersion(lodMTRV);
+
+        return metricVersions.stream()
+                .filter(junction -> !junction.getMetric().getVersion().equals(currentVersion)) // Exclude the current version
+                .map(junction -> {
+                    var dto = metricService.metricResponseWithMotivations(junction.getMetric(), junction);
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     public MetricDefinitionExtendedResponse getMetricDefinitionRelation(String motivationId, String metricId) {

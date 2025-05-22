@@ -234,7 +234,7 @@ public class MetricService {
         return new PageResource<>(metricDefinitionPage, dtoList, uriInfo);
     }
 
-    private List<MetricDefinitionExtendedResponse> getMetricVersions(String metricParent, Integer latestVersion) {
+    public List<MetricDefinitionExtendedResponse> getMetricVersions(String metricParent, Integer latestVersion) {
 
         var metricVersions = metricDefinitionRepository.fetchMetricAndDefinitionVersion(metricParent);
 
@@ -255,7 +255,7 @@ public class MetricService {
      * @param metric The Test entity to be converted and enhanced.
      * @return A PrincipleResponseDto with associated motivations.
      */
-    private MetricDefinitionExtendedResponse metricResponseWithMotivations(Metric metric, MetricDefinitionJunction junction) {
+    public MetricDefinitionExtendedResponse metricResponseWithMotivations(Metric metric, MetricDefinitionJunction junction) {
 
         var metricAndDefinitionToDto = MetricMapper.INSTANCE.metricAndDefinitionToDto(metric, junction);
 

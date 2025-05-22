@@ -74,6 +74,5 @@ public class Test {
     private String testQuestion;
 
     @Column(name = "tooltip")
-    @NotNull
     private String toolTip;
 }
