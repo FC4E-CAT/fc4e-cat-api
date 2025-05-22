@@ -2,6 +2,7 @@ package org.grnet.cat.dtos.registry.motivation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
@@ -9,6 +10,7 @@ import org.grnet.cat.dtos.registry.actor.PartialMotivationActorResponse;
 import org.grnet.cat.dtos.registry.codelist.MotivationTypeResponse;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
+import org.grnet.cat.dtos.registry.test.TestAndTestDefinitionResponse;
 
 import java.util.List;
 
@@ -88,6 +90,16 @@ public class MotivationResponse {
     public String lodMtvP;
 
     @Schema(
+            type = SchemaType.INTEGER,
+            implementation = String.class,
+            description = "The version of the motivation.",
+            example = "1"
+    )
+    @JsonProperty(value = "version")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Integer version;
+
+    @Schema(
             type = SchemaType.BOOLEAN,
             implementation = Boolean.class,
             description = "The published status of the motivation.",
@@ -112,5 +124,15 @@ public class MotivationResponse {
     )
     @JsonProperty(value = "principles")
     public List<PrincipleResponseDto> principles;
+
+    @Setter
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = MotivationResponse.class,
+            description = "List of versions of this test."
+    )
+    @JsonProperty("motivation_versions")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<MotivationResponse> versions;
 
 }

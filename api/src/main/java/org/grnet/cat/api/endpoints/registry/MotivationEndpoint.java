@@ -348,6 +348,61 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
+            summary = "Create a version of a Motivation.",
+            description = "Create a new version of Motivation.")
+    @APIResponse(
+            responseCode = "201",
+            description = "Motivation created successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MotivationResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Motivation already exists.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/version-motivation")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response versionMotivation(@Valid @NotNull(message = "The request body is empty.") MotivationVersionRequest request,
+                           @Context UriInfo uriInfo) {
+
+        var motivation = motivationService.versionMotivation(utility.getUserUniqueIdentifier(), request);
+
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(motivation.id)).build()).entity(motivation).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
             summary = "Get list of Actors of a Motivation.",
             description = "This endpoint retrieves all Actors of a Motivation." +
                     "By default, the first page of 10 Motivations will be returned. You can tune the default values by using the query parameters page and size.")

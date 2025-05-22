@@ -46,6 +46,10 @@ public class Motivation extends Registry {
     @Column(name = "lodMTV_V")
     private String lodMtvV;
 
+
+    @Column(name = "version")
+    private Integer version;
+
     @Column
     private Boolean  published;
 
