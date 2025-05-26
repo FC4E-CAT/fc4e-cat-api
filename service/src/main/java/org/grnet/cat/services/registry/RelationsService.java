@@ -80,6 +80,23 @@ public class RelationsService {
         }
     }
 
+
+    @Transactional
+    public void copyRelationsToVersionMotivation(String newMotivationId, String sourceMotivationId) {
+
+        try {
+            entityManager
+                    .createNativeQuery("CALL CopyRelationsToVersionMotivation(:newMotivationId, :sourceMotivationId)")
+                    .setParameter("newMotivationId", newMotivationId)
+                    .setParameter("sourceMotivationId", sourceMotivationId)
+                    .executeUpdate();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLException) {
+                throw new InternalServerErrorException(e.getCause().getMessage(), 500);
+            }
+        }
+    }
+
     @Setter
     @Getter
     public static class RelationsResponse {

@@ -14,6 +14,7 @@ import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
+import org.grnet.cat.dtos.registry.motivation.MotivationVersionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
@@ -1165,6 +1166,50 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .then()
                 .assertThat()
                 .statusCode(200);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createNewMotivationVersion() {
+
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = ("mtv" + UUID.randomUUID()).toUpperCase();
+        motivationRequest.label = "Test Motivation";
+        motivationRequest.description = "Test Motivation Description";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        var motivationVersionRequest = new MotivationVersionRequest();
+        motivationVersionRequest.label = "Test Motivation";
+        motivationVersionRequest.description = "Test Motivation Description";
+        motivationVersionRequest.motivationTypeId = "pid_graph:8882700E";
+        motivationVersionRequest.versionOf = motivationResponse.id;
+
+        var motivationVersionResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationVersionRequest)
+                .contentType(ContentType.JSON)
+                .post("/version-motivation")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        assertEquals(motivationResponse.mtv, motivationVersionResponse.mtv);
+        assertEquals(2, motivationVersionResponse.version);
     }
 
 
