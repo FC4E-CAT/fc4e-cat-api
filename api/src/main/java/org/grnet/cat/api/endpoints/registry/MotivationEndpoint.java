@@ -42,6 +42,7 @@ import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.metric.DetailedMetricDto;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
 import org.grnet.cat.dtos.registry.metric.MotivationMetricUpdateRequest;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricVersionRequest;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
@@ -2637,7 +2638,7 @@ public class MotivationEndpoint {
             @PathParam("metric-id")
             @Valid
             @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String metricId,
-            @Valid @NotNull(message = "The request body is empty.") MotivationMetricExtendedRequest request) {
+            @Valid @NotNull(message = "The request body is empty.") MotivationMetricVersionRequest request) {
 
         var response = motivationService.createMetricDefinitionVersionForMotivation(id, metricId, request, utility.getUserUniqueIdentifier());
 
