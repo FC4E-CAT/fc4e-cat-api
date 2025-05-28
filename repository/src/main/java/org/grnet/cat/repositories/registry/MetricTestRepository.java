@@ -141,6 +141,17 @@ public class MetricTestRepository implements Repository<MetricTestJunction, Stri
         ).firstResultOptional().isPresent();
     }
 
+    public boolean existTypeBenchmarkInStatus(String typeBenchmarkId, boolean status) {
+        return find(
+                "SELECT 1 FROM MetricTestJunction mt " +
+                        "INNER JOIN CriterionMetricJunction cm ON mt.id.metricId = cm.id.metricId " +
+                        "INNER JOIN CriterionActorJunction ca ON cm.id.criterionId = ca.id.criterionId " +
+                        "INNER JOIN MotivationActorJunction ma ON ca.id.actorId = ma.id.actorId " +
+                        "WHERE mt.metric.typeBenchmark.id = ?1 AND ma.published = ?2",
+                typeBenchmarkId, status
+        ).firstResultOptional().isPresent();
+    }
+
     @SuppressWarnings("unchecked")
     public List<MetricTestProjection> fetchMotivationMetricTests(String motivationId, String metricId) {
         return (List<MetricTestProjection>) getEntityManager()
@@ -149,7 +160,7 @@ public class MetricTestRepository implements Repository<MetricTestJunction, Stri
                         "        t.TES,\n" +
                         "        t.labelTest,\n" +
                         "        t.descTest,\n" +
-                        "        md.valueBenchmark,\n" +
+                        "        m.valueBenchmark,\n" +
                         "        tb.labelBenchmarkType,\n" +
                         "        tm.labelTestMethod,\n" +
                         "        t.testQuestion,\n" +
@@ -163,16 +174,14 @@ public class MetricTestRepository implements Repository<MetricTestJunction, Stri
 
                         "    FROM\n" +
                         "        t_Type_Benchmark tb \n" +
-                        "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
-                        "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                        "        INNER JOIN p_Metric m ON tb.lodTBN = m.lodTBN\n" +
                         "        INNER JOIN p_Metric_Test mt ON m.lodMTR = mt.metric_lodMTR\n" +
                         "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
                         "        INNER JOIN t_TestMethod tm ON t.lodTME = tm.lodTME\n" +
                         "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
                         "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
                         "    WHERE\n" +
-                        "        md.motivation_lodMTV = :motivationId\n" +
-                        "       AND  md.metric_lodMTR = :metricId\n" +
+                        "        mt.motivation_lodMTV = :motivationId\n" +
                         "        AND mt.motivation_lodMTV = :motivationId\n" +
                         "        AND mt.metric_lodMTR = :metricId\n" +
                         "        AND m.lodMTR = :metricId\n" +

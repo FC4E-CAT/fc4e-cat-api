@@ -10,7 +10,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkResponse;
 import org.grnet.cat.dtos.registry.codelist.TypeBenchmarkUpdateDto;
 import org.grnet.cat.mappers.registry.TypeBenchmarkMapper;
-import org.grnet.cat.repositories.registry.MetricDefinitionRepository;
+import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TypeBenchmarkRepository;
 
 @ApplicationScoped
@@ -18,9 +18,8 @@ public class TypeBenchmarkService {
     @Inject
     TypeBenchmarkRepository typeBenchmarkRepository;
 
-
     @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
+    MetricTestRepository metricTestRepository;
 
     /**
      * Retrieves a specific TypeBenchmark.
@@ -34,7 +33,7 @@ public class TypeBenchmarkService {
 
         var tb = TypeBenchmarkMapper.INSTANCE.typeBenchmarkToDto(typeBenchmark);
 
-        tb.usedByPublishedMotivations = metricDefinitionRepository.existTypeBenchmarkInStatus(id, Boolean.TRUE);
+        tb.usedByPublishedMotivations = metricTestRepository.existTypeBenchmarkInStatus(id, Boolean.TRUE);
 
         return tb;
     }
@@ -50,7 +49,7 @@ public class TypeBenchmarkService {
      */
     @Transactional
     public TypeBenchmarkResponse updateTypeBenchmark(String id, String userId, TypeBenchmarkUpdateDto request) {
-        if (metricDefinitionRepository.existTypeBenchmarkInStatus(id, Boolean.TRUE)) {
+        if (metricTestRepository.existTypeBenchmarkInStatus(id, Boolean.TRUE)) {
             throw new ForbiddenException("No action permitted, type benchmark exists in a published motivation");
         }
 
@@ -76,9 +75,8 @@ public class TypeBenchmarkService {
         var typeBenchmarkPage = typeBenchmarkRepository.fetchTypeBenchmarksByPage(page, size, enabled);
         var typeBenchmarkDTOs = TypeBenchmarkMapper.INSTANCE.typeBenchmarkToDtos(typeBenchmarkPage.list());
 
-        typeBenchmarkDTOs.forEach(tb-> tb.usedByPublishedMotivations = metricDefinitionRepository.existTypeBenchmarkInStatus(tb.id, Boolean.TRUE));
+        typeBenchmarkDTOs.forEach(tb-> tb.usedByPublishedMotivations = metricTestRepository.existTypeBenchmarkInStatus(tb.id, Boolean.TRUE));
 
         return new PageResource<>(typeBenchmarkPage, typeBenchmarkDTOs, uriInfo);
-
     }
 }

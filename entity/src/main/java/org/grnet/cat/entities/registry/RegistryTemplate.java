@@ -54,7 +54,6 @@ public class RegistryTemplate {
     private String testParams;
 
     private String toolTip;
-    private String md_mtv;
 
     private String mt_mtv;
     private String cm_mtv;

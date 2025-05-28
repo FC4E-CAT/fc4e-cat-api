@@ -13,7 +13,7 @@ public class MetricUpdateDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Metric code.",
+            description = "The unique identifier for the metric",
             example = "MTR001"
     )
     @JsonProperty("mtr")
@@ -22,8 +22,8 @@ public class MetricUpdateDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The label of the Metric.",
-            example = "Metric Label"
+            description = "Label for the metric",
+            example = "Performance Metric"
     )
     @JsonProperty("label")
     public String labelMetric;
@@ -31,8 +31,8 @@ public class MetricUpdateDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The description of the Metric.",
-            example = "This is the description of the metric."
+            description = "Description of the metric",
+            example = "This metric measures performance."
     )
     @JsonProperty("description")
     public String descrMetric;
@@ -40,16 +40,17 @@ public class MetricUpdateDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The URL of the Metric.",
+            description = "URL for more information about the metric",
             example = "http://example.com/metric"
     )
     @JsonProperty("url")
     public String urlMetric;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The associated Type Algorithm ID.",
-            example = "pid_graph:682883EA"
+            description = "The ID of the Type Algorithm associated with this metric",
+            example = "pid_graph:2050775C"
     )
     @NotFoundEntity(repository = TypeAlgorithmRepository.class, message = "There is no Algorithm Type with the following id:")
     @JsonProperty("type_algorithm_id")
@@ -58,10 +59,28 @@ public class MetricUpdateDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The associated Type Metric ID.",
-            example = "pid_graph:8720C485"
+            description = "The ID of the Type Metric associated with this metric",
+            example = "pid_graph:35966E2B"
     )
     @NotFoundEntity(repository = TypeMetricRepository.class, message = "There is no Metric Type with the following id:")
     @JsonProperty("type_metric_id")
     public String typeMetricId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Type ID.",
+            example = "pid_graph:0917EC0D"
+    )
+    @JsonProperty("type_benchmark_id")
+    public String typeBenchmarkId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Value.",
+            example = "3"
+    )
+    @JsonProperty("value_benchmark")
+    public String valueBenchmark;
 }

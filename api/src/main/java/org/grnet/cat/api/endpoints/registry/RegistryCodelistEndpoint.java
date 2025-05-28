@@ -329,7 +329,7 @@ public class RegistryCodelistEndpoint {
     public Response getTypeBenchmark(@Parameter(
             description = "The ID of the Type Benchmark to retrieve.",
             required = true,
-            example = "pid_graph:3E109BBA",
+            example = "pid_graph:16108D9B",
             schema = @Schema(type = SchemaType.STRING))
                                      @PathParam("id")
                                      @Valid @NotFoundEntity(repository = TypeBenchmarkRepository.class, message = "There is no TypeBenchmark with the following id:") String
@@ -394,8 +394,6 @@ public class RegistryCodelistEndpoint {
 
         return Response.ok(updatedDto).build();
     }
-
-
 
     @Tag(name = "Metrics")
     @Operation(
@@ -705,7 +703,7 @@ public class RegistryCodelistEndpoint {
         return Response.ok().entity(relation).build();
     }
 
-    @Tag(name = "Registry Codelist")
+    @Tag(name = "Metrics")
     @Operation(
             summary = "Get list of Relation.",
             description = "This endpoint retrieves all Relation." +
