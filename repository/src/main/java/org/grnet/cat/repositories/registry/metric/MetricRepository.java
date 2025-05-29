@@ -3,6 +3,8 @@ package org.grnet.cat.repositories.registry.metric;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
@@ -13,6 +15,9 @@ import java.util.List;
 
 @ApplicationScoped
 public class MetricRepository implements Repository<Metric, String> {
+
+    @Inject
+    EntityManager em;
 
     /**
      * Retrieves a page of Metric.
@@ -56,6 +61,20 @@ public class MetricRepository implements Repository<Metric, String> {
         return find("SELECT m FROM Metric m WHERE m.id IN :metricIds ORDER BY m.version DESC",
                 Parameters.with("metricIds", metricIds))
                 .list();
+    }
+
+    public List<Object[]> fetchMetricTypeAlgorithmCombinations() {
+        var sql = "SELECT tmt.labelTypeMetric, ta.labelAlgorithmType, tb.labelBenchmarkType, COUNT(*) " +
+                "FROM\n" +
+                "        t_Type_Benchmark tb \n" +
+                "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
+                "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
+                "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
+                "GROUP BY tmt.labelTypeMetric, ta.labelAlgorithmType, tb.labelBenchmarkType";
+
+        var query = em.createNativeQuery(sql);
+        return query.getResultList();
     }
 
     /**

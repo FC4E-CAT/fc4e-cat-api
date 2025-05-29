@@ -30,6 +30,7 @@ import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
+import org.grnet.cat.dtos.registry.metric.TypeCombinationDto;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.services.registry.metric.MetricService;
 import org.grnet.cat.utils.Utility;
@@ -361,6 +362,44 @@ public class MetricEndpoint {
 
         return Response.ok().entity(metrics).build();
     }
+
+    @Tag(name = "Metrics")
+    @Operation(
+            summary = "List all Types Combinations",
+            description = "Retrieves a list of Types Combination of Metrics."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Types Combinations",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = TypeCombinationDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")    @Path("/types-statistics")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public List<TypeCombinationDto> getMetricTypeStatistics() {
+        return metricService.getMetricTypeStatistics();
+    }
+
 
     public static class PageableMetricResponse extends PageResource<MetricDefinitionExtendedResponse> {
 
