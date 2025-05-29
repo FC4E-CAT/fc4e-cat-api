@@ -15,6 +15,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
@@ -310,6 +311,15 @@ public class TestMethodEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response listTestMethods(
+            @Parameter(name="Search", in = QUERY,
+                    description = "The \"search\" parameter allows clients to search " +
+                            "for matches in specific fields in the Testmethod entity. " +
+                            "The search will be conducted in the following fields: " +
+                            "label.",
+                    examples = {
+                    @ExampleObject(name = "Manual", value = "Manual"),
+                    @ExampleObject(name = "Auto", value = "Auto")})
+            @QueryParam("search") String search,
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.")
             @DefaultValue("1")
@@ -323,7 +333,7 @@ public class TestMethodEndpoint {
             @QueryParam("size") int size,
             @Context UriInfo uriInfo) {
 
-        var testMethods = testMethodService.getTestMethodlistAll(page - 1, size, uriInfo);
+        var testMethods = testMethodService.getTestMethodListAll(search, page - 1, size, uriInfo);
 
         return Response.ok().entity(testMethods).build();
     }

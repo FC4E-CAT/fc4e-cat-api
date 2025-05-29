@@ -101,9 +101,9 @@ public class TestMethodService {
      * @param uriInfo The Uri Info for pagination links.
      * @return A PageResource containing the TestMethod items in the requested page.
      */
-    public PageResource<TestMethodResponseDto> getTestMethodlistAll(int page, int size, UriInfo uriInfo) {
+    public PageResource<TestMethodResponseDto> getTestMethodListAll(String search, int page, int size, UriInfo uriInfo) {
 
-        var testMethodPage = testMethodRepository.fetchTestMethodByPage(page, size);
+        var testMethodPage = testMethodRepository.fetchTestMethodByPage(search,page, size);
         var testMethodDtos = TestMethodMapper.INSTANCE.testMethodToDtos(testMethodPage.list());
 
         return new PageResource<>(testMethodPage, testMethodDtos, uriInfo);
