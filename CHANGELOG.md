@@ -28,6 +28,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#476](https://github.com/FC4E-CAT/fc4e-cat-api/pull/476) CAT-860: Version Tests in Library
 - [#485](https://github.com/FC4E-CAT/fc4e-cat-api/pull/485) CAT-871 Version a Metric in Motivation and view metric versions on Library
 - [#489](https://github.com/FC4E-CAT/fc4e-cat-api/pull/489) CAT-878 Version Motivation
+- [#493](https://github.com/FC4E-CAT/fc4e-cat-api/pull/493) CAT-884 Add Fully-Automated-Validation test method and integrate AARC-G056 claim checks.
 - [#494](https://github.com/FC4E-CAT/fc4e-cat-api/pull/494) CAT-885: Statistics of the Combination of Types in a Metric
 - [#495](https://github.com/FC4E-CAT/fc4e-cat-api/pull/495) CAT-886 Implement Search Functionality for Testmethod
 - [#497](https://github.com/FC4E-CAT/fc4e-cat-api/pull/497) CAT-891 Publishing to Zenodo New Version

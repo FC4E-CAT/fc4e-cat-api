@@ -1,12 +1,17 @@
 package org.grnet.cat.entities.registry;
 
 
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Entity(name = "MotivationActorJunction")
@@ -38,7 +43,11 @@ public class MotivationActorJunction extends Registry{
     @Column
     private Boolean  published;
 
-    public MotivationActorJunction(Motivation motivation, RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch,Boolean published) {
+    @Type(JsonType.class)
+    @Column(name = "automated_group_test", columnDefinition = "jsonb")
+    private List<Map<String, Object>> automatedGroupTest = new ArrayList<>();
+
+    public MotivationActorJunction(Motivation motivation, RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch, Boolean published, List<Map<String, Object>> automatedGroupTest) {
 
         this.motivation = motivation;
         this.actor = actor;
@@ -47,6 +56,7 @@ public class MotivationActorJunction extends Registry{
         this.setLastTouch(lastTouch);
         this.setPopulatedBy(populatedBy);
         this.published=published;
+        this.automatedGroupTest = automatedGroupTest;
         this.id = new MotivationActorId(motivation.getId(), actor.getId(), lodMAV);
     }
 

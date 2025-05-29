@@ -9,10 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class IntrospectionInfo {
-
-    @JsonProperty("entitlements")
-    private List<String> entitlements;
+public class AccessTokenInfo {
 
     @JsonProperty("sub")
     private String sub;
@@ -20,12 +17,6 @@ public class IntrospectionInfo {
     @JsonProperty("voperson_id")
     @JsonDeserialize(using = StringOrArrayDeserializer.class)
     private List<String> vopersonId;
-
-    @JsonProperty("schac_home_organization")
-    private String organizationDomain;
-
-    @JsonProperty("voperson_external_affiliation")
-    private List<String> affiliationWithHomeOrganization;
 
     @JsonProperty("eduperson_assurance")
     private List<String> assurance;

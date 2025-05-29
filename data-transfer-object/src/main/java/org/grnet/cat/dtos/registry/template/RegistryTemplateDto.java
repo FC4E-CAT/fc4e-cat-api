@@ -7,7 +7,9 @@ import org.grnet.cat.dtos.template.TemplateOrganisationDto;
 import org.grnet.cat.dtos.template.TemplateResultDto;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Schema(name = "RegistryTemplate", description = "This object represents a Registry Template.")
 public class RegistryTemplateDto {
@@ -26,6 +28,9 @@ public class RegistryTemplateDto {
     public boolean published;
 
     public String timestamp = "";
+
+    @JsonProperty(value = "automated_group_test")
+    public List<Map<String, Object>> automatedGroupTest = new ArrayList<>();
 
     public RegistryTemplateActorDto actor;
 
