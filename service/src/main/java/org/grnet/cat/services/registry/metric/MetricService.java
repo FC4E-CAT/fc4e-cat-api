@@ -12,6 +12,7 @@ import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
+import org.grnet.cat.dtos.registry.metric.TypeCombinationDto;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
@@ -267,6 +268,22 @@ public class MetricService {
         metricAndDefinitionToDto.setMotivations(motivationResponses);
 
         return metricAndDefinitionToDto;
+    }
+
+    public List<TypeCombinationDto> getMetricTypeStatistics() {
+        List<Object[]> results = metricRepository.fetchMetricTypeAlgorithmCombinations();
+
+        return results.stream()
+                .map(result -> {
+                    var dto = new TypeCombinationDto();
+                    dto.setTypeMetric((String) result[0]);
+                    dto.setTypeAlgorithm((String) result[1]);
+                    dto.setTypeBenchmark((String) result[2]);
+                    dto.setUsageCount(((Number) result[3]).intValue());
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
 }
