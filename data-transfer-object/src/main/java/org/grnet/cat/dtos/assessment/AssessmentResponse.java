@@ -67,4 +67,13 @@ public class AssessmentResponse {
     )
     @JsonProperty("published")
     public Boolean published;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The parent of the assessment",
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0"
+    )
+    @JsonProperty("parent_assessment_id")
+    public String parentAssessmentId;
 }

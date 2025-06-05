@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -102,10 +103,22 @@ public class ZenodoService {
                 ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId())
         );
 
+        // Check parent to decide if a new version should be created
+        Optional<ZenodoAssessmentInfo> parentZenodoOpt = Optional.empty();
+        var parentId = assessment.getParentAssessmentId();
+
+        if (!assessment.getId().equals(parentId)) {
+            parentZenodoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(parentId);
+            if (parentZenodoOpt.isPresent() && !parentZenodoOpt.get().getIsPublished()) {
+                // if parent is unpublished, ignore it
+                parentZenodoOpt = Optional.empty();
+            }
+        }
+
+        Optional<ZenodoAssessmentInfo> finalParentZenodoOpt = parentZenodoOpt;
         CompletableFuture.runAsync(() -> {
             try {
-                // Call the method to run the steps asynchronously
-                runStepsInSequence(assessment, binaryContent, activeUser, sharedUserIds)
+                runStepsInSequence(assessment, binaryContent, activeUser, sharedUserIds, finalParentZenodoOpt)
                         .join(); // Ensures the process completes in the background
             } catch (Exception e) {
                 // Log the error but do not affect the user response
@@ -308,7 +321,7 @@ public class ZenodoService {
 
     }
 
-    public CompletableFuture<Void> runStepsInSequence(MotivationAssessment assessment, byte[] binaryContent, User activeUser, List<String> sharedUsersIds) {
+    public CompletableFuture<Void> runStepsInSequence(MotivationAssessment assessment, byte[] binaryContent, User activeUser, List<String> sharedUsersIds, Optional<ZenodoAssessmentInfo> parentZenodoOpt) {
         final AtomicReference<ZenodoState> state = new AtomicReference<>(ZenodoState.PROCESS_INIT);
         final AtomicReference<String> depositIdRef = new AtomicReference<>(null);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
@@ -318,13 +331,36 @@ public class ZenodoService {
                     // Step 1: Preparation of assessment for Zenodo
                     System.out.println("Step 1: Preparing assessment for Zenodo...");
                     var metadata = createMetadata(assessment, activeUser, sharedUsersIds);
-                    var response = createDeposit(metadata);
-                    var depositId = response.get("id");
-                    if (depositId == null) {
-                        throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
+                    Map<String, Object> response;
+
+                    if (parentZenodoOpt.isPresent() && parentZenodoOpt.get().getIsPublished()) {
+                        String parentDepositId = parentZenodoOpt.get().getId().getDepositId();
+                        System.out.println("Creating new version from parent deposit: " + parentDepositId);
+                        response = zenodoClient.createNewVersion(getAccessToken(), parentDepositId);
+
+                        var links = (Map<String, Object>) response.get("links");
+                        String latestDraftUrl = (String) links.get("latest_draft");
+                        String extractedId = extractIdFromUrl(latestDraftUrl);
+
+                        if (extractedId == null) {
+                            throw new RuntimeException("Failed to extract draft deposit ID from Zenodo response.");
+                        }
+
+                        zenodoClient.updateDeposit(getAccessToken(), extractedId, metadata); // full payload including "metadata" key
+
+                        depositIdRef.set(extractedId);
+                    }  else {
+                        System.out.println("Creating new deposit from scratch");
+                        response = createDeposit(metadata);
+
+                        var depositId = response.get("id");
+                        if (depositId == null) {
+                            throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
+                        }
+                        depositIdRef.set(String.valueOf(depositId));
                     }
-                    depositIdRef.set(String.valueOf(depositId));
-                    return depositId;
+
+                    return depositIdRef.get();
                 }, executorService)
                 .thenApply(depositId -> {
                     // Step 2: Upload to Zenodo
@@ -363,7 +399,9 @@ public class ZenodoService {
                 .thenApply(depositId -> {
                     // Step 4: Publish deposit only after DB write succeeds
                     System.out.println("Step 4: Publishing deposit...");
+                    System.out.println("Calling publishDeposit for depositId: " + depositIdRef.get());
                     publishDeposit(depositIdRef.get());
+
                     return depositId;
                 })
                 .thenAccept(depositId -> {
@@ -535,7 +573,9 @@ public class ZenodoService {
                 "title", title,
                 "upload_type", uploadType,
                 "description", description,
-                "creators", creators));
+                "creators", creators,
+                "publication_date", LocalDate.now().toString(),
+                "access_right", "open"));
         if (!contributors.isEmpty()) {
             metadata.put("contributors", contributors);
         }
@@ -562,5 +602,11 @@ public class ZenodoService {
         return dbAssessmentToJson.assessmentDoc.name + "/"
                 + dbAssessmentToJson.assessmentDoc.organisation.name + "/"
                 + dbAssessmentToJson.assessmentDoc.actor.getName();
+    }
+
+    private String extractIdFromUrl(String url) {
+        if (url == null) return null;
+        String[] parts = url.split("/");
+        return parts.length > 0 ? parts[parts.length - 1] : null;
     }
 }

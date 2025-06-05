@@ -304,6 +304,65 @@ public class ZenodoEndpointTest extends KeycloakTest {
         String expectedMessage = "Invalid PDF file format.";
         assertEquals(expectedMessage, response.message);
     }
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void testVersionPublishedZenodo() throws  IOException {
+        var originalAssessment = createRegistryPublicAssessment(validatedToken);
+
+        var pdf = generateValidPdf();
+
+        var responseOriginal = given()
+                .auth()
+                .oauth2(validatedToken)
+                .body(pdf)
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", originalAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        var zenodoAssessmentInfoOriginal = given()
+                .auth()
+                .oauth2(validatedToken)
+                .get("/assessment/{id}", originalAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ZenodoAssessmentInfoResponse.class);
+
+        var childAssessment = createRegistryPublicAssessment(validatedToken);
+
+        childAssessment.parentAssessmentId = originalAssessment.parentAssessmentId;
+
+        var responseChild = given()
+                .auth()
+                .oauth2(validatedToken)
+                .body(pdf)
+                .contentType("application/octet-stream")
+                .post("/publish/assessment/{id}", childAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        var zenodoAssessmentInfoChild = given()
+                .auth()
+                .oauth2(validatedToken)
+                .get("/assessment/{id}", childAssessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(ZenodoAssessmentInfoResponse.class);
+
+
+
+        assertEquals(ZenodoState.PROCESS_COMPLETED.getType(), zenodoAssessmentInfoChild.getZenodoState());
+    }
 
     private RegistryAssessmentDto makeRegistryJsonDoc() throws IOException {
 

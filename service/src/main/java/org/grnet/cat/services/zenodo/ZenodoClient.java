@@ -43,4 +43,12 @@ public interface ZenodoClient {
     @Path("/api/deposit/depositions/{id}")
     Map<String, Object> getDeposit(@HeaderParam("Authorization") String token, @PathParam("id") String id) throws WebApplicationException, ProcessingException;
 
+    @POST
+    @Path("/api/deposit/depositions/{id}/actions/newversion")
+    Map<String, Object> createNewVersion(@HeaderParam("Authorization") String token, @PathParam("id") String parentDepositId) throws WebApplicationException, ProcessingException;
+
+    @PUT
+    @Path("/api/deposit/depositions/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    Map<String, Object> updateDeposit(@HeaderParam("Authorization") String accessToken, @PathParam("id") String depositionId, Map<String, Object> metadata);
 }

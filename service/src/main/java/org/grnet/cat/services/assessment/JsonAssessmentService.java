@@ -108,6 +108,8 @@ public class JsonAssessmentService {
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
 
         motivationAssessmentRepository.persist(assessment);
+        assessment.setParentAssessmentId(assessment.getId());
+
         var doc = assessment.getAssessmentDoc();
         ObjectNode jsonNode = null;
         try {

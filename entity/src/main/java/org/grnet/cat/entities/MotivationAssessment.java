@@ -75,6 +75,9 @@ public class MotivationAssessment {
     @Column
     private Boolean  published;
 
+    @Column(name = "parent_assessment_id")
+    private String parentAssessmentId;
+
     public Boolean getPublished() {
         return published;
     }
