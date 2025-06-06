@@ -234,7 +234,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         var em = Panache.getEntityManager();
 
-        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
+        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published, a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
                 .setParameter("actorId", actorId)
                 .setParameter("published", true);
 
@@ -244,7 +244,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         if (StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published , a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("name", subjectName)
@@ -259,7 +259,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         } else if (StringUtils.isNotEmpty(subjectName)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published :published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published , a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published =:published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("name", subjectName);
@@ -296,7 +296,6 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return pageable;
     }
-
     /**
      * Retrieves a page of  assessment objects.
      *
