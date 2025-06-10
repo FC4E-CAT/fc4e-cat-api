@@ -116,6 +116,8 @@ public class JsonAssessmentService {
             jsonNode = (ObjectNode) objectMapper.readTree(doc);
 
             jsonNode.put("id", assessment.getId());
+            jsonNode.put("version", "v1");
+
 
             assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
         } catch (JsonProcessingException e) {
@@ -126,6 +128,85 @@ public class JsonAssessmentService {
 
         keycloakAdminService.addEntitlementsToUser(userId, ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId()));
         return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+    }
+
+    @Transactional
+    public UserJsonRegistryAssessmentResponse versionPublishedAssessment(String userId, String assessmentId) {
+        var existing = motivationAssessmentRepository.findById(assessmentId);
+        if (existing == null) {
+            throw new NotFoundException("Assessment not found");
+        }
+
+        // Determine the root (original) assessment
+        var parentId = existing.getParentAssessmentId() != null ?
+                existing.getParentAssessmentId() : existing.getId();
+
+        // Count previous versions
+        var countVersions = motivationAssessmentRepository.getAllVersions(parentId).size();
+        int nextVersion = countVersions + 1;
+
+        // Parse & update document
+        ObjectNode docNode;
+        try {
+            docNode = (ObjectNode) objectMapper.readTree(existing.getAssessmentDoc());
+            docNode.put("version", "v" + nextVersion);
+            docNode.put("timestamp", Instant.now().toString());
+            docNode.put("published", false);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Invalid assessmentDoc", e);
+        }
+
+        // Clean answers
+        var cleanedDoc = cleanAssessmentAnswers(docNode);
+
+        // Create versioned assessment
+        var newAssessment = new MotivationAssessment();
+        newAssessment.setValidation(existing.getValidation());
+        newAssessment.setMotivation(existing.getMotivation());
+        newAssessment.setSubject(existing.getSubject());
+        newAssessment.setCreatedOn(Timestamp.from(Instant.now()));
+        newAssessment.setParentAssessmentId(parentId);
+        newAssessment.setAssessmentDoc(cleanedDoc.toString());
+        newAssessment.setShared(false);
+        newAssessment.setPublished(false);
+
+
+        motivationAssessmentRepository.persist(newAssessment);
+
+        try {
+            var docWithId = (ObjectNode) objectMapper.readTree(newAssessment.getAssessmentDoc());
+            docWithId.put("id", newAssessment.getId());
+            newAssessment.setAssessmentDoc(objectMapper.writeValueAsString(docWithId));
+        } catch (Exception e) {
+        }
+
+        keycloakAdminService.addEntitlementsToUser(userId,
+                ShareableEntityType.ASSESSMENT.getValue() + "|" + newAssessment.getId());
+
+        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(newAssessment);
+    }
+
+    private JsonNode cleanAssessmentAnswers(JsonNode originalDoc) {
+        var copy = originalDoc.deepCopy();
+        ((ObjectNode) copy.path("result")).putNull("compliance");
+        ((ObjectNode) copy.path("result")).putNull("ranking");
+
+        for (var principle : copy.path("principles")) {
+            for (var criterion : principle.path("criteria")) {
+                var metric = (ObjectNode) criterion.path("metric");
+                if (metric != null) {
+                    metric.putNull("value");
+                    metric.putNull("result");
+
+                    for (var test : metric.path("tests")) {
+                        ((ObjectNode) test).putNull("value");
+                        ((ObjectNode) test).putNull("result");
+                        ((ObjectNode) test).set("evidence_url", objectMapper.createArrayNode());
+                    }
+                }
+            }
+        }
+        return copy;
     }
 
     /**
@@ -362,17 +443,45 @@ public class JsonAssessmentService {
      */
     public PageResource<UserPartialJsonAssessmentResponse> getDtoRegistryAssessmentsByUserAndPage(int page, int size, UriInfo uriInfo, String userID, String subjectName, String subjectType, String actorId) {
 
-        var sharableIds = keycloakAdminService
-                .getUserEntitlements(userID)
-                .stream()
-                .map(entitlement -> keycloakAdminService.getLastPartOfEntitlement(entitlement, ENTITLEMENTS_DELIMITER))
+        var sharableIds = keycloakAdminService.getUserEntitlements(userID).stream()
+                .map(ent -> keycloakAdminService.getLastPartOfEntitlement(ent, ENTITLEMENTS_DELIMITER))
                 .collect(Collectors.toList());
 
-        var assessments = motivationAssessmentRepository.fetchRegistryAssessmentsByUserAndPage(page, size, userID, subjectName, subjectType, actorId, sharableIds);
+        var assessments = motivationAssessmentRepository.fetchRegistryAssessmentsByUserAndPage(
+                page, size, userID, subjectName, subjectType, actorId, sharableIds);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.userRegistryAssessmentsToJsonAssessments(assessments.list());
+        var grouped = assessments.list().stream()
+                .collect(Collectors.groupingBy(MotivationAssessment::getParentAssessmentId));
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.userRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        var latestList = new ArrayList<MotivationAssessment>();
+        var latestToPrevious = new HashMap<String, List<MotivationAssessment>>();
+
+        for (var entry : grouped.entrySet()) {
+            var versions = entry.getValue().stream()
+                    .sorted(Comparator.comparing(MotivationAssessment::getCreatedOn).reversed())
+                    .collect(Collectors.toList());
+
+            var latest = versions.get(0);
+            latestList.add(latest);
+
+            var previousVersions = versions.subList(1, versions.size());
+            latestToPrevious.put(latest.getId(), previousVersions);
+        }
+
+        var fullAssessments = latestList.stream()
+                .map(latest -> {
+                    var dto = AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(latest);
+
+                    var prevVersions = latestToPrevious.getOrDefault(latest.getId(), List.of()).stream()
+                            .map(AssessmentMapper.INSTANCE::userRegistryAssessmentToJsonAssessment)
+                            .collect(Collectors.toList());
+
+                    dto.setUserVersions(prevVersions);
+                    return AssessmentMapper.INSTANCE.userRegistryAssessmentToPartialJsonAssessment(dto);
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(assessments, fullAssessments, uriInfo);
     }
 
     /**
@@ -387,13 +496,45 @@ public class JsonAssessmentService {
      * @param subjectType  Subject Type to search for.
      * @return A list of PartialJsonAssessmentResponse objects representing the submitted assessments in the requested page.
      */
-    public PageResource<AdminPartialJsonAssessmentResponse> getPublishedAssessmentsByMotivationAndActorAndPage(int page, int size, String motivationId, String actorId, UriInfo uriInfo, String subjectName, String subjectType) {
+    public PageResource<AdminPartialJsonAssessmentResponse> getPublishedAssessmentsByMotivationAndActorAndPage(
+            int page, int size, String motivationId, String actorId, UriInfo uriInfo,
+            String subjectName, String subjectType) {
 
-        var assessments = motivationAssessmentRepository.fetchPublishedAssessmentsByMotivationAndActorAndPage(page, size, motivationId, actorId, subjectName, subjectType);
+        var assessments = motivationAssessmentRepository.fetchPublishedAssessmentsByMotivationAndActorAndPage(
+                page, size, motivationId, actorId, subjectName, subjectType);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
+        var grouped = assessments.list().stream()
+                .collect(Collectors.groupingBy(MotivationAssessment::getParentAssessmentId));
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        var latestList = new ArrayList<MotivationAssessment>();
+        var latestToPrevious = new HashMap<String, List<MotivationAssessment>>();
+
+        for (var entry : grouped.entrySet()) {
+            var versions = entry.getValue().stream()
+                    .sorted(Comparator.comparing(MotivationAssessment::getCreatedOn).reversed())
+                    .collect(Collectors.toList());
+
+            var latest = versions.get(0);
+            latestList.add(latest);
+
+            var previousVersions = versions.subList(1, versions.size());
+            latestToPrevious.put(latest.getId(), previousVersions);
+        }
+
+        var fullAssessments = latestList.stream()
+                .map(latest -> {
+                    var dto = AssessmentMapper.INSTANCE.adminRegistryAssessmentToJsonAssessment(latest);
+
+                    var prevVersions = latestToPrevious.getOrDefault(latest.getId(), List.of()).stream()
+                            .map(AssessmentMapper.INSTANCE::adminRegistryAssessmentToJsonAssessment)
+                            .collect(Collectors.toList());
+
+                    dto.setAdminVersions(prevVersions);
+                    return AssessmentMapper.INSTANCE.adminRegistryAssessmentToPartialJsonAssessment(dto);
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(assessments, fullAssessments, uriInfo);
     }
 
     /**
@@ -411,9 +552,38 @@ public class JsonAssessmentService {
 
         var assessments = motivationAssessmentRepository.fetchPublishedAssessmentsByActorAndPage(page, size, actorId, subjectName, subjectType);
 
-        var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
+        var grouped = assessments.list().stream()
+                .collect(Collectors.groupingBy(MotivationAssessment::getParentAssessmentId));
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+        var latestList = new ArrayList<MotivationAssessment>();
+        var latestToPrevious = new HashMap<String, List<MotivationAssessment>>();
+
+        for (var entry : grouped.entrySet()) {
+            var versions = entry.getValue().stream()
+                    .sorted(Comparator.comparing(MotivationAssessment::getCreatedOn).reversed())
+                    .collect(Collectors.toList());
+
+            var latest = versions.get(0);
+            latestList.add(latest);
+
+            var previousVersions = versions.subList(1, versions.size());
+            latestToPrevious.put(latest.getId(), previousVersions);
+        }
+
+        var fullAssessments = latestList.stream()
+                .map(latest -> {
+                    var dto = AssessmentMapper.INSTANCE.adminRegistryAssessmentToJsonAssessment(latest);
+
+                    var prevVersions = latestToPrevious.getOrDefault(latest.getId(), List.of()).stream()
+                            .map(AssessmentMapper.INSTANCE::adminRegistryAssessmentToJsonAssessment)
+                            .collect(Collectors.toList());
+
+                    dto.setAdminVersions(prevVersions);
+                    return AssessmentMapper.INSTANCE.adminRegistryAssessmentToPartialJsonAssessment(dto);
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(assessments, fullAssessments, uriInfo);
     }
 
     /**
@@ -570,9 +740,40 @@ public class JsonAssessmentService {
     public PageResource<AdminPartialJsonAssessmentResponse> getAllAssessmentsByPage(int page, int size, String search, UriInfo uriInfo) {
 
         var assessments = motivationAssessmentRepository.fetchAllAssessmentsByPage(page, size, search);
-        var fullAssessments = AssessmentMapper.INSTANCE.adminRegistryAssessmentsToJsonAssessments(assessments.list());
 
-        return new PageResource<>(assessments, AssessmentMapper.INSTANCE.adminRegistryAssessmentsToPartialJsonAssessments(fullAssessments), uriInfo);
+
+        var grouped = assessments.list().stream()
+                .collect(Collectors.groupingBy(MotivationAssessment::getParentAssessmentId));
+
+        var latestList = new ArrayList<MotivationAssessment>();
+        var latestToPrevious = new HashMap<String, List<MotivationAssessment>>();
+
+        for (var entry : grouped.entrySet()) {
+            var versions = entry.getValue().stream()
+                    .sorted(Comparator.comparing(MotivationAssessment::getCreatedOn).reversed())
+                    .collect(Collectors.toList());
+
+            var latest = versions.get(0);
+            latestList.add(latest);
+
+            var previousVersions = versions.subList(1, versions.size());
+            latestToPrevious.put(latest.getId(), previousVersions);
+        }
+
+        var fullAssessments = latestList.stream()
+                .map(latest -> {
+                    var dto = AssessmentMapper.INSTANCE.adminRegistryAssessmentToJsonAssessment(latest);
+
+                    var prevVersions = latestToPrevious.getOrDefault(latest.getId(), List.of()).stream()
+                            .map(AssessmentMapper.INSTANCE::adminRegistryAssessmentToJsonAssessment)
+                            .collect(Collectors.toList());
+
+                    dto.setAdminVersions(prevVersions);
+                    return AssessmentMapper.INSTANCE.adminRegistryAssessmentToPartialJsonAssessment(dto);
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(assessments, fullAssessments, uriInfo);
     }
 
     @SneakyThrows

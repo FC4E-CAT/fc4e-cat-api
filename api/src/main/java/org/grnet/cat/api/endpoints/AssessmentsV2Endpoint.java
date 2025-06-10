@@ -346,6 +346,66 @@ public class AssessmentsV2Endpoint {
 
     @Tag(name = "Assessment")
     @Operation(
+            summary = "Create a version of Registry Assessment Request.",
+            description = "Creates a version of the registry assessment if it belongs or shared to the authenticated user.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Assessment's registry json document versioned successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AdminJsonRegistryAssessmentResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Path("/{id}/version")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Authenticated
+    @Registration
+    public Response createVersionAssessment(
+            @Parameter(
+            description = "The ID of the assessment to version.",
+            required = true,
+            example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
+            schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id) {
+
+        var assessment = assessmentService.versionPublishedAssessment(utility.getUserUniqueIdentifier(), id);
+
+        return Response.ok().entity(assessment).build();
+    }
+
+    @Tag(name = "Assessment")
+    @Operation(
             summary = "Get list of public assessment objects created / used by a specific user by type and actor.",
             description = "This endpoint is public and any unauthenticated user can retrieve published assessment objects categorized by motivation and actor, created by all users." +
                     "By default, the first page of 10 public assessment objects will be returned. You can tune the default values by using the query parameters page and size.")

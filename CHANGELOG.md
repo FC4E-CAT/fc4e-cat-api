@@ -31,6 +31,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#494](https://github.com/FC4E-CAT/fc4e-cat-api/pull/494) CAT-885: Statistics of the Combination of Types in a Metric
 - [#495](https://github.com/FC4E-CAT/fc4e-cat-api/pull/495) CAT-886 Implement Search Functionality for Testmethod
 - [#497](https://github.com/FC4E-CAT/fc4e-cat-api/pull/497) CAT-891 Publishing to Zenodo New Version
+- [#500](https://github.com/FC4E-CAT/fc4e-cat-api/pull/500) CAT-893 Versioning of Existing Assessment
 
 
 ### Fix

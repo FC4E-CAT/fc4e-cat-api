@@ -1,8 +1,12 @@
 package org.grnet.cat.dtos.assessment;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.util.List;
 
 @Schema(name = "AdminPartialJsonAssessmentResponse", description = "This object represents an admin partial form of the Json Assessment.")
 public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
@@ -92,5 +96,15 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     )
     @JsonProperty("shared")
     public Boolean shared;
+
+    @Setter
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = AdminPartialJsonAssessmentResponse.class,
+            description = "List of versions of this test."
+    )
+    @JsonProperty("versions")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<AdminPartialJsonAssessmentResponse> adminVersions;
 
 }

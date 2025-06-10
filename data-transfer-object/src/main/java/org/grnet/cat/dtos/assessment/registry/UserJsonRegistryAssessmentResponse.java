@@ -1,8 +1,12 @@
 package org.grnet.cat.dtos.assessment.registry;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.util.List;
 
 @Schema(name = "UserJsonRegistryAssessmentResponse", description = "This object represents the User Json Registry Assessment.")
 public class UserJsonRegistryAssessmentResponse extends AdminJsonRegistryAssessmentResponse {
@@ -24,6 +28,17 @@ public class UserJsonRegistryAssessmentResponse extends AdminJsonRegistryAssessm
     )
     @JsonProperty("shared_by_user")
     public Boolean sharedByUser;
+
+    @Setter
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = UserJsonRegistryAssessmentResponse.class,
+            description = "List of versions of this test."
+    )
+    @JsonProperty("versions")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<UserJsonRegistryAssessmentResponse> userVersions;
+
 //
 //    @Schema(
 //            type = SchemaType.BOOLEAN,
