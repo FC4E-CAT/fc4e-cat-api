@@ -72,6 +72,7 @@ public interface AssessmentMapper {
     @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
     @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
     @Mapping(target = "shared", expression = "java(assessment.shared)")
+    @Mapping(target = "version", expression = "java(assessment.assessmentDoc.version)")
     AdminPartialJsonAssessmentResponse adminRegistryAssessmentToPartialJsonAssessment(AdminJsonRegistryAssessmentResponse assessment);
 
     @IterableMapping(qualifiedByName = "adminPartialRegistryMapWithExpression")
@@ -91,7 +92,7 @@ public interface AssessmentMapper {
     @Mapping(target = "sharedToUser", expression = "java(isSharedToUser(assessment.getValidation().getUser().getId()))")
     @Mapping(target = "sharedByUser", expression = "java(isRegistryAssessmentSharedByUser(assessment, assessment.getValidation().getUser().getId()))")
     @Mapping(target = "published", source = "assessment.published")
-
+    @Mapping(target = "version", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()).version)")
     UserJsonRegistryAssessmentResponse userRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
 
     @IterableMapping(qualifiedByName = "mapWithRegistryExpression")
@@ -150,7 +151,7 @@ public interface AssessmentMapper {
     @Mapping(target = "sharedToUser", ignore = true)
     @Mapping(target = "sharedByUser", ignore = true)
     @Mapping(target = "published", source = "assessment.published")
-
+    @Mapping(target = "version", expression = "java(registryStringJsonToDto(assessment.getAssessmentDoc()).version)")
     UserJsonRegistryAssessmentResponse publicUserRegistryAssessmentToJsonAssessment(MotivationAssessment assessment);
 
 
