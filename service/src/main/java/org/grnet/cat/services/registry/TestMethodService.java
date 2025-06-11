@@ -11,7 +11,6 @@ import org.grnet.cat.dtos.registry.test.TestMethodUpdateDto;
 import org.grnet.cat.mappers.registry.TestMethodMapper;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestMethodRepository;
-import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class TestMethodService {
@@ -22,7 +21,6 @@ public class TestMethodService {
 
     @Inject
     MetricTestRepository metricTestRepository;
-    private static final Logger LOG = Logger.getLogger(TestMethodService.class);
 
     /**
      * Retrieves a specific TestMethod item by its ID.
@@ -34,7 +32,11 @@ public class TestMethodService {
 
         var testMethod = testMethodRepository.findById(id);
 
-        return TestMethodMapper.INSTANCE.testMethodToDto(testMethod);
+        var tm =  TestMethodMapper.INSTANCE.testMethodToDto(testMethod);
+
+        tm.usedByPublishedMotivations = metricTestRepository.existTestMethodInStatus(id, Boolean.TRUE);
+
+        return tm;
     }
 
     /**
@@ -101,10 +103,12 @@ public class TestMethodService {
      * @param uriInfo The Uri Info for pagination links.
      * @return A PageResource containing the TestMethod items in the requested page.
      */
-    public PageResource<TestMethodResponseDto> getTestMethodListAll(String search, int page, int size, UriInfo uriInfo) {
+    public PageResource<TestMethodResponseDto> getTestMethodListAll(String search, int page, int size, Boolean enabled, UriInfo uriInfo) {
 
-        var testMethodPage = testMethodRepository.fetchTestMethodByPage(search,page, size);
+        var testMethodPage = testMethodRepository.fetchTestMethodByPage(search, page, size, enabled);
         var testMethodDtos = TestMethodMapper.INSTANCE.testMethodToDtos(testMethodPage.list());
+
+        testMethodDtos.forEach(tm-> tm.usedByPublishedMotivations = metricTestRepository.existTestMethodInStatus(tm.id, Boolean.TRUE));
 
         return new PageResource<>(testMethodPage, testMethodDtos, uriInfo);
     }

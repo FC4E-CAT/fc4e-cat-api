@@ -219,9 +219,6 @@ public class TestService {
         if (tests.isEmpty()) {
             return new PageResource<>(testPage, List.of(), uriInfo);
         }
-        var testIds = tests.stream()
-                .map(Test::getId)
-                .collect(Collectors.toList());
 
         var dtoList = tests.stream()
                 .map(test -> {

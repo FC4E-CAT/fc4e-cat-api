@@ -15,7 +15,6 @@ public class TestMethodUpdateDto {
             example = "03615660"
     )
     @JsonProperty("uuid")
-    @NotEmpty(message = "uuid may not be empty.")
     public String UUID;
 
     @Schema(
@@ -25,7 +24,6 @@ public class TestMethodUpdateDto {
             example = "String-Auto"
     )
     @JsonProperty("label")
-    @NotEmpty(message = "label may not be empty.")
     public String labelTestMethod;
 
     @Schema(
@@ -35,7 +33,6 @@ public class TestMethodUpdateDto {
             example = "A test is completed to indicate a duration in months, and converted to decimal years"
     )
     @JsonProperty("description")
-    @NotEmpty(message = "description may not be empty.")
     public String descTestMethod;
 
     @Schema(
@@ -45,7 +42,6 @@ public class TestMethodUpdateDto {
             example = "pid_graph:number"
     )
     @JsonProperty("lod_type_value")
-    @NotEmpty(message = "lod_type_value may not be empty.")
     public String lodTypeValue;
 
     @Schema(
@@ -55,7 +51,6 @@ public class TestMethodUpdateDto {
             example = "pid_graph:manual"
     )
     @JsonProperty("lod_type_process")
-    @NotEmpty(message = "lod_type_process may not be empty.")
     public String lodTypeProcess;
 
     @Schema(
@@ -65,7 +60,6 @@ public class TestMethodUpdateDto {
             example = "1"
     )
     @JsonProperty("num_params")
-    @NotNull(message = "num_params may not be empty.")
     public Integer numParams;
 
     @Schema(
@@ -86,4 +80,13 @@ public class TestMethodUpdateDto {
     )
     @JsonProperty("code_fragment")
     public String codeFragment;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether the Test Method is enabled or not.",
+            example = "false"
+    )
+    @JsonProperty("enabled")
+    public Boolean enabled;
 }

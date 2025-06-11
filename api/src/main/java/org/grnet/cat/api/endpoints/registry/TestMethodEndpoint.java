@@ -156,7 +156,7 @@ public class TestMethodEndpoint {
     )
     @APIResponse(
             responseCode = "200",
-            description = "Subject was updated successfully.",
+            description = "TestMethod was updated successfully.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
                     implementation = TestMethodResponseDto.class)))
@@ -331,9 +331,15 @@ public class TestMethodEndpoint {
             @Min(value = 1, message = "Page size must be between 1 and 100.")
             @Max(value = 100, message = "Page size must be between 1 and 100.")
             @QueryParam("size") int size,
+            @Parameter(
+                    description = "Filter Test Methods by enabled status. " +
+                            "Use 'true' to get only enabled Test Methods, 'false' for disabled ones. " +
+                            "If not provided, all Test Methods are returned."
+            )
+            @QueryParam("enabled") Boolean enabled,
             @Context UriInfo uriInfo) {
 
-        var testMethods = testMethodService.getTestMethodListAll(search, page - 1, size, uriInfo);
+        var testMethods = testMethodService.getTestMethodListAll(search, page - 1, size, enabled, uriInfo);
 
         return Response.ok().entity(testMethods).build();
     }
