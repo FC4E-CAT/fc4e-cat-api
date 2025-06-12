@@ -65,4 +65,7 @@ public class TestMethod {
 
     @Column(name = "lodTME_V")
     private String lodTMEV;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
 }
