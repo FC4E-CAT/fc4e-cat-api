@@ -15,11 +15,11 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.SneakyThrows;
+import org.grnet.cat.dtos.AutomatedCheckRequest;
 import org.grnet.cat.dtos.UserProfileDto;
 import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
-import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
-import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
+import org.grnet.cat.dtos.assessment.registry.*;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
@@ -35,14 +35,15 @@ import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
-import org.grnet.cat.services.KeycloakAdminService;
-import org.grnet.cat.services.MailerService;
-import org.grnet.cat.services.SubjectService;
+import org.grnet.cat.repositories.registry.TestMethodRepository;
+import org.grnet.cat.services.*;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,6 +78,9 @@ public class JsonAssessmentService {
     MailerService mailerService;
 
     @Inject
+    AutomatedTestResponseService automatedTestResponseService;
+
+    @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
 
     @Transactional
@@ -97,6 +101,17 @@ public class JsonAssessmentService {
         var timestamp = Timestamp.from(Instant.now());
         request.assessmentDoc.timestamp = timestamp.toString();
         request.assessmentDoc.organisation.name = validation.getOrganisationName();
+
+        for (var principle : request.assessmentDoc.principles) {
+            for (var criterion : principle.criteria) {
+                var metric = criterion.getMetric();
+                if (metric != null && metric.getTests() != null) {
+                    for (var test : metric.getTests()) {
+                        automatedTestResponseService.evaluate(test);
+                    }
+                }
+            }
+        }
 
         var assessment = new MotivationAssessment();
         assessment.setCreatedOn(timestamp);
@@ -424,6 +439,18 @@ public class JsonAssessmentService {
         dbAssessment.setPublished(request.assessmentDoc.published);
         dbAssessment.setUpdatedBy(utility.getUserUniqueIdentifier());
         dbAssessment.setUpdatedOn(Timestamp.from(Instant.now()));
+
+        for (var principle : request.assessmentDoc.principles) {
+            for (var criterion : principle.criteria) {
+                var metric = criterion.getMetric();
+                if (metric != null && metric.getTests() != null) {
+                    for (var test : metric.getTests()) {
+                        automatedTestResponseService.evaluate(test);
+                    }
+                }
+            }
+        }
+
         dbAssessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
 
         return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(dbAssessment);

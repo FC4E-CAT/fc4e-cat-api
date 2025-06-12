@@ -9,7 +9,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@JsonPropertyOrder({ "id", "name", "description", "type", "text", "params", "value", "result", "tool_tip", "evidence_url","last_run"})
+@JsonPropertyOrder({ "id", "name", "description", "type", "text", "params", "value", "result", "tool_tip", "evidence_url","last_run", "additional_info"})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -44,5 +44,9 @@ public class TestNodeDto {
     @JsonProperty("last_run")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private TestExtraInfoNodeDto lastRun;
+
+    @JsonProperty("additional_info")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private AdditionalInfoDto additionalInfo;
 
 }

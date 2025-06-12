@@ -58,6 +58,13 @@ public class TestMethodRepository implements Repository<TestMethod, String> {
         return pageable;
     }
 
+    public String findTypeProcessByTestType(String testType) {
+        return (String) getEntityManager()
+                .createQuery("SELECT tm.lodTypeProcess FROM TestMethod tm WHERE tm.labelTestMethod = :label", String.class)
+                .setParameter("label", testType)
+                .getSingleResult();
+    }
+
     @Transactional
     public List<Motivation> getMotivationIdsByTestMethodId(String testMethodId) {
 
