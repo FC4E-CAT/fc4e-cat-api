@@ -127,6 +127,8 @@ public class TestService {
                 testMethodRepository.findByIdOptional(request.testMethodId).orElseThrow(()-> new NotFoundException("There is no Test Method with the following id: "+request.testMethodId));
                 test.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));
                 test.setTestQuestion(request.testQuestion);
+                test.setTestParams(request.testParams);
+                test.setToolTip(request.tooltip);
             }
         }
 
