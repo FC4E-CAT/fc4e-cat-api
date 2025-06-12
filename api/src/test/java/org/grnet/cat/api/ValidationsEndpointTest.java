@@ -100,7 +100,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
         var request = createValidationRequest("Manager", "NOT_VALID", "Keimyung University", "https://ror.org/00tjv0s33", "pid_graph:B5CC396B");
         var response = performValidationRequestNotValid(request, aliceToken, 400);
 
-        assertEquals("The value NOT_VALID is not a valid organisation_source. Valid organisation_source values are: [RE3DATA, ROR, CUSTOM, EOSC]", response.message);
+        assertEquals("The value NOT_VALID is not a valid organisation_source. Valid organisation_source values are: [RE3DATA, ROR, CUSTOM, EOSC, NACO]", response.message);
     }
 
     @Test

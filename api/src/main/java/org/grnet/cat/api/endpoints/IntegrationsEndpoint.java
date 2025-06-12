@@ -5,12 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -21,24 +16,23 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.grnet.cat.api.filters.Registration;
+import org.grnet.cat.constraints.StringEnumeration;
 import org.grnet.cat.dtos.InformativeResponse;
+import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.enums.Source;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.services.IntegrationService;
 
 import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
-
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.grnet.cat.api.filters.Registration;
-import org.grnet.cat.constraints.StringEnumeration;
-import org.grnet.cat.dtos.OrganisationResponseDto;
-import org.grnet.cat.enums.Source;
 
 @Path("/v1/integrations")
 @Authenticated
@@ -165,6 +159,7 @@ public class IntegrationsEndpoint {
 
             @Parameter(name = "page", in = QUERY,
                     description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+
             @Context UriInfo uriInfo
     ) {
         Source enumSource = Source.valueOf(source);
@@ -172,6 +167,11 @@ public class IntegrationsEndpoint {
             case ROR:
                 PageResource rorOrg = integrationService.getOrganisation(query, page, uriInfo);
                 return Response.ok().entity(rorOrg).build();
+
+            case NACO:
+                PageResource nacoProviders = integrationService.getNacoOrganisation(query,page-1,10, uriInfo);
+                return Response.ok().entity(nacoProviders).build();
+
             default:
                 throw new InternalServerErrorException("You cannot query this source.", 501);
         }

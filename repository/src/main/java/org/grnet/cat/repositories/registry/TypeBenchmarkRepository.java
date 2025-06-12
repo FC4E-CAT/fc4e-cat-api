@@ -5,7 +5,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.Imperative;
 import org.grnet.cat.entities.registry.TypeBenchmark;
 import org.grnet.cat.repositories.Repository;
 

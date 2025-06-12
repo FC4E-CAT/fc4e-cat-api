@@ -6,7 +6,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
-import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.TypeCriterion;
 import org.grnet.cat.repositories.Repository;
 

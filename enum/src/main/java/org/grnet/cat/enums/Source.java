@@ -27,11 +27,10 @@ import java.util.stream.Collectors;
 public enum Source {
 
     ROR("ror", "ROR", "https://api.ror.org/organizations", true) {
-
         public RorSearchInfo execute(String query, int page) {
             Response resp = connectHttpClient(url + "?query=" + query + "&page=" + page, query);
             try {
-              return  buildOrgsInfo(resp.body().string(),query);
+                return buildOrgsInfo(resp.body().string(), query);
             } catch (IOException ex) {
                 Logger.getLogger(Source.class.getName()).log(Level.SEVERE, "null response body", ex);
             }
@@ -48,17 +47,19 @@ public enum Source {
             return null;
         }
 
+
     },
     EOSC("eosc", "EOSC", "http://api.eosc-portal.eu/provider", false) {
         public String[] execute(String query) {
 
-                throw new InternalServerErrorException("Source EOSC is not supported.", 501);
+            throw new InternalServerErrorException("Source EOSC is not supported.", 501);
         }
 
         @Override
         public RorSearchInfo execute(String query, int page) {
             throw new InternalServerErrorException("Source EOSC is not supported.", 501);
         }
+
     },
     RE3DATA("re3data", "RE3DATA", "", false) {
         public String[] execute(String query) {
@@ -69,6 +70,7 @@ public enum Source {
         public RorSearchInfo execute(String query, int page) {
             throw new InternalServerErrorException("Source RE3DATA is not supported.", 501);
         }
+
     },
 
     CUSTOM("custom", "CUSTOM", "", true) {
@@ -80,6 +82,19 @@ public enum Source {
         @Override
         public RorSearchInfo execute(String query, int page) {
             return null;
+        }
+
+    },
+
+    NACO("naco", "NACO", "", true) {
+        @Override
+        public RorSearchInfo execute(String query, int page) {
+            return null;
+        }
+
+        @Override
+        public String[] execute(String query) {
+            return new String[0];
         }
     };
 
@@ -102,9 +117,9 @@ public enum Source {
         this.enabled = enabled;
     }
 
-    public static List<Source> getAvailableSources(){
+    public static List<Source> getAvailableSources() {
 
-        return Arrays.stream(Source.values()).filter(source-> source.enabled).collect(Collectors.toList());
+        return Arrays.stream(Source.values()).filter(source -> source.enabled).collect(Collectors.toList());
     }
 
 
@@ -112,7 +127,7 @@ public enum Source {
     Response connectHttpClient(String url, String identifier) {
         var client = new OkHttpClient().newBuilder()
                 .build();
-               var request = new Request.Builder()
+        var request = new Request.Builder()
                 .url(url)
                 .method("GET", null)
                 .addHeader("Content-Type", "application/x-www-form-urlencoded")
@@ -133,7 +148,32 @@ public enum Source {
         return resp;
     }
 
-   String[] buildOrgInfo(String content) {
+    @SneakyThrows
+    Response connectEndpointHttpClient(String url, String token, String identifier) {
+        var client = new OkHttpClient().newBuilder()
+                .build();
+        var request = new Request.Builder()
+                .url(url)
+                .method("GET", null)
+                .addHeader("Authorization", "Bearer " + token)
+                .build();
+
+        Response resp = null;
+        try {
+            resp = client.newCall(request).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (resp.code() == 404) {
+            throw new EntityNotFoundException("Organisation " + identifier + ", not found in " + organisationSource);
+        } else if (resp.code() != 200) {
+            throw new InternalServerErrorException("Cannot communicate with " + organisationSource, 500);
+        }
+        return resp;
+    }
+
+    String[] buildOrgInfo(String content) {
 
         JsonParser jsonParser = new JsonParser();
         // Grab the first - and only line of json from ops data
@@ -143,28 +183,28 @@ public enum Source {
         return returnOrgInfo(jRoot);
     }
 
-    RorSearchInfo buildOrgsInfo(String content,String query) {
+    RorSearchInfo buildOrgsInfo(String content, String query) {
 
         JsonParser jsonParser = new JsonParser();
         JsonElement jElement = jsonParser.parse(content);
-         JsonObject jRoot = jElement.getAsJsonObject();
-        
-      
+        JsonObject jRoot = jElement.getAsJsonObject();
+
+
         int total = jRoot.get("number_of_results").getAsInt();
-        if(total==0){
+        if (total == 0) {
             throw new EntityNotFoundException("Organisation " + query + ", not found in " + organisationSource);
 
         }
-        JsonArray items=jRoot.get("items").getAsJsonArray();
-        
-        List<String[]> list=new ArrayList<>();
-        
-        Iterator iter=items.iterator();
-        while(iter.hasNext()){
-        JsonObject item=(JsonObject)iter.next();
+        JsonArray items = jRoot.get("items").getAsJsonArray();
+
+        List<String[]> list = new ArrayList<>();
+
+        Iterator iter = items.iterator();
+        while (iter.hasNext()) {
+            JsonObject item = (JsonObject) iter.next();
             list.add(returnOrgInfo(item));
         }
-        return  new RorSearchInfo(total, list);
+        return new RorSearchInfo(total, list);
     }
 
     private String[] returnOrgInfo(JsonObject jRoot) {
@@ -181,20 +221,20 @@ public enum Source {
             website = jRoot.get("website").getAsString();
 
         }
-        String acronym=null;
+        String acronym = null;
         if (jRoot.has("acronyms")) {
-            JsonArray acronyms=jRoot.get("acronyms").getAsJsonArray();
-          if(!acronyms.isEmpty()) {
-              acronym = acronyms.get(0).getAsString();
-          }
-        }else if(jRoot.has("abbreviation")){
-            acronym=jRoot.get("abbreviation").getAsString();
+            JsonArray acronyms = jRoot.get("acronyms").getAsJsonArray();
+            if (!acronyms.isEmpty()) {
+                acronym = acronyms.get(0).getAsString();
+            }
+        } else if (jRoot.has("abbreviation")) {
+            acronym = jRoot.get("abbreviation").getAsString();
         }
-        return new String[]{id,name,website,acronym};
+        return new String[]{id, name, website, acronym};
     }
-    
-    public class RorSearchInfo{
-    
+
+    public class RorSearchInfo {
+
         int total;
         List<String[]> orgElements;
 
