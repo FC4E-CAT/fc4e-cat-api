@@ -29,6 +29,7 @@ import org.grnet.cat.dtos.registry.RelationResponse;
 import org.grnet.cat.dtos.registry.codelist.*;
 import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.services.registry.*;
+import org.grnet.cat.utils.Utility;
 
 import java.util.List;
 
@@ -44,6 +45,8 @@ import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUE
         in = SecuritySchemeIn.HEADER)
 public class RegistryCodelistEndpoint {
 
+    @Inject
+    Utility utility;
     @Inject
     TypeCriterionService typeCriterionService;
     @Inject
@@ -284,7 +287,7 @@ public class RegistryCodelistEndpoint {
     }
 
 
-    @Tag(name = "Registry Codelist")
+    @Tag(name = "Metrics")
     @Operation(
             summary = "Get specific TypeBenchmark.",
             description = "Returns a specific TypeBenchmark.")
@@ -336,7 +339,65 @@ public class RegistryCodelistEndpoint {
         return Response.ok().entity(typeBenchmark).build();
     }
 
-    @Tag(name = "Registry Codelist")
+    @Tag(name = "Metrics")
+    @Operation(
+            summary = "Update TypeBenchmark",
+            description = "Updates an existing TypeBenchmark item."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "TypeBenchmark was updated successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = TypeBenchmarkResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("/benchmark-types/{id}")
+    public Response updateTypeBenchmark(
+            @Parameter(
+                    description = "The ID of the TypeBenchmark to update.",
+                    required = true,
+                    example = "pid_graph:9F1A6267",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = TypeBenchmarkRepository.class, message = "There is no Type Benchmark with the following id:") String id,
+            @Valid TypeBenchmarkUpdateDto request) {
+
+        var updatedDto = typeBenchmarkService.updateTypeBenchmark(id, utility.getUserUniqueIdentifier(), request);
+
+        return Response.ok(updatedDto).build();
+    }
+
+
+
+    @Tag(name = "Metrics")
     @Operation(
             summary = "Get list of TypeBenchmark.",
             description = "This endpoint retrieves all TypeBenchmarks." +
@@ -370,14 +431,27 @@ public class RegistryCodelistEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     @Path("/benchmark-types")
-    public Response getTypeBenchmarkList(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                         @Parameter(name = "size", in = QUERY,
-                                                 description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                         @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                         @Context UriInfo uriInfo) {
+    public Response getTypeBenchmarkList(
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+            @DefaultValue("1")
+            @Min(value = 1, message = "Page number must be >= 1.")
+            @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10")
+            @Min(value = 1, message = "Page size must be between 1 and 100.")
+            @Max(value = 100, message = "Page size must be between 1 and 100.")
+            @QueryParam("size") int size,
+            @Parameter(
+                    description = "Filter Type Benchmark by enabled status. " +
+                            "Use 'true' to get only enabled Test Metrics, 'false' for disabled ones. " +
+                            "If not provided, all Test Methods are returned."
+            )
+            @QueryParam("enabled") Boolean enabled,
+            @Context UriInfo uriInfo) {
 
-        var typeBenchmarkList = typeBenchmarkService.getTypeBenchmarkListByPage(page - 1, size, uriInfo);
+        var typeBenchmarkList = typeBenchmarkService.getTypeBenchmarkListByPage(page - 1, size, enabled, uriInfo);
 
         return Response.ok().entity(typeBenchmarkList).build();
     }

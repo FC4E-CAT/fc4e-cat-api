@@ -8,8 +8,6 @@ import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "t_Type_Algorithm")
@@ -36,7 +34,6 @@ public class TypeAlgorithm {
     private String descAlgorithmType;
 
     @Column(name = "uriAlgorithmType")
-    @NotNull
     private String uriAlgorithmType;
 
     @Column(name = "functionPattern")
@@ -51,4 +48,7 @@ public class TypeAlgorithm {
 
     @Column(name = "lodTAL_V")
     private String lodTAL_V;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
 }

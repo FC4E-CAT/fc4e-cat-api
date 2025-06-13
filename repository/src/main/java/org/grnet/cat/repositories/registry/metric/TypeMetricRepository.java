@@ -7,6 +7,10 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.repositories.Repository;
+
+import java.util.HashMap;
+import java.util.StringJoiner;
+
 @ApplicationScoped
 public class TypeMetricRepository implements Repository<TypeMetric, String> {
 
@@ -17,9 +21,22 @@ public class TypeMetricRepository implements Repository<TypeMetric, String> {
      * @param size The maximum number of Type Algorithm to include in a page.
      * @return A list of Type Algorithm objects representing the Type Algorithm in the requested page.
      */
-    public PageQuery<TypeMetric> fetchTypeMetricByPage(int page, int size){
+    public PageQuery<TypeMetric> fetchTypeMetricByPage(int page, int size, Boolean enabled) {
 
-        var panache = find("from TypeMetric", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
+        var joiner = new StringJoiner(" ");
+        joiner.add("from TypeMetric tm");
+        joiner.add("where 1=1");
+
+        var map = new HashMap<String, Object>();
+
+        if (enabled != null) {
+            joiner.add("and tm.enabled = :enabled");
+            map.put("enabled", enabled);
+        }
+
+        joiner.add("order by tm.lastTouch DESC, tm.id ASC");
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<TypeMetric>();
         pageable.list = panache.list();

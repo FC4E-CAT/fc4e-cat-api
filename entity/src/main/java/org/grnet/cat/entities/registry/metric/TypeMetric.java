@@ -8,8 +8,6 @@ import lombok.Setter;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "t_Type_Metric")
@@ -59,4 +57,7 @@ public class TypeMetric {
 
     @Column(name = "lodTMT_V")
     private String lodTMT_V;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
 }
