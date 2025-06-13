@@ -494,12 +494,12 @@ public class MotivationEndpoint {
     public Response assignActorToMotivation(@Parameter(
                                                     description = "The ID of the Motivation to update.",
                                                     required = true,
-                                                    example = "pid_graph:3E109BBA",
+                                                    example = "1",
                                                     schema = @Schema(type = SchemaType.STRING))
                                             @PathParam("id")
                                             @Valid
                                             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                                @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+                                            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
                                             @NotEmpty(message = "Actors list can not be empty.") Set<@Valid MotivationActorRequest> request) {
 
         var messages = motivationService.assignActors(id, request, utility.getUserUniqueIdentifier());
@@ -560,7 +560,7 @@ public class MotivationEndpoint {
     public Response removeActorFromMotivation(@Parameter(
                                                       description = "The ID of the Motivation to update.",
                                                       required = true,
-                                                      example = "pid_graph:3E109BBA",
+                                                      example = "1",
                                                       schema = @Schema(type = SchemaType.STRING))
                                               @PathParam("id")
                                               @Valid

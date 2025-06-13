@@ -144,7 +144,7 @@ public class MotivationService {
                     actor.setLodMTV(motivationId);
                 }
 
-                motivation.addActor(Panache.getEntityManager().getReference(RegistryActor.class, req.actorId), Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()), req.automatedGroupTest);
+                motivation.addActor(Panache.getEntityManager().getReference(RegistryActor.class, req.actorId), Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
                 resultMessages.add("Actor with id :: " + req.actorId + " successfully added to motivation.");
             } else {
                 resultMessages.add("Actor with id :: " + req.actorId + " already exists to motivation.");

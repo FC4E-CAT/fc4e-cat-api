@@ -9,8 +9,6 @@ import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -78,11 +76,13 @@ public class Motivation extends Registry {
         principle.getMotivations().add(principleMotivation);
     }
 
-    public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch, List<Map<String, Object>> automatedGroupTest) {
+    public void addActor(RegistryActor actor, Relation relation, String motivationX, Integer lodMAV, String populatedBy, Timestamp lastTouch) {
 
-        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch,Boolean.FALSE, automatedGroupTest);
+        var actorMotivation = new MotivationActorJunction(this, actor, relation, motivationX, lodMAV, populatedBy, lastTouch,Boolean.FALSE);
         actors.add(actorMotivation);
+
         actorMotivation.getMotivation().actors.add(actorMotivation);
+
     }
 
     public String getId() {
