@@ -31,7 +31,7 @@ public class TemplateService {
 
     @Inject
     RegistryActorRepository registryActorRepository;
-    
+
     @Inject
     MotivationRepository motivationRepository;
 
@@ -44,11 +44,21 @@ public class TemplateService {
 
     public RegistryTemplateDto buildTemplate(String motivationId, String actorId) {
 
-       if( motivationActorRepository.existsByStatus(motivationId,actorId,Boolean.FALSE)){
-           throw new ForbiddenException("No action is permitted , template exists in an unpublished motivation-actor relation");
-       }
-        var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(()->new NotFoundException("There is no Motivation with the following id : "+motivationId));
-        var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(()->new NotFoundException("There is no Actor with the following id : "+actorId));
+        var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(() -> new NotFoundException("There is no Motivation with the following id : " + motivationId));
+        var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(() -> new NotFoundException("There is no Actor with the following id : " + actorId));
+
+        var motivationActorJunctionOpt = motivationActorRepository.fetchByMotivationAndActorAndVersion(motivationId, actorId, 1);
+
+        if(motivationActorJunctionOpt.isEmpty()){
+
+            throw new NotFoundException("There is no template for this motivation and actor.");
+        }
+
+        var motivationActorJunction = motivationActorJunctionOpt.get();
+
+//        if (!motivationActorJunction.getPublished()) {
+//            throw new ForbiddenException("No action is permitted , template exists in an unpublished motivation-actor relation");
+//        }
 
         var template = new RegistryTemplateDto();
 
@@ -68,12 +78,12 @@ public class TemplateService {
 
                 TemplateTestNode tn;
 
-                if(row.getLabelTestMethod().contains("Evidence")){
+                if (row.getLabelTestMethod().contains("Evidence")) {
 
                     tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 } else {
 
-                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 }
 
                 return tn;
@@ -98,16 +108,28 @@ public class TemplateService {
 
         template.organisation = new TemplateOrganisationDto();
 
+        template.automatedGroupTest = motivationActorJunction.getAutomatedGroupTest();
+
         template.result = new TemplateResultDto();
 
         template.subject = new TemplateSubjectDto();
 
         return template;
     }
+
     public RegistryTemplateDto buildTemplateForAdmin(String motivationId, String actorId) {
 
-        var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(()->new NotFoundException("There is no Motivation with the following id : "+motivationId));
-        var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(()->new NotFoundException("There is no Actor with the following id : "+actorId));
+        var motivation = motivationRepository.findByIdOptional(motivationId).orElseThrow(() -> new NotFoundException("There is no Motivation with the following id : " + motivationId));
+        var actor = registryActorRepository.findByIdOptional(actorId).orElseThrow(() -> new NotFoundException("There is no Actor with the following id : " + actorId));
+
+        var motivationActorJunctionOpt = motivationActorRepository.fetchByMotivationAndActorAndVersion(motivationId, actorId, 1);
+
+        if(motivationActorJunctionOpt.isEmpty()){
+
+            throw new NotFoundException("There is no template for this motivation and actor.");
+        }
+
+        var motivationActorJunction = motivationActorJunctionOpt.get();
 
         var template = new RegistryTemplateDto();
 
@@ -127,12 +149,12 @@ public class TemplateService {
 
                 TemplateTestNode tn;
 
-                if(row.getLabelTestMethod().contains("Evidence")){
+                if (row.getLabelTestMethod().contains("Evidence")) {
 
                     tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 } else {
 
-                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(),null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
+                    tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                 }
 
                 return tn;
@@ -160,6 +182,8 @@ public class TemplateService {
         template.result = new TemplateResultDto();
 
         template.subject = new TemplateSubjectDto();
+
+        template.automatedGroupTest = motivationActorJunction.getAutomatedGroupTest();
 
         return template;
     }

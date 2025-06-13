@@ -9,6 +9,10 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.repositories.registry.RelationRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Schema(name="MotivationActorRequest", description="This object represents a request for assigning Actors to a Motivation.")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MotivationActorRequest {
@@ -38,4 +42,12 @@ public class MotivationActorRequest {
     @NotFoundEntity(repository = RelationRepository.class, message = "There is no Relation  with the following id:")
     @JsonProperty(value = "relation")
     public String relation;
+
+    @Schema(
+            type = SchemaType.OBJECT,
+            additionalProperties = Object.class,
+            description = "List of automated test group configurations. Each item defines a test method, target endpoint, and the dynamic parameters needed to execute the test."
+    )
+    @JsonProperty(value = "automated_group_test")
+    public List<Map<String, Object>> automatedGroupTest = new ArrayList<>();
 }
