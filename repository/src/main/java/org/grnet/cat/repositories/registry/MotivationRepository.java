@@ -8,7 +8,6 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Motivation;
-import org.grnet.cat.entities.registry.Test;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;

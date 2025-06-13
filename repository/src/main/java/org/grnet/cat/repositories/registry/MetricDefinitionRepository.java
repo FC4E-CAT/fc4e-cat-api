@@ -1,19 +1,15 @@
 package org.grnet.cat.repositories.registry;
 
-import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.persistence.NamedQuery;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.MetricDefinitionJunction;
 import org.grnet.cat.entities.registry.Motivation;
-import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.*;

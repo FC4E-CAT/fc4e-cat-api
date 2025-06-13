@@ -2,15 +2,9 @@ package org.grnet.cat.repositories;
 
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.Role;
-import org.keycloak.admin.client.resource.RoleResource;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-
-import static java.lang.Math.min;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * The RoleRepository interface provides data access methods for the Role entity.
@@ -19,6 +13,7 @@ public interface RoleRepository {
 
     /**
      * This method retrieves all the available roles.
+     *
      * @return A list of Role objects representing the available roles.
      */
     List<Role> fetchRoles();
@@ -35,16 +30,16 @@ public interface RoleRepository {
     /**
      * Assigns roles to a user.
      *
-     * @param userId  The unique identifier of the user to assign roles to.
-     * @param roles The roles to be assigned to the user.
+     * @param userId The unique identifier of the user to assign roles to.
+     * @param roles  The roles to be assigned to the user.
      */
     void assignRoles(String userId, List<String> roles);
 
     /**
      * Removes roles from a user.
      *
-     * @param userId  The unique identifier of the user from whom the roles will be removed.
-     * @param roles The roles to be removed from the user.
+     * @param userId The unique identifier of the user from whom the roles will be removed.
+     * @param roles  The roles to be removed from the user.
      */
     void removeRoles(String userId, List<String> roles);
 
@@ -62,23 +57,7 @@ public interface RoleRepository {
      * @param userId The unique identifier of user.
      * @return The user's roles.
      */
-     List<Role> fetchUserRoles(String userId);
-
-    /**
-     * This method paginates a list of objects.
-     *
-     * @param list The list to be paginated.
-     * @param pageSize The page size.
-     * @return A map containing the pages of objects.
-     */
-    default <T> Map<Integer, List<T>> partition(List<T> list, int pageSize) {
-
-        return IntStream.iterate(0, i -> i + pageSize)
-                .limit((list.size() + pageSize - 1) / pageSize)
-                .boxed()
-                .collect(toMap(i -> i / pageSize,
-                        i -> list.subList(i, min(i + pageSize, list.size()))));
-    }
+    List<Role> fetchUserRoles(String userId);
 
     List<UserRepresentation> fetchRolesMembers(String role);
 

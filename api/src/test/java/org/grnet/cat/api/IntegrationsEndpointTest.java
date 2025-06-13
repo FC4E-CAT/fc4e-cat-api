@@ -23,7 +23,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     @Execution(ExecutionMode.CONCURRENT)
     public void fetchAllIntegrationSources() {
         var response = fetchSources(aliceToken);
-        assertEquals(2, response.length);
+        assertEquals(3, response.length);
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.exceptions.EntityNotFoundException;
+import org.grnet.cat.repositories.utils.PaginationUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -29,6 +30,8 @@ public class KeycloakAdminRepository implements RoleRepository {
     @ConfigProperty(name = "quarkus.oidc.client-id")
     String clientId;
 
+    @Inject
+    PaginationUtils paginationUtils;
     /**
      * Injection point for the Keycloak admin client
      */
@@ -76,7 +79,7 @@ public class KeycloakAdminRepository implements RoleRepository {
 
         var allRoles = fetchRoles();
 
-        var partition = partition(allRoles, size);
+        var partition = paginationUtils.partition(allRoles, size);
 
         var roles = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 
