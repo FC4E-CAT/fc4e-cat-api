@@ -2,32 +2,13 @@ package org.grnet.cat.dtos.registry.metric;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
 
 @Schema(name = "TypeMetricResponseDto", description = "This object represents the response data for a Type Metric.")
-public class TypeMetricResponseDto {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The unique ID of the Type Metric.",
-            example = "pid_graph:12345678"
-    )
-    @JsonProperty("id")
-    public String id;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Type Metric code.",
-            example = "TMT001"
-    )
-    @JsonProperty("tmt")
-    public String TMT;
+public class TypeMetricUpdateDto {
 
     @Schema(
             type = SchemaType.STRING,
@@ -80,24 +61,6 @@ public class TypeMetricResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The ID of the associated Type Reproducibility.",
-            example = "pid_graph:8D254805"
-    )
-    @JsonProperty("type_reproducibility_id")
-    public String typeReproducibilityId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The version of the Type Metric.",
-            example = "v1.0"
-    )
-    @JsonProperty("version")
-    public String lodTMT_V;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "The user who populated the data.",
             example = "0000-0002-0255-5101"
     )
@@ -121,13 +84,4 @@ public class TypeMetricResponseDto {
     )
     @JsonProperty("enabled")
     public Boolean enabled;
-
-    @Setter
-    @Schema(
-            type = SchemaType.BOOLEAN,
-            implementation = Boolean.class,
-            description = "Whether a Type Metric is used in published Motivation or not."
-    )
-    @JsonProperty("used_by_published_motivations")
-    public Boolean usedByPublishedMotivations;
 }

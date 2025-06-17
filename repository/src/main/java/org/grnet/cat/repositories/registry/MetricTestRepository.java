@@ -119,6 +119,28 @@ public class MetricTestRepository implements Repository<MetricTestJunction, Stri
 
     }
 
+    public boolean existTypeMetricInStatus(String typeMetricId, boolean status) {
+        return find(
+                "SELECT 1 FROM MetricTestJunction mt " +
+                        "INNER JOIN CriterionMetricJunction cm ON mt.id.metricId = cm.id.metricId " +
+                        "INNER JOIN CriterionActorJunction ca ON cm.id.criterionId = ca.id.criterionId " +
+                        "INNER JOIN MotivationActorJunction ma ON ca.id.actorId = ma.id.actorId " +
+                        "WHERE mt.metric.typeMetric.id = ?1 AND ma.published = ?2",
+                typeMetricId, status
+        ).firstResultOptional().isPresent();
+    }
+
+    public boolean existTypeAlgorithmInStatus(String typeAlgorithmId, boolean status) {
+        return find(
+                "SELECT 1 FROM MetricTestJunction mt " +
+                        "INNER JOIN CriterionMetricJunction cm ON mt.id.metricId = cm.id.metricId " +
+                        "INNER JOIN CriterionActorJunction ca ON cm.id.criterionId = ca.id.criterionId " +
+                        "INNER JOIN MotivationActorJunction ma ON ca.id.actorId = ma.id.actorId " +
+                        "WHERE mt.metric.typeAlgorithm.id = ?1 AND ma.published = ?2",
+                typeAlgorithmId, status
+        ).firstResultOptional().isPresent();
+    }
+
     @SuppressWarnings("unchecked")
     public List<MetricTestProjection> fetchMotivationMetricTests(String motivationId, String metricId) {
         return (List<MetricTestProjection>) getEntityManager()

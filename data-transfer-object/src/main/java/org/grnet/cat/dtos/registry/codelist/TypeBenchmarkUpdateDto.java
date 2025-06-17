@@ -1,29 +1,11 @@
 package org.grnet.cat.dtos.registry.codelist;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "TypeBenchmarkResponse", description = "DTO for retrieving a TypeBenchmark entity")
-public class TypeBenchmarkResponse{
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The Type Benchmark",
-            example = "pid_graph:C4D0F2B1"
-    )
-    @JsonProperty(value = "id")
-    public String id;
-
-    @Schema(type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Type Benchmark",
-            example = "V-B")
-    @JsonProperty(value="tbn")
-    public String tbn;
+@Schema(name = "TypeBenchmarkResponse", description = "DTO for updating a TypeBenchmark entity")
+public class TypeBenchmarkUpdateDto {
 
     @Schema(type = SchemaType.STRING,
             implementation = String.class,
@@ -82,24 +64,6 @@ public class TypeBenchmarkResponse{
     @JsonProperty(value = "example")
     public String example;
 
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Motivation ID",
-            example = "pid_graph:3E109BBA"
-    )
-    @JsonProperty(value = "motivation_id")
-    public String lodMTV;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "lodMTV",
-            example = "pid_graph:3E109B2A"
-    )
-    @JsonProperty(value = "version")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String lodTBNV;
 
     @Schema(
             type = SchemaType.STRING,
@@ -118,14 +82,4 @@ public class TypeBenchmarkResponse{
     )
     @JsonProperty("enabled")
     public Boolean enabled;
-
-    @Setter
-    @Schema(
-            type = SchemaType.BOOLEAN,
-            implementation = Boolean.class,
-            description = "Whether a Type Benchmark is used in published Motivation or not."
-    )
-    @JsonProperty("used_by_published_motivations")
-    public Boolean usedByPublishedMotivations;
-
 }

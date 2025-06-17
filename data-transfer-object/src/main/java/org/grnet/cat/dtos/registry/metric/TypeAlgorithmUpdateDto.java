@@ -1,31 +1,13 @@
 package org.grnet.cat.dtos.registry.metric;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 @Schema(name = "TypeAlgorithmResponseDto", description = "This object represents a Type Algorithm response.")
-public class TypeAlgorithmResponseDto {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The unique ID of the algorithm",
-            example = "pid_graph:ABCD1234")
-    @JsonProperty("id")
-    public String id;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The algorithm's name",
-            example = "Some Algorithm")
-    @JsonProperty("tal")
-    public String TAL;
+public class TypeAlgorithmUpdateDto {
 
     @Schema(
             type = SchemaType.STRING,
@@ -46,26 +28,10 @@ public class TypeAlgorithmResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The URI of the algorithm type",
-            example = "http://example.com/algorithm")
-    @JsonProperty("uri")
-    public String uriAlgorithmType;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "The function pattern",
             example = "Pattern XYZ")
     @JsonProperty("function")
     public String functionPattern;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Version of the lodTAL",
-            example = "v1.0")
-    @JsonProperty("version")
-    public String lodTAL_V;
 
     @Schema(
             type = SchemaType.STRING,
@@ -91,13 +57,4 @@ public class TypeAlgorithmResponseDto {
     )
     @JsonProperty("enabled")
     public Boolean enabled;
-
-    @Setter
-    @Schema(
-            type = SchemaType.BOOLEAN,
-            implementation = Boolean.class,
-            description = "Whether a Type Algorithm is used in published Motivation or not."
-    )
-    @JsonProperty("used_by_published_motivations")
-    public Boolean usedByPublishedMotivations;
 }

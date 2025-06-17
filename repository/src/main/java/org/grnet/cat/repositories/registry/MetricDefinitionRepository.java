@@ -32,6 +32,18 @@ public class MetricDefinitionRepository implements Repository<MetricDefinitionJu
 
         return pageable;
     }
+    
+    public boolean existTypeBenchmarkInStatus(String typeBenchmarkId, boolean status) {
+        return find(
+                "SELECT 1 FROM MetricDefinitionJunction md " +
+                        "JOIN md.metric m " +
+                        "JOIN CriterionMetricJunction cm ON cm.metric.id = m.id " +
+                        "JOIN CriterionActorJunction ca ON ca.criterion.id = cm.criterion.id " +
+                        "JOIN MotivationActorJunction ma ON ma.actor.id = ca.actor.id " +
+                        "WHERE md.typeBenchmark.id = ?1 AND ma.published = ?2",
+                typeBenchmarkId, status
+        ).firstResultOptional().isPresent();
+    }
 
 //    public PageQuery<MetricDefinitionJunction> findUniqueMetrics(String search, String sort, String order, int page, int size){
 //

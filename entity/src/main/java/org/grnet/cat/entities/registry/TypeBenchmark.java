@@ -47,4 +47,7 @@ public class TypeBenchmark extends Registry {
     @Column(name = "lodTBN_V")
     private String lodTBNV;
 
+    @Column(name = "enabled")
+    private Boolean enabled;
+
 }
