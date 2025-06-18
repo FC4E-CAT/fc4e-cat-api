@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.AutomatedTestResponse;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateActorDto;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateMotivationDto;
 import org.grnet.cat.dtos.template.TemplateOrganisationDto;
@@ -12,7 +13,9 @@ import org.grnet.cat.dtos.template.TemplateResultDto;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.junit.Ignore;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Schema(name = "RegistryAssessmentDto", description = "This object represents a Registry Assessment Dto.")
 public class RegistryAssessmentDto {
@@ -55,4 +58,8 @@ public class RegistryAssessmentDto {
     public TemplateResultDto result;
 
     public List<PriNodeDto> principles;
+
+    @JsonProperty(value = "automated_group_test")
+    public List<Map<String, Object>> automatedGroupTest;
+
 }
