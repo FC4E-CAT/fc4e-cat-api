@@ -106,7 +106,6 @@ public class JsonAssessmentService {
         assessment.setShared(Boolean.FALSE);
         assessment.setPublished(request.assessmentDoc.published);
         assessment.setAssessmentDoc(objectMapper.writeValueAsString(request.assessmentDoc));
-
         motivationAssessmentRepository.persist(assessment);
         assessment.setParentAssessmentId(assessment.getId());
 
@@ -117,6 +116,7 @@ public class JsonAssessmentService {
 
             jsonNode.put("id", assessment.getId());
             jsonNode.put("version", "v1");
+            jsonNode.put("automated_group_test", objectMapper.valueToTree(request.assessmentDoc.automatedGroupTest));
 
 
             assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
