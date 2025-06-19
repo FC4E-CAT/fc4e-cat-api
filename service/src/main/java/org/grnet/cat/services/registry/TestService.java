@@ -157,13 +157,11 @@ public class TestService {
     @Transactional
     public TestResponseDto versionTest(String id, String userId, TestVersionRequestDto request) {
 
-        if (!Objects.equals(testRepository.findById(id).getTES(), request.TES)) {
-            throw new ForbiddenException("The TES name must be the same as the parent test: " + testRepository.findById(id).getTES());
-        }
         var parentId = testRepository.findById(id).getLodTES_V();
         var parentTestVersion = testRepository.countVersion(parentId);
 
         var childTest = TestMapper.INSTANCE.versionTestToEntity(request);
+        childTest.setTES(testRepository.findById(id).getTES());
         childTest.setPopulatedBy(userId);
         childTest.setLodTES_V(testRepository.findById(id).getLodTES_V());
         childTest.setTestMethod(Panache.getEntityManager().getReference(TestMethod.class, request.testMethodId));

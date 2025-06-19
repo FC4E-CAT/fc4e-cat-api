@@ -12,16 +12,6 @@ public class TestVersionRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Test Name",
-            example = "T12"
-    )
-    @JsonProperty("tes")
-    @NotEmpty(message = "tes may not be empty.")
-    public String TES;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "Label for the test",
             example = "PID Persistence - Service - Evidence"
     )

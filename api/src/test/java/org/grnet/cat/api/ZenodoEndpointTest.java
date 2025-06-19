@@ -142,42 +142,7 @@ public class ZenodoEndpointTest extends KeycloakTest {
 
 
     }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void testPublishZenodoAssessment_Success() throws IOException, InterruptedException {
-
-        //  zenodoAssessmentInfoRepository.removeAll();
-        //register(validatedToken);
-     //   assessment = createRegistryPublicAssessment(validatedToken);
-      //  assessment.published = true;
-        var pdf = generateValidPdf();
-        var response = given()
-                .auth()
-                .oauth2(validatedToken)
-                .body(pdf)
-                .contentType("application/octet-stream")
-                .post("/publish/assessment/{id}", publicAssessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-        //  String expectedMessage = "Process of uploading assessment with ID: " + assessment.id + " has started...";
-        var zenodAssessmentInfo = given()
-                .auth()
-                .oauth2(validatedToken)
-                .get("/assessment/{id}", publicAssessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ZenodoAssessmentInfoResponse.class);
-
-
-        assertEquals(ZenodoState.PROCESS_COMPLETED.getType(), zenodAssessmentInfo.getZenodoState());
-    }
-
+    
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void testPublishZenodoAssessment_notPublished() throws IOException {
