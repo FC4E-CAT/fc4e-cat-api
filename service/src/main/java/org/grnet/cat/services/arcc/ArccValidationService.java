@@ -7,7 +7,6 @@ import jakarta.ws.rs.ServerErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.grnet.cat.dtos.AarcClaimLocation;
 import org.grnet.cat.dtos.ArccValidationRequest;
 import org.grnet.cat.dtos.ArccValidationResult;
 import org.grnet.cat.dtos.AutomatedTestResponse;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
@@ -186,6 +184,27 @@ public class ArccValidationService {
 
         validateAarcGivenName(nacoResponse, apiResponse, tests);
 
+        validateAarcFamilyName(nacoResponse, apiResponse, tests);
+
+        validateAarcEmail(nacoResponse, apiResponse, tests);
+
+        validateAarcOrganizationName(nacoResponse, apiResponse, tests);
+
+        validateAarcOrganizationDomain(nacoResponse, apiResponse, tests);
+
+        validateAarcAffiliationWithinHomeOrganisation(nacoResponse, apiResponse, tests);
+
+        validateAarcGroupAndRole(nacoResponse, apiResponse, tests);
+
+        validateAarcResourceCapabilities(nacoResponse, apiResponse, tests);
+
+        validateAarcAffiliationAssurance(nacoResponse, apiResponse, tests);
+
+        validateAarcSub(nacoResponse, apiResponse, tests);
+
+        validateAarcVopersonId(nacoResponse, apiResponse, tests);
+
+
         var status = new AutomatedTestStatus();
         status.isValid = tests.stream().allMatch(test->test.isValid);
         status.message = "All validations were executed successfully during the test run.";
@@ -236,13 +255,12 @@ public class ArccValidationService {
         }
 
         apiResponse.additionalInfo.put("given_name_user_info", givenName);
+        tests.add(givenName);
     }
 
-    private void validateAarcFamilyName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcFamilyName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var familyName = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -258,16 +276,13 @@ public class ArccValidationService {
             familyName.message = "family_name found in user_info.";
         }
 
-        location.userInfo =  familyName;
-
-        apiResponse.additionalInfo.put("family_name", location);
+        apiResponse.additionalInfo.put("family_name_user_info", familyName);
+        tests.add(familyName);
     }
 
-    private void validateAarcEmail(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcEmail(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var email = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -290,16 +305,13 @@ public class ArccValidationService {
             }
         }
 
-        location.userInfo =  email;
-
-        apiResponse.additionalInfo.put("email", location);
+        apiResponse.additionalInfo.put("email_user_info", email);
+        tests.add(email);
     }
 
-    private void validateAarcOrganizationName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcOrganizationName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var organizationName = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -315,18 +327,16 @@ public class ArccValidationService {
             organizationName.message = "organization_name found in user_info.";
         }
 
-        location.userInfo = organizationName;
+        apiResponse.additionalInfo.put("organization_name_user_info", organizationName);
+        tests.add(organizationName);
 
-        apiResponse.additionalInfo.put("organization_name", location);
     }
 
-    private void validateAarcOrganizationDomain(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcOrganizationDomain(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var organizationNameInUserInfo = new ArccValidationResult();
 
         var organizationNameInTokenIntrospection = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -356,19 +366,19 @@ public class ArccValidationService {
             organizationNameInTokenIntrospection.message = "schac_home_organization found in introspection_info.";
         }
 
-        location.userInfo = organizationNameInUserInfo;
-        location.introspectionInfo = organizationNameInTokenIntrospection;
 
-        apiResponse.additionalInfo.put("schac_home_organization", location);
+        apiResponse.additionalInfo.put("schac_home_organization_user_info", organizationNameInUserInfo);
+        apiResponse.additionalInfo.put("schac_home_organization_token_introspection", organizationNameInTokenIntrospection);
+
+        tests.add(organizationNameInUserInfo);
+        tests.add(organizationNameInTokenIntrospection);
     }
 
-    private void validateAarcAffiliationWithinHomeOrganisation(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcAffiliationWithinHomeOrganisation(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var affiliationNameInUserInfo = new ArccValidationResult();
 
         var affiliationInTokenIntrospection = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -398,18 +408,17 @@ public class ArccValidationService {
             affiliationInTokenIntrospection.message = "voperson_external_affiliation found in introspection_info.";
         }
 
-        location.userInfo = affiliationNameInUserInfo;
-        location.introspectionInfo = affiliationInTokenIntrospection;
+        apiResponse.additionalInfo.put("voperson_external_affiliation_user_info", affiliationNameInUserInfo);
+        apiResponse.additionalInfo.put("voperson_external_affiliation_token_introspection", affiliationInTokenIntrospection);
 
-        apiResponse.additionalInfo.put("voperson_external_affiliation", location);
+        tests.add(affiliationNameInUserInfo);
+        tests.add(affiliationInTokenIntrospection);
     }
 
-    private void validateAarcAffiliationAssurance(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcAffiliationAssurance(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var affiliationInTokenIntrospection = new ArccValidationResult();
         var affiliationNameInAccessToken = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
 
@@ -439,19 +448,18 @@ public class ArccValidationService {
             affiliationNameInAccessToken.message = "eduperson_assurance found in access_token_info.";
         }
 
-        location.userInfo = affiliationNameInAccessToken;
-        location.introspectionInfo = affiliationInTokenIntrospection;
+        apiResponse.additionalInfo.put("assurance_access_token", affiliationNameInAccessToken);
+        apiResponse.additionalInfo.put("assurance_token_introspection", affiliationInTokenIntrospection);
 
-        apiResponse.additionalInfo.put("eduperson_assurance", location);
+        tests.add(affiliationNameInAccessToken);
+        tests.add(affiliationInTokenIntrospection);
     }
 
-    private void validateAarcGroupAndRole(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse) {
+    private void validateAarcGroupAndRole(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var entitlementsInUserInfo = new ArccValidationResult();
 
         var entitlementsInIntrospection = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
 
@@ -497,21 +505,20 @@ public class ArccValidationService {
             }
         }
 
-        location.userInfo = entitlementsInUserInfo;
-        location.introspectionInfo = entitlementsInIntrospection;
+        apiResponse.additionalInfo.put("group_role_user_info", entitlementsInUserInfo);
+        apiResponse.additionalInfo.put("group_role_token_introspection", entitlementsInIntrospection);
 
-        apiResponse.additionalInfo.put("group_and_role_entitlements", location);
+        tests.add(entitlementsInUserInfo);
+        tests.add(entitlementsInIntrospection);
     }
 
-    private void validateAarcSub(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcSub(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var subInUserInfo = new ArccValidationResult();
 
         var subInTokenIntrospection = new ArccValidationResult();
 
         var subInAccessToken = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -555,22 +562,22 @@ public class ArccValidationService {
             subInAccessToken.message = "sub found in access_token_info.";
         }
 
-        location.userInfo = subInUserInfo;
-        location.introspectionInfo = subInTokenIntrospection;
-        location.accessTokenInfo = subInAccessToken;
+        apiResponse.additionalInfo.put("sub_user_info", subInUserInfo);
+        apiResponse.additionalInfo.put("sub_access_token", subInAccessToken);
+        apiResponse.additionalInfo.put("sub_token_introspection", subInTokenIntrospection);
 
-        apiResponse.additionalInfo.put("sub", location);
+        tests.add(subInUserInfo);
+        tests.add(subInAccessToken);
+        tests.add(subInTokenIntrospection);
     }
 
-    private void validateAarcVopersonId(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse){
+    private void validateAarcVopersonId(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
 
         var voPersonIdInUserInfo = new ArccValidationResult();
 
         var voPersonIdInTokenIntrospection = new ArccValidationResult();
 
         var voPersonIdInAccessToken = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getUserInfo())){
 
@@ -637,20 +644,20 @@ public class ArccValidationService {
             }
         }
 
-        location.userInfo = voPersonIdInUserInfo;
-        location.introspectionInfo = voPersonIdInTokenIntrospection;
-        location.accessTokenInfo = voPersonIdInAccessToken;
+        apiResponse.additionalInfo.put("voperson_id_user_info", voPersonIdInUserInfo);
+        apiResponse.additionalInfo.put("voperson_id_access_token", voPersonIdInAccessToken);
+        apiResponse.additionalInfo.put("voperson_id_token_introspection", voPersonIdInTokenIntrospection);
 
-        apiResponse.additionalInfo.put("voperson_id", location);
+        tests.add(voPersonIdInUserInfo);
+        tests.add(voPersonIdInAccessToken);
+        tests.add(voPersonIdInTokenIntrospection);
     }
 
-    private void validateAarcResourceCapabilities(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse) {
+    private void validateAarcResourceCapabilities(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var entitlementsInUserInfo = new ArccValidationResult();
 
         var entitlementsInIntrospection = new ArccValidationResult();
-
-        var location =  new AarcClaimLocation();
 
         if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
 
@@ -696,10 +703,11 @@ public class ArccValidationService {
             }
         }
 
-        location.userInfo = entitlementsInUserInfo;
-        location.introspectionInfo = entitlementsInIntrospection;
+        apiResponse.additionalInfo.put("resource_capabilities_user_info", entitlementsInUserInfo);
+        apiResponse.additionalInfo.put("resource_capabilities_token_introspection", entitlementsInIntrospection);
 
-        apiResponse.additionalInfo.put("resource_capabilities_entitlements", location);
+        tests.add(entitlementsInUserInfo);
+        tests.add(entitlementsInIntrospection);
     }
 
     private boolean isValidValue(String value, String regex) {
