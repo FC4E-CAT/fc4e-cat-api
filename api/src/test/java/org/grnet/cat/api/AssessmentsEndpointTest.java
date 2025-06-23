@@ -824,4 +824,59 @@ public class AssessmentsEndpointTest extends KeycloakTest {
                 .as(UserJsonRegistryAssessmentResponse.class);
         assertEquals(assessment.id, publicAssessment.id);
     }
+
+    @Test
+    public void editPublishedAssessment() throws IOException {
+
+        //register("validated");
+        //register("admin");
+        //register("evald");
+
+        //makeValidation("validated", "pid_graph:B5CC396B");
+
+        var requestAssessment = new JsonRegistryAssessmentRequest();
+        requestAssessment.assessmentDoc = makeRegistryJsonDoc();
+
+        var assessment = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments")
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(UserJsonRegistryAssessmentResponse.class);
+
+        var response = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .put("/{id}/publish", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        var response1 = given()
+                .auth()
+                .oauth2(validatedToken)
+                .basePath("/v2/assessments/")
+                .body(requestAssessment)
+                .contentType(ContentType.JSON)
+                .put("/{id}", assessment.id)
+                .then()
+                .assertThat()
+                .statusCode(400)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(400, response1.code);
+        assertEquals("No action permitted for published Assessment with the following id: "+assessment.id, response1.message);
+
+        }
+
 }

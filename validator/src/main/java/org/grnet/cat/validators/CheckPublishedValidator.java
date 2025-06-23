@@ -5,8 +5,11 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.constraints.CheckPublished;
+import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.Repository;
+import org.grnet.cat.repositories.registry.MotivationRepository;
 
 import java.util.Objects;
 
@@ -30,13 +33,26 @@ public class CheckPublishedValidator implements ConstraintValidator<CheckPublish
         }
 
         Repository repository = CDI.current().select(this.repository).get();
-        Motivation motivation = (Motivation) repository.findById(value);
-        // If motivation is found and is published, the action is not permitted
-
         boolean isPermitted = true;
-        if (motivation != null && motivation.getPublished() != isPublishedPermitted) {
-            isPermitted = false;
+
+        if (repository instanceof MotivationRepository) {
+
+            Motivation motivation = (Motivation) repository.findById(value);
+            // If motivation is found and is published, the action is not permitted
+
+            if (motivation != null && motivation.getPublished() != isPublishedPermitted) {
+                isPermitted = false;
+            }
+        } else if (repository instanceof MotivationAssessmentRepository) {
+
+            MotivationAssessment assessment = (MotivationAssessment) repository.findById(value);
+            // If motivation is found and is published, the action is not permitted
+
+            if (assessment != null && assessment.getPublished() != isPublishedPermitted) {
+                isPermitted = false;
+            }
         }
+
         StringBuilder builder = new StringBuilder();
 
         builder.append(message);
