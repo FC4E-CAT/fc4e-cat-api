@@ -22,6 +22,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
+import org.grnet.cat.constraints.CheckPublished;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
@@ -334,7 +335,8 @@ public class AssessmentsV2Endpoint {
                                              example = "c242e43f-9869-4fb0-b881-631bc5746ec0",
                                              schema = @Schema(type = SchemaType.STRING))
                                      @PathParam("id")
-                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:") String id,
+                                     @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no assessment with the following id:")
+                                     @CheckPublished(repository = MotivationAssessmentRepository.class, message = "No action permitted for published Assessment with the following id:", isPublishedPermitted = false) String id,
                                      @Valid @NotNull(message = "The request body is empty.") JsonRegistryAssessmentRequest request) {
 
         var assessment = assessmentService.updatePrivateAssessment(id, request);
