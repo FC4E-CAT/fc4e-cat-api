@@ -41,8 +41,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters
 - [#488](https://github.com/FC4E-CAT/fc4e-cat-api/pull/488) CAT-875: Merge Test and Test Definition Entities
 - [#499](https://github.com/FC4E-CAT/fc4e-cat-api/pull/499) CAT-894 ServiceConfigurationError during Async Zenodo Publishing
-
 - [#508](https://github.com/FC4E-CAT/fc4e-cat-api/pull/508) CAT-904 automated_group_test Not Persisted, Causing "Fully-Automated-Validation" Button to not appear on Edit
+- [#511](https://github.com/FC4E-CAT/fc4e-cat-api/pull/511) CAT-837 Tests in assessment should appear in an ascending order
 
 ## 2.0.0 - 2025-03-31
 ---
