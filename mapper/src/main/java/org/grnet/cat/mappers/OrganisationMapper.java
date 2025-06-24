@@ -3,6 +3,8 @@ package org.grnet.cat.mappers;
 
 import com.mysql.cj.util.StringUtils;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.grnet.cat.dtos.OrganisationResponseDto;
 import org.grnet.cat.entities.Organisation;
 import org.mapstruct.Mapper;
@@ -22,5 +24,16 @@ public interface OrganisationMapper {
     OrganisationResponseDto organisationToResponse(Organisation organisation);
     
     List<OrganisationResponseDto> organisationsToResponse(List<Organisation> organisation);
+
+    default List<OrganisationResponseDto> idsToOrganisationResponses(List<String> ids) {
+        return ids.stream().map(id -> {
+            OrganisationResponseDto dto = new OrganisationResponseDto();
+            dto.id = id;
+            dto.name = id;
+            dto.website = "";
+            dto.acronym = "";
+            return dto;
+        }).collect(Collectors.toList());
+    }
 }
 
