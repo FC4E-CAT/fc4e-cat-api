@@ -90,7 +90,7 @@ public class IntegrationService {
      * @param query
      * @return An Organisation sources.
      */
-    public PageResource<String> getNacoOrganisation(String query, int page, int size, UriInfo uriInfo) {
+    public PageResource<OrganisationResponseDto> getNacoOrganisation(String query, int page, int size, UriInfo uriInfo) {
 
         var providers = arccValidationService.getAarcG069Entries();
 
@@ -113,7 +113,10 @@ public class IntegrationService {
         pageable.size = size;
         pageable.count = result.size();
         pageable.page = Page.of(page, size);
+        List resp = OrganisationMapper.INSTANCE.idsToOrganisationResponses(paginatedProviders);
 
-        return new PageResource<String>(pageable, paginatedProviders, uriInfo);
+        return new PageResource(pageable, resp, uriInfo);
+
+//        return new PageResource<String>(pageable, paginatedProviders, uriInfo);
     }
 }
