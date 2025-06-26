@@ -117,8 +117,7 @@ public class JsonAssessmentService {
             jsonNode.put("id", assessment.getId());
             jsonNode.put("version", "v1");
             jsonNode.put("automated_group_test", objectMapper.valueToTree(request.assessmentDoc.automatedGroupTest));
-
-
+            sortTestsInAssessmentDoc(jsonNode);
             assessment.setAssessmentDoc(objectMapper.writeValueAsString(jsonNode));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -176,6 +175,7 @@ public class JsonAssessmentService {
         try {
             var docWithId = (ObjectNode) objectMapper.readTree(newAssessment.getAssessmentDoc());
             docWithId.put("id", newAssessment.getId());
+            sortTestsInAssessmentDoc(docNode);
             newAssessment.setAssessmentDoc(objectMapper.writeValueAsString(docWithId));
         } catch (Exception e) {
         }
@@ -367,6 +367,14 @@ public class JsonAssessmentService {
     public UserJsonRegistryAssessmentResponse getRegistryDtoAssessment(String assessmentId) {
 
         var assessment = motivationAssessmentRepository.findById(assessmentId);
+
+        try {
+            ObjectNode doc = (ObjectNode) objectMapper.readTree(assessment.getAssessmentDoc());
+            sortTestsInAssessmentDoc(doc); // Sort tests inside the assessment JSON
+            assessment.setAssessmentDoc(objectMapper.writeValueAsString(doc));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to sort tests in assessmentDoc", e);
+        }
 
         return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
     }
@@ -811,6 +819,33 @@ public class JsonAssessmentService {
         assessment.setPublished(publish);
         return String.format("Assessment is %s successfully", publish ? "published" : "unpublished");
 
+    }
+
+
+    private void sortTestsInAssessmentDoc(ObjectNode assessmentDoc) {
+        var principles = (ArrayNode) assessmentDoc.get("principles");
+        if (principles == null) return;
+
+        for (JsonNode principleNode : principles) {
+            var criteria = (ArrayNode) principleNode.get("criteria");
+            if (criteria == null) continue;
+
+            for (JsonNode criterionNode : criteria) {
+                var metric = (ObjectNode) criterionNode.get("metric");
+                if (metric == null) continue;
+
+                var tests = (ArrayNode) metric.get("tests");
+                if (tests == null) continue;
+
+                List<JsonNode> sorted = new ArrayList<>();
+                tests.forEach(sorted::add);
+
+                sorted.sort(Comparator.comparing(n -> n.get("id").asText()));
+
+                var sortedTests = metric.putArray("tests");
+                sorted.forEach(sortedTests::add);
+            }
+        }
     }
 
 }
