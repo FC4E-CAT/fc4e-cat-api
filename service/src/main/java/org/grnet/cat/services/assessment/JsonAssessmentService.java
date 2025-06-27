@@ -711,6 +711,14 @@ public class JsonAssessmentService {
 
         var assessment = motivationAssessmentRepository.findById(assessmentId);
 
+        try {
+            ObjectNode doc = (ObjectNode) objectMapper.readTree(assessment.getAssessmentDoc());
+            sortTestsInAssessmentDoc(doc);
+            assessment.setAssessmentDoc(objectMapper.writeValueAsString(doc));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to sort tests in assessmentDoc for assessment ID: " + assessment.getId(), e);
+        }
+
         var assessmentDto = AssessmentMapper.INSTANCE.publicUserRegistryAssessmentToJsonAssessment(assessment);
 
         if (!assessment.getPublished()) {
