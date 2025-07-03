@@ -26,12 +26,10 @@ import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
-import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
-import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
-import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
-import org.grnet.cat.dtos.registry.metric.TypeCombinationDto;
+import org.grnet.cat.dtos.registry.metric.*;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
+import org.grnet.cat.dtos.registry.metric.TypeCombinationDto;
+import org.grnet.cat.dtos.registry.metric.MetricVersionRequestDto;
 import org.grnet.cat.services.registry.metric.MetricService;
 import org.grnet.cat.utils.Utility;
 import org.grnet.cat.validators.SortAndOrderValidator;
@@ -62,7 +60,7 @@ public class MetricEndpoint {
             description = "The corresponding Metric item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = MetricDefinitionExtendedResponse.class))
+                    implementation = MetricResponseDto.class))
     )
     @APIResponse(
             responseCode = "404",
@@ -317,17 +315,17 @@ public class MetricEndpoint {
     public Response listMetrics(
             @Parameter(name="Search", in = QUERY,
                     description = "The \"search\" parameter allows clients to search " +
-                            "for matches in specific fields in the MetricDefinition entity. " +
+                            "for matches in specific fields in the Metric entity. " +
                             "The search will be conducted in the following fields: " +
-                            "metric ID, metric MTR, metric Label, type benchmark ID, type benchmark Label, motivation ID")
+                            "metric ID, metric MTR, metric Label, type benchmark ID, motivation ID")
             @QueryParam("search") String search,
             @Parameter(name = "Sort", in = QUERY,
                     schema = @Schema(type = SchemaType.STRING, defaultValue = "lastTouch"),
                     examples = {
                             @ExampleObject(name = "Last Touch", value = "lastTouch"),
-                            @ExampleObject(name = "MTR", value = "metric.MTR"),
-                            @ExampleObject(name = "Label", value = "metric.metricLabel"),
-                            @ExampleObject(name = "Description", value = "metric.descrMetric"),
+                            @ExampleObject(name = "MTR", value = "MTR"),
+                            @ExampleObject(name = "Label", value = "labelMetric"),
+                            @ExampleObject(name = "Description", value = "descrMetric"),
                             @ExampleObject(name = "Benchmark Value", value = "valueBenchmark")},
                     description = "The \"sort\" parameter allows clients to specify the field by which they want the results to be sorted.")
             @DefaultValue("lastTouch")
@@ -354,7 +352,7 @@ public class MetricEndpoint {
             @Context UriInfo uriInfo) {
 
         var orderValues = List.of("ASC", "DESC");
-        var sortValues = List.of("lastTouch", "metric.MTR","metric.metricLabel","metric.metricDescr", "valueBenchmark");
+        var sortValues = List.of("lastTouch", "MTR","labelMetric","descrMetric", "valueBenchmark");
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 
@@ -363,6 +361,63 @@ public class MetricEndpoint {
         return Response.ok().entity(metrics).build();
     }
 
+
+    @Tag(name = "Metrics")
+    @Operation(
+            summary = "Create version Metric",
+            description = "Creates a new version of Metric item."
+    )
+    @APIResponse(
+            responseCode = "201",
+            description = "Metric item versioned.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = MetricResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("{id}/version-metric")
+    public Response versionMetric(
+            @Parameter(
+                    description = "The ID of the Metric to version.",
+                    required = true,
+                    example = "pid_graph:646DBA5",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:") String id,
+            @Valid MetricVersionRequestDto request, @Context UriInfo uriInfo ) {
+
+        var versionMetric = metricService.versionMetric(id, utility.getUserUniqueIdentifier(), request);
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(versionMetric.id)).build()).entity(versionMetric).build();
+    }
     @Tag(name = "Metrics")
     @Operation(
             summary = "List all Types Combinations",
@@ -401,17 +456,17 @@ public class MetricEndpoint {
     }
 
 
-    public static class PageableMetricResponse extends PageResource<MetricDefinitionExtendedResponse> {
+    public static class PageableMetricResponse extends PageResource<MetricResponseDto> {
 
-        private List<MetricDefinitionExtendedResponse> content;
+        private List<MetricResponseDto> content;
 
         @Override
-        public List<MetricDefinitionExtendedResponse> getContent() {
+        public List<MetricResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<MetricDefinitionExtendedResponse> content) {
+        public void setContent(List<MetricResponseDto> content) {
             this.content = content;
         }
     }

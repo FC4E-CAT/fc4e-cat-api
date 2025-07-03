@@ -8,19 +8,7 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 
-public class MotivationMetricExtendedRequest {
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The unique identifier for the metric",
-            required = true,
-            example = "MTR001"
-    )
-    @JsonProperty("mtr")
-    @NotEmpty(message = "mtr may not be empty.")
-    public String MTR;
-
+public class MetricVersionRequestDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

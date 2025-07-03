@@ -1,17 +1,21 @@
 package org.grnet.cat.repositories.registry.metric;
 
 import io.quarkus.panache.common.Parameters;
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
+import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.repositories.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.StringJoiner;
 
 @ApplicationScoped
 public class MetricRepository implements Repository<Metric, String> {
@@ -26,9 +30,27 @@ public class MetricRepository implements Repository<Metric, String> {
      * @param size The maximum number of Metric to include in a page.
      * @return A list of Metric objects representing the Metrics in the requested page.
      */
-    public PageQuery<Metric> fetchMetricByPage(int page, int size){
+    public PageQuery<Metric> fetchMetricByPage(String search, String sort, String order, int page, int size){
 
-        var panache = find("from Metric", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending)).page(page, size);
+        var joiner = new StringJoiner(" ");
+        joiner.add("from Metric m");
+
+        var map = new HashMap<String, Object>();
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("where (m.id ilike :search")
+                    .add("or m.labelMetric ilike :search")
+                    .add("or m.MTR ilike :search")
+                    .add("or m.descrMetric ilike :search)")
+                    .add("and m.version = (select max(m2.version) from Metric m2 where m2.lodMTRV = m.lodMTRV)"); // Ensure only the latest version
+            map.put("search", "%" + search + "%");
+        } else {
+            joiner.add("where m.version = (select max(m2.version) from Metric m2 where m2.lodMTRV = m.lodMTRV)"); // Ensure only the latest version
+        }
+
+        joiner.add("order by m." + sort + " " + order + ", m.id ASC");
+
+        var panache = find(joiner.toString(), map).page(page, size);
 
         var pageable = new PageQueryImpl<Metric>();
         pageable.list = panache.list();
@@ -40,6 +62,41 @@ public class MetricRepository implements Repository<Metric, String> {
         return pageable;
     }
 
+    @Transactional
+    public PageQuery<Metric> fetchMetricByMotivation(String motivationId, String search, String sort, String order, int page, int size) {
+
+        var joiner = new StringJoiner(StringUtils.SPACE);
+
+        joiner.add("select DISTINCT met FROM Metric met")
+                .add("where (exists (select 1 from CriterionMetricJunction cm where cm.metric.id = met.id and cm.motivation.id = :motivationId)")
+                .add("or exists (select 1 from MetricTestJunction mt where mt.metric.id = met.id and mt.motivation.id = :motivationId))");
+
+
+        var map = new HashMap<String, Object>();
+        map.put("motivationId", motivationId);
+
+
+        if (StringUtils.isNotEmpty(search)) {
+            joiner.add("and (met.labelMetric LIKE :search")
+                    .add("or met.descrMetric LIKE :search")
+                    .add("or met.MTR LIKE :search)");
+            map.put("search", "%" + search + "%");
+        }
+
+        joiner.add("ORDER BY met." + sort + " " + order);
+
+
+        var panache = find(joiner.toString(), map).page(page, size);
+
+        var pageable = new PageQueryImpl<Metric>();
+        pageable.list = panache.list();
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = panache.count();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
 
     public List<Metric> fetchLatestVersionMetrics(List<String> metricParentsId) {
         // Query to fetch the latest version of each metric based on the metric ID
@@ -48,9 +105,13 @@ public class MetricRepository implements Repository<Metric, String> {
                 .list();
     }
 
+    public List<Metric> fetchMetricAllVersions(String lodMTRV) {
+        return find("SELECT m FROM Metric m WHERE m.lodMTRV = ?1 ORDER BY m.version DESC", lodMTRV).list();
+    }
+
 
     public long countVersion(String id) {
-        var query = "SELECT COUNT(t) FROM Metric t WHERE t.lodMTRV = :lodMTR_V";
+        var query = "SELECT COUNT(m) FROM Metric m WHERE m.lodMTRV = :lodMTR_V";
         return getEntityManager().createQuery(query, Long.class)
                 .setParameter("lodMTR_V", id)
                 .getSingleResult();
@@ -63,14 +124,27 @@ public class MetricRepository implements Repository<Metric, String> {
                 .list();
     }
 
+    @Transactional
+    public List<Motivation> getMotivationIdsByMetric(String metricId) {
+
+        var db = "SELECT DISTINCT m FROM Motivation m " +
+                "LEFT JOIN CriterionMetricJunction cm ON cm.motivation.id = m.id " +
+                "LEFT JOIN MetricTestJunction mt ON mt.motivation.id = m.id " +
+                "WHERE cm.metric.id = :metricId";
+
+
+        return getEntityManager().createQuery(db, Motivation.class)
+                .setParameter("metricId", metricId)
+                .getResultList();
+    }
+
     public List<Object[]> fetchMetricTypeAlgorithmCombinations() {
         var sql = "SELECT tmt.labelTypeMetric, ta.labelAlgorithmType, tb.labelBenchmarkType, COUNT(*) " +
                 "FROM\n" +
-                "        t_Type_Benchmark tb \n" +
-                "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
-                "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                "        p_Metric m \n" +
                 "        LEFT JOIN t_Type_Algorithm ta ON m.lodTAL = ta.lodTAL\n" +
                 "        LEFT JOIN t_Type_Metric tmt ON m.lodTMT = tmt.lodTMT\n" +
+                "        LEFT JOIN t_Type_Benchmark tb ON m.lodTBN = tb.lodTBN\n" +
                 "GROUP BY tmt.labelTypeMetric, ta.labelAlgorithmType, tb.labelBenchmarkType";
 
         var query = em.createNativeQuery(sql);

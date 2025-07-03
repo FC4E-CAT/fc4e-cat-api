@@ -100,7 +100,7 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
                         "        t.TES,\n" +
                         "        t.labelTest,\n" +
                         "        t.descTest,\n" +
-                        "        md.valueBenchmark,\n" +
+                        "        m.valueBenchmark,\n" +
                         "        tb.labelBenchmarkType,\n" +
                         "        tm.labelTestMethod,\n"+
                         "        t.testQuestion,\n"+
@@ -110,8 +110,7 @@ public class CriterionMetricRepository implements Repository<CriterionMetricJunc
                         "        tmt.labelTypeMetric\n" +
                         "    FROM\n" +
                         "        t_Type_Benchmark tb \n" +
-                        "        INNER JOIN p_Metric_Definition md ON tb.lodTBN = md.type_benchmark_lodTBN\n" +
-                        "        INNER JOIN p_Metric m ON md.metric_lodMTR = m.lodMTR\n" +
+                        "        INNER JOIN p_Metric m ON tb.lodTBN = m.lodTBN\n" +
                         "        INNER JOIN p_Metric_Test mt ON m.lodMTR = mt.metric_lodMTR\n" +
                         "        INNER JOIN p_Test t ON mt.test_lodTES = t.lodTES\n" +
                         "        INNER JOIN t_TestMethod tm ON t.lodTME = t.lodTME\n" +

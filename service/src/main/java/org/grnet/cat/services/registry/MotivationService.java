@@ -11,8 +11,6 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
-import org.grnet.cat.dtos.registry.MetricDefinitionRequest;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
@@ -78,9 +76,6 @@ public class MotivationService {
 
     @Inject
     MetricRepository metricRepository;
-
-    @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
 
     @Inject
     MetricTestRepository metricTestRepository;
@@ -603,7 +598,7 @@ public class MotivationService {
     }
 
     @Transactional
-    public InformativeResponse createMetricDefinitionForMotivation(String id, MotivationMetricExtendedRequest request, String userId) {
+    public InformativeResponse createMetricForMotivation(String id, MetricRequestDto request, String userId) {
 
         var response = new InformativeResponse();
 
@@ -616,6 +611,8 @@ public class MotivationService {
             metricRequest.typeAlgorithmId = request.typeAlgorithmId;
             metricRequest.labelMetric = request.labelMetric;
             metricRequest.descrMetric = request.descrMetric;
+            metricRequest.typeBenchmarkId = request.typeBenchmarkId;
+            metricRequest.valueBenchmark = request.valueBenchmark;
 
             var metric = MetricMapper.INSTANCE.metricToEntity(metricRequest);
 
@@ -623,29 +620,15 @@ public class MotivationService {
             metric.setPopulatedBy(userId);
             metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
             metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
+            metric.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, metricRequest.typeBenchmarkId));
             metric.setPopulatedBy(userId);
             metric.setVersion(1);
             metricRepository.persist(metric);
 
             metric.setLodMTRV(metric.getId());
 
-
-            var metricDefinitionJunction = new MetricDefinitionJunction(
-                    Panache.getEntityManager().getReference(Motivation.class, id),
-                    Panache.getEntityManager().getReference(Metric.class, metric.getId()),
-                    Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId),
-                    request.valueBenchmark,
-                    id,
-                    1,
-                    (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
-                    userId,
-                    Timestamp.from(Instant.now())
-            );
-
-            metricDefinitionRepository.persist(metricDefinitionJunction);
-
             response.code = 200;
-            response.message = "A metric and a Metric Definition successfully created and linked to the specified motivation.";
+            response.message = "A Metric successfully created with identifier: " + metric.getId();
         } else {
             response.code = 409;
             response.message = "A metric with the identifier '" + request.MTR.toUpperCase() + "' already exists.";
@@ -655,130 +638,44 @@ public class MotivationService {
     }
 
     @Transactional
-    public InformativeResponse createMetricDefinitionVersionForMotivation(String motivationId, String metricId, MotivationMetricVersionRequest request, String userId) {
+    public InformativeResponse createMetricVersionForMotivation(String motivationId, String metricId, MetricVersionRequestDto request, String userId) {
 
         var response = new InformativeResponse();
 
         var metricParent = metricRepository.findById(metricId);
 
-        var metricRequest = new MetricRequestDto();
-        metricRequest.MTR = metricParent.getMTR();
+
+        var metricRequest = new MetricVersionRequestDto();
         metricRequest.urlMetric = request.urlMetric;
         metricRequest.typeMetricId = request.typeMetricId;
         metricRequest.typeAlgorithmId = request.typeAlgorithmId;
         metricRequest.labelMetric = request.labelMetric;
         metricRequest.descrMetric = request.descrMetric;
+        metricRequest.typeBenchmarkId = request.typeBenchmarkId;
+        metricRequest.valueBenchmark = request.valueBenchmark;
 
-        var metric = MetricMapper.INSTANCE.metricToEntity(metricRequest);
+        var metric = MetricMapper.INSTANCE.versionMetricToEntity(metricRequest);
 
         metric.setLodMTV(motivationId);
         metric.setPopulatedBy(userId);
+        metric.setMTR(metricParent.getMTR());
         metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
         metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
+        metric.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, metricRequest.typeBenchmarkId));
         metric.setPopulatedBy(userId);
         metric.setLodMTRV(metricParent.getLodMTRV());
 
         var parentMetricVersion = metricRepository.countVersion(metricId);
         metric.setVersion((int) (parentMetricVersion + 1));
 
-
         metricRepository.persist(metric);
 
-        var metricDefinitionJunction = new MetricDefinitionJunction(
-                Panache.getEntityManager().getReference(Motivation.class, motivationId),
-                Panache.getEntityManager().getReference(Metric.class, metric.getId()),
-                Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId),
-                request.valueBenchmark,
-                motivationId,
-                1,
-                (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
-                userId,
-                Timestamp.from(Instant.now())
-        );
-
-            metricDefinitionRepository.persist(metricDefinitionJunction);
-
-            var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMetricId(metricParent.getLodMTRV());
-            metricDefinitionJunction.setMetricDefinition(metricDefinition.getMetricDefinition());
-
-            response.code = 200;
-            response.message = "A version of a metric and a Metric Definition successfully created and linked to the specified motivation.";
-
-        return response;
-    }
-
-    @Transactional
-    public InformativeResponse updateMetricDefinitionForMotivation(String id, String metricId, MotivationMetricUpdateRequest request, String userId) {
-
-        var response = new InformativeResponse();
-
-        var updateMetric = new MetricUpdateDto();
-
-        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMetricId(metricId);
-
-        updateMetric.MTR = request.MTR;
-        updateMetric.labelMetric = request.labelMetric;
-        updateMetric.descrMetric = request.descrMetric;
-        updateMetric.typeMetricId = request.typeMetricId;
-        updateMetric.urlMetric = request.urlMetric;
-        updateMetric.typeAlgorithmId = request.typeAlgorithmId;
-
-        metricService.updateMetric(metricId, userId, updateMetric);
-
-        if(StringUtils.isNotEmpty(request.typeBenchmarkId)){
-
-            metricDefinition.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId));
-
-        }
-
-        if(StringUtils.isNotEmpty(request.valueBenchmark)){
-
-            metricDefinition.setValueBenchmark(request.valueBenchmark);
-        }
-
         response.code = 200;
-        response.message = "A metric and a Metric Definition successfully updated.";
+        response.message = "A version of a metric successfully created with identifier: " + metric.getId();
 
         return response;
     }
 
-
-    @Transactional
-    public List<String> updateMetricDefinitionRelation(String motivationId, Set<MetricDefinitionRequest> request, String userId) {
-
-        var resultMessages = new ArrayList<String>();
-
-        removeMetricDefinitionRelationship(motivationId, request, resultMessages);
-
-        request.stream().iterator().forEachRemaining(req -> {
-
-            var junction = principleCriterionRepository.findByMotivationAndPrincipleAndCriterionAndVersion(motivationId, req.metricId, req.typeBenchmarkId, 1);
-
-            if (junction.isPresent()) {
-
-                var existingJunction = junction.get();
-                existingJunction.setLastTouch(Timestamp.from(Instant.now()));
-                existingJunction.setPopulatedBy(userId);
-                resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully updated.");
-            } else {
-
-                var metDef = new MetricDefinitionJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
-                        Panache.getEntityManager().getReference(Metric.class, req.metricId),
-                        Panache.getEntityManager().getReference(TypeBenchmark.class, req.typeBenchmarkId),
-                        req.valueBenchmark,
-                        motivationId,
-                        1,
-                        (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
-                        userId,
-                        Timestamp.from(Instant.now())
-                );
-
-                metricDefinitionRepository.persist(metDef);
-                resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully added to Motivation.");
-            }
-        });
-        return resultMessages;
-    }
 
     public List<String> deletePrincipleFromMotivation(String motivationId, String principleId) {
         var resultMessages = new ArrayList<String>();
@@ -811,68 +708,12 @@ public class MotivationService {
         return resultMessages;
     }
 
-    public PageResource<MetricDefinitionExtendedResponse> getMetricDefinitionRelation(String motivationId, int page, int size, UriInfo uriInfo) {
+    public PageResource<MetricResponseDto> getMotivationMetricRelation(String motivationId, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId, page, size);
+        var metricPage = metricRepository.fetchMetricByMotivation(motivationId, search, sort, order, page, size);
+        var metricDto = MetricMapper.INSTANCE.metricToDtos(metricPage.list());
 
-        var junctions = metricDefinition.list();
-
-        if (junctions.isEmpty()) {
-            return new PageResource<>(metricDefinition, List.of(), uriInfo);
-        }
-
-        var metricIds = junctions.stream()
-                .map(j -> j.getMetric().getId())
-                .distinct()
-                .collect(Collectors.toList());
-
-        var metrics = metricRepository.fetchMetricsByIds(metricIds);
-
-        // Create the response for each metric, including its versions (excluding the version in use)
-        var dtoList = metrics.stream()
-                .map(metric -> {
-                    // Find the junction related to this metric
-                    var junction = junctions.stream()
-                            .filter(j -> j.getMetric().getId().equals(metric.getId()))
-                            .findFirst()
-                            .orElseThrow(() -> new RuntimeException("Junction not found"));
-
-                    // Create the DTO for the metric
-                    var dto = metricService.metricResponseWithMotivations(metric, junction);
-
-                    // Fetch all versions for this metric, excluding the version in use
-                    var versions = getMetricVersionsExcludingInUse(metric.getLodMTRV(), metric.getVersion());
-
-                    // Add the versions to the DTO
-                    dto.setVersions(versions);
-
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-        // Return the paginated result with the list of DTOs
-        return new PageResource<>(metricDefinition, dtoList, uriInfo);
-    }
-
-
-    private List<MetricDefinitionExtendedResponse> getMetricVersionsExcludingInUse(String lodMTRV, Integer currentVersion) {
-        // Fetch all versions of the metric based on its lodMTRV
-        var metricVersions = metricDefinitionRepository.fetchMetricAndDefinitionVersion(lodMTRV);
-
-        return metricVersions.stream()
-                .filter(junction -> !junction.getMetric().getVersion().equals(currentVersion)) // Exclude the current version
-                .map(junction -> {
-                    var dto = metricService.metricResponseWithMotivations(junction.getMetric(), junction);
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
-
-    public MetricDefinitionExtendedResponse getMetricDefinitionRelation(String motivationId, String metricId) {
-
-        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivationAndMetricId(motivationId, metricId);
-
-        return MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponse(metricDefinition);
+        return new PageResource<>(metricPage, metricDto, uriInfo);
     }
 
     /**
@@ -1001,27 +842,6 @@ public class MotivationService {
             }
         });
         return resultMessages;
-    }
-
-    private void removeMetricDefinitionRelationship(String
-                                                            motivationId, Set<MetricDefinitionRequest> request, List<String> resultMessages) {
-
-        var mdList = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId);
-
-        mdList
-                .iterator()
-                .forEachRemaining(md -> {
-
-                    var temp = new MetricDefinitionRequest();
-                    temp.metricId = md.getId().getMetricId();
-                    temp.typeBenchmarkId = md.getId().getTypeBenchmarkId();
-
-                    if (!request.contains(temp)) {
-
-                        metricDefinitionRepository.delete(md);
-                        resultMessages.add("principle-criterion with ids :: " + temp.metricId + " - " + temp.typeBenchmarkId + " removed from Motivation.");
-                    }
-                });
     }
 
 

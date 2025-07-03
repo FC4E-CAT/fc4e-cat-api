@@ -75,4 +75,26 @@ public class MetricRequestDto {
     @NotFoundEntity(repository = TypeMetricRepository.class, message = "There is no Metric Type with the following id:")
     @JsonProperty("type_metric_id")
     public String typeMetricId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Type ID.",
+            required = true,
+            example = "pid_graph:0917EC0D"
+    )
+    @NotEmpty(message = "type_benchmark_id may not be empty.")
+    @JsonProperty("type_benchmark_id")
+    public String typeBenchmarkId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Value.",
+            required = true,
+            example = "3"
+    )
+    @NotEmpty(message = "value_benchmark may not be empty.")
+    @JsonProperty("value_benchmark")
+    public String valueBenchmark;
 }

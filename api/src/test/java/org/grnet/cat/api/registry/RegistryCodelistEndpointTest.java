@@ -53,8 +53,8 @@ public class RegistryCodelistEndpointTest extends KeycloakTest {
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void getTypeBenchmark() {
-        var response = getTypeBenchmark("pid_graph:0917EC0D");
-        assertEquals("pid_graph:0917EC0D", response.id);
+        var response = getTypeBenchmark("pid_graph:16108D9B");
+        assertEquals("pid_graph:16108D9B", response.id);
     }
 
     @Test

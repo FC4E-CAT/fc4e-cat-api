@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.CriterionMetricJunction;
 import org.grnet.cat.entities.registry.MetricTestProjection;
+import org.grnet.cat.entities.registry.TypeBenchmark;
 import org.grnet.cat.entities.registry.generator.RegistryId;
 
 import java.sql.Timestamp;
@@ -74,6 +75,14 @@ public class Metric {
     @JoinColumn(name = "lodTMT")
     private TypeMetric typeMetric;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lodTBN")
+    private TypeBenchmark typeBenchmark;
+
+    @Column(name = "valueBenchmark")
+    @NotNull
+    private String valueBenchmark;
+
     @Column(name = "lodMTV")
     private String lodMTV;
 
@@ -82,6 +91,12 @@ public class Metric {
 
     @Column(name = "lastTouch")
     private Timestamp lastTouch;
+
+    @Column(name = "lodReference2")
+    private String lodReference2;
+
+    @Column(name = "lodReference")
+    private String lodReference;
 
     @Column(name = "upload")
     private LocalDate upload;
