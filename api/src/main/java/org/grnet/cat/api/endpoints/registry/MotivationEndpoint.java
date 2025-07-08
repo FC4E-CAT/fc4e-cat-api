@@ -45,6 +45,7 @@ import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestD
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
+import org.grnet.cat.dtos.registry.template.AssessmentTypeTemplateDto;
 import org.grnet.cat.dtos.registry.template.RegistryTemplateDto;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
@@ -1307,6 +1308,64 @@ public class MotivationEndpoint {
                                         @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
 
         var template = templateService.buildTemplateForAdmin(id, actorId);
+
+        return Response.ok().entity(template).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Retrieve registry template for a specific motivation and actor.",
+            description = "This endpoint retrieves a registry template for a specific motivation and actor.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of assessment templates.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = AssessmentTypeTemplateDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/{id}/by-actor/{actor-id}/assessment-type-template")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getAssessmentTypeTemplate(
+            @Parameter(description = "The Motivation to retrieve template.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            String id,
+            @Parameter(
+                    description = "The Actor to retrieve template.",
+                    required = true,
+                    example = "pid_graph:E92B9B49",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId) {
+
+        var template = templateService.buildAssessmentTypeTemplate(id, actorId);
 
         return Response.ok().entity(template).build();
     }
