@@ -130,6 +130,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
         request.description = "This metric measures performance.";
         request.imperative = "pid_graph:BED209B9";
         request.typeCriterion = "pid_graph:A2719B92";
+        request.lodMTV = null;
         return request;
     }
 

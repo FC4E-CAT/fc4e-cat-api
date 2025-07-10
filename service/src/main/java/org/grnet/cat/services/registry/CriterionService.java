@@ -17,6 +17,7 @@ import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.dtos.registry.template.TestNode;
+import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.utils.TestParamsTransformer;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
@@ -99,6 +100,10 @@ public class CriterionService {
 
         var criteria = CriteriaMapper.INSTANCE.criteriaToEntity(criteriaRequestDto);
 
+        if (!(criteriaRequestDto.lodMTV == null)) {
+            criteria.setLodMTV(criteriaRequestDto.lodMTV);
+        }
+
         criteria.setPopulatedBy(userId);
         criteria.setImperative(Panache.getEntityManager().getReference(Imperative.class, criteriaRequestDto.imperative));
         criteria.setTypeCriterion(Panache.getEntityManager().getReference(TypeCriterion.class, criteriaRequestDto.typeCriterion));
@@ -121,7 +126,7 @@ public class CriterionService {
     public CriterionResponse update(String id, CriterionUpdate criteriaUpdateDto, String userId) {
 
         if(criterionActorRepository.existCriterionInStatus(id, Boolean.TRUE)){
-            throw new ForbiddenException("No action permitted , criterion exists in a published motivation");
+            throw new ForbiddenException("No action permitted , criterion exists in a published assessment type");
         }
 
         var criteria = criteriaRepository.findById(id);
@@ -166,7 +171,7 @@ public class CriterionService {
    public boolean delete(String id) {
 
         if(criterionActorRepository.existCriterionInStatus(id, Boolean.TRUE)){
-            throw new ForbiddenException("No action permitted , criterion exists in a published motivation");
+            throw new ForbiddenException("No action permitted , criterion exists in a published assessment type");
         }
 
         if (principleCriterionRepository.existsByCriterion(id)) {
@@ -253,6 +258,13 @@ public class CriterionService {
                 .collect(Collectors.toList());
 
         criterionResponse.setMotivations(motivationResponses);
+
+        var principles = principleCriterionRepository.getPrinciplesIdsByCriterion(criterion.getId());
+        var principleResponses = principles.stream()
+                .map(PrincipleMapper.INSTANCE::mapPartialPrinciple)
+                .collect(Collectors.toList());
+
+        criterionResponse.setTaggedByPrinciple(principleResponses);
 
         var metrics = criterionMetricRepository.findMetricsByCriterionId(criterion.getId());
 

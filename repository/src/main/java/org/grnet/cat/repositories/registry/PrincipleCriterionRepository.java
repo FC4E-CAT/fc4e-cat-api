@@ -8,6 +8,7 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.Motivation;
+import org.grnet.cat.entities.registry.Principle;
 import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.grnet.cat.repositories.Repository;
 
@@ -136,6 +137,16 @@ public class PrincipleCriterionRepository  implements Repository<PrincipleCriter
         var db = "SELECT DISTINCT pc.motivation FROM PrincipleCriterionJunction pc WHERE pc.criterion.id = :criterionId";
 
         return getEntityManager().createQuery(db, Motivation.class)
+                .setParameter("criterionId", criterionId)
+                .getResultList();
+    }
+
+    @Transactional
+    public List<Principle> getPrinciplesIdsByCriterion(String criterionId) {
+
+        var db = "SELECT DISTINCT pc.principle FROM PrincipleCriterionJunction pc WHERE pc.criterion.id = :criterionId";
+
+        return getEntityManager().createQuery(db, Principle.class)
                 .setParameter("criterionId", criterionId)
                 .getResultList();
     }

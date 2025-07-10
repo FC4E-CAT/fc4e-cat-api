@@ -135,7 +135,9 @@ public class RegistryActorService {
 
         var criteriaActor = criterionActorRepository.fetchCriteriaByMotivationAndActorAndPage(motivationId, actorId, page, size);
 
-        return new PageResource<>(criteriaActor, CriterionActorMapper.INSTANCE.toCriterionActorResponseList(criteriaActor.list()), uriInfo);
+        var criAct =  CriterionActorMapper.INSTANCE.toCriterionActorResponseList(criteriaActor.list());
+
+        return new PageResource<>(criteriaActor, criAct, uriInfo);
     }
 
     /**
