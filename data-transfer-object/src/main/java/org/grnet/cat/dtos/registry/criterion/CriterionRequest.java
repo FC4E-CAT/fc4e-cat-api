@@ -7,6 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
+import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
 
 @Schema(name = "CriterionRequest", description = "This object represents the data required to create a Criterion.")
@@ -78,6 +79,15 @@ public class CriterionRequest {
     @JsonProperty("url")
     public String url;
 
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Id of the Motivation.",
+            example = "pid_graph:3E109BBA"
+    )
+    @JsonProperty("motivation_id")
+    @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+    public String lodMTV;
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,

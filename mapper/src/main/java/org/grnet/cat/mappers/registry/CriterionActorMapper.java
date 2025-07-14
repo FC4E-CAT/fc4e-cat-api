@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public interface CriterionActorMapper {
 
     CriterionActorMapper INSTANCE = Mappers.getMapper(CriterionActorMapper.class);
+
     @Mapping(source = "criterion.id", target = "id")
     @Mapping(source = "criterion.cri", target = "cri")
     @Mapping(source = "criterion.label", target = "label")
@@ -45,7 +46,8 @@ public interface CriterionActorMapper {
     }
 
     @Named("mapPrinciple")
-    @Mapping(target = "id",  expression = "java(principleJunction.getPrinciple().getId())")  // Ignore the id field here as well
+    @Mapping(target = "id", expression = "java(principleJunction.getPrinciple().getId())")
+    // Ignore the id field here as well
     @Mapping(target = "pri", expression = "java(principleJunction.getPrinciple().getPri())")
     @Mapping(target = "label", expression = "java(principleJunction.getPrinciple().getLabel())")
     PrinciplePartialResponse mapPrinciple(PrincipleCriterionJunction principleJunction);
@@ -61,10 +63,16 @@ public interface CriterionActorMapper {
     @Mapping(source = "motivation.mtv", target = "motivationMtv")
     @Mapping(source = "populatedBy", target = "populatedBy")
     @Mapping(source = "lastTouch", target = "lastTouch")
-    @Mapping(target = "principles", source = "criterion.principles", qualifiedByName = "mapPrinciples")
+    @Mapping(target = "principles", expression = "java(filterPrinciplesByMotivation(junction.getCriterion().getPrinciples(), junction.getMotivation().getId()))")
     CriterionActorResponse toCriterionActorResponse(CriterionActorJunction junction);
 
     List<CriterionActorResponse> toCriterionActorResponseList(List<CriterionActorJunction> junctions);
 
+    public default List<PrinciplePartialResponse> filterPrinciplesByMotivation(Set<PrincipleCriterionJunction> principles, String motivationId) {
+        return principles.stream()
+                .filter(principle -> principle.getMotivation().getId().equals(motivationId))
+                .map(this::mapPrinciple)
+                .collect(Collectors.toList());
+    }
 }
 

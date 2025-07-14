@@ -72,6 +72,10 @@ public class Criterion extends Registry {
     @NotNull
     private TypeCriterion typeCriterion;
 
+    @Column(name = "lodMTV")
+    private String lodMTV;
+
+
     @Column(name = "lodCRI_V")
     private String lodCriV;
 
