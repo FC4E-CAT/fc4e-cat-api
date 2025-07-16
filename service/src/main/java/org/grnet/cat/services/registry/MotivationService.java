@@ -83,6 +83,9 @@ public class MotivationService {
     @Inject
     MetricService metricService;
 
+    @Inject
+    CriterionRepository criterionRepository;
+
     /**
      * Creates a new Motivation.
      *
@@ -598,44 +601,51 @@ public class MotivationService {
     }
 
     @Transactional
-    public InformativeResponse createMetricForMotivation(String id, MetricRequestDto request, String userId) {
+    public MetricResponseDto createMetricForMotivation(String id, MetricRequestDto request, String userId) {
 
-        var response = new InformativeResponse();
+        if (metricRepository.notUnique("MTR", request.MTR.toUpperCase())) {
+            throw new UniqueConstraintViolationException("MTR", request.MTR.toUpperCase());
+        }
+        var metric = MetricMapper.INSTANCE.metricToEntity(request);
 
-        if (!metricRepository.notUnique("MTR", request.MTR.toUpperCase())) {
+        metric.setLodMTV(id);
+        metric.setPopulatedBy(userId);
+        metric.setVersion(1);
 
-            var metricRequest = new MetricRequestDto();
-            metricRequest.MTR = request.MTR;
-            metricRequest.urlMetric = request.urlMetric;
-            metricRequest.typeMetricId = request.typeMetricId;
-            metricRequest.typeAlgorithmId = request.typeAlgorithmId;
-            metricRequest.labelMetric = request.labelMetric;
-            metricRequest.descrMetric = request.descrMetric;
-            metricRequest.typeBenchmarkId = request.typeBenchmarkId;
-            metricRequest.valueBenchmark = request.valueBenchmark;
+        var typeAlgorithm = Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId);
+        var typeBenchmark = Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId);
+        var typeMetric = Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId);
 
-            var metric = MetricMapper.INSTANCE.metricToEntity(metricRequest);
+        metric.setTypeAlgorithm(typeAlgorithm);
+        metric.setTypeBenchmark(typeBenchmark);
+        metric.setTypeMetric(typeMetric);
 
-            metric.setLodMTV(id);
-            metric.setPopulatedBy(userId);
-            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
-            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
-            metric.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, metricRequest.typeBenchmarkId));
-            metric.setPopulatedBy(userId);
-            metric.setVersion(1);
-            metricRepository.persist(metric);
+        metric.setMTR("M" + metricRepository.getNextAvailableMtrNumber());
 
-            metric.setLodMTRV(metric.getId());
+        if (request.criterion_id != null) {
+            var criterion = criterionRepository.findById(request.criterion_id);
+            var similarMetricOpt = metricRepository.fetchMetricByTypesCombinations(
+                    typeAlgorithm.getId(),
+                    typeBenchmark.getId(),
+                    typeMetric.getId()
+            );
 
-            response.code = 200;
-            response.message = "A Metric successfully created with identifier: " + metric.getId();
-        } else {
-            response.code = 409;
-            response.message = "A metric with the identifier '" + request.MTR.toUpperCase() + "' already exists.";
+            if (similarMetricOpt.isPresent()) {
+                var similarMetric = similarMetricOpt.get();
+                metric.setLabelMetric(similarMetric.getLabelMetric());
+                metric.setDescrMetric(similarMetric.getDescrMetric());
+            } else {
+                metric.setLabelMetric(criterion.getLabel() + (" Metric"));
+                metric.setDescrMetric("Metric created for " + motivationRepository.findById(id).getLabel() + " and used by criterion " + criterion.getCri() + ".");
+            }
         }
 
-        return response;
+        metricRepository.persist(metric);
+        metric.setLodMTRV(metric.getId());
+
+        return MetricMapper.INSTANCE.metricToDto(metric);
     }
+
 
     @Transactional
     public InformativeResponse createMetricVersionForMotivation(String motivationId, String metricId, MetricVersionRequestDto request, String userId) {

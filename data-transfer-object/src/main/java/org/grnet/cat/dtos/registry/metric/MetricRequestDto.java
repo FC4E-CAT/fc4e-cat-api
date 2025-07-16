@@ -2,6 +2,7 @@ package org.grnet.cat.dtos.registry.metric;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
@@ -97,4 +98,14 @@ public class MetricRequestDto {
     @NotEmpty(message = "value_benchmark may not be empty.")
     @JsonProperty("value_benchmark")
     public String valueBenchmark;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The id of the related Criterion .",
+            example = "pid_graph:D0339C6A"
+    )
+    @JsonProperty("criterion_id")
+    @EqualsAndHashCode.Include
+    public String criterion_id;
 }
