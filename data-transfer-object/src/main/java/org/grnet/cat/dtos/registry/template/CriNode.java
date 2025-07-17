@@ -34,6 +34,6 @@ public class CriNode extends Node{
     @JsonProperty("metric")
     public Node getMetric(){
 
-        return getChildren().stream().findFirst().get();
+        return getChildren().stream().findFirst().orElse(null);
     }
 }

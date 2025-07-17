@@ -36,6 +36,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#501](https://github.com/FC4E-CAT/fc4e-cat-api/pull/501) CAT-895 Add "enabled" Column to TestMethod Table and Support Enable/Disable Functionality via API.
 - [#503](https://github.com/FC4E-CAT/fc4e-cat-api/pull/503) CAT-898 Validation Request - add list of AAI providers
 - [#507](https://github.com/FC4E-CAT/fc4e-cat-api/pull/507) CAT-903 Add "enabled" Column to Types Related to Metric Table and Support Enable/Disable Functionality via API
+- [#514](https://github.com/FC4E-CAT/fc4e-cat-api/pull/514) CAT-928: Create AssessmentType template
 
 
 ### Fix
