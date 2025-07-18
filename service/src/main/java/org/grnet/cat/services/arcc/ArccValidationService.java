@@ -18,10 +18,7 @@ import org.grnet.cat.validators.XmlMetadataValidator.XmlSchemaValidator;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
@@ -51,7 +48,7 @@ public class ArccValidationService {
         var validatedResponse = xmlSchemaValidator.validateSchema(request.metadataUrl);
         var response = new AutomatedTestResponse();
 
-        var status =  new AutomatedTestStatus();
+        var status = new AutomatedTestStatus();
         response.testStatus = status;
         response.lastRun = DateTimeFormatter
                 .ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -66,7 +63,7 @@ public class ArccValidationService {
                     status.code = 422;
                     break;
                 case "NOT_FOUND_ERROR":
-                    throw new NotFoundException( validatedResponse.getMessage());
+                    throw new NotFoundException(validatedResponse.getMessage());
                 case "GENERIC_ERROR":
                 default:
                     throw new ServerErrorException(validatedResponse.getMessage(), 500);
@@ -93,19 +90,25 @@ public class ArccValidationService {
 
         status.isValid = true;
         status.code = 200;
-        status.message="Successful schema validation";
+        status.message = "Successful schema validation";
         return response;
     }
 
-    public Set<String> getAarcG069Entries(){
+    //    public Set<String> getAarcG069Entries(){
+//
+//        var entries = nacoClient.getEntries(SERVICE_KEY);
+//
+//        return entries.keySet();
+//
+//    }
+    public Map<String, NacoClient.NacoEntry> getAarcG069Entries() {
 
-        var entries = nacoClient.getEntries(SERVICE_KEY);
+        return nacoClient.getEntries(SERVICE_KEY);
 
-        return entries.keySet();
 
     }
 
-    public AutomatedTestResponse validateAarcG069(String aaiProviderId){
+    public AutomatedTestResponse validateAarcG069(String aaiProviderId) {
 
         var entitlementsInUserInfo = new ArccValidationResult();
 
@@ -113,18 +116,18 @@ public class ArccValidationService {
 
         var response = nacoClient.getEntry(aaiProviderId, SERVICE_KEY);
 
-        if(Objects.isNull(response.getIntrospectionInfo())){
+        if (Objects.isNull(response.getIntrospectionInfo())) {
 
             entitlementsInIntrospection.isValid = false;
             entitlementsInIntrospection.message = "introspection_info section is missing from the response.";
 
-        } else if (Objects.isNull(response.getIntrospectionInfo().getEntitlements())){
+        } else if (Objects.isNull(response.getIntrospectionInfo().getEntitlements())) {
 
             entitlementsInIntrospection.isValid = false;
             entitlementsInIntrospection.message = "entitlements claim is missing from the Token Introspection response.";
-        } else{
+        } else {
 
-            if(response.getIntrospectionInfo().getEntitlements().stream().anyMatch(value-> isValidValue(value, AARC_G069_REGEX))){
+            if (response.getIntrospectionInfo().getEntitlements().stream().anyMatch(value -> isValidValue(value, AARC_G069_REGEX))) {
 
                 entitlementsInIntrospection.isValid = true;
                 entitlementsInIntrospection.message = "entitlements found in introspection_info, and at least one entitlement follows the expected URN format (AARC-G069).";
@@ -135,18 +138,18 @@ public class ArccValidationService {
             }
         }
 
-        if(Objects.isNull(response.getUserInfo())){
+        if (Objects.isNull(response.getUserInfo())) {
 
             entitlementsInUserInfo.isValid = false;
             entitlementsInUserInfo.message = "user_info section is missing from the response.";
 
-        } else if (Objects.isNull(response.getUserInfo().getEntitlements())){
+        } else if (Objects.isNull(response.getUserInfo().getEntitlements())) {
 
             entitlementsInUserInfo.isValid = false;
             entitlementsInUserInfo.message = "entitlements claim is missing from the UserInfo response.";
-        } else{
+        } else {
 
-            if(response.getUserInfo().getEntitlements().stream().anyMatch(value-> isValidValue(value, AARC_G069_REGEX))){
+            if (response.getUserInfo().getEntitlements().stream().anyMatch(value -> isValidValue(value, AARC_G069_REGEX))) {
 
                 entitlementsInUserInfo.isValid = true;
                 entitlementsInUserInfo.message = "entitlements found in user_info, and at least one entitlement follows the expected URN format (AARC-G069).";
@@ -172,7 +175,7 @@ public class ArccValidationService {
         return arccResponse;
     }
 
-    public AutomatedTestResponse validateAarcG056(String aaiProviderId){
+    public AutomatedTestResponse validateAarcG056(String aaiProviderId) {
 
         var nacoResponse = nacoClient.getEntry(aaiProviderId, SERVICE_KEY);
 
@@ -206,7 +209,7 @@ public class ArccValidationService {
 
 
         var status = new AutomatedTestStatus();
-        status.isValid = tests.stream().allMatch(test->test.isValid);
+        status.isValid = tests.stream().allMatch(test -> test.isValid);
         status.message = "All validations were executed successfully during the test run.";
 
         apiResponse.testStatus = status;
@@ -214,19 +217,19 @@ public class ArccValidationService {
         return apiResponse;
     }
 
-    private void validateAarcName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
-       var name = new ArccValidationResult();
+        var name = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             name.isValid = false;
             name.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getName())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getName())) {
 
             name.isValid = false;
             name.message = "Missing or empty name claim in UserInfo response.";
-        } else{
+        } else {
 
             name.isValid = true;
             name.message = "name found in user_info.";
@@ -236,19 +239,19 @@ public class ArccValidationService {
         tests.add(name);
     }
 
-    private void validateAarcGivenName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcGivenName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var givenName = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             givenName.isValid = false;
             givenName.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getGivenName())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getGivenName())) {
 
             givenName.isValid = false;
             givenName.message = "Missing or empty given_name claim in UserInfo response.";
-        } else{
+        } else {
 
             givenName.isValid = true;
             givenName.message = "given_name found in user_info.";
@@ -258,19 +261,19 @@ public class ArccValidationService {
         tests.add(givenName);
     }
 
-    private void validateAarcFamilyName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcFamilyName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var familyName = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             familyName.isValid = false;
             familyName.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getFamilyName())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getFamilyName())) {
 
             familyName.isValid = false;
             familyName.message = "Missing or empty family_name claim in UserInfo response.";
-        } else{
+        } else {
 
             familyName.isValid = true;
             familyName.message = "family_name found in user_info.";
@@ -280,21 +283,21 @@ public class ArccValidationService {
         tests.add(familyName);
     }
 
-    private void validateAarcEmail(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcEmail(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var email = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             email.isValid = false;
             email.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getEmail())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getEmail())) {
 
             email.isValid = false;
             email.message = "Missing or empty email claim in UserInfo response.";
-        } else{
+        } else {
 
-            if(isValidValue(nacoResponse.getUserInfo().getEmail(), EMAIL_RFC2821_REGEX)){
+            if (isValidValue(nacoResponse.getUserInfo().getEmail(), EMAIL_RFC2821_REGEX)) {
 
                 email.isValid = true;
                 email.message = "email found in user_info, and follows the expected email format (RFC 2821).";
@@ -309,19 +312,19 @@ public class ArccValidationService {
         tests.add(email);
     }
 
-    private void validateAarcOrganizationName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcOrganizationName(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var organizationName = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             organizationName.isValid = false;
             organizationName.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getOrganizationName())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getOrganizationName())) {
 
             organizationName.isValid = false;
             organizationName.message = "Missing or empty organization_name claim in UserInfo response.";
-        } else{
+        } else {
 
             organizationName.isValid = true;
             organizationName.message = "organization_name found in user_info.";
@@ -332,35 +335,35 @@ public class ArccValidationService {
 
     }
 
-    private void validateAarcOrganizationDomain(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcOrganizationDomain(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var organizationNameInUserInfo = new ArccValidationResult();
 
         var organizationNameInTokenIntrospection = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             organizationNameInUserInfo.isValid = false;
             organizationNameInUserInfo.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getOrganizationDomain())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getOrganizationDomain())) {
 
             organizationNameInUserInfo.isValid = false;
             organizationNameInUserInfo.message = "Missing or empty schac_home_organization claim in UserInfo response.";
-        } else{
+        } else {
 
             organizationNameInUserInfo.isValid = true;
             organizationNameInUserInfo.message = "schac_home_organization found in user_info.";
         }
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             organizationNameInTokenIntrospection.isValid = false;
             organizationNameInTokenIntrospection.message = "introspection_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getIntrospectionInfo().getOrganizationDomain())){
+        } else if (StringUtils.isEmpty(nacoResponse.getIntrospectionInfo().getOrganizationDomain())) {
 
             organizationNameInTokenIntrospection.isValid = false;
             organizationNameInTokenIntrospection.message = "Missing or empty schac_home_organization claim in Token Introspection response.";
-        } else{
+        } else {
 
             organizationNameInTokenIntrospection.isValid = true;
             organizationNameInTokenIntrospection.message = "schac_home_organization found in introspection_info.";
@@ -374,35 +377,35 @@ public class ArccValidationService {
         tests.add(organizationNameInTokenIntrospection);
     }
 
-    private void validateAarcAffiliationWithinHomeOrganisation(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcAffiliationWithinHomeOrganisation(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var affiliationNameInUserInfo = new ArccValidationResult();
 
         var affiliationInTokenIntrospection = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             affiliationNameInUserInfo.isValid = false;
             affiliationNameInUserInfo.message = "user_info section is missing from the response.";
-        } else if (Objects.isNull(nacoResponse.getUserInfo().getAffiliationWithHomeOrganization()) || nacoResponse.getUserInfo().getAffiliationWithHomeOrganization().isEmpty()){
+        } else if (Objects.isNull(nacoResponse.getUserInfo().getAffiliationWithHomeOrganization()) || nacoResponse.getUserInfo().getAffiliationWithHomeOrganization().isEmpty()) {
 
             affiliationNameInUserInfo.isValid = false;
             affiliationNameInUserInfo.message = "Missing or empty voperson_external_affiliation claim in UserInfo response.";
-        } else{
+        } else {
 
             affiliationNameInUserInfo.isValid = true;
             affiliationNameInUserInfo.message = "voperson_external_affiliation found in user_info.";
         }
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             affiliationInTokenIntrospection.isValid = false;
             affiliationInTokenIntrospection.message = "introspection_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getIntrospectionInfo().getAffiliationWithHomeOrganization()) || nacoResponse.getIntrospectionInfo().getAffiliationWithHomeOrganization().isEmpty())){
+        } else if ((Objects.isNull(nacoResponse.getIntrospectionInfo().getAffiliationWithHomeOrganization()) || nacoResponse.getIntrospectionInfo().getAffiliationWithHomeOrganization().isEmpty())) {
 
             affiliationInTokenIntrospection.isValid = false;
             affiliationInTokenIntrospection.message = "Missing or empty voperson_external_affiliation claim in Token Introspection response.";
-        } else{
+        } else {
 
             affiliationInTokenIntrospection.isValid = true;
             affiliationInTokenIntrospection.message = "voperson_external_affiliation found in introspection_info.";
@@ -415,34 +418,34 @@ public class ArccValidationService {
         tests.add(affiliationInTokenIntrospection);
     }
 
-    private void validateAarcAffiliationAssurance(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcAffiliationAssurance(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var affiliationInTokenIntrospection = new ArccValidationResult();
         var affiliationNameInAccessToken = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             affiliationInTokenIntrospection.isValid = false;
             affiliationInTokenIntrospection.message = "introspection_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getIntrospectionInfo().getAssurance()) || nacoResponse.getIntrospectionInfo().getAssurance().isEmpty())){
+        } else if ((Objects.isNull(nacoResponse.getIntrospectionInfo().getAssurance()) || nacoResponse.getIntrospectionInfo().getAssurance().isEmpty())) {
 
             affiliationInTokenIntrospection.isValid = false;
             affiliationInTokenIntrospection.message = "Missing or empty eduperson_assurance claim in Token Introspection response.";
-        } else{
+        } else {
 
             affiliationInTokenIntrospection.isValid = true;
             affiliationInTokenIntrospection.message = "eduperson_assurance found in introspection_info.";
         }
 
-        if(Objects.isNull(nacoResponse.getAccessTokenInfo())){
+        if (Objects.isNull(nacoResponse.getAccessTokenInfo())) {
 
             affiliationNameInAccessToken.isValid = false;
             affiliationNameInAccessToken.message = "access_token_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getAssurance()) || nacoResponse.getAccessTokenInfo().getAssurance().isEmpty())){
+        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getAssurance()) || nacoResponse.getAccessTokenInfo().getAssurance().isEmpty())) {
 
             affiliationNameInAccessToken.isValid = false;
             affiliationNameInAccessToken.message = "Missing or empty eduperson_assurance claim in Access Token response.";
-        } else{
+        } else {
 
             affiliationNameInAccessToken.isValid = true;
             affiliationNameInAccessToken.message = "eduperson_assurance found in access_token_info.";
@@ -461,18 +464,18 @@ public class ArccValidationService {
 
         var entitlementsInIntrospection = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             entitlementsInIntrospection.isValid = false;
             entitlementsInIntrospection.message = "introspection_info section is missing from the response.";
 
-        } else if (Objects.isNull(nacoResponse.getIntrospectionInfo().getEntitlements())){
+        } else if (Objects.isNull(nacoResponse.getIntrospectionInfo().getEntitlements())) {
 
             entitlementsInIntrospection.isValid = false;
             entitlementsInIntrospection.message = "entitlements claim is missing from the Token Introspection response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getIntrospectionInfo().getEntitlements().stream().anyMatch(value-> isValidValue(value, AARC_G069_REGEX))){
+            if (nacoResponse.getIntrospectionInfo().getEntitlements().stream().anyMatch(value -> isValidValue(value, AARC_G069_REGEX))) {
 
                 entitlementsInIntrospection.isValid = true;
                 entitlementsInIntrospection.message = "entitlements found in introspection_info, and at least one entitlement follows the expected URN format (AARC-G069).";
@@ -483,18 +486,18 @@ public class ArccValidationService {
             }
         }
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             entitlementsInUserInfo.isValid = false;
             entitlementsInUserInfo.message = "user_info section is missing from the response.";
 
-        } else if (Objects.isNull(nacoResponse.getUserInfo().getEntitlements())){
+        } else if (Objects.isNull(nacoResponse.getUserInfo().getEntitlements())) {
 
             entitlementsInUserInfo.isValid = false;
             entitlementsInUserInfo.message = "entitlements claim is missing from the UserInfo response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getUserInfo().getEntitlements().stream().anyMatch(value-> isValidValue(value, AARC_G069_REGEX))){
+            if (nacoResponse.getUserInfo().getEntitlements().stream().anyMatch(value -> isValidValue(value, AARC_G069_REGEX))) {
 
                 entitlementsInUserInfo.isValid = true;
                 entitlementsInUserInfo.message = "entitlements found in user_info, and at least one entitlement follows the expected URN format (AARC-G069).";
@@ -512,7 +515,7 @@ public class ArccValidationService {
         tests.add(entitlementsInIntrospection);
     }
 
-    private void validateAarcSub(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcSub(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var subInUserInfo = new ArccValidationResult();
 
@@ -520,43 +523,43 @@ public class ArccValidationService {
 
         var subInAccessToken = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             subInUserInfo.isValid = false;
             subInUserInfo.message = "user_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getSub())){
+        } else if (StringUtils.isEmpty(nacoResponse.getUserInfo().getSub())) {
 
             subInUserInfo.isValid = false;
             subInUserInfo.message = "Missing or empty sub claim in UserInfo response.";
-        } else{
+        } else {
 
             subInUserInfo.isValid = true;
             subInUserInfo.message = "sub found in user_info.";
         }
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             subInTokenIntrospection.isValid = false;
             subInTokenIntrospection.message = "introspection_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getIntrospectionInfo().getSub())){
+        } else if (StringUtils.isEmpty(nacoResponse.getIntrospectionInfo().getSub())) {
 
             subInTokenIntrospection.isValid = false;
             subInTokenIntrospection.message = "Missing or empty sub claim in Token Introspection response.";
-        } else{
+        } else {
 
             subInTokenIntrospection.isValid = true;
             subInTokenIntrospection.message = "sub found in introspection_info.";
         }
 
-        if(Objects.isNull(nacoResponse.getAccessTokenInfo())){
+        if (Objects.isNull(nacoResponse.getAccessTokenInfo())) {
 
             subInAccessToken.isValid = false;
             subInAccessToken.message = "access_token_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getAccessTokenInfo().getSub())){
+        } else if (StringUtils.isEmpty(nacoResponse.getAccessTokenInfo().getSub())) {
 
             subInAccessToken.isValid = false;
             subInAccessToken.message = "Missing or empty sub claim in Access Token response.";
-        } else{
+        } else {
 
             subInAccessToken.isValid = true;
             subInAccessToken.message = "sub found in access_token_info.";
@@ -571,7 +574,7 @@ public class ArccValidationService {
         tests.add(subInTokenIntrospection);
     }
 
-    private void validateAarcVopersonId(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests){
+    private void validateAarcVopersonId(NacoEntryResponse nacoResponse, AutomatedTestResponse apiResponse, List<ArccValidationResult> tests) {
 
         var voPersonIdInUserInfo = new ArccValidationResult();
 
@@ -579,17 +582,17 @@ public class ArccValidationService {
 
         var voPersonIdInAccessToken = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             voPersonIdInUserInfo.isValid = false;
             voPersonIdInUserInfo.message = "user_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getUserInfo().getVopersonId()) || nacoResponse.getUserInfo().getVopersonId().isEmpty())){
+        } else if ((Objects.isNull(nacoResponse.getUserInfo().getVopersonId()) || nacoResponse.getUserInfo().getVopersonId().isEmpty())) {
 
             voPersonIdInUserInfo.isValid = false;
             voPersonIdInUserInfo.message = "Missing or empty voperson_id claim in UserInfo response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getUserInfo().getVopersonId().size() == 1){
+            if (nacoResponse.getUserInfo().getVopersonId().size() == 1) {
 
                 voPersonIdInUserInfo.isValid = true;
                 voPersonIdInUserInfo.message = "voperson_id found in user_info.";
@@ -601,17 +604,17 @@ public class ArccValidationService {
             }
         }
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             voPersonIdInTokenIntrospection.isValid = false;
             voPersonIdInTokenIntrospection.message = "introspection_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getIntrospectionInfo().getVopersonId()) || nacoResponse.getIntrospectionInfo().getVopersonId().isEmpty())){
+        } else if ((Objects.isNull(nacoResponse.getIntrospectionInfo().getVopersonId()) || nacoResponse.getIntrospectionInfo().getVopersonId().isEmpty())) {
 
             voPersonIdInTokenIntrospection.isValid = false;
             voPersonIdInTokenIntrospection.message = "Missing or empty voperson_id claim in Token Introspection response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getIntrospectionInfo().getVopersonId().size() == 1){
+            if (nacoResponse.getIntrospectionInfo().getVopersonId().size() == 1) {
 
                 voPersonIdInTokenIntrospection.isValid = true;
                 voPersonIdInTokenIntrospection.message = "voperson_id found in introspection_info.";
@@ -623,17 +626,17 @@ public class ArccValidationService {
             }
         }
 
-        if(Objects.isNull(nacoResponse.getAccessTokenInfo())){
+        if (Objects.isNull(nacoResponse.getAccessTokenInfo())) {
 
             voPersonIdInAccessToken.isValid = false;
             voPersonIdInAccessToken.message = "access_token_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getVopersonId()) || nacoResponse.getAccessTokenInfo().getVopersonId().isEmpty())){
+        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getVopersonId()) || nacoResponse.getAccessTokenInfo().getVopersonId().isEmpty())) {
 
             voPersonIdInAccessToken.isValid = false;
             voPersonIdInAccessToken.message = "Missing or empty voperson_id claim in Access Token response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getAccessTokenInfo().getVopersonId().size() == 1){
+            if (nacoResponse.getAccessTokenInfo().getVopersonId().size() == 1) {
 
                 voPersonIdInAccessToken.isValid = true;
                 voPersonIdInAccessToken.message = "voperson_id found in access_token_info.";
@@ -659,18 +662,18 @@ public class ArccValidationService {
 
         var entitlementsInIntrospection = new ArccValidationResult();
 
-        if(Objects.isNull(nacoResponse.getIntrospectionInfo())){
+        if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
 
             entitlementsInIntrospection.isValid = false;
             entitlementsInIntrospection.message = "introspection_info section is missing from the response.";
 
-        } else if (Objects.isNull(nacoResponse.getIntrospectionInfo().getEntitlements())){
+        } else if (Objects.isNull(nacoResponse.getIntrospectionInfo().getEntitlements())) {
 
             entitlementsInIntrospection.isValid = false;
             entitlementsInIntrospection.message = "entitlements claim is missing from the Token Introspection response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getIntrospectionInfo().getEntitlements().stream().anyMatch(value-> isValidValue(value, AARC_G056_REGEX))){
+            if (nacoResponse.getIntrospectionInfo().getEntitlements().stream().anyMatch(value -> isValidValue(value, AARC_G056_REGEX))) {
 
                 entitlementsInIntrospection.isValid = true;
                 entitlementsInIntrospection.message = "entitlements found in introspection_info, and at least one entitlement follows the expected URN format (AARC-G056).";
@@ -681,18 +684,18 @@ public class ArccValidationService {
             }
         }
 
-        if(Objects.isNull(nacoResponse.getUserInfo())){
+        if (Objects.isNull(nacoResponse.getUserInfo())) {
 
             entitlementsInUserInfo.isValid = false;
             entitlementsInUserInfo.message = "user_info section is missing from the response.";
 
-        } else if (Objects.isNull(nacoResponse.getUserInfo().getEntitlements())){
+        } else if (Objects.isNull(nacoResponse.getUserInfo().getEntitlements())) {
 
             entitlementsInUserInfo.isValid = false;
             entitlementsInUserInfo.message = "entitlements claim is missing from the UserInfo response.";
-        } else{
+        } else {
 
-            if(nacoResponse.getUserInfo().getEntitlements().stream().anyMatch(value-> isValidValue(value, AARC_G056_REGEX))){
+            if (nacoResponse.getUserInfo().getEntitlements().stream().anyMatch(value -> isValidValue(value, AARC_G056_REGEX))) {
 
                 entitlementsInUserInfo.isValid = true;
                 entitlementsInUserInfo.message = "entitlements found in user_info, and at least one entitlement follows the expected URN format (AARC-G056).";

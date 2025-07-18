@@ -15,10 +15,12 @@ import org.grnet.cat.mappers.OrganisationMapper;
 import org.grnet.cat.mappers.SourceMapper;
 import org.grnet.cat.repositories.utils.PaginationUtils;
 import org.grnet.cat.services.arcc.ArccValidationService;
+import org.grnet.cat.services.arcc.g069.NacoClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -94,15 +96,34 @@ public class IntegrationService {
 
         var providers = arccValidationService.getAarcG069Entries();
 
+        Map<String, String> filteredProviders = providers.entrySet().stream()
+                .filter(entry -> entry.getValue() != null &&
+                                        entry.getValue().getFormatted_name() != null )
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().getFormatted_name()
+                ));
+
         String lowerInput = query.toLowerCase();
 
-        ArrayList<String> filtered = providers.stream()
-                .filter(s -> s.toLowerCase().contains(lowerInput))
-                .collect(Collectors.toCollection(ArrayList::new));
+//        ArrayList<String> filtered = providers.stream()
+//                .filter(s -> s.toLowerCase().contains(lowerInput))
+//                .collect(Collectors.toCollection(ArrayList::new));
+        Map<String, String> filtered = providers.entrySet().stream()
+                .filter(entry ->
+                        entry.getKey().contains(lowerInput) ||
+                                (entry.getValue() != null &&
+                                        entry.getValue().getFormatted_name() != null &&
+                                        entry.getValue().getFormatted_name().contains(lowerInput))
+                )
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().getFormatted_name()
+                ));
 
-        var result= filtered.isEmpty() ? providers : filtered;
+        var result= filtered.isEmpty() ? filteredProviders : filtered;
 
-        var partition = paginationUtils.partition(new ArrayList<>(result), size);
+        var partition = paginationUtils.partition(new ArrayList<>(result.keySet()), size);
 
         var paginatedProviders = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 
@@ -113,7 +134,7 @@ public class IntegrationService {
         pageable.size = size;
         pageable.count = result.size();
         pageable.page = Page.of(page, size);
-        List resp = OrganisationMapper.INSTANCE.idsToOrganisationResponses(paginatedProviders);
+        List resp = OrganisationMapper.INSTANCE.idsToOrganisationResponses(paginatedProviders,result);
 
         return new PageResource(pageable, resp, uriInfo);
 
