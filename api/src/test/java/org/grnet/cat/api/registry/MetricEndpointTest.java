@@ -162,7 +162,7 @@ public class MetricEndpointTest extends KeycloakTest {
                 .post("/")
                 .then()
                 .assertThat()
-                .statusCode(409) // Assuming 409 Conflict for duplicate MTR
+                .statusCode(409)
                 .extract()
                 .as(InformativeResponse.class);
 

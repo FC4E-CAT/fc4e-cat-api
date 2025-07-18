@@ -2374,11 +2374,12 @@ public class MotivationEndpoint {
             @Valid
             @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
             @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
-            String id, @Valid @NotNull(message = "The request body is empty.") MetricRequestDto request) {
+            String id, @Valid @NotNull(message = "The request body is empty.") MetricRequestDto request, UriInfo uriInfo) {
 
         var response = motivationService.createMetricForMotivation(id, request, utility.getUserUniqueIdentifier());
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.status(response.code).entity(response).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(response.id)).build()).entity(response).build();
     }
 
     @Tag(name = "Motivation")

@@ -37,6 +37,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#503](https://github.com/FC4E-CAT/fc4e-cat-api/pull/503) CAT-898 Validation Request - add list of AAI providers
 - [#507](https://github.com/FC4E-CAT/fc4e-cat-api/pull/507) CAT-903 Add "enabled" Column to Types Related to Metric Table and Support Enable/Disable Functionality via API
 - [#514](https://github.com/FC4E-CAT/fc4e-cat-api/pull/514) CAT-928: Create AssessmentType template
+- [#516](https://github.com/FC4E-CAT/fc4e-cat-api/pull/516) CAT-931 Update Metric Creation Request to Include Criterion Reference
 
 
 ### Fix
@@ -47,6 +48,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#492](https://github.com/FC4E-CAT/fc4e-cat-api/pull/492) CAT-882 Merge Metric with Definition
 - [#511](https://github.com/FC4E-CAT/fc4e-cat-api/pull/511) CAT-837 Tests in assessment should appear in an ascending order
 - [#512](https://github.com/FC4E-CAT/fc4e-cat-api/pull/512) CAT-909 NACO list information
+- [#515](https://github.com/FC4E-CAT/fc4e-cat-api/pull/515) CAT-930 Add Original Motivation per Criterion and Retrieve Associated Principles
 
 
 ## 2.0.0 - 2025-03-31

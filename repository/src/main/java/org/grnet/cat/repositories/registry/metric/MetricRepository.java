@@ -15,6 +15,7 @@ import org.grnet.cat.repositories.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 @ApplicationScoped
@@ -69,7 +70,8 @@ public class MetricRepository implements Repository<Metric, String> {
 
         joiner.add("select DISTINCT met FROM Metric met")
                 .add("where (exists (select 1 from CriterionMetricJunction cm where cm.metric.id = met.id and cm.motivation.id = :motivationId)")
-                .add("or exists (select 1 from MetricTestJunction mt where mt.metric.id = met.id and mt.motivation.id = :motivationId))");
+                .add("or exists (select 1 from MetricTestJunction mt where mt.metric.id = met.id and mt.motivation.id = :motivationId)")
+                .add("or met.lodMTV = :motivationId)");
 
 
         var map = new HashMap<String, Object>();
@@ -151,6 +153,18 @@ public class MetricRepository implements Repository<Metric, String> {
         return query.getResultList();
     }
 
+
+    public Optional<Metric> fetchMetricByTypesCombinations(String typeAlgorithmId, String typeBenchmarkId, String typeMetricId) {
+        return find("FROM Metric m " +
+                        "WHERE m.typeAlgorithm.id = ?1 " +
+                        "AND m.typeBenchmark.id = ?2 " +
+                        "AND m.typeMetric.id = ?3" +
+                        "ORDER BY m.lastTouch ASC",
+                typeAlgorithmId, typeBenchmarkId, typeMetricId)
+                .firstResultOptional();
+    }
+
+
     /**
      * Checks if the specified value for a given field in the Metric entity is not unique.
      *
@@ -164,5 +178,17 @@ public class MetricRepository implements Repository<Metric, String> {
                 .setParameter(1, value)
                 .getSingleResult();
         return count > 0;
+    }
+
+    public int getNextAvailableMtrNumber() {
+        String sql = "SELECT MAX(CAST(SUBSTRING(m.mtr, 2) AS INTEGER)) " +
+                "FROM p_Metric m " +
+                "WHERE m.mtr ~ '^M[0-9]+'";
+
+        Integer max = (Integer) getEntityManager()
+                .createNativeQuery(sql)
+                .getSingleResult();
+
+        return max != null ? max + 1 : 1;
     }
 }

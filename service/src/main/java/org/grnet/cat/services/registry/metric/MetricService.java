@@ -22,12 +22,12 @@ import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
+import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.TypeBenchmarkRepository;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -48,6 +48,10 @@ public class MetricService {
     TypeBenchmarkRepository typeBenchmarkRepository;
     @Inject
     CriterionMetricRepository criterionMetricRepository;
+
+    @Inject
+    CriterionRepository criterionRepository;
+
     private static final Logger LOG = Logger.getLogger(MetricService.class);
 
     /**
@@ -273,5 +277,4 @@ public class MetricService {
                 })
                 .collect(Collectors.toList());
     }
-
 }
