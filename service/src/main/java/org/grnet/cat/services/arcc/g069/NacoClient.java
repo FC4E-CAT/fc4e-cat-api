@@ -25,7 +25,7 @@ public interface NacoClient {
     @GET
     @Path("/list_entries")
     @Produces(MediaType.APPLICATION_JSON)
-    Map<String, String> getEntries(@QueryParam("apikey") String apiKey);
+    Map<String, NacoEntry> getEntries(@QueryParam("apikey") String apiKey);
 
     @ClientExceptionMapper
     static WebApplicationException toException(Response response) {
@@ -41,4 +41,26 @@ public interface NacoClient {
             return new WebApplicationException("The NACO service responded with HTTP "+response.getStatus(), response.getStatus());
         }
     }
+
+    public class NacoEntry {
+        public String formatted_name;
+        public String iss;
+
+        public String getFormatted_name() {
+            return formatted_name;
+        }
+
+        public void setFormatted_name(String formatted_name) {
+            this.formatted_name = formatted_name;
+        }
+
+        public String getIss() {
+            return iss;
+        }
+
+        public void setIss(String iss) {
+            this.iss = iss;
+        }
+    }
+
 }

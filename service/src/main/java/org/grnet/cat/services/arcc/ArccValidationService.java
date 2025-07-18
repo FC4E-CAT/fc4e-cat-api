@@ -18,10 +18,7 @@ import org.grnet.cat.validators.XmlMetadataValidator.XmlSchemaValidator;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
@@ -97,11 +94,10 @@ public class ArccValidationService {
         return response;
     }
 
-    public Set<String> getAarcG069Entries(){
+    public Map<String, NacoClient.NacoEntry> getAarcG069Entries(){
 
-        var entries = nacoClient.getEntries(SERVICE_KEY);
+        return nacoClient.getEntries(SERVICE_KEY);
 
-        return entries.keySet();
 
     }
 

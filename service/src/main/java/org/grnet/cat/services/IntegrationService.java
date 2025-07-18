@@ -15,10 +15,12 @@ import org.grnet.cat.mappers.OrganisationMapper;
 import org.grnet.cat.mappers.SourceMapper;
 import org.grnet.cat.repositories.utils.PaginationUtils;
 import org.grnet.cat.services.arcc.ArccValidationService;
+import org.grnet.cat.services.arcc.g069.NacoClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +35,7 @@ public class IntegrationService {
 
     @Inject
     ArccValidationService arccValidationService;
+
     /**
      * Retrieves a list of the integration sources, to retrieve organisations.
      *
@@ -90,17 +93,31 @@ public class IntegrationService {
      * @param query
      * @return An Organisation sources.
      */
-    public PageResource<OrganisationResponseDto> getNacoOrganisation(String query, int page, int size, UriInfo uriInfo) {
+    public PageResource<String> getNacoOrganisation(String query, int page, int size, UriInfo uriInfo) {
 
         var providers = arccValidationService.getAarcG069Entries();
 
         String lowerInput = query.toLowerCase();
 
-        ArrayList<String> filtered = providers.stream()
-                .filter(s -> s.toLowerCase().contains(lowerInput))
+        ArrayList<String> filtered = providers.entrySet().stream()
+                .filter(e -> e.getValue() != null) // filter out null values
+                .map(e -> e.getValue().getFormatted_name())
+                .filter(name -> name != null && name.toLowerCase().contains(lowerInput)) // also check formatted_name not null
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        var result= filtered.isEmpty() ? providers : filtered;
+        List<String> result = new ArrayList<>();
+
+        if (!filtered.isEmpty()) {
+            result = new ArrayList<>(filtered);
+        } else {
+            result = providers.values().stream()
+                    .filter(Objects::nonNull) // filter out null entries
+                    .map(NacoClient.NacoEntry::getFormatted_name)
+                    .filter(Objects::nonNull) // optional: remove null formatted names
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        //    var result= filtered.isEmpty() ? providers : filtered;
 
         var partition = paginationUtils.partition(new ArrayList<>(result), size);
 
@@ -113,10 +130,7 @@ public class IntegrationService {
         pageable.size = size;
         pageable.count = result.size();
         pageable.page = Page.of(page, size);
-        List resp = OrganisationMapper.INSTANCE.idsToOrganisationResponses(paginatedProviders);
 
-        return new PageResource(pageable, resp, uriInfo);
-
-//        return new PageResource<String>(pageable, paginatedProviders, uriInfo);
+        return new PageResource<String>(pageable, paginatedProviders, uriInfo);
     }
 }
