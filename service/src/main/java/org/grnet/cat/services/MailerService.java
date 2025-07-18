@@ -5,6 +5,7 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
@@ -85,6 +86,8 @@ public class MailerService {
     Template zenodoPublishDepositDraftInDB;
 
     @Inject
+    EmailBrandingConfig emailBrandingConfig;
+    @Inject
     KeycloakAdminRepository keycloakAdminRepository;
     @ConfigProperty(name = "api.keycloak.user.id")
     String attribute;
@@ -103,20 +106,21 @@ public class MailerService {
 
     public void sendMails(Validation val, MailType type, List<String> mailAddrs) {
 
-        HashMap<String, String> templateParams = new HashMap();
+        HashMap<String, Object> templateParams = new HashMap();
         templateParams.put("contactMail", contactMail);
         templateParams.put("status", val.getStatus().name());
-        templateParams.put("image", serviceUrl + "/v1/images/logo.png");
+        templateParams.put("logoUrl", emailBrandingConfig.getLogoUrl().orElse(serviceUrl + "/v1/images/logo.png"));
         templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
         templateParams.put("image2", serviceUrl + "/v1/images/logo-grnet.png");
         templateParams.put("image3", serviceUrl + "/v1/images/logo-datacite.png");
         templateParams.put("image4", serviceUrl + "/v1/images/logo-gwdg.png");
         templateParams.put("cat", uiBaseUrl);
         templateParams.put("valId", String.valueOf(val.getId()));
-        templateParams.put("title", apiName.toUpperCase());
+        templateParams.put("title", emailBrandingConfig.getTitle());
         templateParams.put("actor", val.getRegistryActor().getLabelActor());
         templateParams.put("organization", val.getOrganisationName());
         templateParams.put("rejectionReason", val.getStatus() == ValidationStatus.REJECTED ? val.getRejectionReason() : null);
+        templateParams.put("hidePartners", emailBrandingConfig.shouldHidePartners());
 
 
         switch (type) {
@@ -142,15 +146,16 @@ public class MailerService {
 
     public void sendMails(MotivationAssessment assessment, String name, MailType type, List<String> mailAddrs) {
 
-        HashMap<String, String> templateParams = new HashMap<>();
+        HashMap<String, Object> templateParams = new HashMap<>();
         templateParams.put("contactMail", contactMail);
-        templateParams.put("image", serviceUrl + "/v1/images/logo.png");
+        templateParams.put("logoUrl", emailBrandingConfig.getLogoUrl().orElse(serviceUrl + "/v1/images/logo.png"));
         templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
         templateParams.put("image2", serviceUrl + "/v1/images/logo-grnet.png");
         templateParams.put("image3", serviceUrl + "/v1/images/logo-datacite.png");
         templateParams.put("image4", serviceUrl + "/v1/images/logo-gwdg.png");
         templateParams.put("cat", uiBaseUrl);
-        templateParams.put("title", apiName.toUpperCase());
+        templateParams.put("title", emailBrandingConfig.getTitle());
+        templateParams.put("hidePartners", String.valueOf(emailBrandingConfig.shouldHidePartners()));
 
         switch (type) {
             case USER_ALERT_SHARED_ASSESSMENT:
@@ -168,15 +173,17 @@ public class MailerService {
 
     public void sendMails(MotivationAssessment assessment,String depositId, String name,MailType type, List<String> mailAddrs) {
 
-        HashMap<String, String> templateParams = new HashMap<>();
+        HashMap<String, Object> templateParams = new HashMap<>();
         templateParams.put("contactMail", contactMail);
-        templateParams.put("image", serviceUrl + "/v1/images/logo.png");
-        templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
+        templateParams.put("logoUrl", emailBrandingConfig.getLogoUrl().orElse(serviceUrl + "/v1/images/logo.png"))
+        ;templateParams.put("image1", serviceUrl + "/v1/images/logo-dans.png");
         templateParams.put("image2", serviceUrl + "/v1/images/logo-grnet.png");
         templateParams.put("image3", serviceUrl + "/v1/images/logo-datacite.png");
         templateParams.put("image4", serviceUrl + "/v1/images/logo-gwdg.png");
         templateParams.put("name", name);
-        templateParams.put("title", apiName.toUpperCase());
+        templateParams.put("title", emailBrandingConfig.getTitle());
+        templateParams.put("hidePartners", String.valueOf(emailBrandingConfig.shouldHidePartners()));
+
 
         switch (type) {
             case ZENODO_DRAFT_DEPOSIT:
@@ -246,7 +253,7 @@ public class MailerService {
         }
     }
 
-    public Mail buildEmail(Template emailTemplate, HashMap<String, String> templateParams, MailType mailType) {
+    public Mail buildEmail(Template emailTemplate, HashMap<String, Object> templateParams, MailType mailType) {
 
         MailType.MailTemplate mailTemplate = mailType.execute(emailTemplate, templateParams);
         Mail mail = new Mail();
@@ -256,7 +263,7 @@ public class MailerService {
     }
 
     private void notifyUser(Template
-                                    emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs, MailType mailType) {
+                                    emailTemplate, HashMap<String, Object> templateParams, List<String> mailAddrs, MailType mailType) {
 
 
         var mail = buildEmail(emailTemplate, templateParams, mailType);
@@ -271,7 +278,7 @@ public class MailerService {
     }
 
     private void notifyAdmins(Template
-                                      emailTemplate, HashMap<String, String> templateParams, List<String> mailAddrs) {
+                                      emailTemplate, HashMap<String, Object> templateParams, List<String> mailAddrs) {
 
         var mail = buildEmail(emailTemplate, templateParams, MailType.ADMIN_ALERT_NEW_VALIDATION);
         mail.setBcc(mailAddrs);

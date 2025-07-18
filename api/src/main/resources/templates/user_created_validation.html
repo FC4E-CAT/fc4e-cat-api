@@ -313,7 +313,7 @@
                     <tr>
                         <td class="wrapper">
 <!--                            <p><img src="https://api.cat.devel.argo.grnet.gr/v1/images/logo.png"></p>-->
-                            <p><img src="{image}"></p>
+                            <p><img src="{logoUrl}" alt="Logo" height="60px"></p>
 
                             <p>&nbsp;</p>
                             <p><h3>Dear {userrole},</h3></p>
@@ -336,8 +336,8 @@
                                 </tbody>
                             </table>
                             <p></p>
-                            <p>Thank you
-                                <br/>The FAIRCORE4EOSC Compliance Assessment Toolkit - CAT Team.</p>
+                            <p>Thank you<br/>{title} Team.</p>
+                            {#if !hidePartners}
                             <p><h4>Partners</h4></p>
                             <p>
                                 <img src="{image2}" alt="GRNET" height="40px">
@@ -345,6 +345,7 @@
                                 <img src="{image4}" alt="gwdg" height="30px">
                                 <img src="{image3}" alt="DATACITE" height="30px">
                             </p>
+                            {/if}
 
                         </td>
                     </tr>
@@ -357,7 +358,7 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="color:#DCDCDC">
                         <tr>
                             <td class="content-block">
-                                <span class="apple-link">The FAIRCORE4EOSC Compliance Assessment Toolkit - CAT Team</span>
+                                <span class="apple-link">{title} Team</span>
                                 <br> You need more information ? You can contact us at <a href="mailto:{contactMail}">Info</a>.
                             </td>
                         </tr>
