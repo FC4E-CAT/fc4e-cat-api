@@ -1,6 +1,5 @@
 package org.grnet.cat.api.endpoints;
 
-import io.quarkus.arc.properties.IfBuildProperty;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -25,12 +24,11 @@ import org.grnet.cat.api.filters.Registration;
 import org.grnet.cat.api.utils.CatServiceUriInfo;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
-import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.assessment.registry.AdminJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
-import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
+import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.template.TemplateAssessmentTypeDto;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
@@ -38,7 +36,7 @@ import org.grnet.cat.services.assessment.JsonAssessmentService;
 import org.grnet.cat.services.zenodo.ZenodoService;
 import org.grnet.cat.utils.Utility;
 
-import java.io.IOException;
+import java.util.List;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -751,4 +749,67 @@ public class AssessmentsV2Endpoint {
         response.code = 200;
         return Response.ok().entity(response).build();
     }
+
+    @Tag(name = "Assessment")
+    @Operation(
+            summary = "Get list of public assessment types used  by a specific  actor.",
+            description = "This endpoint is public and any unauthenticated user can retrieve published assessment objects categorized by motivation and actor, created by all users." +
+                    "By default, the first page of 10 public assessment objects will be returned. You can tune the default values by using the query parameters page and size.")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of public assessment types.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableAssessmentTypes.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Bad Request",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @GET
+    @Path("/public-assessment-types/by-actor/{actor-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assessmentTypesByActor(@PathParam("actor-id") @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+                                          @Parameter(name = "page", in = QUERY,
+                                                  description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                          @Parameter(name = "size", in = QUERY,
+                                                  description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                          @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                          @Context UriInfo uriInfo) {
+
+        var assessments = assessmentService.getAssessmentsTypesByActor(page - 1, size, uriInfo,actorId);
+
+        return Response.ok().entity(assessments).build();
+    }
+
+
+    public static class PageableAssessmentTypes extends PageResource<TemplateAssessmentTypeDto> {
+
+        private List<TemplateAssessmentTypeDto> content;
+
+        @Override
+        public List<TemplateAssessmentTypeDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<TemplateAssessmentTypeDto> content) {
+            this.content = content;
+        }
+    }
+
+
 }

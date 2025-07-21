@@ -23,9 +23,9 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of assessments submitted by the specified user.
      *
-     * @param page   The index of the page to retrieve (starting from 0).
-     * @param size   The maximum number of assessments to include in a page.
-     * @param userID The ID of the user.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessments to include in a page.
+     * @param userID       The ID of the user.
      * @param shareableIds The IDs shared to the User.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
@@ -95,10 +95,10 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of public assessment objects by motivation and actor.
      *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of assessment objects to include in a page.
-     * @param motivationId  The ID of the Motivation.
-     * @param actorId The Actor's id.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessment objects to include in a page.
+     * @param motivationId The ID of the Motivation.
+     * @param actorId      The Actor's id.
      * @return A list of string objects representing the public assessment objects in the requested page.
      */
     @SuppressWarnings("unchecked")
@@ -134,12 +134,12 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of published assessments categorized by type and actor, created by all users.
      *
-     * @param page        The index of the page to retrieve (starting from 0).
-     * @param size        The maximum number of assessments to include in a page.
-     * @param motivationId      The ID of the Assessment Type.
-     * @param actorId     The Actor's id.
-     * @param subjectName Subject name to search for.
-     * @param subjectType Subject Type to search for.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessments to include in a page.
+     * @param motivationId The ID of the Assessment Type.
+     * @param actorId      The Actor's id.
+     * @param subjectName  Subject name to search for.
+     * @param subjectType  Subject Type to search for.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
     @SuppressWarnings("unchecked")
@@ -295,6 +295,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         return pageable;
     }
+
     /**
      * Retrieves a page of  assessment objects.
      *
@@ -376,8 +377,8 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of assessments.
      *
-     * @param page   The index of the page to retrieve (starting from 0).
-     * @param size   The maximum number of assessments to include in a page.
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessments to include in a page.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
     public PageQuery<MotivationAssessment> fetchAllAssessmentsByPage(int page, int size, String search) {
@@ -463,4 +464,51 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     public long removeAll() {
         return deleteAll();
     }
+
+
+    /**
+     * Retrieves a page of assessment types existing in assessments for a  specified actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment types to include in a page.
+     * @param actorID The Actor id.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<String> fetchAssessmentsTypesByActor(int page, int size, String actorID, boolean published) {
+
+
+        var query = Panache.getEntityManager().createNativeQuery(
+                        "SELECT DISTINCT (a.assessment_doc->>'assessment_type') " +
+                                "FROM MotivationAssessment a " +
+                                "WHERE a.assessment_doc->'actor'->>'id' = :actorId " +
+                                "AND a.published = :published"
+                )
+                .setParameter("actorId", actorID)
+                .setParameter("published", published);
+
+        var countQuery = Panache.getEntityManager().createNativeQuery(
+                        "SELECT COUNT(DISTINCT (a.assessment_doc->>'assessment_type')) " +
+                                "FROM MotivationAssessment a " +
+                                "WHERE a.assessment_doc->'actor'->>'id' = :actorId " +
+                                "AND a.published = :published"
+                )
+
+                 .setParameter("actorId", actorID)
+                .setParameter("published", published);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
 }

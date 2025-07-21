@@ -6,12 +6,12 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public class TemplateAssessmentTypeDto {
 
     @Schema(
-            type = SchemaType.NUMBER,
-            implementation = Long.class,
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "The assessment type id",
-            example = "1"
+            example = "pid_graph:1939A12"
     )
-    public Long id;
+    public String id;
 
     @Schema(
             type = SchemaType.STRING,
@@ -21,3 +21,4 @@ public class TemplateAssessmentTypeDto {
     )
     public String name;
 }
+

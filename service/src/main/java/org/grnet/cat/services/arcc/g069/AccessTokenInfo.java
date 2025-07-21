@@ -5,19 +5,24 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
-@Getter
+import java.util.List;@Getter
 @Setter
 public class AccessTokenInfo {
 
-    @JsonProperty("sub")
-    private String sub;
+    @JsonProperty("body")
+    private AccessTokenBody body;
 
-    @JsonProperty("voperson_id")
-    @JsonDeserialize(using = StringOrArrayDeserializer.class)
-    private List<String> vopersonId;
+    @Getter
+    @Setter
+    public static class AccessTokenBody {
+        @JsonProperty("sub")
+        private String sub;
 
-    @JsonProperty("eduperson_assurance")
-    private List<String> assurance;
+        @JsonProperty("voperson_id")
+        @JsonDeserialize(using = StringOrArrayDeserializer.class)
+        private List<String> vopersonId;
+
+        @JsonProperty("eduperson_assurance")
+        private List<String> assurance;
+    }
 }

@@ -22,6 +22,7 @@ import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.subject.SubjectRequest;
+import org.grnet.cat.dtos.template.TemplateAssessmentTypeDto;
 import org.grnet.cat.dtos.template.TemplateSubjectDto;
 import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.registry.Motivation;
@@ -854,6 +855,27 @@ public class JsonAssessmentService {
                 sorted.forEach(sortedTests::add);
             }
         }
+    }
+    /**
+     * Retrieves a page of assessment objects submitted by the specified user by the specified actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment objects to include in a page.
+     * @param uriInfo The Uri Info.
+     * @param actorID The actor ID.
+     * @return A list of TemplateAssessmetTypeDto objects representing the submitted assessment types in the requested page.
+     */
+    public PageResource<TemplateAssessmentTypeDto> getAssessmentsTypesByActor(int page, int size, UriInfo uriInfo, String actorID) {
+
+        var types = motivationAssessmentRepository.fetchAssessmentsTypesByActor(page, size,  actorID,Boolean.TRUE);
+
+        var jsonToTypes = types
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateAssessmentTypeDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(types, jsonToTypes, uriInfo);
     }
 
 }
