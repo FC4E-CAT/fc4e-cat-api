@@ -441,7 +441,10 @@ public class ArccValidationService {
 
             affiliationNameInAccessToken.isValid = false;
             affiliationNameInAccessToken.message = "access_token_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getAssurance()) || nacoResponse.getAccessTokenInfo().getAssurance().isEmpty())) {
+        } else if (nacoResponse.getAccessTokenInfo() == null ||
+                nacoResponse.getAccessTokenInfo().getBody() == null ||
+                nacoResponse.getAccessTokenInfo().getBody().getAssurance() == null ||
+                nacoResponse.getAccessTokenInfo().getBody().getAssurance().isEmpty()) {
 
             affiliationNameInAccessToken.isValid = false;
             affiliationNameInAccessToken.message = "Missing or empty eduperson_assurance claim in Access Token response.";
@@ -555,7 +558,7 @@ public class ArccValidationService {
 
             subInAccessToken.isValid = false;
             subInAccessToken.message = "access_token_info section is missing from the response.";
-        } else if (StringUtils.isEmpty(nacoResponse.getAccessTokenInfo().getSub())) {
+        } else if (StringUtils.isEmpty(nacoResponse.getAccessTokenInfo().getBody().getSub())) {
 
             subInAccessToken.isValid = false;
             subInAccessToken.message = "Missing or empty sub claim in Access Token response.";
@@ -630,13 +633,13 @@ public class ArccValidationService {
 
             voPersonIdInAccessToken.isValid = false;
             voPersonIdInAccessToken.message = "access_token_info section is missing from the response.";
-        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getVopersonId()) || nacoResponse.getAccessTokenInfo().getVopersonId().isEmpty())) {
+        } else if ((Objects.isNull(nacoResponse.getAccessTokenInfo().getBody().getVopersonId()) || nacoResponse.getAccessTokenInfo().getBody().getVopersonId().isEmpty())) {
 
             voPersonIdInAccessToken.isValid = false;
             voPersonIdInAccessToken.message = "Missing or empty voperson_id claim in Access Token response.";
         } else {
 
-            if (nacoResponse.getAccessTokenInfo().getVopersonId().size() == 1) {
+            if (nacoResponse.getAccessTokenInfo().getBody().getVopersonId().size() == 1) {
 
                 voPersonIdInAccessToken.isValid = true;
                 voPersonIdInAccessToken.message = "voperson_id found in access_token_info.";
