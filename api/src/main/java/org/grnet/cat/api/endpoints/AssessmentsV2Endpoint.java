@@ -810,6 +810,4 @@ public class AssessmentsV2Endpoint {
             this.content = content;
         }
     }
-
-
 }
