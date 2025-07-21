@@ -183,7 +183,7 @@ public class MetricRepository implements Repository<Metric, String> {
     public int getNextAvailableMtrNumber() {
         String sql = "SELECT MAX(CAST(SUBSTRING(m.mtr, 2) AS INTEGER)) " +
                 "FROM p_Metric m " +
-                "WHERE m.mtr ~ '^M[0-9]+'";
+                "WHERE m.mtr ~ '^M[0-9]+$'";
 
         Integer max = (Integer) getEntityManager()
                 .createNativeQuery(sql)
