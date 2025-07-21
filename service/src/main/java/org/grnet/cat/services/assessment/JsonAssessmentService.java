@@ -878,4 +878,26 @@ public class JsonAssessmentService {
         return new PageResource<>(types, jsonToTypes, uriInfo);
     }
 
+    /**
+     * Retrieves a page of public assessment objects by actor.
+     *
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessment objects to include in a page.
+     * @param uriInfo      The Uri Info.
+     * @param actorId      The Actor's id.
+     * @return A list of TemplateSubjectDto objects representing the public assessment objects in the requested page.
+     */
+    public PageResource<TemplateSubjectDto> getPublishedAssessmentObjectsByActorAndPage(int page, int size, String actorId, UriInfo uriInfo) {
+
+        var objects = motivationAssessmentRepository.fetchPublishedAssessmentObjectsByActorAndPage(page, size, actorId);
+
+        var jsonToObjects = objects
+                .list()
+                .stream()
+                .map(ThrowingFunction.sneaky(json -> objectMapper.readValue(json, TemplateSubjectDto.class)))
+                .collect(Collectors.toList());
+
+        return new PageResource<>(objects, jsonToObjects, uriInfo);
+    }
+
 }
