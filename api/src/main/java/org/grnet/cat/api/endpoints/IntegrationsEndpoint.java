@@ -149,7 +149,6 @@ public class IntegrationsEndpoint {
             @StringEnumeration(enumClass = Source.class, message = "organisation_source")
             @PathParam("source") String source,
             @Valid
-            @Size(min = 2, message = "Value must be at least 2 characters.")
             @Parameter(
                     description = "The query value to search the Organisation to be retrieved.",
                     required = true,

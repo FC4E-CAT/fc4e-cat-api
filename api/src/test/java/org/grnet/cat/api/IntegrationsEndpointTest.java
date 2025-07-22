@@ -56,13 +56,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
-    public void fetchRorOrganisationByNameLessThan2Chars() {
-        var error = fetchOrganisationInvalidName(aliceToken, "ROR", "K");
-        assertEquals("Value must be at least 2 characters.", error.message);
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
     public void fetchOrganisationByRE3DATA() {
         var response = fetchOrganisationInvalidSource(aliceToken, "RE3DATA", "00tjv0s33");
         assertEquals(501, response.statusCode());

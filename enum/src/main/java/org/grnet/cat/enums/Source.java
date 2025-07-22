@@ -209,27 +209,36 @@ public enum Source {
 
     private String[] returnOrgInfo(JsonObject jRoot) {
 
-        String id = jRoot.get("id").getAsString();
+        if (jRoot == null || !jRoot.has("id") || !jRoot.has("name")) {
+            throw new EntityNotFoundException("Missing expected fields in the organisation data.");
+        }
+
+        var id = jRoot.get("id").getAsString();
+        if (id == null || id.isEmpty()) {
+            throw new EntityNotFoundException("Organisation ID is missing or empty.");
+        }
         id = id.replaceAll("https://ror.org/", "");
 
-        String name = jRoot.get("name").getAsString();
-        String website = null;
-        if (jRoot.has("links")) {
-            website = jRoot.get("links").getAsJsonArray().get(0).getAsString();
+        var name = jRoot.get("name").getAsString();
+        if (name == null || name.isEmpty()) {
+            throw new EntityNotFoundException("Organisation name is missing or empty.");
+        }
 
+        String website = null;
+        if (jRoot.has("links") && jRoot.getAsJsonArray("links").size() > 0) {
+            website = jRoot.getAsJsonArray("links").get(0).getAsString();
         } else if (jRoot.has("website")) {
             website = jRoot.get("website").getAsString();
-
         }
+
         String acronym = null;
-        if (jRoot.has("acronyms")) {
-            JsonArray acronyms = jRoot.get("acronyms").getAsJsonArray();
-            if (!acronyms.isEmpty()) {
-                acronym = acronyms.get(0).getAsString();
-            }
+        if (jRoot.has("acronyms") && jRoot.getAsJsonArray("acronyms").size() > 0) {
+            JsonArray acronyms = jRoot.getAsJsonArray("acronyms");
+            acronym = acronyms.get(0).getAsString();
         } else if (jRoot.has("abbreviation")) {
             acronym = jRoot.get("abbreviation").getAsString();
         }
+
         return new String[]{id, name, website, acronym};
     }
 
