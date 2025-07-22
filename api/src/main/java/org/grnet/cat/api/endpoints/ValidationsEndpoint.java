@@ -40,6 +40,7 @@ import org.grnet.cat.services.ValidationService;
 import org.grnet.cat.utils.Utility;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.eclipse.microprofile.openapi.annotations.enums.ParameterIn.QUERY;
 
@@ -138,6 +139,7 @@ public class ValidationsEndpoint {
         if (StringUtils.isEmpty(userProfile.name) || StringUtils.isEmpty(userProfile.surname) || StringUtils.isEmpty(userProfile.email)) {
             throw new ForbiddenException("You have to update your profile before requesting a validation.");
         }
+
         Source.valueOf(request.organisationSource).execute(request.organisationId);
 
         var response = userService.validate( utility.getUserUniqueIdentifier(), request);

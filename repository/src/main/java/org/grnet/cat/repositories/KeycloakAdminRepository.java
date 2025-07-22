@@ -15,7 +15,10 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -117,14 +120,38 @@ public class KeycloakAdminRepository implements RoleRepository {
 
             var userResource = usersResource.get(userRepresentation.getId());
 
-            // Get client level roles
+
             var rolesRepresentations = roles
                     .stream()
                     .map(role -> clientResource.roles().get(role).toRepresentation())
                     .collect(Collectors.toList());
 
-            // Assign client level role to user
+
             userResource.roles().clientLevel(clientRepresentation.getId()).add(rolesRepresentations);
+
+        } catch (Exception e) {
+
+            LOG.error("A communication error occurred while assigning roles to the user.", e);
+            throw new RuntimeException("A communication error occurred while assigning roles to the user.");
+        }
+    }
+
+    @Override
+    public Map<String, Optional<String>> getUserInformation(String userId) {
+
+        try {
+
+            var map = new HashMap<String, Optional<String>>();
+
+            var realmResource = keycloak.realm(realm);
+
+            var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, userId)).stream().findFirst().get();
+
+            map.put("email", Optional.ofNullable(userRepresentation.getEmail()));
+            map.put("name", Optional.ofNullable(userRepresentation.getFirstName()));
+            map.put("surname", Optional.ofNullable(userRepresentation.getLastName()));
+
+            return map;
 
         } catch (Exception e) {
 
