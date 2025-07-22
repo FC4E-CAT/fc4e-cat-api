@@ -15,7 +15,9 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -117,14 +119,44 @@ public class KeycloakAdminRepository implements RoleRepository {
 
             var userResource = usersResource.get(userRepresentation.getId());
 
-            // Get client level roles
+
             var rolesRepresentations = roles
                     .stream()
                     .map(role -> clientResource.roles().get(role).toRepresentation())
                     .collect(Collectors.toList());
 
-            // Assign client level role to user
+
             userResource.roles().clientLevel(clientRepresentation.getId()).add(rolesRepresentations);
+
+        } catch (Exception e) {
+
+            LOG.error("A communication error occurred while assigning roles to the user.", e);
+            throw new RuntimeException("A communication error occurred while assigning roles to the user.");
+        }
+    }
+
+    @Override
+    public Map<String, String> getUserInformation(String userId) {
+
+        try {
+
+            var map = new HashMap<String, String>();
+
+            var realmResource = keycloak.realm(realm);
+
+            var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
+
+            var clientResource = realmResource.clients().get(clientRepresentation.getId());
+
+            var usersResource = realmResource.users();
+
+            var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, userId)).stream().findFirst().get();
+
+            map.put("email", userRepresentation.getEmail());
+            map.put("name", userRepresentation.getFirstName());
+            map.put("surname", userRepresentation.getLastName());
+
+            return map;
 
         } catch (Exception e) {
 

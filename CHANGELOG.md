@@ -43,6 +43,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 - [#522](https://github.com/FC4E-CAT/fc4e-cat-api/pull/522) CAT-938 Public Assessments: Retrive all Motivations an Actor participates in assessments
 - [#523](https://github.com/FC4E-CAT/fc4e-cat-api/pull/523) CAT-937 API Call to Retrieve All Public Objects by Actor (No Motivation Restriction) 
+- [#524](https://github.com/FC4E-CAT/fc4e-cat-api/pull/524) CAT-957 Add support for updating user information via access token
 
 ### Fix
 - [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters

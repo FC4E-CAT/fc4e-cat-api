@@ -5,6 +5,7 @@ import org.grnet.cat.entities.Role;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The RoleRepository interface provides data access methods for the Role entity.
@@ -60,5 +61,7 @@ public interface RoleRepository {
     List<Role> fetchUserRoles(String userId);
 
     List<UserRepresentation> fetchRolesMembers(String role);
+
+    Map<String, String> getUserInformation(String userId);
 
 }

@@ -85,6 +85,9 @@ public class UserService {
     @ConfigProperty(name = "api.cat.validations.approve.auto")
     boolean autoApprove;
 
+    @ConfigProperty(name = "api.cat.user.info.update.from.token")
+    boolean userInfoUpdateFromToken;
+
     @Inject
     Utility utility;
 
@@ -193,6 +196,16 @@ public class UserService {
         identified.setId(id);
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
         identified.setBanned(Boolean.FALSE);
+
+        if(userInfoUpdateFromToken){
+
+            var map = roleRepository.getUserInformation(id);
+
+            identified.setEmail(map.get("email"));
+            identified.setName(map.get("name"));
+            identified.setSurname(map.get("surname"));
+            identified.setUpdatedOn(Timestamp.from(Instant.now()));
+        }
 
         userRepository.persist(identified);
 
