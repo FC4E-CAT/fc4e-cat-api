@@ -40,7 +40,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#516](https://github.com/FC4E-CAT/fc4e-cat-api/pull/516) CAT-931 Update Metric Creation Request to Include Criterion Reference
 - [#518](https://github.com/FC4E-CAT/fc4e-cat-api/pull/518) CAT-940 Update NACO Integration to Handle New /list_entries Response Format
 - [#522](https://github.com/FC4E-CAT/fc4e-cat-api/pull/522) CAT-938 Public Assessments: Retrive all Motivations an Actor participates in assessments
-
+- [#523](https://github.com/FC4E-CAT/fc4e-cat-api/pull/523) CAT-937 API Call to Retrieve All Public Objects by Actor (No Motivation Restriction) 
 
 ### Fix
 - [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters

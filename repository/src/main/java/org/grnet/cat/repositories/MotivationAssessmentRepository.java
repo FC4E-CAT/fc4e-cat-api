@@ -511,4 +511,41 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
         return pageable;
     }
 
+
+    /**
+     * Retrieves a page of public assessment objects by actor.
+     *
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessment objects to include in a page.
+     * @param actorId      The Actor's id.
+     * @return A list of string objects representing the public assessment objects in the requested page.
+     */
+    @SuppressWarnings("unchecked")
+    public PageQuery<String> fetchPublishedAssessmentObjectsByActorAndPage(int page, int size, String actorId) {
+
+        var em = Panache.getEntityManager();
+
+        var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId  AND a.published = :published")
+                .setParameter("actorId", actorId)
+                .setParameter("published", true);
+
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId  AND a.published = :published")
+                .setParameter("actorId", actorId)
+                .setParameter("published", true);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
 }
