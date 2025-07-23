@@ -42,6 +42,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#519](https://github.com/FC4E-CAT/fc4e-cat-api/pull/519) CAT-939: Configure Instance-Specific Logo for Email Templates in CAT
 - [#522](https://github.com/FC4E-CAT/fc4e-cat-api/pull/522) CAT-938 Public Assessments: Retrive all Motivations an Actor participates in assessments
 - [#523](https://github.com/FC4E-CAT/fc4e-cat-api/pull/523) CAT-937 API Call to Retrieve All Public Objects by Actor (No Motivation Restriction) 
+- [#524](https://github.com/FC4E-CAT/fc4e-cat-api/pull/524) CAT-957 Add support for updating user information via access token
 - [#525](https://github.com/FC4E-CAT/fc4e-cat-api/pull/525) CAT-956 Remove Character Length Validation for Organisation Query
 
 ### Fix
