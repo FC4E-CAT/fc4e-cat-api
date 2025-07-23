@@ -54,6 +54,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#512](https://github.com/FC4E-CAT/fc4e-cat-api/pull/512) CAT-909 NACO list information
 - [#515](https://github.com/FC4E-CAT/fc4e-cat-api/pull/515) CAT-930 Add Original Motivation per Criterion and Retrieve Associated Principles
 - [#520](https://github.com/FC4E-CAT/fc4e-cat-api/pull/520) CAT-953 Fix NacoEntryResponse to map the response from NACO
+- [#527](https://github.com/FC4E-CAT/fc4e-cat-api/pull/527) CAT-962: Add db_id to All Relevant Entities in Assessment Type Template
 
 
 ## 2.0.0 - 2025-03-31

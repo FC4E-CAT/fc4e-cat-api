@@ -195,29 +195,29 @@ public class TemplateService {
 
         var rows = assessmentTypeTemplateRepository.findByActorAndMotivation(actorId, motivationId);
 
-        var priMap = new TreeMap<String, PriNode>();
-        var criMap = new TreeMap<String, CriNode>();
-        var mtrMap = new TreeMap<String, TemplateMetricNode>();
-        var testMap = new TreeMap<String, TemplateTestNode>();
+        var priMap = new TreeMap<String, AssessmentTypePriNode>();
+        var criMap = new TreeMap<String, AssessmentTypeCriNode>();
+        var mtrMap = new TreeMap<String, AssessmentTypeMetricNode>();
+        var testMap = new TreeMap<String, AssessmentTypeTestNode>();
 
         for (var row : rows) {
 
-            Node priNode = priMap.computeIfAbsent(row.getPRI(), k -> new PriNode(k, row.getLabelPrinciple(), row.getDescPrinciple()));
-            Node criNode = criMap.computeIfAbsent(row.getCRI(), k -> new CriNode(k, row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
+            Node priNode = priMap.computeIfAbsent(row.getLodPri(), k -> new AssessmentTypePriNode(k, row.getPRI(), row.getLabelPrinciple(), row.getDescPrinciple()));
+            Node criNode = criMap.computeIfAbsent(row.getLodCri(), k -> new AssessmentTypeCriNode(k, row.getCRI(), row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
             if (row.getMTR() != null && row.getLabelMetric() != null) {
-                Node mtrNode = mtrMap.computeIfAbsent(row.getMTR(), k -> new TemplateMetricNode(k, row.getLabelMetric().trim(), row.getLabelBenchmarkType().trim(), Double.parseDouble(row.getValueBenchmark()), row.getLabelAlgorithmType(), row.getLabelTypeMetric()));
+                Node mtrNode = mtrMap.computeIfAbsent(row.getLodMTR(), k -> new AssessmentTypeMetricNode(k, row.getMTR(), row.getLabelMetric().trim(), row.getLodTBN(), row.getLabelBenchmarkType().trim(), Double.parseDouble(row.getValueBenchmark()), row.getLodTAL(), row.getLabelAlgorithmType(), row.getLodTMT(), row.getLabelTypeMetric()));
 
-                if (row.getTES() != null && row.getLabelTestMethod() != null) {
-                    Node testNode = testMap.computeIfAbsent(row.getTES(), k -> {
+                if (row.getLodTES() != null && row.getLabelTestMethod() != null) {
+                    Node testNode = testMap.computeIfAbsent(row.getLodTES(), k -> {
 
-                        TemplateTestNode tn;
+                        AssessmentTypeTestNode tn;
 
                         if (row.getLabelTestMethod().contains("Evidence")) {
 
-                            tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
+                            tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTMT(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                         } else {
 
-                            tn = new TemplateTestNode(k, row.getLabelTest().trim(), row.getDescTest().trim(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
+                            tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTMT(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                         }
 
                         return tn;

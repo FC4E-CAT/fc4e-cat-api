@@ -26,9 +26,11 @@ public class AssessmentTypeTemplate {
 
     private String lodActor;
 
+    private String lodPri;
     private String labelPrinciple;
     private String descPrinciple;
 
+    private String lodCri;
     private String labelCriterion;
     private String descCriterion;
     private String labelImperative;
@@ -36,15 +38,19 @@ public class AssessmentTypeTemplate {
     private String lodMTR;
     private String MTR;
     private String labelMetric;
+    private String lodTAL;
     private String labelAlgorithmType;
+    private String lodTMT;
     private String labelTypeMetric;
     private String valueBenchmark;
+    private String lodTBN;
     private String labelBenchmarkType;
 
     private String lodTES;
     private String TES;
     private String labelTest;
     private String descTest;
+    private String lodTME;
     private String labelTestMethod;
     private String testQuestion;
     private String testParams;
