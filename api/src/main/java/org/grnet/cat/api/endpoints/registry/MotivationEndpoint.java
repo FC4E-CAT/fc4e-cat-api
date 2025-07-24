@@ -2384,6 +2384,78 @@ public class MotivationEndpoint {
 
     @Tag(name = "Motivation")
     @Operation(
+            summary = "Update a Metric for a Motivation.",
+            description = "Update a Metric for a single motivation.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Metric successfully updated for the motivation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/metric/{metric-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateMetric(
+            @Parameter(
+                    description = "The ID of the Motivation to create a metric for.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false)
+            String id,
+            @Parameter(
+                    description = "The ID of the Motivation to create a metric for.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("metric-id")
+            @Valid
+            @NotFoundEntity(repository = MetricRepository.class, message = "There is no Metric with the following id:")
+            String metricId,
+            @Valid @NotNull(message = "The request body is empty.") MotivationMetricUpdateRequest request) {
+
+        var response = motivationService.updateMetricForMotivation(metricId, request);
+
+        return Response.ok(response).build();
+
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
             summary = "Get a list of metrics of a motivation.",
             description = "Get a list of metric.")
     @APIResponse(

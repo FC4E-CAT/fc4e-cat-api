@@ -13,6 +13,7 @@ import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricVersionRequestDto;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricUpdateRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
 import org.grnet.cat.dtos.registry.motivation.MotivationVersionRequest;
@@ -24,19 +25,13 @@ import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.Conversions.toUpperCase;
 
 @QuarkusTest
 @TestHTTPEndpoint(MotivationEndpoint.class)
@@ -1012,6 +1007,73 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .as(InformativeResponse.class);
 
         assertEquals(200, newVersionResponse.code);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createAndUpdateMetricForMotivation() {
+        // Step 1: Create Motivation
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = ("mtv" + UUID.randomUUID()).toUpperCase();
+        motivationRequest.label = "Test Motivation";
+        motivationRequest.description = "Test Motivation Description";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        // Step 2: Create Metric for the Motivation
+        var createMetric = new MetricRequestDto();
+        createMetric.MTR = " ";
+        createMetric.labelMetric = "Performance Metric";
+        createMetric.descrMetric = "This metric measures performance.";
+        createMetric.urlMetric = "http://example.com/metric";
+        createMetric.typeAlgorithmId = "pid_graph:2050775C";
+        createMetric.typeMetricId = "pid_graph:35966E2B";
+        createMetric.typeBenchmarkId = "pid_graph:0917EC0D";
+        createMetric.valueBenchmark = "3";
+
+        var createMetricResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(createMetric)
+                .contentType(ContentType.JSON)
+                .post("/{id}/metric/", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
+
+        // Step 3: Update Metric for the Motivation
+        var metricRequest = new MotivationMetricUpdateRequest();
+        metricRequest.typeAlgorithmId = "pid_graph:2050775C";
+        metricRequest.typeBenchmarkId = "pid_graph:0917EC0D";
+        metricRequest.valueBenchmark = "6";
+
+        var metricResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(metricRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}/metric/{metric-id}", motivationResponse.id, createMetricResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(200, metricResponse.code);
+        assertEquals(metricResponse.message, "Metric was successfully updated with identifier: " + createMetricResponse.id);
     }
 
 

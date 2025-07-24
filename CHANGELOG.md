@@ -45,6 +45,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#524](https://github.com/FC4E-CAT/fc4e-cat-api/pull/524) CAT-957 Add support for updating user information via access token
 - [#525](https://github.com/FC4E-CAT/fc4e-cat-api/pull/525) CAT-956 Remove Character Length Validation for Organisation Query
 - [#528](https://github.com/FC4E-CAT/fc4e-cat-api/pull/528) CAT-963: Add info for Actor-Criterion Assignment in used_by_motivation
+- [#529](https://github.com/FC4E-CAT/fc4e-cat-api/pull/529) CAT-964: Create PUT Endpoint for Updating Metrics Inside Motivation
 
 ### Fix
 - [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters
