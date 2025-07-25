@@ -43,6 +43,11 @@ public class ArccValidationService {
 
     private static final String EMAIL_RFC2821_REGEX = "^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$";
 
+    private static final String AFFILIATION_REGEX="^(student|faculty|staff|employee|member|affiliate|alum|library-walk-in|unknown)@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+
+    private static final String ASSURACNE_REQUIRED_VALUE="https://refeds.org/assurance";
+
+   private static final String DOMAIN_NAME_REGEX="^(?=.{1,255}$)(?:(?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+(?:[A-Za-z]{2,})$\n";
     public AutomatedTestResponse validateMetadataByTestType(String type, ArccValidationRequest request) {
 
         var validatedResponse = xmlSchemaValidator.validateSchema(request.metadataUrl);
@@ -351,8 +356,14 @@ public class ArccValidationService {
             organizationNameInUserInfo.message = "Missing or empty schac_home_organization claim in UserInfo response.";
         } else {
 
-            organizationNameInUserInfo.isValid = true;
-            organizationNameInUserInfo.message = "schac_home_organization found in user_info.";
+            if(isValidValue(nacoResponse.getUserInfo().getOrganizationDomain(),DOMAIN_NAME_REGEX)) {
+                organizationNameInUserInfo.isValid = true;
+                organizationNameInUserInfo.message = "schac_home_organization found in user_info and meets RFC1035 requirements.";
+            }else{
+                organizationNameInUserInfo.isValid = true;
+                organizationNameInUserInfo.message = "schac_home_organization found in user_info but does not meet RFC1035 requirements.";
+
+            }
         }
 
         if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
@@ -393,8 +404,18 @@ public class ArccValidationService {
             affiliationNameInUserInfo.message = "Missing or empty voperson_external_affiliation claim in UserInfo response.";
         } else {
 
-            affiliationNameInUserInfo.isValid = true;
-            affiliationNameInUserInfo.message = "voperson_external_affiliation found in user_info.";
+            if (nacoResponse.getUserInfo().getAffiliationWithHomeOrganization().stream().anyMatch(value -> isValidValue(value, AFFILIATION_REGEX))) {
+
+                affiliationNameInUserInfo.isValid = true;
+              //  affiliationNameInUserInfo.message = "voperson_external_affiliation found in user_info.";
+
+                affiliationNameInUserInfo.message = "voperson_external_affiliation found in user_info, and at least one voperson_external_affiliation follows the regex: ^(student|faculty|staff|employee|member|affiliate|alum|library-walk-in|unknown)@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$ .";
+
+            }else{
+                affiliationNameInUserInfo.isValid = false;
+                affiliationNameInUserInfo.message = "voperson_external_affiliation found in user_info but none follows the regex: ^(student|faculty|staff|employee|member|affiliate|alum|library-walk-in|unknown)@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$ .";
+
+            }
         }
 
         if (Objects.isNull(nacoResponse.getIntrospectionInfo())) {
@@ -406,9 +427,15 @@ public class ArccValidationService {
             affiliationInTokenIntrospection.isValid = false;
             affiliationInTokenIntrospection.message = "Missing or empty voperson_external_affiliation claim in Token Introspection response.";
         } else {
+            if (nacoResponse.getUserInfo().getAffiliationWithHomeOrganization().stream().anyMatch(value -> isValidValue(value, AFFILIATION_REGEX))) {
 
-            affiliationInTokenIntrospection.isValid = true;
-            affiliationInTokenIntrospection.message = "voperson_external_affiliation found in introspection_info.";
+                affiliationInTokenIntrospection.isValid = true;
+                affiliationInTokenIntrospection.message = "voperson_external_affiliation found in introspection_info, and at least one voperson_external_affiliation follows the regex: ^(student|faculty|staff|employee|member|affiliate|alum|library-walk-in|unknown)@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$ .";
+            }else{
+                affiliationInTokenIntrospection.isValid = false;
+                affiliationInTokenIntrospection.message = "voperson_external_affiliation found in introspection_info, but none follows the regex: ^(student|faculty|staff|employee|member|affiliate|alum|library-walk-in|unknown)@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$ .";
+
+            }
         }
 
         apiResponse.additionalInfo.put("voperson_external_affiliation_user_info", affiliationNameInUserInfo);
@@ -433,8 +460,14 @@ public class ArccValidationService {
             affiliationInTokenIntrospection.message = "Missing or empty eduperson_assurance claim in Token Introspection response.";
         } else {
 
-            affiliationInTokenIntrospection.isValid = true;
-            affiliationInTokenIntrospection.message = "eduperson_assurance found in introspection_info.";
+            if (nacoResponse.getIntrospectionInfo().getAssurance().stream().anyMatch(value -> isValidValue(value,ASSURACNE_REQUIRED_VALUE))) {
+                affiliationInTokenIntrospection.isValid = true;
+                affiliationInTokenIntrospection.message = "eduperson_assurance found in introspection_info and contains "+ASSURACNE_REQUIRED_VALUE+".";
+            }else{
+                affiliationInTokenIntrospection.isValid = false;
+                affiliationInTokenIntrospection.message = "eduperson_assurance found in introspection_info but not contain "+ASSURACNE_REQUIRED_VALUE+".";
+
+            }
         }
 
         if (Objects.isNull(nacoResponse.getAccessTokenInfo())) {
@@ -449,9 +482,15 @@ public class ArccValidationService {
             affiliationNameInAccessToken.isValid = false;
             affiliationNameInAccessToken.message = "Missing or empty eduperson_assurance claim in Access Token response.";
         } else {
+            if (nacoResponse.getAccessTokenInfo().getBody().getAssurance().stream().anyMatch(value -> isValidValue(value,ASSURACNE_REQUIRED_VALUE))) {
 
-            affiliationNameInAccessToken.isValid = true;
-            affiliationNameInAccessToken.message = "eduperson_assurance found in access_token_info.";
+                affiliationNameInAccessToken.isValid = true;
+                affiliationNameInAccessToken.message = "eduperson_assurance found in access_token_info and contains "+ASSURACNE_REQUIRED_VALUE +".";
+            }else{
+                affiliationNameInAccessToken.isValid = false;
+                affiliationNameInAccessToken.message = "eduperson_assurance found in access_token_info and not contain "+ASSURACNE_REQUIRED_VALUE +".";
+
+            }
         }
 
         apiResponse.additionalInfo.put("assurance_access_token", affiliationNameInAccessToken);
