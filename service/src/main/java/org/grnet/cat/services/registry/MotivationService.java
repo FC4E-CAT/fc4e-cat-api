@@ -27,7 +27,6 @@ import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
@@ -35,7 +34,6 @@ import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
-import org.grnet.cat.services.registry.metric.MetricService;
 import org.grnet.cat.utils.TestParamsTransformer;
 
 import java.sql.Timestamp;
@@ -79,9 +77,6 @@ public class MotivationService {
 
     @Inject
     MetricTestRepository metricTestRepository;
-
-    @Inject
-    MetricService metricService;
 
     @Inject
     CriterionRepository criterionRepository;
@@ -646,6 +641,28 @@ public class MotivationService {
         return MetricMapper.INSTANCE.metricToDto(metric);
     }
 
+    @Transactional
+    public InformativeResponse updateMetricForMotivation(String metricId, MotivationMetricUpdateRequest request) {
+
+        var response = new InformativeResponse();
+
+        var metric = metricRepository.findById(metricId);
+        var typeAlgorithm = Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId);
+        var typeBenchmark = Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId);
+
+        metric.setTypeAlgorithm(typeAlgorithm);
+        metric.setTypeBenchmark(typeBenchmark);
+        metric.setValueBenchmark(request.valueBenchmark);
+
+        MetricMapper.INSTANCE.updateMotivationMetricFromDto(request, metric);
+
+        metricRepository.persist(metric);
+
+        response.code = 200;
+        response.message = "Metric was successfully updated with identifier: " + metric.getId();
+
+        return response;
+    }
 
     @Transactional
     public InformativeResponse createMetricVersionForMotivation(String motivationId, String metricId, MetricVersionRequestDto request, String userId) {

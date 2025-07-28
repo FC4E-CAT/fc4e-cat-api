@@ -1,10 +1,7 @@
 package org.grnet.cat.mappers.registry.metric;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
-import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
-import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
-import org.grnet.cat.dtos.registry.metric.MetricVersionRequestDto;
+import org.grnet.cat.dtos.registry.metric.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -58,6 +55,24 @@ public interface MetricMapper {
     @Mapping(target = "dataType", ignore = true)
     @Mapping(target = "criteria", ignore = true)
     void updateMetricFromDto(MetricUpdateDto request, @MappingTarget Metric metric);
+
+
+//    @Mapping(target = "MTR", expression = "java(StringUtils.isNotEmpty(request.MTR) ? request.MTR : metric.getMTR())")
+//    @Mapping(target = "labelMetric", expression = "java(StringUtils.isNotEmpty(request.labelMetric) ? request.labelMetric : metric.getLabelMetric())")
+//    @Mapping(target = "descrMetric", expression = "java(StringUtils.isNotEmpty(request.descrMetric) ? request.descrMetric : metric.getDescrMetric())")
+//    @Mapping(target = "urlMetric", expression = "java(StringUtils.isNotEmpty(request.urlMetric) ? request.urlMetric : metric.getUrlMetric())")
+//    @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+//    @Mapping(target = "typeAlgorithm", ignore = true)
+//    @Mapping(target = "typeMetric", expression = "java(StringUtils.isNotEmpty(request.typeMetric) ? request.typeMetric : metric.getTypeMetric())")
+//    @Mapping(target = "populatedBy", ignore = true)
+//    @Mapping(target = "id", ignore = true)
+//    @Mapping(target = "lodMTV", ignore = true)
+//    @Mapping(target = "upload", ignore = true)
+//    @Mapping(target = "dataType", ignore = true)
+//    @Mapping(target = "criteria", ignore = true)
+    void updateMotivationMetricFromDto(MotivationMetricUpdateRequest request, @MappingTarget Metric metric);
+
+
 
 
     @Named("versionMetric")

@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.metric;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
@@ -106,6 +107,6 @@ public class MetricRequestDto {
             example = "pid_graph:D0339C6A"
     )
     @JsonProperty("criterion_id")
-    @EqualsAndHashCode.Include
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String criterion_id;
 }
