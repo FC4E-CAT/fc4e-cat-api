@@ -100,15 +100,13 @@ public class CriterionService {
 
         var criteria = CriteriaMapper.INSTANCE.criteriaToEntity(criteriaRequestDto);
 
-        if (!(criteriaRequestDto.lodMTV == null)) {
-            criteria.setLodMTV(criteriaRequestDto.lodMTV);
-        }
-
         criteria.setPopulatedBy(userId);
         criteria.setImperative(Panache.getEntityManager().getReference(Imperative.class, criteriaRequestDto.imperative));
         criteria.setTypeCriterion(Panache.getEntityManager().getReference(TypeCriterion.class, criteriaRequestDto.typeCriterion));
 
         criteriaRepository.persist(criteria);
+
+        criteria.setLodCriP(criteria.getId());
 
         return CriteriaMapper.INSTANCE.criteriaToDto(criteria);
     }

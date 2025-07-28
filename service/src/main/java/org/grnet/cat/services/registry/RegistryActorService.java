@@ -10,13 +10,15 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
+import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
+import org.grnet.cat.dtos.registry.motivation.MultipleCriterionMetricRequest;
 import org.grnet.cat.entities.PageQuery;
-import org.grnet.cat.entities.registry.Motivation;
-import org.grnet.cat.entities.registry.MotivationActorJunction;
-import org.grnet.cat.entities.registry.RegistryActor;
+import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.mappers.registry.CriterionActorMapper;
 import org.grnet.cat.mappers.registry.RegistryActorMapper;
 import org.grnet.cat.repositories.registry.*;
+import org.grnet.cat.repositories.registry.metric.MetricRepository;
+import org.mapstruct.Mapping;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class RegistryActorService {
@@ -41,6 +44,18 @@ public class RegistryActorService {
 
     @Inject
     MotivationActorRepository motivationActorRepository;
+
+    @Inject
+    CriterionMetricService criterionMetricService;
+
+    @Inject
+    MotivationService motivationService;
+
+    @Inject
+    CriterionMetricRepository criterionMetricRepository;
+
+    @Inject
+    MetricRepository metricRepository;
 
     /**
      * Retrieves a specific RegistryActor.
@@ -201,6 +216,184 @@ public class RegistryActorService {
         });
 
         return resultMessages;
+    }
+
+
+    /**
+     * Add Criteria to Actor.
+     *
+     * @param motivationId          The Motivation
+     * @param actorId               The Actor.
+     * @param criterionActorRequest The CriterionActorRequest to be added.
+     * @param userId                The user who requests to add criteria to  the Actor.
+     * @return The added relation.
+     */
+    @Transactional
+    public List<String> addCriterionWithAutoMetricToActor(String motivationId, String actorId, Set<CriterionActorRequest> criterionActorRequest, String userId) {
+
+        var resultMessages = new ArrayList<String>();
+
+        if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
+            throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
+        }
+        Optional<MotivationActorJunction> motivationActorJunctionOpt =
+                motivationActorRepository.fetchByMotivationAndActorAndVersion(motivationId, actorId, 1);
+
+        if (motivationActorJunctionOpt.get().getPublished() == Boolean.TRUE) {
+            throw new ForbiddenException("No action is permitted as motivation-actor relation is published");
+        }
+
+        var motivation = motivationRepository.findById(motivationId);
+        var actor = registryActorRepository.findById(actorId);
+
+        criterionActorRequest.stream().iterator().forEachRemaining(req -> {
+            var imperative = imperativeRepository.findById(req.imperativeId);
+            var principleCriterionJunction = principleCriterionRepository.findCriterion(req.criterionId, motivation.getId());
+            if (principleCriterionJunction.isEmpty()) {
+                resultMessages.add("criterion with id :: " + req.criterionId + " is not related to principles");
+            } else {
+
+                var criterion = principleCriterionJunction.get().getCriterion();
+                if (!criterionActorRepository.existsByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1)) {
+
+                    generateAutoMetricForCriterion(motivationId, criterion.getId(), userId);
+                    actor.addCriterion(motivation, criterion, imperative, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                    resultMessages.add("criterion with id :: " + criterion.getId() + " successfully added to actor");
+                } else {
+                    resultMessages.add("criterion with id :: " + criterion.getId() + " already exists to actor");
+                }
+            }
+        });
+        return resultMessages;
+    }
+
+    /**
+     * Adds  a new Actor to motivation.
+     *
+     * @param motivationId          The Motivation
+     * @param actorId               The Actor.
+     * @param criterionActorRequest The CriterionActorRequest to be added.
+     * @param userId                The user who requests to add criteria to  the Actor.
+     * @return The added relation.
+     */
+    //@CheckPublishedRelation(permittedStatus = false, type = PublishEntityType.ACTOR)
+    // Only proceed if `published` is false
+    @Transactional
+    public List<String> updateCriterionWithAutoMetricToActor(String motivationId, String actorId, Set<CriterionActorRequest> criterionActorRequest, String userId) {
+        var resultMessages = new ArrayList<String>();
+
+        if (!motivationActorRepository.existsByMotivationAndActorAndVersion(motivationId, actorId, 1)) {
+            throw new NotFoundException("relation between motivation with id: " + motivationId + " and actor with id: " + actorId + " in version : " + 1 + " does not exist");
+        }
+        Optional<MotivationActorJunction> motivationActorJunctionOpt =
+                motivationActorRepository.fetchByMotivationAndActorAndVersion(motivationId, actorId, 1);
+
+        if (motivationActorJunctionOpt.get().getPublished() == Boolean.TRUE) {
+            throw new ForbiddenException("No action is permitted as motivation-actor relation is published");
+        }
+
+        var motivation = motivationRepository.findById(motivationId);
+        var actor = registryActorRepository.findById(actorId);
+
+        removeCriteriaAndAutoMetric(motivation, actor, criterionActorRequest, resultMessages);
+
+        criterionActorRequest.stream().iterator().forEachRemaining(req -> {
+            var imperative = imperativeRepository.findById(req.imperativeId);
+            var principleCriterionJunction = principleCriterionRepository.findCriterion(req.criterionId, motivation.getId());
+
+            if (principleCriterionJunction.isEmpty()) {
+                resultMessages.add("criterion with id: " + req.criterionId + " is not related to principles");
+            } else {
+
+                var criterion = principleCriterionJunction.get().getCriterion();
+                var junction = criterionActorRepository.findByMotivationAndActorAndCriterion(motivationId, actorId, req.criterionId, 1);
+
+                if (junction.isPresent()) {
+
+                    var existingJunction = junction.get();
+
+                    if (!existingJunction.getImperative().equals(imperative)) {
+                        existingJunction.setImperative(imperative);
+                        existingJunction.setLastTouch(Timestamp.from(Instant.now()));
+                        existingJunction.setPopulatedBy(userId);
+                        resultMessages.add("criterion with id: " + criterion.getId() + " updated with new imperative for actor.");
+                    } else {
+                        resultMessages.add("criterion with id: " + criterion.getId() + " already exists with the same imperative");
+                    }
+                } else {
+                    generateAutoMetricForCriterion(motivationId, criterion.getId(), userId);
+                    actor.addCriterion(motivation, criterion, imperative, motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                    resultMessages.add("criterion with id: " + criterion.getId() + " successfully added to actor");
+                }
+            }
+        });
+
+        return resultMessages;
+    }
+
+    private void generateAutoMetricForCriterion(String motivationId, String criterionId, String userId) {
+
+        boolean alreadyLinked = criterionMetricRepository.existsByMotivationAndCriterionAndVersion(motivationId, criterionId, 1);
+
+        if (alreadyLinked) {
+            return; // Skip metric generation
+        }
+
+        var createMetric = new MetricRequestDto();
+        createMetric.MTR = " ";
+        createMetric.labelMetric = " ";
+        createMetric.descrMetric = " ";
+        createMetric.criterion_id = criterionId;
+        createMetric.typeBenchmarkId = "pid_graph:7085006F";
+        createMetric.typeAlgorithmId = "pid_graph:AE39C968";
+        createMetric.typeMetricId = "pid_graph:8D79984F";
+        createMetric.valueBenchmark = "1";
+
+        var metric = motivationService.createMetricForMotivation(motivationId, createMetric, userId);
+
+        var criMtr = new MultipleCriterionMetricRequest();
+        criMtr.criterionId = criterionId;
+        criMtr.relation = "maintainedBy";
+        criMtr.metricId = metric.id;
+
+        criterionMetricService.createNewCriteriaMetricsRelationship(motivationId, Set.of(criMtr), userId);
+    }
+
+    private void removeCriteriaAndAutoMetric(Motivation motivation, RegistryActor actor, Set<CriterionActorRequest> request, List<String> resultMessages) {
+
+        var criterionIdsToKeep = request.stream()
+                .map(req -> req.criterionId)
+                .collect(Collectors.toSet());
+
+        var allLinked = criterionActorRepository.fetchCriteriaByMotivationAndActor(motivation.getId(), actor.getId());
+
+        for (var junction : allLinked) {
+            var criterion = junction.getCriterion();
+            if (!criterionIdsToKeep.contains(criterion.getId())) {
+
+                // Remove CriterionActorJunction
+                criterionActorRepository.delete(junction);
+                resultMessages.add("Criterion with id: " + criterion.getId() + " removed from actor");
+
+                // Check for metric linked to this criterion in this motivation
+                var cmJunctions = criterionMetricRepository.fetchCriterionMetricByMotivationAndCriterion(motivation.getId(), criterion.getId());
+
+                cmJunctions.ifPresent(cm -> {
+                    var metric = cm.getMetric();
+
+                    var expectedLabel = criterion.getLabel() + " Metric";
+                    var expectedDesc = "Metric created for \"" + motivation.getLabel() + "\" and used by \"" + criterion.getCri() + "\".";
+
+                    if (expectedLabel.equals(metric.getLabelMetric())
+                            && expectedDesc.equals(metric.getDescrMetric())) {
+
+                        criterionMetricRepository.delete(cm);
+                        metricRepository.delete(metric);
+                        resultMessages.add("Auto-generated metric " + metric.getId() + " removed along with its criterion.");
+                    }
+                });
+            }
+        }
     }
 
     private void removeCriteria(Motivation motivation, RegistryActor actor, Set<CriterionActorRequest> request, List<String> resultMessages) {

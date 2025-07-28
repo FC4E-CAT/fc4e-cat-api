@@ -670,6 +670,88 @@ public class MotivationEndpointTest extends KeycloakTest {
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
+    public void addCriterionWithAutoMetric() {
+
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv-automtr";
+        motivationRequest.label = "Auto Metric Motivation";
+        motivationRequest.description = "Motivation for testing auto-metric assignment.";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        var request = new CriterionRequest();
+        request.cri = "AUTO-CRI-001";
+        request.label = "Auto Criterion Label";
+        request.description = "This criterion will be used with automatic metric assignment.";
+        request.imperative = "pid_graph:BED209B9";
+        request.typeCriterion = "pid_graph:A2719B92";
+
+        var criterionResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .basePath("/v1/registry/criteria")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CriterionResponse.class);
+
+        var motivationActor = new MotivationActorRequest();
+        motivationActor.actorId = "pid_graph:1A718108";
+        motivationActor.relation = "dcterms:isRequiredBy";
+        MotivationActorRequest[] array = new MotivationActorRequest[1];
+        array[0] = motivationActor;
+
+        given()
+                .auth()
+                .oauth2(adminToken)
+                .body(array)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        var criterionActor = new CriterionActorRequest();
+        criterionActor.criterionId = criterionResponse.id;
+        criterionActor.imperativeId = "pid_graph:BED209B9";
+        CriterionActorRequest[] array1 = new CriterionActorRequest[1];
+        array1[0] = criterionActor;
+
+        var response = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(array1)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors/{actor-id}/criteria/auto-metric", motivationResponse.id, "pid_graph:1A718108")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(response.code, 200);
+    }
+
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateCriterionImperativeNotFound() {
 
         var motivationRequest = new MotivationRequest();
