@@ -84,6 +84,7 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
         return query.getResultList();
     }
 
+
 //    @Transactional
 //    public boolean existCriterionInStatus(String criterionId,boolean status) {
 //
@@ -135,5 +136,10 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
 
     public void deleteByActorId(String motivationId, String actorId) {
         delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 AND c.id.actorId = ?2", motivationId, actorId);
+    }
+
+    public Optional<CriterionActorJunction> findByCriterionIdAndMotivationId(String motivationId, String criterionId) {
+        return find("FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.criterion.id = ?2", motivationId, criterionId)
+                .firstResultOptional();
     }
 }

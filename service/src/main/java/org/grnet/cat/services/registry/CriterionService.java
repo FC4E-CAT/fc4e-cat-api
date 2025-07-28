@@ -254,7 +254,15 @@ public class CriterionService {
 
         var motivations = principleCriterionRepository.getMotivationIdsByCriterion(criterion.getId());
         var motivationResponses = motivations.stream()
-                .map(MotivationMapper.INSTANCE::mapPartialMotivation)
+                .map(motivation -> {
+                    var firstAssignment = criterionActorRepository.findByCriterionIdAndMotivationId(motivation.getId(), criterion.getId());
+                    var partialMotivation = MotivationMapper.INSTANCE.mapPartialMotivation(motivation);
+                    firstAssignment.ifPresent(assignment -> {
+                        partialMotivation.lodActor = assignment.getActor().getId();
+                        partialMotivation.labelActor = assignment.getActor().getLabelActor();
+                    });
+                    return partialMotivation;
+                })
                 .collect(Collectors.toList());
 
         criterionResponse.setMotivations(motivationResponses);
@@ -284,7 +292,7 @@ public class CriterionService {
             );
 
             var uniqueTestIds = metricNode.getChildren().stream()
-                    .map(child -> ((TestNode) child).getId())
+                    .map(Node::getId)
                     .collect(Collectors.toSet());
 
             if (!uniqueTestIds.contains(row.getTES())) {
