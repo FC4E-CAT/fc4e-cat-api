@@ -34,6 +34,8 @@ public class UserInfo {
     private List<String> vopersonId;
 
     @JsonProperty("schac_home_organization")
+    @JsonDeserialize(using = SafeStringOrArrayDeserializer.class)
+
     private String organizationDomain;
 
     @JsonProperty("voperson_external_affiliation")
