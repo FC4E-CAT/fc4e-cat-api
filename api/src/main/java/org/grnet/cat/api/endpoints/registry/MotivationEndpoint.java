@@ -592,7 +592,7 @@ public class MotivationEndpoint {
             description = "Principles successfully created for the motivation.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = InformativeResponse.class)))
+                    implementation = PrincipleResponseDto.class)))
     @APIResponse(
             responseCode = "400",
             description = "Invalid request payload.",
@@ -642,7 +642,7 @@ public class MotivationEndpoint {
 
         var response = motivationService.createPrincipleForMotivation(id, request, utility.getUserUniqueIdentifier());
 
-        return Response.status(response.code).entity(response).build();
+        return Response.ok().entity(response).build();
 
     }
 
@@ -857,11 +857,20 @@ public class MotivationEndpoint {
 
         var messages = registryActorService.addCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
 
-        String result = String.join("\n", messages);
-
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.message = result;
+        var errorMessages = messages.stream()
+                .filter(msg -> msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        var successMessages = messages.stream()
+                .filter(msg -> !msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        if (!errorMessages.isEmpty()) {
+            informativeResponse.errors = errorMessages;
+        }
+        informativeResponse.message = String.join("\n", successMessages);
 
         return Response.ok().entity(informativeResponse).build();
     }
@@ -1116,11 +1125,20 @@ public class MotivationEndpoint {
         }
 
         var messages = registryActorService.updateCriteria(id, actorId, request, utility.getUserUniqueIdentifier());
-        String result = String.join("\n", messages);
-
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
-        informativeResponse.message = result;
+        var errorMessages = messages.stream()
+                .filter(msg -> msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        var successMessages = messages.stream()
+                .filter(msg -> !msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        if (!errorMessages.isEmpty()) {
+            informativeResponse.errors = errorMessages;
+        }
+        informativeResponse.message = String.join("\n", successMessages);
 
         return Response.ok().entity(informativeResponse).build();
     }

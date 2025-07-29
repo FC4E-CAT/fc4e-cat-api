@@ -559,40 +559,33 @@ public class MotivationService {
     }
 
     @Transactional
-    public InformativeResponse createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
+    public PrincipleResponseDto createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
 
-        var response = new InformativeResponse();
-
-        if (!principleRepository.notUnique("pri", request.principleRequestDto.pri.toUpperCase())) {
-
-            var principle = PrincipleMapper.INSTANCE.principleToEntity(request.principleRequestDto);
-
-            principle.setLodMTV(id);
-            principle.setPopulatedBy(userID);
-            principleRepository.persist(principle);
-
-            var motivationPrincipleJunction = new MotivationPrincipleJunction(
-                    Panache.getEntityManager().getReference(Motivation.class, id),
-                    Panache.getEntityManager().getReference(Principle.class, principle.getId()),
-                    request.annotationText,
-                    request.annotationUrl,
-                    Panache.getEntityManager().getReference(Relation.class, request.relation),
-                    id,
-                    1,
-                    userID,
-                    Timestamp.from(Instant.now())
-            );
-
-            motivationPrincipleRepository.persist(motivationPrincipleJunction);
-
-            response.code = 200;
-            response.message = "Principle successfully created and linked to the specified motivation.";
-        } else {
-            response.code = 409;
-            response.message = "A principle with the identifier '" + request.principleRequestDto.pri.toUpperCase() + "' already exists.";
+        if (principleRepository.notUnique("pri", request.principleRequestDto.pri.toUpperCase())) {
+            throw new UniqueConstraintViolationException("pri", request.principleRequestDto.pri.toUpperCase());
         }
 
-        return response;
+        var principle = PrincipleMapper.INSTANCE.principleToEntity(request.principleRequestDto);
+
+        principle.setLodMTV(id);
+        principle.setPopulatedBy(userID);
+        principleRepository.persist(principle);
+
+        var motivationPrincipleJunction = new MotivationPrincipleJunction(
+                Panache.getEntityManager().getReference(Motivation.class, id),
+                Panache.getEntityManager().getReference(Principle.class, principle.getId()),
+                request.annotationText,
+                request.annotationUrl,
+                Panache.getEntityManager().getReference(Relation.class, request.relation),
+                id,
+                1,
+                userID,
+                Timestamp.from(Instant.now())
+        );
+
+        motivationPrincipleRepository.persist(motivationPrincipleJunction);
+
+        return PrincipleMapper.INSTANCE.principleToDto(principle);
     }
 
     @Transactional
