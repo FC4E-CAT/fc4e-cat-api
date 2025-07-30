@@ -25,38 +25,67 @@ public class TestMethodRepository implements Repository<TestMethod, String> {
      * @param size The maximum number of Metric to include in a page.
      * @return A list of TestMethod objects representing the Metrics in the requested page.
      */
-    public PageQuery<TestMethod> fetchTestMethodByPage(String search, int page, int size, Boolean enabled){
+    public PageQuery<TestMethod> fetchTestMethodByPage(String search, int page, int size, Boolean enabled) {
 
-        var joiner = new StringJoiner(" ");
-        joiner.add("from TestMethod tm");
-        joiner.add("where 1=1");
+        var filterParams = new HashMap<String, Object>();
 
-        var map = new HashMap<String, Object>();
+        // --- DATA QUERY: fetch sorted test methods by usage ---
+        var dataQuery = new StringJoiner(" ");
+        dataQuery.add("select tm from TestMethod tm");
+        dataQuery.add("left join Test t on t.testMethod.id = tm.id");
+        dataQuery.add("left join MetricTestJunction mtj on mtj.test.id = t.id");
+        dataQuery.add("where 1=1");
 
         if (StringUtils.isNotEmpty(search)) {
-            joiner.add("and tm.labelTestMethod ilike :search");
-            map.put("search", "%" + search + "%");
+            dataQuery.add("and tm.labelTestMethod ilike :search");
+            filterParams.put("search", "%" + search + "%");
         }
 
-        if(!Objects.isNull(enabled)){
-
-            joiner.add("and tm.enabled = :enabled");
-            map.put("enabled", enabled);
+        if (enabled != null) {
+            dataQuery.add("and tm.enabled = :enabled");
+            filterParams.put("enabled", enabled);
         }
 
-        joiner.add("order by tm.labelTestMethod ASC, tm.id ASC");
+        dataQuery.add("group by tm.id");
+        dataQuery.add("order by count(mtj.id) DESC, tm.labelTestMethod ASC");
 
-        var panache = find(joiner.toString(), map).page(page, size);
+        var panache = find(dataQuery.toString(), filterParams).page(page, size);
 
+
+        // --- COUNT QUERY: count total unique TestMethods ---
+        var countQuery = new StringJoiner(" ");
+        countQuery.add("select count(distinct tm.id) from TestMethod tm");
+        countQuery.add("left join Test t on t.testMethod.id = tm.id");
+        countQuery.add("left join MetricTestJunction mtj on mtj.test.id = t.id");
+        countQuery.add("where 1=1");
+
+        if (StringUtils.isNotEmpty(search)) {
+            countQuery.add("and tm.labelTestMethod ilike :search");
+        }
+
+        if (enabled != null) {
+            countQuery.add("and tm.enabled = :enabled");
+        }
+
+        var em = getEntityManager();
+        var query = em.createQuery(countQuery.toString());
+        filterParams.forEach(query::setParameter);
+        long total = (long) query.getSingleResult();
+
+
+        // --- Build PageQuery Response ---
         var pageable = new PageQueryImpl<TestMethod>();
         pageable.list = panache.list();
         pageable.index = page;
         pageable.size = size;
-        pageable.count = panache.count();
+        pageable.count = total;
         pageable.page = Page.of(page, size);
 
         return pageable;
     }
+
+
+
 
     @Transactional
     public List<Motivation> getMotivationIdsByTestMethodId(String testMethodId) {
