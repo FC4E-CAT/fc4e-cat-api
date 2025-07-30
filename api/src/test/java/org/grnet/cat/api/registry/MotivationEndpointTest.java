@@ -1027,7 +1027,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(PrincipleResponseDto.class);
 
 
         var errorResponse = given()
@@ -1042,7 +1042,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("A principle with the identifier '" + principleRequestDto.pri + "' already exists.", errorResponse.message);
+        assertEquals("The value '" + principleRequestDto.pri + "' for field 'pri' is not unique.", errorResponse.message);
     }
 
     @Test
