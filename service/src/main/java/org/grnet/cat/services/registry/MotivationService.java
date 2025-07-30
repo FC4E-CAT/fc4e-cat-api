@@ -619,20 +619,8 @@ public class MotivationService {
 
         if (request.criterion_id != null) {
             var criterion = criterionRepository.findById(request.criterion_id);
-            var similarMetricOpt = metricRepository.fetchMetricByTypesCombinations(
-                    typeAlgorithm.getId(),
-                    typeBenchmark.getId(),
-                    typeMetric.getId()
-            );
-
-            if (similarMetricOpt.isPresent()) {
-                var similarMetric = similarMetricOpt.get();
-                metric.setLabelMetric(similarMetric.getLabelMetric());
-                metric.setDescrMetric(similarMetric.getDescrMetric());
-            } else {
                 metric.setLabelMetric(criterion.getLabel() + (" Metric"));
-                metric.setDescrMetric("Metric created for " + motivationRepository.findById(id).getLabel() + " and used by criterion " + criterion.getCri() + ".");
-            }
+                metric.setDescrMetric("Metric created for \"" + motivationRepository.findById(id).getLabel() + "\" and used by \"" + criterion.getCri() + "\".");
         }
 
         metricRepository.persist(metric);

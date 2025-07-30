@@ -35,10 +35,7 @@ import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.*;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
-import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
-import org.grnet.cat.dtos.registry.criterion.CriterionActorResponse;
-import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
-import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
+import org.grnet.cat.dtos.registry.criterion.*;
 import org.grnet.cat.dtos.registry.metric.*;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
@@ -1747,6 +1744,176 @@ public class MotivationEndpoint {
         var informativeResponse = new InformativeResponse();
         informativeResponse.code = 200;
         informativeResponse.message = "Successful unpublish";
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Add a Criterion to a Motivation-Actor pair with a predefined Metric.",
+            description = "Creates a new metric with predefined types (benchmark, algorithm, metric type and benchmark value) and links it to the given criterion. " +
+                    "Then, assigns the criterion and metric to the specified motivation-actor pair."
+    )
+    @APIResponse(
+            responseCode = "201",
+            description = "Criterion item added.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Path("/{id}/actors/{actor-id}/criteria/auto-metric")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addCriterionWithAutoMetricToActor(
+            @Parameter(description = "The ID of the Motivation to update.",
+                required = true,
+                example = "1",
+                schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+            @Parameter(description = "The ID of the Actor to add criterion to.",
+                    required = true,
+                    example = "pid_graph:234B60D8",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+            @NotEmpty(message = "List of criteria can not be empty.") Set<@Valid CriterionActorRequest> request,
+            @Context UriInfo uriInfo) {
+
+        var messages = registryActorService.addCriterionWithAutoMetricToActor(id, actorId, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+
+        informativeResponse.code = 200;
+        var errorMessages = messages.stream()
+                .filter(msg -> msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        var successMessages = messages.stream()
+                .filter(msg -> !msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        if (!errorMessages.isEmpty()) {
+            informativeResponse.errors = errorMessages;
+        }
+        informativeResponse.message = String.join("\n", successMessages);
+
+        return Response.ok().entity(informativeResponse).build();
+    }
+
+    @Tag(name = "Motivation")
+    @Operation(
+            summary = "Update a Criterion to a Motivation-Actor pair with a predefined Metric.",
+            description = "Updates the criterion list to motivation actor.")
+    @APIResponse(
+            responseCode = "201",
+            description = "Criterion items updated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "409",
+            description = "Unique constraint violation.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/{id}/actors/{actor-id}/criteria/auto-metric")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCriterionWithAutoMetricToActor(
+            @Parameter(description = "The ID of the Motivation to update.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid
+            @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
+            @CheckPublished(repository = MotivationRepository.class, message = "No action permitted for published Motivation with the following id:", isPublishedPermitted = false) String id,
+            @Parameter(description = "The ID of the Actor to add criterion to.",
+                    required = true,
+                    example = "pid_graph:234B60D8",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("actor-id")
+            @Valid @NotFoundEntity(repository = RegistryActorRepository.class, message = "There is no Actor with the following id:") String actorId,
+            Set<@Valid CriterionActorRequest> request) {
+
+        if (Objects.isNull(request)) {
+            request = new HashSet<>();
+        }
+
+        var messages = registryActorService.updateCriterionWithAutoMetricToActor(id, actorId, request, utility.getUserUniqueIdentifier());
+
+        var informativeResponse = new InformativeResponse();
+        informativeResponse.code = 200;
+        var errorMessages = messages.stream()
+                .filter(msg -> msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        var successMessages = messages.stream()
+                .filter(msg -> !msg.contains("is not related to principles"))
+                .collect(Collectors.toSet());
+
+        if (!errorMessages.isEmpty()) {
+            informativeResponse.errors = errorMessages;
+        }
+        informativeResponse.message = String.join("\n", successMessages);
 
         return Response.ok().entity(informativeResponse).build();
     }

@@ -82,15 +82,6 @@ public class CriterionRequest {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Id of the Motivation.",
-            example = "pid_graph:3E109BBA"
-    )
-    @JsonProperty("motivation_id")
-    @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-    public String lodMTV;
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "The Criterion parent identifier.",
             example = "pid_graph:A8EA1C61"
     )
