@@ -30,6 +30,7 @@ public interface TestMethodMapper {
     @Mapping(target = "responseFragment", ignore = true)
     @Mapping(target = "lodMTV", ignore = true)
     @Mapping(target = "lodTMEV", ignore = true)
+    @Mapping(target = "friendlyLabelTestMethod", ignore = true)
     TestMethod testMethodToEntity(TestMethodRequestDto request);
 
     @Mapping(target = "UUID", expression = "java(StringUtils.isNotEmpty(request.UUID) ? request.UUID : testMethod.getUUID())")
