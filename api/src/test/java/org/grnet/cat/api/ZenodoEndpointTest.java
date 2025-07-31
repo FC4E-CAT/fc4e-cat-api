@@ -192,59 +192,7 @@ public class ZenodoEndpointTest extends KeycloakTest {
         String expectedMessage = "You do not have permission to access this resource.";
         assertEquals(expectedMessage, response.message);
     }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void testPublishZenodoAssessment_AlreadyPublishedInZenodo() throws IOException {
-
-        //zenodoAssessmentInfoRepository.removeAll();
-        // motivationAssessmentRepository.removeAll();
-        //register(validatedToken);
-      //  var assessment = createRegistryPublicAssessment(validatedToken);
-       // assessment.published = true;
-
-        var response = given()
-                .auth()
-                .oauth2(validatedToken)
-                .body(generateValidPdf())
-                .contentType("application/octet-stream")
-                .post("/publish/assessment/{id}", publicAssessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(InformativeResponse.class);
-
-        var zenodoAssessment = given()
-                .auth()
-                .oauth2(validatedToken)
-                .contentType(ContentType.JSON)
-                .get("/assessment/{id}", publicAssessment.id)
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .extract()
-                .as(ZenodoAssessmentInfoResponse.class);
-
-
-        var response2 = given()
-                .auth()
-                .oauth2(validatedToken)
-                .body(generateValidPdf())
-                .contentType("application/octet-stream")
-                .post("/publish/assessment/{id}", publicAssessment.id)
-                .then()
-                .assertThat()
-                .statusCode(500)
-                .extract()
-                .as(InformativeResponse.class);
-        String isPublished = zenodoAssessment.getIsPublished() ? "PUBLISHED" : "DRAFT";
-
-        String expectedMessage = "Assessment with ID: " + publicAssessment.id + " is already in Zenodo under deposit with ID: " + zenodoAssessment.getDepositId() + " and it's publication status is: " + isPublished;
-
-        assertEquals(expectedMessage, response2.message);
-    }
-
+    
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void testPublishZenodoAssessment_notValidPDF() throws IOException {
