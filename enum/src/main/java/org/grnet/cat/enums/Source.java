@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public enum Source {
 
-    ROR("ror", "ROR", "https://api.ror.org/organizations", true) {
+    ROR("ror", "ROR", "https://api.ror.org/v1/organizations", true) {
         public RorSearchInfo execute(String query, int page) {
             Response resp = connectHttpClient(url + "?query=" + query + "&page=" + page, query);
             try {

@@ -61,6 +61,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#527](https://github.com/FC4E-CAT/fc4e-cat-api/pull/527) CAT-962: Add db_id to All Relevant Entities in Assessment Type Template
 - [#530](https://github.com/FC4E-CAT/fc4e-cat-api/pull/530) CAT-966 CAT-967 map LSAAI provider response and update tests to match AARC-G056 requirements
 - [#532](https://github.com/FC4E-CAT/fc4e-cat-api/pull/532) CAT-971 Refine Messages for Principle Creation and Criteria Missing Principle Links
+- [#534]()https://github.com/FC4E-CAT/fc4e-cat-api/pull/534 CAT-976 Change ROR path to /v1/organizations
 
 
 ## 2.0.0 - 2025-03-31
