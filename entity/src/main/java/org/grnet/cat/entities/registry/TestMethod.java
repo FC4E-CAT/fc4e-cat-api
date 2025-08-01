@@ -68,4 +68,7 @@ public class TestMethod {
 
     @Column(name = "enabled")
     private Boolean enabled;
+
+    @Column(name = "friendlyLabelTestMethod")
+    private String friendlyLabelTestMethod;
 }

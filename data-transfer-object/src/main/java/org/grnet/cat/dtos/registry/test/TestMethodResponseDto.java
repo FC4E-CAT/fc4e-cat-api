@@ -43,6 +43,15 @@ public class TestMethodResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
+            description = "Friendly Label for the test method",
+            example = "Binary"
+    )
+    @JsonProperty("friendly_label")
+    public String friendlyLabelTestMethod;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
             description = "Description for the test method",
             example = "PID Persistence - Service - Evidence"
     )
