@@ -64,6 +64,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#533](https://github.com/FC4E-CAT/fc4e-cat-api/pull/533) CAT-974 Add Usage-Based Sorting to Testmethod Pagination
 - [#534]()https://github.com/FC4E-CAT/fc4e-cat-api/pull/534 CAT-976 Change ROR path to /v1/organizations
 - [#535](https://github.com/FC4E-CAT/fc4e-cat-api/pull/535) CAT-888 Update view for Tests (friendly label Testmethod)
+- [#536](https://github.com/FC4E-CAT/fc4e-cat-api/pull/536) CAT-981 Change num_params of Binary-Evidence Testmethod from 2 to 1
 
 
 ## 2.0.0 - 2025-03-31
