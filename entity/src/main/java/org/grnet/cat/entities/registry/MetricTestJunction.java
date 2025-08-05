@@ -41,6 +41,16 @@ public class MetricTestJunction extends Registry{
     @NotNull
     private Relation relation;
 
+    @Column(name = "created_on")
+    private Timestamp metricTestCreatedOn;
+
+    @PrePersist
+    protected void onCreate() {
+        if (metricTestCreatedOn == null) {
+            metricTestCreatedOn = Timestamp.from(Instant.now());
+        }
+    }
+
     public MetricTestJunction(Motivation motivation, Metric metric, Test test, Relation relation, String motivationX, Integer lodMTTDV) {
 
         this.motivation = motivation;

@@ -214,12 +214,13 @@ public class TemplateService {
 
                         if (row.getLabelTestMethod().contains("Evidence")) {
 
-                            tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTMT(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
+                            tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTME(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                         } else {
 
-                            tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTMT(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
+                            tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTME(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                         }
 
+                        tn.setMetricTestCreatedOn(row.getMetricTestCreatedOn());
                         return tn;
                     });
                     if (!mtrNode.getChildren().contains(testNode)) {
