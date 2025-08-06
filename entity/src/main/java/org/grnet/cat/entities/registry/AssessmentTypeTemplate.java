@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.UUID;
 
 @Getter
@@ -55,6 +56,9 @@ public class AssessmentTypeTemplate {
     private String testQuestion;
     private String testParams;
     private String toolTip;
+
+    @Column(name = "metric_test_created_on")
+    private Timestamp metricTestCreatedOn;
 
     private String mt_mtv;
     private String cm_mtv;

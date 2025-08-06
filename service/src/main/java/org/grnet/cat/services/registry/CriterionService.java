@@ -104,6 +104,10 @@ public class CriterionService {
         criteria.setImperative(Panache.getEntityManager().getReference(Imperative.class, criteriaRequestDto.imperative));
         criteria.setTypeCriterion(Panache.getEntityManager().getReference(TypeCriterion.class, criteriaRequestDto.typeCriterion));
 
+        if (!(criteriaRequestDto.lodMTV == null)) {
+            criteria.setLodMTV(criteriaRequestDto.lodMTV);
+        }
+
         criteriaRepository.persist(criteria);
 
         criteria.setLodCriP(criteria.getId());

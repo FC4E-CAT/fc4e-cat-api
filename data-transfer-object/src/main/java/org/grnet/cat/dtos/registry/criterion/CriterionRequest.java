@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.criterion;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -7,7 +8,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.repositories.registry.CriterionRepository;
 import org.grnet.cat.repositories.registry.ImperativeRepository;
-import org.grnet.cat.repositories.registry.MotivationRepository;
 import org.grnet.cat.repositories.registry.TypeCriterionRepository;
 
 @Schema(name = "CriterionRequest", description = "This object represents the data required to create a Criterion.")
@@ -78,6 +78,16 @@ public class CriterionRequest {
     )
     @JsonProperty("url")
     public String url;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Motivation id",
+            example = "pid_graph:3E109B2E"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(value = "motivation_id")
+    public String lodMTV;
 
     @Schema(
             type = SchemaType.STRING,

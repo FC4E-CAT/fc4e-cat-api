@@ -813,6 +813,7 @@ public class MotivationService {
 
         metricTest.setPopulatedBy(userId);
         metricTest.setLastTouch(Timestamp.from(Instant.now()));
+        // createdOn will be set automatically by @PrePersist in the entity
 
         metricTestRepository.persist(metricTest);
 
