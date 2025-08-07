@@ -57,6 +57,15 @@ public class AssessmentTypeTemplate {
     private String testParams;
     private String toolTip;
 
+    @Column(name = "principle_criterion_created_on")
+    private Timestamp principleCriterionCreatedOn;
+
+    @Column(name = "criterion_actor_created_on")
+    private Timestamp criterionActorCreatedOn;
+
+    @Column(name = "criterion_metric_created_on")
+    private Timestamp criterionMetricCreatedOn;
+
     @Column(name = "metric_test_created_on")
     private Timestamp metricTestCreatedOn;
 
