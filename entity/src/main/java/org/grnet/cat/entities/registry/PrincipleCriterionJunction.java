@@ -45,6 +45,16 @@ public class PrincipleCriterionJunction extends Registry{
     @NotNull
     private String motivationX;
 
+    @Column(name = "created_on")
+    private Timestamp metricTestCreatedOn;
+
+    @PrePersist
+    protected void onCreate() {
+        if (metricTestCreatedOn == null) {
+            metricTestCreatedOn = Timestamp.from(Instant.now());
+        }
+    }
+
     public PrincipleCriterionJunction(Motivation motivation, Principle principle, Criterion criterion, String annotationText, String annotationURL, Relation relation, String motivationX, Integer lodMpV) {
 
         this.motivation = motivation;

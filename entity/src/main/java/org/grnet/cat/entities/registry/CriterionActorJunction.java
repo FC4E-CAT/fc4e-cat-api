@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity(name = "CriterionActorJunction")
@@ -39,6 +40,16 @@ public class CriterionActorJunction extends Registry {
     @Column(name = "lodMTV_X")
     @NotNull
     private String motivationX;
+
+    @Column(name = "created_on")
+    private Timestamp metricTestCreatedOn;
+
+    @PrePersist
+    protected void onCreate() {
+        if (metricTestCreatedOn == null) {
+            metricTestCreatedOn = Timestamp.from(Instant.now());
+        }
+    }
 
 
     public CriterionActorJunction(Motivation motivation, Criterion criterion, RegistryActor actor, Imperative imperative, String motivationX, Timestamp lastTouch, String populatedBy, Integer lodCAV) {

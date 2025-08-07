@@ -11,6 +11,7 @@ import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.utils.TestParamsTransformer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @ApplicationScoped
@@ -202,21 +203,35 @@ public class TemplateService {
 
         for (var row : rows) {
 
-            Node priNode = priMap.computeIfAbsent(row.getLodPri(), k -> new AssessmentTypePriNode(k, row.getPRI(), row.getLabelPrinciple(), row.getDescPrinciple()));
-            Node criNode = criMap.computeIfAbsent(row.getLodCri(), k -> new AssessmentTypeCriNode(k, row.getCRI(), row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative()));
+            Node priNode = priMap.computeIfAbsent(row.getLodPri(), k -> {
+                AssessmentTypePriNode pn;
+                pn = new AssessmentTypePriNode(k, row.getPRI(), row.getLabelPrinciple(), row.getDescPrinciple());
+                pn.setPrincipleCriterionCreatedOn(row.getPrincipleCriterionCreatedOn());
+                return pn;
+            });
+
+            Node criNode = criMap.computeIfAbsent(row.getLodCri(), k -> {
+                AssessmentTypeCriNode cn;
+                cn = new AssessmentTypeCriNode(k, row.getCRI(), row.getLabelCriterion(), row.getDescCriterion(), row.getLabelImperative());
+                cn.setCriterionActorCreatedOn(row.getCriterionActorCreatedOn());
+                return cn;
+            });
+
             if (row.getMTR() != null && row.getLabelMetric() != null) {
-                Node mtrNode = mtrMap.computeIfAbsent(row.getLodMTR(), k -> new AssessmentTypeMetricNode(k, row.getMTR(), row.getLabelMetric().trim(), row.getLodTBN(), row.getLabelBenchmarkType().trim(), Double.parseDouble(row.getValueBenchmark()), row.getLodTAL(), row.getLabelAlgorithmType(), row.getLodTMT(), row.getLabelTypeMetric()));
+                Node mtrNode = mtrMap.computeIfAbsent(row.getLodMTR(), k -> {
+                    AssessmentTypeMetricNode mn;
+                    mn = new AssessmentTypeMetricNode(k, row.getMTR(), row.getLabelMetric().trim(), row.getLodTBN(), row.getLabelBenchmarkType().trim(), Double.parseDouble(row.getValueBenchmark()), row.getLodTAL(), row.getLabelAlgorithmType(), row.getLodTMT(), row.getLabelTypeMetric());
+                    mn.setCriterionMetricTestCreatedOn(row.getCriterionMetricCreatedOn());
+                    return mn;
+                });
 
                 if (row.getLodTES() != null && row.getLabelTestMethod() != null) {
                     Node testNode = testMap.computeIfAbsent(row.getLodTES(), k -> {
-
                         AssessmentTypeTestNode tn;
-
                         if (row.getLabelTestMethod().contains("Evidence")) {
-
                             tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTME(), row.getLabelTestMethod().trim(), new ArrayList<>(), row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
-                        } else {
 
+                        } else {
                             tn = new AssessmentTypeTestNode(k, row.getTES(), row.getLabelTest().trim(), row.getDescTest().trim(), row.getLodTME(), row.getLabelTestMethod().trim(), null, row.getTestQuestion(), TestParamsTransformer.transformTestParams(row.getTestParams()), row.getToolTip());
                         }
 
@@ -237,7 +252,10 @@ public class TemplateService {
             }
         }
 
-        template.principles = new ArrayList<>(priMap.values());
+        template.principles = priMap.values().stream()
+                .map(node -> (AssessmentTypePriNode) node)
+                .sorted(Comparator.comparing(AssessmentTypePriNode::getPrincipleCriterionCreatedOn).reversed())
+                .collect(Collectors.toList());
         template.actor = new RegistryTemplateActorDto(actor.getId(), actor.getLabelActor());
         template.motivation = new RegistryTemplateMotivationDto(motivation.getId(), motivation.getLabel());
         template.automatedGroupTest = motivationActorJunction.getAutomatedGroupTest();
