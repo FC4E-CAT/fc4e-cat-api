@@ -548,4 +548,10 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
         return pageable;
     }
 
+    public boolean existsByMotivationId(String motivationId) {
+        return find("motivation.id = ?1", motivationId)
+                .firstResultOptional()
+                .isPresent();
+    }
+
 }

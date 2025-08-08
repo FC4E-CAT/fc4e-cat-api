@@ -91,6 +91,20 @@ public class RelationsService {
         }
     }
 
+    @Transactional
+    public void deleteMotivationAndCleanup(String motivationId) {
+        try {
+            entityManager
+                    .createNativeQuery("CALL DeleteMotivationAndCleanup(:motivationId)")
+                    .setParameter("motivationId", motivationId)
+                    .executeUpdate();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLException) {
+                throw new InternalServerErrorException(e.getCause().getMessage(), 500);
+            }
+        }
+    }
+
     @Setter
     @Getter
     public static class RelationsResponse {
