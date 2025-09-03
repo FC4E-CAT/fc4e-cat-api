@@ -3,6 +3,7 @@ package org.grnet.cat.services.zenodo;
 import io.quarkus.hibernate.validator.runtime.interceptor.MethodValidated;
 import io.quarkus.logging.Log;
 import io.quarkus.security.ForbiddenException;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,7 @@ import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.MailerService;
+import org.grnet.cat.services.SettingService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
 
@@ -58,7 +60,7 @@ public class ZenodoService {
 
 
     @ConfigProperty(name = "zenodo.api.key")
-    String API_KEY;
+    Optional<String> API_KEY;
 
 
     @Inject
@@ -71,16 +73,29 @@ public class ZenodoService {
 
     @Inject
     ZenodoAssessmentInfoRepository zenodoAssessmentInfoRepository;
+
+    @Inject
+    SettingService settingService;
     private final ExecutorService executorService = Executors.newFixedThreadPool(2); // Adjust as needed
 
 
     public String getAccessToken() {
-        return "Bearer " + API_KEY;
+        return "Bearer " + API_KEY.orElseThrow(() ->
+                new IllegalStateException("Zenodo API key is missing.")
+        );
     }
 
     @Inject
     MailerService mailerService;
 
+
+    @PostConstruct
+    void init() {
+        API_KEY = Optional.ofNullable(settingService
+                .getSettingValueOrDefault("zenodo.api.key", () -> API_KEY.orElse(null))
+                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured.")));
+
+    }
 
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
