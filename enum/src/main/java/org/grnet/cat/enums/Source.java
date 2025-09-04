@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public enum Source {
 
-    ROR("ror", "ROR", "https://api.ror.org/v1/organizations", true) {
+    ROR("ror", "ROR", "https://api.ror.org/v2/organizations", true) {
         public RorSearchInfo execute(String query, int page) {
             Response resp = connectHttpClient(url + "?query=" + query + "&page=" + page, query);
             try {
@@ -209,7 +209,7 @@ public enum Source {
 
     private String[] returnOrgInfo(JsonObject jRoot) {
 
-        if (jRoot == null || !jRoot.has("id") || !jRoot.has("name")) {
+        if (jRoot == null || !jRoot.has("id") || !jRoot.has("names")) {
             throw new EntityNotFoundException("Missing expected fields in the organisation data.");
         }
 
@@ -219,25 +219,73 @@ public enum Source {
         }
         id = id.replaceAll("https://ror.org/", "");
 
-        var name = jRoot.get("name").getAsString();
+
+        // Extract name from names[0].value
+        String name = null;
+        var namesArray = jRoot.getAsJsonArray("names");
+        if (namesArray != null && !namesArray.isEmpty()) {
+            for (JsonElement nameElement : namesArray) {
+                JsonObject nameObj = nameElement.getAsJsonObject();
+                if (nameObj.has("types")) {
+                    JsonArray types = nameObj.getAsJsonArray("types");
+                    for (JsonElement type : types) {
+                        if ("ror_display".equalsIgnoreCase(type.getAsString()) && nameObj.has("value")) {
+                            name = nameObj.get("value").getAsString();
+                            break;
+                        }
+                    }
+                }
+                if (name != null) break;
+            }
+        }
+
         if (name == null || name.isEmpty()) {
             throw new EntityNotFoundException("Organisation name is missing or empty.");
         }
 
+        // Extract website from links[].value where type is homepage (fallback to first)
         String website = null;
-        if (jRoot.has("links") && jRoot.getAsJsonArray("links").size() > 0) {
-            website = jRoot.getAsJsonArray("links").get(0).getAsString();
-        } else if (jRoot.has("website")) {
-            website = jRoot.get("website").getAsString();
+        if (jRoot.has("links")) {
+            JsonArray linksArray = jRoot.getAsJsonArray("links");
+            for (JsonElement linkEl : linksArray) {
+                JsonObject linkObj = linkEl.getAsJsonObject();
+                if (linkObj.has("type") && linkObj.get("type").getAsString().equals("homepage")) {
+                    website = linkObj.get("value").getAsString();
+                    break;
+                }
+            }
+            if (website == null && !linksArray.isEmpty()) {
+                JsonObject firstLink = linksArray.get(0).getAsJsonObject();
+                if (firstLink.has("value")) {
+                    website = firstLink.get("value").getAsString();
+                }
+            }
         }
 
+        // Extract acronym (optional)
         String acronym = null;
-        if (jRoot.has("acronyms") && jRoot.getAsJsonArray("acronyms").size() > 0) {
-            JsonArray acronyms = jRoot.getAsJsonArray("acronyms");
-            acronym = acronyms.get(0).getAsString();
-        } else if (jRoot.has("abbreviation")) {
-            acronym = jRoot.get("abbreviation").getAsString();
+        if (!namesArray.isEmpty()) {
+            for (JsonElement nameElement : namesArray) {
+                JsonObject nameObj = nameElement.getAsJsonObject();
+
+                if (nameObj.has("types")) {
+                    JsonArray types = nameObj.getAsJsonArray("types");
+                    for (JsonElement type : types) {
+                        if ("acronym".equalsIgnoreCase(type.getAsString())) {
+                            if (nameObj.has("value")) {
+                                acronym = nameObj.get("value").getAsString();
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (acronym != null) {
+                    break;
+                }
+            }
         }
+
 
         return new String[]{id, name, website, acronym};
     }
