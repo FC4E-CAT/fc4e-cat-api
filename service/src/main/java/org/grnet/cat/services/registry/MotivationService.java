@@ -3,6 +3,7 @@ package org.grnet.cat.services.registry;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
@@ -22,6 +23,7 @@ import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.MetricTestNode;
+import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
@@ -32,6 +34,7 @@ import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.utils.TestParamsTransformer;
@@ -56,6 +59,9 @@ public class MotivationService {
 
     @Inject
     MotivationRepository motivationRepository;
+
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
 
     @Inject
     MotivationTypeRepository motivationTypeRepository;
@@ -353,8 +359,16 @@ public class MotivationService {
     }
 
 
+    @Transactional
+    public String deleteMotivation(String motivationId) {
 
+        if (motivationAssessmentRepository.existsByMotivationId(motivationId)) {
+            throw new ForbiddenException("No action permitted, motivation is used in an existing assessment.");
+        }
 
+        relationsService.deleteMotivationAndCleanup(motivationId);
+        return "Motivation " + motivationId + " and all unused elements were deleted successfully.";
+    }
 
 
     /**
