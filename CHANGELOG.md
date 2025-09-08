@@ -69,6 +69,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#535](https://github.com/FC4E-CAT/fc4e-cat-api/pull/535) CAT-888 Update view for Tests (friendly label Testmethod)
 - [#536](https://github.com/FC4E-CAT/fc4e-cat-api/pull/536) CAT-981 Change num_params of Binary-Evidence Testmethod from 2 to 1
 - [#537](https://github.com/FC4E-CAT/fc4e-cat-api/pull/537) CAT-982: Minor Fixes for Assessment Build
+- [#542](https://github.com/FC4E-CAT/fc4e-cat-api/pull/542) CAT-1005 Updating zenodo key on the fly in settings is not retrieved in service
 
 
 ## 2.0.0 - 2025-03-31

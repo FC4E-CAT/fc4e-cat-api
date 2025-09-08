@@ -80,6 +80,10 @@ public class ZenodoService {
 
 
     public String getAccessToken() {
+        API_KEY = Optional.ofNullable(settingService
+                .getSettingValueOrDefault("zenodo.api.key", () -> API_KEY.orElse(null))
+                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured.")));
+
         return "Bearer " + API_KEY.orElseThrow(() ->
                 new IllegalStateException("Zenodo API key is missing.")
         );
@@ -91,10 +95,7 @@ public class ZenodoService {
 
     @PostConstruct
     void init() {
-        API_KEY = Optional.ofNullable(settingService
-                .getSettingValueOrDefault("zenodo.api.key", () -> API_KEY.orElse(null))
-                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured.")));
-
+       getAccessToken();
     }
 
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
@@ -343,6 +344,7 @@ public class ZenodoService {
         final AtomicReference<String> depositIdRef = new AtomicReference<>(null);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
         String accessToken = getAccessToken();
+        System.out.println("*** The access token is : "+accessToken);
         return CompletableFuture
                 .supplyAsync(() -> {
                     // Step 1: Preparation of assessment for Zenodo
