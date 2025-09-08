@@ -23,6 +23,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 
 @QuarkusTest
@@ -231,7 +232,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void updateValidationRequestStatusByAdmin() {
-        doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any());
+        doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any(), eq(Boolean.TRUE));
 
         var request = createValidationRequest("Manager Alice", "ROR", "Keimyung University", "https://ror.org/00tjv0s33", "pid_graph:0E00C332");
         var createdValidation = performValidationRequest(request, aliceToken);
@@ -258,7 +259,7 @@ public class ValidationsEndpointTest extends KeycloakTest {
     @Test
     @Execution(ExecutionMode.CONCURRENT)
     public void updateValidationRequestStatusToRejectedByAdmin() {
-        doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any());
+        doNothing().when(keycloakAdminRoleService).assignRolesToUser(any(), any(), eq(Boolean.TRUE));
 
         var request = createValidationRequest("Manager", "ROR", "Keimyung University", "https://ror.org/00tjv0s33", "pid_graph:1A718108");
         var createdValidation = performValidationRequest(request, aliceToken);
