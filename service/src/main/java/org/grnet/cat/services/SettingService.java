@@ -7,6 +7,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.setting.SettingResponseDto;
 import org.grnet.cat.dtos.setting.SettingUpdateDto;
+import org.grnet.cat.entities.Setting;
 import org.grnet.cat.mappers.SettingMapper;
 import org.grnet.cat.repositories.SettingRepository;
 
@@ -34,10 +35,10 @@ public class SettingService {
 
 
     @Transactional
-    public SettingResponseDto updateSetting(String key, SettingUpdateDto request, String userId) {
+    public SettingResponseDto updateSetting(String id, SettingUpdateDto request, String userId) {
 
-        var setting = settingRepository.findByIdOptional(key)
-                .orElseThrow(() -> new NotFoundException("Setting with key " + key + " not found."));
+        var setting = settingRepository.findByIdOptional(id)
+                .orElseThrow(() -> new NotFoundException("Setting with key " + id + " not found."));
 
         SettingMapper.INSTANCE.updateSettingFromDto(request, setting);
 
@@ -63,5 +64,12 @@ public class SettingService {
         }
 
         return Optional.ofNullable(defaultSupplier.get());
+    }
+
+    public boolean isEnabled(String key) {
+        return settingRepository.find("key", key)
+                .firstResultOptional()
+                .map(Setting::isEnabled)
+                .orElse(false);
     }
 }

@@ -1157,8 +1157,8 @@ public class AdminEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateSetting(
-            @PathParam("id") String key, SettingUpdateDto request) {
-        var updated = settingService.updateSetting(key, request, utility.getUserUniqueIdentifier() );
+            @PathParam("id") String id, SettingUpdateDto request) {
+        var updated = settingService.updateSetting(id, request, utility.getUserUniqueIdentifier() );
         return Response.ok(updated).build();
     }
 
