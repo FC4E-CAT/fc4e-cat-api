@@ -37,6 +37,8 @@ import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.setting.SettingResponseDto;
+import org.grnet.cat.dtos.setting.SettingUpdateDto;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.*;
@@ -105,6 +107,11 @@ public class AdminEndpoint {
     @Inject
     Utility utility;
 
+    /**
+     * Injection point for the Setting service
+     */
+    @Inject
+    SettingService settingService;
 
     @Tag(name = "Admin")
     @Operation(
@@ -1069,6 +1076,90 @@ public class AdminEndpoint {
                                      String depositId) {
         var response = zenodoService.getAdminDeposit(depositId);
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "List all setting.",
+            description = "Allows an admin to retrieve all dynamic runtime setting."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "List of all setting.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = SettingResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/settings")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listAllSettings() {
+        var settings = settingService.getAllSettings();
+        return Response.ok(settings).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Update a setting.",
+            description = "Allows an admin to update the value, label, or enabled status of a specific setting."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Setting updated successfully.",
+            content = @Content(schema = @Schema(implementation = SettingResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User not authenticated.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Setting not found.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal server error.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @SecurityRequirement(name = "Authentication")
+    @PUT
+    @Path("/settings/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateSetting(
+            @PathParam("id") String key, SettingUpdateDto request) {
+        var updated = settingService.updateSetting(key, request, utility.getUserUniqueIdentifier() );
+        return Response.ok(updated).build();
     }
 
 }

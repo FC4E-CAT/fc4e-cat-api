@@ -48,6 +48,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#529](https://github.com/FC4E-CAT/fc4e-cat-api/pull/529) CAT-964: Create PUT Endpoint for Updating Metrics Inside Motivation
 - [#531](https://github.com/FC4E-CAT/fc4e-cat-api/pull/531) CAT-970 Create and Link Metric to Criterion When Assigned to Actor
 - [#538](https://github.com/FC4E-CAT/fc4e-cat-api/pull/538) Sort Principles and Criteria from Newest to Oldest in Assessment Type Template
+- [#540](https://github.com/FC4E-CAT/fc4e-cat-api/pull/540) CAT-1000: Create Settings Table and Override Zenodo Configuration
 -[#541](https://github.com/FC4E-CAT/fc4e-cat-api/pull/541) CAT-977: 2025-07-30 Default response to API requests is now version 2
 
 ### Fix
