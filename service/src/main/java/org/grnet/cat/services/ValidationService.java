@@ -54,7 +54,7 @@ public class ValidationService {
 
         switch (status) {
             case APPROVED: {
-                roleService.assignRolesToUser(userId, List.of("validated"));
+                roleService.assignRolesToUser(userId, List.of("validated"),Boolean.TRUE);
                 break;
             }
             default: {

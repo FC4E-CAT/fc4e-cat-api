@@ -35,7 +35,7 @@ public interface RoleRepository {
      * @param userId The unique identifier of the user to assign roles to.
      * @param roles  The roles to be assigned to the user.
      */
-    void assignRoles(String userId, List<String> roles);
+    void assignRoles(String userId, List<String> roles, boolean forceSignOut);
 
     /**
      * Removes roles from a user.
@@ -43,7 +43,7 @@ public interface RoleRepository {
      * @param userId The unique identifier of the user from whom the roles will be removed.
      * @param roles  The roles to be removed from the user.
      */
-    void removeRoles(String userId, List<String> roles);
+    void removeRoles(String userId, List<String> roles,boolean forceSignOut);
 
 
     /**

@@ -54,10 +54,10 @@ public class KeycloakAdminRoleService implements RoleService {
      * @param roles  List of role names to be assigned to the user.
      */
     @Override
-    public void assignRolesToUser(String userId, List<String> roles) {
+    public void assignRolesToUser(String userId, List<String> roles,boolean forceSignOut) {
 
         roleRepository.doRolesExist(roles);
-        roleRepository.assignRoles(userId, roles);
+        roleRepository.assignRoles(userId, roles,forceSignOut);
     }
 
 

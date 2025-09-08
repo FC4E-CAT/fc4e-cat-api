@@ -148,7 +148,7 @@ public class RolesEndpoint {
     @Registration
     public Response assignRolesToUser(@Valid @NotNull(message = "The request body is empty.") RoleAssignmentRequest request) {
 
-        roleService.assignRolesToUser(request.userId, request.roles);
+        roleService.assignRolesToUser(request.userId, request.roles, Boolean.TRUE);
 
         var response = new InformativeResponse();
         response.code = 200;
