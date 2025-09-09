@@ -1,10 +1,13 @@
 package org.grnet.cat.entities;
 
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import java.sql.Timestamp;
+import java.util.Map;
 
 @Entity
 @Table(name = "t_Setting")
@@ -16,14 +19,9 @@ public class Setting {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "setting_key")
-    private String key;
-
-    @Column(name = "setting_value")
-    private String value;
-
-    @Column(name = "setting_label")
-    private String label;
+    @Type(JsonType.class)
+    @Column(name = "setting_data", columnDefinition = "jsonb")
+    public Map<String, Object> data;
 
     @Column(name = "setting_enable")
     private boolean enabled;

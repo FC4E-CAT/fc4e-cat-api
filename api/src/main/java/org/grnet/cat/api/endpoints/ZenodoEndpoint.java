@@ -20,13 +20,13 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
+import org.grnet.cat.services.SettingService;
 import org.grnet.cat.services.zenodo.ZenodoService;
 import org.grnet.cat.utils.Utility;
 
 import java.io.IOException;
 
 @Path("/v2/zenodo")
-@IfBuildProperty(name = "zenodo.enabled", stringValue = "true") // Conditional exposure in Swagger
 public class ZenodoEndpoint {
 
     @ConfigProperty(name = "api.server.url")
@@ -34,6 +34,9 @@ public class ZenodoEndpoint {
 
     @Inject
     ZenodoService zenodoService;
+
+    @Inject
+    SettingService settingService;
 
     @Inject
     Utility utility;
@@ -95,9 +98,14 @@ public class ZenodoEndpoint {
 
                                             byte[] pdfFile) {
 
+        if (!zenodoService.isZenodoFeatureEnabled()) {
+            throw new ForbiddenException("Zenodo feature is disabled.");
+        }
+
         if (!isValidPdf(pdfFile)) {
             throw new BadRequestException("Invalid PDF file format.");
         }
+
         var message = zenodoService.publishAssessment(assessmentId, pdfFile, utility.getUserUniqueIdentifier());
         var response = new InformativeResponse();
         response.code = 202;
@@ -158,6 +166,10 @@ public class ZenodoEndpoint {
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                         @Valid @NotFoundEntity(repository = MotivationAssessmentRepository.class, message = "There is no Assessment with the following id:") String assessmentId) throws IOException, InterruptedException {
 
+        if (!zenodoService.isZenodoFeatureEnabled()) {
+            throw new ForbiddenException("Zenodo feature is disabled.");
+        }
+
         var response = zenodoService.getAssessment(assessmentId,utility);
         return Response.ok().entity(response).build();
     }
@@ -214,6 +226,10 @@ public class ZenodoEndpoint {
             example = "13467",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id")
                                      String depositId) {
+        if (!zenodoService.isZenodoFeatureEnabled()) {
+            throw new ForbiddenException("Zenodo feature is disabled.");
+        }
+
         var response = zenodoService.getDeposit(depositId, utility);
         return Response.ok().entity(response).build();
     }
@@ -269,6 +285,10 @@ public class ZenodoEndpoint {
             required = true,
             example = "183367",
             schema = @Schema(type = SchemaType.STRING)) @PathParam("id") String depositId) {
+
+        if (!zenodoService.isZenodoFeatureEnabled()) {
+            throw new ForbiddenException("Zenodo feature is disabled.");
+        }
 
         zenodoService.publishDepositToZenodo(depositId, utility.getUserUniqueIdentifier());
 
