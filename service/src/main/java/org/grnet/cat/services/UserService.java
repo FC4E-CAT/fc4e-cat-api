@@ -4,9 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.UriInfo;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -29,7 +27,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -85,11 +82,11 @@ public class UserService {
     @ConfigProperty(name = "api.cat.validations.approve.auto")
     boolean autoApprove;
 
-    @ConfigProperty(name = "api.cat.user.info.update.from.token")
-    boolean userInfoUpdateFromToken;
-
     @Inject
     Utility utility;
+
+    @Inject
+    SettingService settingService;
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
 
@@ -197,7 +194,7 @@ public class UserService {
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
         identified.setBanned(Boolean.FALSE);
 
-        if(userInfoUpdateFromToken){
+        if (settingService.isEnabled("api.cat.user.info.update.from.token")) {
 
             var map = roleRepository.getUserInformation(id);
 
