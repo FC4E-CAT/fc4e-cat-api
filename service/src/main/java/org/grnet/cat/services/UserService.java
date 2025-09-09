@@ -166,7 +166,7 @@ public class UserService {
      */
     public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId) {
 
-       Optional<User> optionalUser=userRepository.fetchUserByEmail(email);
+        Optional<User> optionalUser=userRepository.fetchUserByEmail(email);
         if (optionalUser.isPresent() && !optionalUser.get().getId().equals(id)){
             throw new ConflictException("There is a User with email : " + email);
         }
@@ -186,7 +186,7 @@ public class UserService {
 
         var optionalUser = userRepository.searchByIdOptional(id);
 
-        roleRepository.assignRoles(id, List.of("identified"));
+        roleRepository.assignRoles(id, List.of("identified"), Boolean.FALSE);
 
         optionalUser.ifPresent(s -> {
             throw new ConflictException("User already exists in the database.");
@@ -230,7 +230,7 @@ public class UserService {
 
         if (autoApprove) {
             status = ValidationStatus.APPROVED;
-            roleService.assignRolesToUser(id, List.of("validated"));
+            roleService.assignRolesToUser(id, List.of("validated"),Boolean.TRUE);
             validation.setValidatedBy(id);
             validation.setValidatedOn(Timestamp.from(Instant.now()));
         }
@@ -288,7 +288,7 @@ public class UserService {
         var userToBeBanned = userRepository.findById(userId);
         userToBeBanned.setBanned(Boolean.TRUE);
         historyRepository.persist(history);
-        roleRepository.assignRoles(userId, List.of("deny_access"));
+        roleRepository.assignRoles(userId, List.of("deny_access"), Boolean.TRUE);
     }
 
     /**
@@ -309,7 +309,7 @@ public class UserService {
         var userToBeBanned = userRepository.findById(userId);
         userToBeBanned.setBanned(Boolean.FALSE);
         historyRepository.persist(history);
-        roleRepository.removeRoles(userId, List.of("deny_access"));
+        roleRepository.removeRoles(userId, List.of("deny_access"),Boolean.TRUE);
     }
 
     public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibility( int page, int size, String userID, UriInfo uriInfo) {

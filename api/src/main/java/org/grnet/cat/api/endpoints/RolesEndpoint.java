@@ -90,11 +90,11 @@ public class RolesEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response rolesByPage(@Parameter(name = "page", in = QUERY,
-            description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
-                                 @Parameter(name = "size", in = QUERY,
-                                         description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
-                                 @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
-                                 @Context UriInfo uriInfo) {
+                                        description = "Indicates the page number. Page number must be >= 1.") @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+                                @Parameter(name = "size", in = QUERY,
+                                        description = "The page size.") @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 100.")
+                                @Max(value = 100, message = "Page size must be between 1 and 100.") @QueryParam("size") int size,
+                                @Context UriInfo uriInfo) {
 
         var roles = roleService.getRolesByPage(page-1, size, uriInfo);
 
@@ -148,7 +148,7 @@ public class RolesEndpoint {
     @Registration
     public Response assignRolesToUser(@Valid @NotNull(message = "The request body is empty.") RoleAssignmentRequest request) {
 
-        roleService.assignRolesToUser(request.userId, request.roles);
+        roleService.assignRolesToUser(request.userId, request.roles, Boolean.TRUE);
 
         var response = new InformativeResponse();
         response.code = 200;
