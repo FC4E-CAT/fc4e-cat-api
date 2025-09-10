@@ -51,6 +51,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#540](https://github.com/FC4E-CAT/fc4e-cat-api/pull/540) CAT-1000: Create Settings Table and Override Zenodo Configuration
 - [#541](https://github.com/FC4E-CAT/fc4e-cat-api/pull/541) CAT-977: 2025-07-30 Default response to API requests is now version 2
 - [#545](https://github.com/FC4E-CAT/fc4e-cat-api/pull/545) CAT-1002 Settings / Enable disable AAI autocomplete values
+- [#546](https://github.com/FC4E-CAT/fc4e-cat-api/pull/546) CAT-1007: Avoid unecessary role checks while approving validation
 
 ### Fix
 - [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters
