@@ -85,10 +85,12 @@ public class KeycloakAdminRoleService implements RoleService {
         var total_validations = StatisticsEnum.Validation.TOTAL.getStatistics(validationRepository);
         var accepted_count = StatisticsEnum.Validation.ACCEPTED.getStatistics(validationRepository);
         var pending_count = StatisticsEnum.Validation.PENDING.getStatistics(validationRepository);
+        var rejected_count = StatisticsEnum.Validation.REJECTED.getStatistics(validationRepository);
         var validationResponse= new ValidationStatisticsResponse();
         validationResponse.totalValidationNum=total_validations;
         validationResponse.acceptedValidationNum=accepted_count;
         validationResponse.pendingValidationNum=pending_count;
+        validationResponse.rejectedValidationNum=rejected_count;
 
         //assessment statistics
         var total_assessments = StatisticsEnum.Assessment.TOTAL.getStatistics(assessmentRepository);
