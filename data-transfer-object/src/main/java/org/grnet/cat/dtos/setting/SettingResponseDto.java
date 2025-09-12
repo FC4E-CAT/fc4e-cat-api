@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import java.util.Map;
+
 @Schema(name = "SettingResponse", description = "Represents a configuration setting retrieved from the application.")
 public class SettingResponseDto {
 
@@ -17,30 +19,22 @@ public class SettingResponseDto {
     public String id;
 
     @Schema(
-            type = SchemaType.STRING,
-            description = "The key identifier of the setting.",
-            example = "zenodo.api.key"
+            type = SchemaType.OBJECT,
+            description = "Structured data of the setting.",
+            example = "{\n" +
+                    "  \"label\": \"Zenodo\",\n" +
+                    "  \"description\": \"Zenodo access token used for publishing assessments.\",\n" +
+                    "  \"config\": {\n" +
+                    "    \"zenodo.api.key\": \"abc123\"\n" +
+                    "  },\n" +
+                    "  \"auth\": {\n" +
+                    "    \"mail\": \"foo@example.com\",\n" +
+                    "    \"password\": \"mypassword\"\n" +
+                    "  }\n" +
+                    "}"
     )
-    @JsonProperty("key")
-    public String key;
-
-    @Schema(
-            type = SchemaType.STRING,
-            description = "The current value of the key.",
-            example = "key_value"
-    )
-    @JsonProperty("value")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String value;
-
-    @Schema(
-            type = SchemaType.STRING,
-            description = "A human-readable label for the setting.",
-            example = "Zenodo"
-    )
-    @JsonProperty("label")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String label;
+    @JsonProperty("data")
+    public Map<String, Object> data;
 
     @Schema(
             type = SchemaType.BOOLEAN,

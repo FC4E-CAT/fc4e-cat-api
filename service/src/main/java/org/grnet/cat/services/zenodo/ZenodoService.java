@@ -17,16 +17,15 @@ import org.grnet.cat.constraints.ValidZenodoAction;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
-import org.grnet.cat.entities.MotivationAssessment;
-import org.grnet.cat.entities.User;
-import org.grnet.cat.entities.ZenodoAssessmentInfo;
-import org.grnet.cat.entities.ZenodoAssessmentInfoId;
+import org.grnet.cat.dtos.setting.SettingResponseDto;
+import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.ZenodoState;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.ZenodoAssessmentInfoMapper;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
+import org.grnet.cat.repositories.SettingRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.services.KeycloakAdminService;
@@ -58,11 +57,6 @@ public class ZenodoService {
     @RestClient
     ZenodoClient zenodoClient;
 
-
-    @ConfigProperty(name = "zenodo.api.key")
-    Optional<String> API_KEY;
-
-
     @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
 
@@ -76,17 +70,20 @@ public class ZenodoService {
 
     @Inject
     SettingService settingService;
+
+    @Inject
+    SettingRepository settingRepository;
     private final ExecutorService executorService = Executors.newFixedThreadPool(2); // Adjust as needed
 
 
     public String getAccessToken() {
-        API_KEY = Optional.ofNullable(settingService
-                .getSettingValueOrDefault("zenodo.api.key", () -> API_KEY.orElse(null))
-                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured.")));
+        String token = settingService.getSettingConfig("1", "zenodo.api.key")
+                // Look for this key anywhere in the JSON
+                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured."));
 
-        return "Bearer " + API_KEY.orElseThrow(() ->
-                new IllegalStateException("Zenodo API key is missing.")
-        );
+        System.out.println("!!!!!!!!!!! Found key: zenodo.api.key => " + token);
+
+        return "Bearer " + token;
     }
 
     @Inject
@@ -628,4 +625,19 @@ public class ZenodoService {
         String[] parts = url.split("/");
         return parts.length > 0 ? parts[parts.length - 1] : null;
     }
+
+
+    @SuppressWarnings("unchecked") public boolean isZenodoFeatureEnabled() {
+        return settingRepository.findByIdOptional("1")
+                .filter(Setting::isEnabled)
+                .map(setting -> {
+                    var config = (Map<String, Object>) setting.getData().get("config");
+                    if (config != null && config.containsKey("zenodo.enabled")) {
+                        return Boolean.TRUE.equals(config.get("zenodo.enabled"));
+                    }
+                    return false;
+                })
+                .orElse(false);
+    }
+
 }

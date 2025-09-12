@@ -1067,7 +1067,7 @@ public class AdminEndpoint {
     @Path("/zenodo/deposit/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-     @Registration
+    @Registration
     public Response getZenodoDeposit(@Parameter(
             description = "The ID of the deposit existing in zenodo.",
             required = true,
@@ -1108,6 +1108,7 @@ public class AdminEndpoint {
                     type = SchemaType.OBJECT,
                     implementation = InformativeResponse.class)))
     @SecurityRequirement(name = "Authentication")
+    @Registration
     @GET
     @Path("/settings")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1115,6 +1116,56 @@ public class AdminEndpoint {
         var settings = settingService.getAllSettings();
         return Response.ok(settings).build();
     }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a specific setting.",
+            description = "Allows an admin to retrieve the full configuration of a specific setting by its ID."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "The requested setting was found and returned successfully.",
+            content = @Content(schema = @Schema(implementation = SettingResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Setting not found.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal server error.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @SecurityRequirement(name = "Authentication")
+    @Registration
+    @GET
+    @Path("/settings/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSettingById(
+            @Parameter(
+                    description = "The ID of the setting to retrieve.",
+                    required = true,
+                    example = "1",
+                    schema = @Schema(type = SchemaType.STRING)
+            )
+            @PathParam("id") @Valid @NotFoundEntity(repository = SettingRepository.class, message = "There is no Setting with the following id:") String id
+    ) {
+        var setting = settingService.getSettingById(id);
+        return Response.ok().entity(setting).build();
+    }
+
+
 
     @Tag(name = "Admin")
     @Operation(
@@ -1152,6 +1203,7 @@ public class AdminEndpoint {
             content = @Content(schema = @Schema(implementation = InformativeResponse.class))
     )
     @SecurityRequirement(name = "Authentication")
+    @Registration
     @PUT
     @Path("/settings/{id}")
     @Consumes(MediaType.APPLICATION_JSON)

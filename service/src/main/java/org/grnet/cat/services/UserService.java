@@ -194,7 +194,7 @@ public class UserService {
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
         identified.setBanned(Boolean.FALSE);
 
-        if (settingService.isEnabled("api.cat.user.info.update.from.token")) {
+        if (settingService.isEnabled("2")) {
 
             var map = roleRepository.getUserInformation(id);
 
