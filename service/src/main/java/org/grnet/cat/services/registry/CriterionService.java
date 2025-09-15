@@ -1,23 +1,24 @@
 package org.grnet.cat.services.registry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
-import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
-import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
-import org.grnet.cat.dtos.registry.criterion.CriterionUpdate;
+import org.grnet.cat.dtos.registry.criterion.*;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.criterion.DetailedCriterionDto;
-import org.grnet.cat.dtos.registry.criterion.PrincipleCriterionResponse;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.Node;
 import org.grnet.cat.dtos.registry.template.TestNode;
+import org.grnet.cat.entities.Page;
+import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.utils.TestParamsTransformer;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
@@ -49,6 +50,12 @@ public class CriterionService {
     PrincipleCriterionRepository principleCriterionRepository;
     @Inject
     CriterionActorRepository criterionActorRepository;
+
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     private static final Logger LOG = Logger.getLogger(CriterionService.class);
 
@@ -317,6 +324,93 @@ public class CriterionService {
         criterionResponse.setMetrics(new ArrayList<>(metricNodeMap.values()));
 
         return criterionResponse;
+    }
+
+
+    @Transactional
+    public PageResource<CriteriaFailureStatDto> getMostFailedCriteria(int page, int size, UriInfo uriInfo) {
+        var assessments = motivationAssessmentRepository.listAll();
+
+        Map<String, Integer> criterionUsageCountMap = new HashMap<>();
+        Map<String, CriteriaFailureStatDto> failCountMap = new HashMap<>();
+
+        assessments.forEach(assessment -> {
+            if (StringUtils.isBlank(assessment.getAssessmentDoc())) return;
+
+            try {
+                var doc = objectMapper.readTree(assessment.getAssessmentDoc());
+                var principles = doc.get("principles");
+                if (principles == null || !principles.isArray()) return;
+
+                principles.forEach(principle -> {
+                    var criteria = principle.get("criteria");
+                    if (criteria == null || !criteria.isArray()) return;
+
+                    criteria.forEach(criterion -> {
+                        var id = criterion.path("id").asText();
+                        var name = criterion.path("name").asText();
+                        var label = criterion.path("description").asText();
+
+                        criterionUsageCountMap.merge(id, 1, Integer::sum);
+
+                        var metric = criterion.get("metric");
+                        if (metric == null) return;
+
+                        int result = metric.path("result").asInt(1); // default to 1 (pass)
+
+                        if (result == 0) {
+                            failCountMap.compute(id, (key, dto) -> {
+                                if (dto == null) {
+                                    var failed = new CriteriaFailureStatDto();
+                                    failed.id = id;
+                                    failed.cri = name;
+                                    failed.label = label;
+                                    failed.failCount = 1;
+                                    return failed;
+                                } else {
+                                    dto.failCount++;
+                                    return dto;
+                                }
+                            });
+                        }
+                    });
+                });
+
+            } catch (Exception e) {
+                throw new BadRequestException("Failed to parse assessment JSON for assessment " + assessment.getId());
+            }
+        });
+
+        // Calculate failure percentage per criterion
+        failCountMap.values().forEach(dto -> {
+            int totalUsage = criterionUsageCountMap.getOrDefault(dto.id, 0);
+            dto.countAssessments = totalUsage;
+
+            if (totalUsage > 0) {
+                dto.failurePercentage = Math.round((dto.failCount * 100.0 / totalUsage) * 100.0) / 100.0;
+            } else {
+                dto.failurePercentage = 0.0;
+            }
+        });
+
+        // Sort and paginate
+        var sorted = failCountMap.values().stream()
+                .sorted(Comparator.comparingInt(dto -> -dto.failCount))
+                .collect(Collectors.toList());
+
+        int total = sorted.size();
+        int from = Math.min((page - 1) * size, total);
+        int to = Math.min(from + size, total);
+        List<CriteriaFailureStatDto> pageContent = sorted.subList(from, to);
+
+        PageQueryImpl<CriteriaFailureStatDto> pageQuery = new PageQueryImpl<>();
+        pageQuery.list = pageContent;
+        pageQuery.index = page;
+        pageQuery.size = size;
+        pageQuery.count = total;
+        pageQuery.page = Page.of(page, size);
+
+        return new PageResource<>(pageQuery, pageContent, uriInfo);
     }
 
 }

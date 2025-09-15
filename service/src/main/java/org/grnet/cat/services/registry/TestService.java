@@ -1,5 +1,6 @@
 package org.grnet.cat.services.registry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,19 +16,21 @@ import org.grnet.cat.entities.registry.TestMethod;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.TestMapper;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.registry.MetricTestRepository;
 import org.grnet.cat.repositories.registry.TestMethodRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
 
 import org.jboss.logging.Logger;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TestService {
 
+    @Inject
+    ObjectMapper objectMapper;
     @Inject
     TestRepository testRepository;
     @Inject
@@ -35,6 +38,9 @@ public class TestService {
 
     @Inject
     TestMethodRepository testMethodRepository;
+
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
 
     private static final Logger LOG = Logger.getLogger(TestService.class);
 
@@ -102,7 +108,6 @@ public class TestService {
      * @param id      The unique ID of the Test to update.
      * @param userId  The user performing the update.
      * @param request The Test update data.
-     * @return The updated Test DTO.
      */
     @Transactional
     public void updateTest(String id, String userId, TestUpdateDto request) {
