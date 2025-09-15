@@ -37,6 +37,12 @@ jobs:
           format: 'sarif'  
           severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
           output: trivy-results.sarif
+        continue-on-error: true  # still upload SARIF even if vulnerabilities exist
+
+      - name: Debug SARIF
+        run: |
+            head -n 20 trivy-results.sarif
+            jq .version trivy-results.sarif   
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
@@ -46,8 +52,4 @@ jobs:
           # Used to differentiate multiple results for one commit
           category: cat-api-results
 
-      - name: Debug SARIF
-        run: |
-            head -n 20 trivy-results.sarif
-            jq .version trivy-results.sarif   
           
