@@ -46,6 +46,7 @@ jobs:
           format: table
           severity: CRITICAL,HIGH
           
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -53,3 +54,9 @@ jobs:
           # Optional category for the results
           # Used to differentiate multiple results for one commit
           category: cat-api-results
+
+      - name: Debug SARIF
+        run: |
+            head -n 20 trivy-results.sarif
+            jq .version trivy-results.sarif   
+          
