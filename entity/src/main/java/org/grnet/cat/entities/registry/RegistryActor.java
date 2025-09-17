@@ -100,4 +100,8 @@ public class RegistryActor extends Registry {
     public void setLodMTV(String lodMTV) {
         this.lodMTV = lodMTV;
     }
+
+    public String getAct() {
+        return act;
+    }
 }

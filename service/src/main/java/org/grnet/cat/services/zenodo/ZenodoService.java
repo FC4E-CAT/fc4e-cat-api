@@ -11,13 +11,11 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.constraints.ValidZenodoAction;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
-import org.grnet.cat.dtos.setting.SettingResponseDto;
 import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
@@ -80,8 +78,6 @@ public class ZenodoService {
         String token = settingService.getSettingConfig("1", "zenodo.api.key")
                 // Look for this key anywhere in the JSON
                 .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured."));
-
-        System.out.println("!!!!!!!!!!! Found key: zenodo.api.key => " + token);
 
         return "Bearer " + token;
     }

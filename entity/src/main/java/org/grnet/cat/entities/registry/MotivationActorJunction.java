@@ -102,4 +102,8 @@ public class MotivationActorJunction extends Registry{
     public MotivationActorId getId() {
         return id;
     }
+
+    public RegistryActor getActor() {
+        return actor;
+    }
 }

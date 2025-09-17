@@ -82,4 +82,12 @@ public class Validation {
 
     @Column(name = "rejection_reason")
     private String rejectionReason;
+
+    public String getOrganisationId() {
+        return organisationId;
+    }
+
+    public String getOrganisationName() {
+        return organisationName;
+    }
 }
