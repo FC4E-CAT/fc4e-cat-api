@@ -18,6 +18,7 @@ import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.ValidationMapper;
+import org.grnet.cat.repositories.RoleRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.validators.ValidationRequestValidator;
@@ -44,9 +45,9 @@ public class ValidationService {
     @Inject
     @Named("keycloak-service")
     RoleService roleService;
-
     @Inject
-    RegistryActorRepository registryActorRepository;
+    RoleRepository roleRepository;
+
 
     private static final Logger LOG = Logger.getLogger(ValidationService.class);
 
@@ -54,8 +55,14 @@ public class ValidationService {
 
         switch (status) {
             case APPROVED: {
-                if (validationRepository.countApprovedValidationsByUserId(userId)<2) { //if it is the first validation approved assign validated role. else there is no need to check for adding roles, validated will alredy exist
-                    roleService.assignRolesToUser(userId, List.of("validated"), Boolean.TRUE);
+                if (validationRepository.countApprovedValidationsByUserId(userId) < 2) { //if it is the first validation approved assign validated role. else there is no need to check for adding roles, validated will alredy exist
+                    boolean hasAdminRole = roleRepository.fetchUserRoles(userId).stream()
+                            .anyMatch(role -> "admin".equalsIgnoreCase(role.getName()));
+                    boolean signoutUser = Boolean.TRUE;
+                    if (hasAdminRole) {
+                        signoutUser = Boolean.FALSE;
+                    }
+                    roleService.assignRolesToUser(userId, List.of("validated"), signoutUser);
                 }
                 break;
             }
