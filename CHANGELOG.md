@@ -74,7 +74,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#537](https://github.com/FC4E-CAT/fc4e-cat-api/pull/537) CAT-982: Minor Fixes for Assessment Build
 - [#542](https://github.com/FC4E-CAT/fc4e-cat-api/pull/542) CAT-1005 Updating zenodo key on the fly in settings is not retrieved in service
 - [#544](https://github.com/FC4E-CAT/fc4e-cat-api/pull/544) CAT-1006:Admin actions should force signout user from CAT Service
-
+- [#552](https://github.com/FC4E-CAT/fc4e-cat-api/pull/552) CAT-1018 Prevent auto signout of admin when validated 
 
 ## 2.0.0 - 2025-03-31
 ---
