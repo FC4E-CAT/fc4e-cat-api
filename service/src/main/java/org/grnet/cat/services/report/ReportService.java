@@ -59,7 +59,6 @@ public class ReportService {
                 .map(m -> {
                     var opt = new MotivationPartialDto();
                     opt.id = m.getId();
-                    opt.label = m.getLabel(); // adjust if field names differ
                     return opt;
                 })
                 .collect(Collectors.toList());
@@ -77,28 +76,28 @@ public class ReportService {
      * @return a populated ReportResponseDto
      */
     @Transactional
-    public ReportResponseDto run(ReportRequestDto request, String userId) {
+    public ReportResponseDto run(Long id, ReportRequestDto request, String userId) {
 
-        var def = reportRepository.findDefinitionById(request.reportDefinitionId)
-                .map(ReportMapper.INSTANCE::entityToDto)
-                .orElseThrow(() -> new NotFoundException("Report definition not found: " + request.reportDefinitionId));
+        var def = reportRepository.findDefinitionById(id)
+                .map(ReportMapper.INSTANCE::entityToDto);
 
-        String motivationId = null;
-        String published = null;
+        // String motivationId = null;
+        // String published = null;
         if (request.filters != null) {
-            if (request.filters.motivation != null) {
-                motivationId = request.filters.motivation.id;
-            }
-            published = request.filters.publicationStatus;
+
+//            if (!request.filters.motivations.isEmpty()) {
+//                motivationId = request.filters.motivations;
+//            }
+            //  published = request.filters.publicationStatus;
         }
 
-        var raw = reportRepository.fetchReportData(motivationId, published, def.id);
+        var raw = reportRepository.fetchReportData(request.filters.motivations, request.filters.publicationStatus, id);
 
         var matrix = new LinkedHashMap<String, Map<String, String>>();
         var colSet = new LinkedHashSet<String>();
         buildMatrix(raw, matrix, colSet);
 
-        return buildResponse(def, request.filters, userId, matrix, colSet);
+        return buildResponse(def.get(), request.filters, userId, matrix, colSet);
     }
 
     /**
@@ -133,23 +132,23 @@ public class ReportService {
         var table = matrixToDto(matrix, colSet);
 
         var response = new ReportResponseDto();
-        response.name        = def.label;
+        response.name = def.label;
         response.description = def.description;
         response.rowsDimension = def.rowDimension;
         response.columnsDimension = def.columnDimension;
-        response.rows        = table.rows;
-        response.columns     = table.columns;
-        response.data        = table.data;
-        response.valueType       = def.valueType;
-        response.createdBy   = userId;
-        response.createdOn   = Instant.now().toString();
+        response.rows = table.rows;
+        response.columns = table.columns;
+        response.data = table.data;
+        response.valueType = def.valueType;
+        response.createdBy = userId;
+        response.createdOn = Instant.now().toString();
 
         if (filters != null) {
             var filterDto = new ReportFilterDto();
-            if (filters.motivation != null) {
-                filterDto.motivation = filters.motivation;
+            if (!filters.motivations.isEmpty()) {
+                filterDto.motivations = filters.motivations;
             }
-            if (filters.publicationStatus != null) {
+            if (!filters.publicationStatus.isEmpty()) {
                 filterDto.publicationStatus = filters.publicationStatus;
             }
             response.filters = filterDto;

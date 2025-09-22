@@ -4,25 +4,33 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.constraints.CheckMotivations;
+import org.grnet.cat.constraints.CheckPublicationStatus;
+import org.grnet.cat.repositories.registry.MotivationRepository;
+
+import java.util.List;
 
 public class ReportFilterDto {
 
     @Schema(
-            type = SchemaType.OBJECT,
-            implementation = MotivationPartialDto.class,
-            description = "List of available motivations that can be used as filters"
+            type = SchemaType.ARRAY,
+            implementation = String.class,
+            description = "List of motivation IDs that can be used as filters",
+            example = "[\"pid_graph:3E109BBA\"]"
     )
-    @JsonProperty("motivation")
+    @JsonProperty("motivations")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public MotivationPartialDto motivation;
+    @CheckMotivations(repository = MotivationRepository.class)
+    public List<String> motivations;
 
     @Schema(
-            type = SchemaType.STRING,
+            type = SchemaType.ARRAY,
             implementation = String.class,
             description = "Possible publication status values",
-            example = "all"
+            example = "[\"published\", \"unpublished\"]"
     )
     @JsonProperty("publication_status")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public String publicationStatus;
+    @CheckPublicationStatus
+    public List<String> publicationStatus;
 }

@@ -17,11 +17,11 @@ public class MotivationPartialDto {
     @JsonProperty("id")
     public String id;
 
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "Motivation label",
-            example = "EOSC PID Policy")
-    @JsonProperty("label")
-    public String label;
+//    @Schema(
+//            type = SchemaType.STRING,
+//            implementation = String.class,
+//            description = "Motivation label",
+//            example = "EOSC PID Policy")
+//    @JsonProperty("label")
+//    public String label;
 }

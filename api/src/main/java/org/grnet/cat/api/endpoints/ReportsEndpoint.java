@@ -19,11 +19,14 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.grnet.cat.api.filters.Registration;
+import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.report.ReportDefinitionDto;
 import org.grnet.cat.dtos.report.ReportFiltersListDto;
 import org.grnet.cat.dtos.report.ReportRequestDto;
 import org.grnet.cat.dtos.report.ReportResponseDto;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
+import org.grnet.cat.repositories.ReportRepository;
 import org.grnet.cat.services.report.ReportService;
 import org.grnet.cat.utils.Utility;
 
@@ -132,7 +135,7 @@ public class ReportsEndpoint {
                     required = true,
                     example = "1",
                     schema = @Schema(type = SchemaType.STRING))
-            @PathParam("id") String id) {
+            @PathParam("id") @NotFoundEntity(repository = ReportRepository.class, message = "There is no Report with the following id:") String id) {
 
         var response = reportService.getDefinitionById(id);
 
@@ -231,12 +234,19 @@ public class ReportsEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
-    public Response runReport(
+
+    @Path("/generate/{id}")
+    public Response generate(@Parameter(
+            description = "The ID of the report definition.",
+            required = true,
+            example = "1",
+            schema = @Schema(type = SchemaType.STRING))
+                                  @PathParam("id") @NotFoundEntity(repository = ReportRepository.class, message = "There is no Report with the following id:") Long id,
             @Valid
             @NotNull(message = "The request body is empty.")
             ReportRequestDto request) {
 
-        var response = reportService.run(request, utility.getUserUniqueIdentifier());
+        var response = reportService.run(id,request, utility.getUserUniqueIdentifier());
         return Response.ok().entity(response).build();
     }
 
