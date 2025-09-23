@@ -22,8 +22,19 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 ---
+## 3.0.0 - 2025-09-23
+---
 
 ### Added
+
+
+- [#480](https://github.com/FC4E-CAT/fc4e-cat-api/pull/480 CAT-1020 Add a new test called Auto-Check-String-Binary into database #480
+- [#481](https://github.com/FC4E-CAT/fc4e-cat-api/pull/481 CAT-1022 Adjust automated HTTPS test to handle updated response format
+- [#484](https://github.com/FC4E-CAT/fc4e-cat-api/pull/484 CAT-1025 Adjust SAML Metadata test to handle updated response format
+- [#486](https://github.com/FC4E-CAT/fc4e-cat-api/pull/486 CAT-1027 Introduce new test methods for AARC-G069
+- [#487](https://github.com/FC4E-CAT/fc4e-cat-api/pull/487 CAT-1029 Add endpoint to fetch all public assessments by a specific actor
+- [#526](https://github.com/FC4E-CAT/fc4e-cat-api/pull/526) CAT-1021 Add support for updating user information via access token
+- [#509](https://github.com/FC4E-CAT/fc4e-cat-api/pull/509) CAT-1024 Add all necessary tests for G056
 - [#477](https://github.com/FC4E-CAT/fc4e-cat-api/pull/477) CAT-861 Implement Automated Test AARC-G069 to Validate NACO Entitlements Claim.
 - [#476](https://github.com/FC4E-CAT/fc4e-cat-api/pull/476) CAT-860: Version Tests in Library
 - [#485](https://github.com/FC4E-CAT/fc4e-cat-api/pull/485) CAT-871 Version a Metric in Motivation and view metric versions on Library
@@ -55,6 +66,11 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#547](https://github.com/FC4E-CAT/fc4e-cat-api/pull/547) CAT-1008: Encrypt/Decrypt Sensitive Setting Values and Add Info Column 
 
 ### Fix
+- [#502](https://github.com/FC4E-CAT/fc4e-cat-api/pull/502) CAT-1026 Fix: Ensure test fields are correctly updated in Test update method
+- [#498](https://github.com/FC4E-CAT/fc4e-cat-api/pull/498) CAT-1028 Fix issue with query on public assessments
+- [#496](https://github.com/FC4E-CAT/fc4e-cat-api/pull/496) CAT-1030 Update AMR test
+- [#478](https://github.com/FC4E-CAT/fc4e-cat-api/pull/478 CAT-1023 Change aarc-069 test endpoint url
+- [#491](https://github.com/FC4E-CAT/fc4e-cat-api/pull/491 CAT-1031 fix version requests on metric and test
 - [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters
 - [#488](https://github.com/FC4E-CAT/fc4e-cat-api/pull/488) CAT-875: Merge Test and Test Definition Entities
 - [#499](https://github.com/FC4E-CAT/fc4e-cat-api/pull/499) CAT-894 ServiceConfigurationError during Async Zenodo Publishing
