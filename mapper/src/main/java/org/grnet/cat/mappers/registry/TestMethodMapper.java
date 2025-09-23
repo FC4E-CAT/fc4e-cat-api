@@ -10,8 +10,9 @@ import org.mapstruct.factory.Mappers;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
-@Mapper(imports = {StringUtils.class, Timestamp.class, Instant.class})
+@Mapper(imports = {StringUtils.class, Timestamp.class, Instant.class, Objects.class})
 public interface TestMethodMapper {
 
     TestMethodMapper INSTANCE = Mappers.getMapper(TestMethodMapper.class);
@@ -29,6 +30,7 @@ public interface TestMethodMapper {
     @Mapping(target = "responseFragment", ignore = true)
     @Mapping(target = "lodMTV", ignore = true)
     @Mapping(target = "lodTMEV", ignore = true)
+    @Mapping(target = "friendlyLabelTestMethod", ignore = true)
     TestMethod testMethodToEntity(TestMethodRequestDto request);
 
     @Mapping(target = "UUID", expression = "java(StringUtils.isNotEmpty(request.UUID) ? request.UUID : testMethod.getUUID())")
@@ -45,6 +47,7 @@ public interface TestMethodMapper {
     @Mapping(target = "responseFragment", ignore = true)
     @Mapping(target = "lodMTV", ignore = true)
     @Mapping(target = "lodTMEV", ignore = true)
+    @Mapping(target = "enabled", expression = "java(Objects.nonNull(request.enabled) ? request.enabled : testMethod.getEnabled())")
     void updateTestMethodFromDto(TestMethodUpdateDto request, @MappingTarget TestMethod testMethod);
 
 }

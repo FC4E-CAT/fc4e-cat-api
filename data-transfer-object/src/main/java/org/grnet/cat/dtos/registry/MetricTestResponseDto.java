@@ -19,15 +19,6 @@ public class MetricTestResponseDto {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The ID of the Test Definition associated with this Metric-Test relationship",
-            example = "pid_graph:529154B3"
-    )
-    @JsonProperty("test_definition_id")
-    public String testDefinitionId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
             description = "The ID of the Motivation associated with this Metric-Test relationship",
             example = "pid_graph:3E109BBA"
     )

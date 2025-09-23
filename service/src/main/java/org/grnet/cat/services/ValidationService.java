@@ -18,6 +18,7 @@ import org.grnet.cat.enums.Source;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.exceptions.ConflictException;
 import org.grnet.cat.mappers.ValidationMapper;
+import org.grnet.cat.repositories.RoleRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.repositories.registry.RegistryActorRepository;
 import org.grnet.cat.validators.ValidationRequestValidator;
@@ -44,9 +45,9 @@ public class ValidationService {
     @Inject
     @Named("keycloak-service")
     RoleService roleService;
-
     @Inject
-    RegistryActorRepository registryActorRepository;
+    RoleRepository roleRepository;
+
 
     private static final Logger LOG = Logger.getLogger(ValidationService.class);
 
@@ -54,7 +55,15 @@ public class ValidationService {
 
         switch (status) {
             case APPROVED: {
-                roleService.assignRolesToUser(userId, List.of("validated"));
+                if (validationRepository.countApprovedValidationsByUserId(userId) < 2) { //if it is the first validation approved assign validated role. else there is no need to check for adding roles, validated will alredy exist
+                    boolean hasAdminRole = roleRepository.fetchUserRoles(userId).stream()
+                            .anyMatch(role -> "admin".equalsIgnoreCase(role.getName()));
+                    boolean signoutUser = Boolean.TRUE;
+                    if (hasAdminRole) {
+                        signoutUser = Boolean.FALSE;
+                    }
+                    roleService.assignRolesToUser(userId, List.of("validated"), signoutUser);
+                }
                 break;
             }
             default: {
@@ -66,10 +75,10 @@ public class ValidationService {
     /**
      * Checks if there is a promotion request for a specific user, organization and registry actor.
      *
-     * @param userId  The ID of the user.
-     * @param organisationId The organisation id.
+     * @param userId             The ID of the user.
+     * @param organisationId     The organisation id.
      * @param organisationSource The organisation source.
-     * @param registryActorId The actor id.
+     * @param registryActorId    The actor id.
      * @throws ConflictException if a promotion request exists for the user, organization and registry actor.
      */
     public void hasPromotionRequestWithRegistryActor(String userId, String organisationId, String organisationSource, String registryActorId) {
@@ -121,9 +130,9 @@ public class ValidationService {
      * Retrieves a page of validation requests submitted by users.
      *
      * @param search  Enables clients to specify a text string for searching specific fields within Validation entity.
-     * @param sort Specifies the field by which the results to be sorted.
-     * @param order Specifies the order in which the sorted results should be returned.
-     * @param type Filters the results based on the type of actor.
+     * @param sort    Specifies the field by which the results to be sorted.
+     * @param order   Specifies the order in which the sorted results should be returned.
+     * @param type    Filters the results based on the type of actor.
      * @param status  Validation status to search for.
      * @param page    The index of the page to retrieve (starting from 0).
      * @param size    The maximum number of validation requests to include in a page.
@@ -161,9 +170,9 @@ public class ValidationService {
     /**
      * Updates the status of a validation request with the provided status.
      *
-     * @param id     The ID of the validation request to update.
-     * @param status The new status to set for the validation request.
-     * @param userId The user who validates a validation request.
+     * @param id              The ID of the validation request to update.
+     * @param status          The new status to set for the validation request.
+     * @param userId          The user who validates a validation request.
      * @param rejectionReason The reason for rejecting a validation.
      * @return The updated validation request.
      */
@@ -223,9 +232,9 @@ public class ValidationService {
      * @param userID the ID of the user
      * @return a structured list of organizations, assessment types, and registry actors
      */
-    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibility( int page, int size, String userID){
+    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibility(int page, int size, String userID) {
 
-        return validationRepository.fetchUserRegistryAssessmentEligibility( page, size, userID);
+        return validationRepository.fetchUserRegistryAssessmentEligibility(page, size, userID);
     }
 
     /**
@@ -236,9 +245,9 @@ public class ValidationService {
      * @param userID the ID of the user
      * @return a structured list of organizations, assessment types, and registry actors
      */
-    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibilityAll( int page, int size, String userID){
+    public PageQuery<UserRegistryAssessmentEligibility> getUserRegistryAssessmentEligibilityAll(int page, int size, String userID) {
 
-        return validationRepository.fetchUserRegistryAssessmentEligibilityAll( page, size, userID);
+        return validationRepository.fetchUserRegistryAssessmentEligibilityAll(page, size, userID);
     }
 
     @Transactional

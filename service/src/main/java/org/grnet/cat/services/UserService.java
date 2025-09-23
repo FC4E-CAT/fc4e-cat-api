@@ -4,9 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.UriInfo;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.*;
 import org.grnet.cat.dtos.pagination.PageResource;
@@ -29,7 +27,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -87,6 +84,9 @@ public class UserService {
 
     @Inject
     Utility utility;
+
+    @Inject
+    SettingService settingService;
 
     private static final Logger LOG = Logger.getLogger(UserService.class);
 
@@ -163,7 +163,7 @@ public class UserService {
      */
     public UserProfileDto updateUserProfileMetadata(String id, String name, String surname, String email, String orcidId) {
 
-       Optional<User> optionalUser=userRepository.fetchUserByEmail(email);
+        Optional<User> optionalUser=userRepository.fetchUserByEmail(email);
         if (optionalUser.isPresent() && !optionalUser.get().getId().equals(id)){
             throw new ConflictException("There is a User with email : " + email);
         }
@@ -183,7 +183,7 @@ public class UserService {
 
         var optionalUser = userRepository.searchByIdOptional(id);
 
-        roleRepository.assignRoles(id, List.of("identified"));
+        roleRepository.assignRoles(id, List.of("identified"), Boolean.FALSE);
 
         optionalUser.ifPresent(s -> {
             throw new ConflictException("User already exists in the database.");
@@ -193,6 +193,16 @@ public class UserService {
         identified.setId(id);
         identified.setRegisteredOn(Timestamp.from(Instant.now()));
         identified.setBanned(Boolean.FALSE);
+
+        if (settingService.isEnabled("2")) {
+
+            var map = roleRepository.getUserInformation(id);
+
+            identified.setEmail(map.get("email").orElse(""));
+            identified.setName(map.get("name").orElse(""));
+            identified.setSurname(map.get("surname").orElse(""));
+            identified.setUpdatedOn(Timestamp.from(Instant.now()));
+        }
 
         userRepository.persist(identified);
 
@@ -217,7 +227,7 @@ public class UserService {
 
         if (autoApprove) {
             status = ValidationStatus.APPROVED;
-            roleService.assignRolesToUser(id, List.of("validated"));
+            roleService.assignRolesToUser(id, List.of("validated"),Boolean.TRUE);
             validation.setValidatedBy(id);
             validation.setValidatedOn(Timestamp.from(Instant.now()));
         }
@@ -275,7 +285,7 @@ public class UserService {
         var userToBeBanned = userRepository.findById(userId);
         userToBeBanned.setBanned(Boolean.TRUE);
         historyRepository.persist(history);
-        roleRepository.assignRoles(userId, List.of("deny_access"));
+        roleRepository.assignRoles(userId, List.of("deny_access"), Boolean.TRUE);
     }
 
     /**
@@ -296,7 +306,7 @@ public class UserService {
         var userToBeBanned = userRepository.findById(userId);
         userToBeBanned.setBanned(Boolean.FALSE);
         historyRepository.persist(history);
-        roleRepository.removeRoles(userId, List.of("deny_access"));
+        roleRepository.removeRoles(userId, List.of("deny_access"),Boolean.TRUE);
     }
 
     public PageResource<UserRegistryAssessmentEligibilityResponse> getUserRegistryAssessmentEligibility( int page, int size, String userID, UriInfo uriInfo) {

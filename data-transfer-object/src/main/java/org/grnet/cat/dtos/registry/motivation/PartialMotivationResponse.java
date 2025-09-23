@@ -1,5 +1,6 @@
 package org.grnet.cat.dtos.registry.motivation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -33,4 +34,22 @@ public class PartialMotivationResponse {
     )
     @JsonProperty(value = "label")
     public String label;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The ID of the Actor to which the criterion was first assigned.",
+            example = "pid_graph:B5CC396B"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(value = "first_actor_assignment")
+    public String lodActor;
+
+    @Schema(type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Label of the Actor",
+            example = "Compliance Monitoring (Role)")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty(value="first_actor_assignment_label")
+    public String labelActor;
 }

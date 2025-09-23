@@ -6,6 +6,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 public class AutomatedCheckRequest {
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -15,5 +16,4 @@ public class AutomatedCheckRequest {
     @JsonProperty("url")
     @NotEmpty(message = "url may not be empty.")
     public String url;
-
 }

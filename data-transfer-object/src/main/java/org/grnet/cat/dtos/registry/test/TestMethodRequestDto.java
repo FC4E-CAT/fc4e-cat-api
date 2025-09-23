@@ -2,11 +2,8 @@ package org.grnet.cat.dtos.registry.test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.constraints.NotFoundEntity;
-import org.grnet.cat.repositories.registry.TestMethodRepository;
 
 public class TestMethodRequestDto {
 
@@ -87,4 +84,13 @@ public class TestMethodRequestDto {
     )
     @JsonProperty("code_fragment")
     public String codeFragment;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether the Test Method is enabled or not. By default this value is 'true'.",
+            example = "true"
+    )
+    @JsonProperty("enabled")
+    public Boolean enabled = Boolean.TRUE;
 }

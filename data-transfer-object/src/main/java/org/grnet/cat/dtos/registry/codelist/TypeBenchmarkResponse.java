@@ -2,7 +2,7 @@ package org.grnet.cat.dtos.registry.codelist;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -109,5 +109,23 @@ public class TypeBenchmarkResponse{
     )
     @JsonProperty("last_touch")
     public String lastTouch;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether the Test Method is enabled or not.",
+            example = "false"
+    )
+    @JsonProperty("enabled")
+    public Boolean enabled;
+
+    @Setter
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether a Type Benchmark is used in published Motivation or not."
+    )
+    @JsonProperty("used_by_published_motivations")
+    public Boolean usedByPublishedMotivations;
 
 }

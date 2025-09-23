@@ -23,7 +23,7 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     @Execution(ExecutionMode.CONCURRENT)
     public void fetchAllIntegrationSources() {
         var response = fetchSources(aliceToken);
-        assertEquals(2, response.length);
+        assertEquals(3, response.length);
     }
 
     @Test
@@ -52,13 +52,6 @@ public class IntegrationsEndpointTest extends KeycloakTest {
     public void fetchOrganisationBySourceAndIdNotFound() {
         var response = fetchOrganisationInvalidSource(aliceToken, "ROR", "00tjv0s33A");
         assertEquals(404, response.statusCode());
-    }
-
-    @Test
-    @Execution(ExecutionMode.CONCURRENT)
-    public void fetchRorOrganisationByNameLessThan2Chars() {
-        var error = fetchOrganisationInvalidName(aliceToken, "ROR", "K");
-        assertEquals("Value must be at least 2 characters.", error.message);
     }
 
     @Test

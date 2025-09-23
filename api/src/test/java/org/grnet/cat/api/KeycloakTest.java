@@ -18,7 +18,6 @@ import org.grnet.cat.entities.Role;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
-import org.grnet.cat.repositories.registry.MetricDefinitionRepository;
 import org.grnet.cat.repositories.registry.MotivationPrincipleRepository;
 import org.grnet.cat.services.CommentService;
 import org.grnet.cat.services.KeycloakAdminService;
@@ -86,9 +85,6 @@ public class KeycloakTest {
     MotivationPrincipleRepository motivationPrincipleRepository;
 
     @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
-
-    @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
 
     @Inject
@@ -122,7 +118,6 @@ public class KeycloakTest {
         userService.deleteAll();
         criterionService.deleteAll();
         motivationPrincipleRepository.removeAll();
-        metricDefinitionRepository.removeAll();
         motivationPrincipleRepository.removeAll();
         motivationAssessmentRepository.removeAll();
         zenodoAssessmentInfoRepository.removeAll();

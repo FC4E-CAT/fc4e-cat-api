@@ -12,7 +12,7 @@ import org.grnet.cat.repositories.Repository;
 import java.util.Optional;
 
 @ApplicationScoped
-public class MotivationActorRepository  implements Repository<MotivationActorJunction, MotivationActorId> {
+public class MotivationActorRepository implements Repository<MotivationActorJunction, MotivationActorId> {
 
     /**
      * Retrieves a page of Motivations.
@@ -21,9 +21,9 @@ public class MotivationActorRepository  implements Repository<MotivationActorJun
      * @param size The maximum number of Motivations to include in a page.
      * @return A list of Motivations objects representing the Motivations in the requested page.
      */
-    public PageQuery<MotivationActorJunction> fetchActorsByMotivationAndPage(String motivationId, int page, int size){
+    public PageQuery<MotivationActorJunction> fetchActorsByMotivationAndPage(String motivationId, int page, int size) {
 
-        var panache = find("SELECT m FROM MotivationActorJunction m WHERE m.id.motivationId = ?1", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending),motivationId).page(page, size);
+        var panache = find("SELECT m FROM MotivationActorJunction m WHERE m.id.motivationId = ?1", Sort.by("lastTouch", Sort.Direction.Descending).and("id", Sort.Direction.Ascending), motivationId).page(page, size);
 
         var pageable = new PageQueryImpl<MotivationActorJunction>();
         pageable.list = panache.list();
@@ -40,17 +40,19 @@ public class MotivationActorRepository  implements Repository<MotivationActorJun
                 .firstResultOptional()
                 .isPresent();
     }
+
     public boolean existsByStatus(String motivationId, String actorId, Boolean status) {
         return find("SELECT 1 FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.published = ?3", motivationId, actorId, status)
                 .firstResultOptional()
                 .isPresent();
     }
+
     public Optional<MotivationActorJunction> fetchByMotivationAndActorAndVersion(String motivationId, String actorId, Integer lodMAV) {
         return find("FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV = ?3", motivationId, actorId, lodMAV)
                 .firstResultOptional();
     }
 
-        public void deleteByMotivationAndActorAndVersion(String motivationId, String actorId, Integer lodMAV) {
+    public void deleteByMotivationAndActorAndVersion(String motivationId, String actorId, Integer lodMAV) {
 
         delete("DELETE FROM MotivationActorJunction m WHERE m.id.motivationId = ?1 AND m.id.actorId = ?2 AND m.id.lodMAV = ?3", motivationId, actorId, lodMAV);
     }

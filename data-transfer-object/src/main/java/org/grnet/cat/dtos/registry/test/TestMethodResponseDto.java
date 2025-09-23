@@ -1,10 +1,15 @@
 package org.grnet.cat.dtos.registry.test;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestMethodResponseDto {
 
@@ -34,6 +39,15 @@ public class TestMethodResponseDto {
     )
     @JsonProperty("label")
     public String labelTestMethod;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Friendly Label for the test method",
+            example = "Binary"
+    )
+    @JsonProperty("friendly_label")
+    public String friendlyLabelTestMethod;
 
     @Schema(
             type = SchemaType.STRING,
@@ -131,6 +145,21 @@ public class TestMethodResponseDto {
     @JsonProperty("version")
     public String lodTMEV;
 
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether the Test Method is enabled or not.",
+            example = "false"
+    )
+    @JsonProperty("enabled")
+    public Boolean enabled;
 
-
+    @Setter
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether a Test Method is used in published Motivation or not."
+    )
+    @JsonProperty("used_by_published_motivations")
+    public Boolean usedByPublishedMotivations;
 }

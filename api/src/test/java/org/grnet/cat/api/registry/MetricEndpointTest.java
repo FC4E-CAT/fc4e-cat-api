@@ -6,51 +6,24 @@ import io.restassured.http.ContentType;
 import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.registry.MetricEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
-import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
-import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
-import org.grnet.cat.dtos.pagination.PageResource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.util.UUID;
 
-import java.util.List;
-
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
 @TestHTTPEndpoint(MetricEndpoint.class)
 public class MetricEndpointTest extends KeycloakTest {
-
-//    @Test
-//    public void getMetricById() {
-//        register("admin");
-//
-//        var metricId = "pid_graph:AE39C968";
-//        var metric = given()
-//                .auth()
-//                .oauth2(getAccessToken("admin"))
-//                .contentType(ContentType.JSON)
-//                .get("/{id}", metricId)
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .extract()
-//                .as(MetricDefinitionExtendedResponse.class);
-//
-//        assertNotNull(metric);
-//        assertEquals(metricId, metric.metricId);
-//    }
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
@@ -105,27 +78,9 @@ public class MetricEndpointTest extends KeycloakTest {
         assertEquals(request.MTR, createdMetric.MTR);
         assertEquals(request.labelMetric, createdMetric.labelMetric);
         assertEquals(request.descrMetric, createdMetric.descrMetric);
-        assertEquals(request.urlMetric, createdMetric.urlMetric);
         assertEquals(request.typeAlgorithmId, createdMetric.typeAlgorithmId);
         assertEquals(request.typeMetricId, createdMetric.typeMetricId);
     }
-
-//    @Test
-//    @Execution(ExecutionMode.CONCURRENT)
-//    public void getMetric() {
-//
-//        var request = createUniqueMetricRequest();
-//        var createdMetric = createMetric(request);
-//        var fetchedMetric = getMetric(createdMetric.id, adminToken);
-//
-//        assertNotNull(fetchedMetric);
-//        assertEquals(createdMetric.id, fetchedMetric.metricId);
-//        assertEquals("pid_graph:03615660", fetchedMetric.typeMetricId);
-//        assertEquals(createdMetric.MTR, fetchedMetric.metricId);
-//        assertEquals(createdMetric.labelMetric, fetchedMetric.metricLabel);
-//        assertEquals(createdMetric.descrMetric, fetchedMetric.metricDescription);
-//        assertEquals(createdMetric.typeAlgorithmId, fetchedMetric.typeAlgorithmId);
-//    }
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
@@ -141,15 +96,18 @@ public class MetricEndpointTest extends KeycloakTest {
         updateRequest.urlMetric = "http://example.com/metric-updated";
         updateRequest.typeAlgorithmId = request.typeAlgorithmId;
         updateRequest.typeMetricId = request.typeMetricId;
+        updateRequest.typeBenchmarkId = request.typeBenchmarkId;
+        updateRequest.valueBenchmark = "3";
+
 
         var updatedMetric = updateMetric(createdMetric.id, updateRequest);
 
-        assertEquals(updateRequest.MTR, updatedMetric.MTR);
-        assertEquals(updateRequest.labelMetric, updatedMetric.labelMetric);
-        assertEquals(updateRequest.descrMetric, updatedMetric.descrMetric);
-        assertEquals(updateRequest.urlMetric, updatedMetric.urlMetric);
-        assertEquals(updateRequest.typeAlgorithmId, updatedMetric.typeAlgorithmId);
-        assertEquals(updateRequest.typeMetricId, updatedMetric.typeMetricId);
+        assertNotNull(createdMetric.id);
+        assertEquals(request.MTR + "-UPDATED", updatedMetric.MTR);
+        assertEquals("Updated Performance Metric", updatedMetric.labelMetric);
+        assertEquals("Updated description for performance metric.", updatedMetric.descrMetric);
+        assertEquals(request.typeAlgorithmId, updatedMetric.typeAlgorithmId);
+        assertEquals(request.typeMetricId, updatedMetric.typeMetricId);
     }
 
     @Test
@@ -193,6 +151,8 @@ public class MetricEndpointTest extends KeycloakTest {
         duplicateRequest.urlMetric = "http://example.com/metric-duplicate";
         duplicateRequest.typeAlgorithmId = "pid_graph:7A976659";
         duplicateRequest.typeMetricId = "pid_graph:03615660";
+        duplicateRequest.typeBenchmarkId ="pid_graph:7085006F";
+        duplicateRequest.valueBenchmark = "2";
 
         var conflictResponse = given()
                 .auth()
@@ -202,7 +162,7 @@ public class MetricEndpointTest extends KeycloakTest {
                 .post("/")
                 .then()
                 .assertThat()
-                .statusCode(409) // Assuming 409 Conflict for duplicate MTR
+                .statusCode(409)
                 .extract()
                 .as(InformativeResponse.class);
 
@@ -220,7 +180,7 @@ public class MetricEndpointTest extends KeycloakTest {
                 .auth()
                 .oauth2(adminToken)
                 .contentType(ContentType.JSON)
-                .get()
+                .get("/")
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -240,6 +200,8 @@ public class MetricEndpointTest extends KeycloakTest {
         dto.urlMetric = "http://example.com/metric";
         dto.typeAlgorithmId = "pid_graph:7A976659";
         dto.typeMetricId = "pid_graph:03615660";
+        dto.typeBenchmarkId = "pid_graph:7085006F";
+        dto.valueBenchmark = "2";
         return dto;
     }
 
@@ -258,7 +220,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
 
-    private MetricDefinitionExtendedResponse getMetric(String metricId, String token) {
+    private MetricResponseDto getMetric(String metricId, String token) {
         return given()
                 .auth()
                 .oauth2(token)
@@ -266,7 +228,7 @@ public class MetricEndpointTest extends KeycloakTest {
                 .get("/{id}", metricId)
                 .then()
                 .extract()
-                .as(MetricDefinitionExtendedResponse.class);
+                .as(MetricResponseDto.class);
     }
 
     private MetricResponseDto updateMetric(String metricId, MetricUpdateDto updateRequest) {

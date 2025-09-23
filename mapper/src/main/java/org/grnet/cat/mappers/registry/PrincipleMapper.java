@@ -1,9 +1,11 @@
 package org.grnet.cat.mappers.registry;
 import org.apache.commons.lang3.StringUtils;
+import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
 import org.grnet.cat.dtos.registry.principle.PrincipleRequestDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.entities.registry.Principle;
+import org.grnet.cat.entities.registry.PrincipleCriterionJunction;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -46,4 +48,11 @@ public interface PrincipleMapper {
     @Mapping(target = "motivations", ignore = true)
     @Mapping(target = "criteria", ignore = true)
     void updatePrinciple(PrincipleUpdateDto request, @MappingTarget Principle principle);
+
+
+    @Mapping(target = "id",  expression = "java(principle.getId())")  // Ignore the id field here as well
+    @Mapping(target = "pri", expression = "java(principle.getPri())")
+    @Mapping(target = "label", expression = "java(principle.getLabel())")
+    PrinciplePartialResponse mapPartialPrinciple(Principle principle);
+
 }

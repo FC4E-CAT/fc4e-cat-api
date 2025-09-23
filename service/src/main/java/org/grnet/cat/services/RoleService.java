@@ -24,6 +24,6 @@ public interface RoleService {
      * @param userId The unique identifier of the user.
      * @param roles  List of role names to be assigned to the user.
      */
-    void assignRolesToUser(String userId, List<String> roles);
+    void assignRolesToUser(String userId, List<String> roles,boolean forceSignOut);
 
 }

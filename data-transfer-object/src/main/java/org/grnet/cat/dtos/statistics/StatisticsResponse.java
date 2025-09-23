@@ -53,8 +53,9 @@ public class StatisticsResponse {
                     "  \n" +
                     "  \"validation_statistics\": {\n" +
                     "    \"total_validations\": 6,\n" +
-                    "    \"accepted_validations\": 1,\n" +
+                    "    \"accepted_validations\": 8,\n" +
                     "    \"pending_validations\": 4\n" +
+                    "    \"rejected_validations\": 2\n" +
                     "  }\n" +
                     "}"
     )

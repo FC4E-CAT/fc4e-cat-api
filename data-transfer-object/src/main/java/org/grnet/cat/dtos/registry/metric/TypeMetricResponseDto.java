@@ -2,9 +2,9 @@ package org.grnet.cat.dtos.registry.metric;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.entities.registry.metric.Metric;
 
 import java.util.List;
 
@@ -114,11 +114,20 @@ public class TypeMetricResponseDto {
     public String lastTouch;
 
     @Schema(
-            type = SchemaType.ARRAY,
-            implementation = MetricResponseDto.class,
-            description = "List of related metrics",
-            example = "[...]"
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether the Test Method is enabled or not.",
+            example = "false"
     )
-    @JsonProperty("metrics")
-    public List<MetricResponseDto> metrics;
+    @JsonProperty("enabled")
+    public Boolean enabled;
+
+    @Setter
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Whether a Type Metric is used in published Motivation or not."
+    )
+    @JsonProperty("used_by_published_motivations")
+    public Boolean usedByPublishedMotivations;
 }

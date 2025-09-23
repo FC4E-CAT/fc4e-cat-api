@@ -1,7 +1,9 @@
 package org.grnet.cat.dtos.registry.metric;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.EqualsAndHashCode;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.constraints.NotFoundEntity;
@@ -75,4 +77,36 @@ public class MetricRequestDto {
     @NotFoundEntity(repository = TypeMetricRepository.class, message = "There is no Metric Type with the following id:")
     @JsonProperty("type_metric_id")
     public String typeMetricId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Type ID.",
+            required = true,
+            example = "pid_graph:0917EC0D"
+    )
+    @NotEmpty(message = "type_benchmark_id may not be empty.")
+    @JsonProperty("type_benchmark_id")
+    public String typeBenchmarkId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Benchmark Value.",
+            required = true,
+            example = "3"
+    )
+    @NotEmpty(message = "value_benchmark may not be empty.")
+    @JsonProperty("value_benchmark")
+    public String valueBenchmark;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The id of the related Criterion .",
+            example = "pid_graph:D0339C6A"
+    )
+    @JsonProperty("criterion_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String criterion_id;
 }

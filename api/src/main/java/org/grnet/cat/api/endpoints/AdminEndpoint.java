@@ -37,12 +37,17 @@ import org.grnet.cat.dtos.assessment.registry.JsonRegistryAssessmentRequest;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
+import org.grnet.cat.dtos.registry.criterion.CriteriaFailureStatDto;
+import org.grnet.cat.dtos.setting.SettingResponseDto;
+import org.grnet.cat.dtos.setting.SettingUpdateDto;
 import org.grnet.cat.dtos.statistics.StatisticsResponse;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.*;
 import org.grnet.cat.services.*;
 import org.grnet.cat.services.assessment.JsonAssessmentService;
+import org.grnet.cat.services.registry.CriterionService;
 import org.grnet.cat.services.registry.RegistryActorService;
+import org.grnet.cat.services.registry.TestService;
 import org.grnet.cat.services.zenodo.ZenodoService;
 import org.grnet.cat.utils.Utility;
 
@@ -105,6 +110,14 @@ public class AdminEndpoint {
     @Inject
     Utility utility;
 
+    /**
+     * Injection point for the Setting service
+     */
+    @Inject
+    SettingService settingService;
+
+    @Inject
+    CriterionService criterionService;
 
     @Tag(name = "Admin")
     @Operation(
@@ -673,6 +686,61 @@ public class AdminEndpoint {
 
     @Tag(name = "Admin")
     @Operation(
+            summary = "Get most failed criteria",
+            description = "Returns a ranked list of the most frequently failed criteria across all assessments, based on their metric results."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "List of failed criteria retrieved successfully.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = PageableCriteriaFailureStatDto.class)))
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request parameters.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User not authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal server error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @GET
+    @Path("/statistics/criteria/most-failed")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    public Response getMostFailedTests(
+            @Parameter(name = "page", in = QUERY,
+                    description = "Indicates the page number. Page number must be >= 1.")
+            @DefaultValue("1") @Min(value = 1, message = "Page number must be >= 1.") @QueryParam("page") int page,
+            @Parameter(name = "size", in = QUERY,
+                    description = "The page size.")
+            @DefaultValue("10") @Min(value = 1, message = "Page size must be between 1 and 20.")
+            @Max(value = 100, message = "Page size must be between 1 and 20.")
+            @QueryParam("size") int size,
+            UriInfo uriInfo) {
+        var list = criterionService.getMostFailedCriteria(page, size, uriInfo);
+        return Response.ok(list).build();
+    }
+
+
+    @Tag(name = "Admin")
+    @Operation(
             summary = "Update an existing assessment.",
             description = "Allows an admin to update the details of an existing assessment.")
     @APIResponse(
@@ -1060,7 +1128,7 @@ public class AdminEndpoint {
     @Path("/zenodo/deposit/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-     @Registration
+    @Registration
     public Response getZenodoDeposit(@Parameter(
             description = "The ID of the deposit existing in zenodo.",
             required = true,
@@ -1069,6 +1137,159 @@ public class AdminEndpoint {
                                      String depositId) {
         var response = zenodoService.getAdminDeposit(depositId);
         return Response.ok().entity(response).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "List all setting.",
+            description = "Allows an admin to retrieve all dynamic runtime setting."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "List of all setting.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.ARRAY,
+                    implementation = SettingResponseDto.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @Registration
+    @GET
+    @Path("/settings")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listAllSettings() {
+        var settings = settingService.getAllSettings();
+        return Response.ok(settings).build();
+    }
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Retrieve a specific setting.",
+            description = "Allows an admin to retrieve the full configuration of a specific setting by its ID."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "The requested setting was found and returned successfully.",
+            content = @Content(schema = @Schema(implementation = SettingResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Setting not found.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal server error.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @SecurityRequirement(name = "Authentication")
+    @Registration
+    @GET
+    @Path("/settings/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSettingById(
+            @Parameter(
+                    description = "The ID of the setting to retrieve.",
+                    required = true,
+                    example = "1",
+                    schema = @Schema(type = SchemaType.STRING)
+            )
+            @PathParam("id") @Valid @NotFoundEntity(repository = SettingRepository.class, message = "There is no Setting with the following id:") String id
+    ) {
+        var setting = settingService.getSettingById(id);
+        return Response.ok().entity(setting).build();
+    }
+
+
+
+    @Tag(name = "Admin")
+    @Operation(
+            summary = "Update a setting.",
+            description = "Allows an admin to update the value, label, or enabled status of a specific setting."
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Setting updated successfully.",
+            content = @Content(schema = @Schema(implementation = SettingResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "Invalid request payload.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User not authenticated.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Setting not found.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal server error.",
+            content = @Content(schema = @Schema(implementation = InformativeResponse.class))
+    )
+    @SecurityRequirement(name = "Authentication")
+    @Registration
+    @PUT
+    @Path("/settings/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateSetting(
+            @PathParam("id") String id, SettingUpdateDto request) {
+        var updated = settingService.updateSetting(id, request, utility.getUserUniqueIdentifier() );
+        return Response.ok(updated).build();
+    }
+
+
+
+    public static class PageableCriteriaFailureStatDto extends PageResource<CriteriaFailureStatDto> {
+
+        private List<CriteriaFailureStatDto> content;
+
+        @Override
+        public List<CriteriaFailureStatDto> getContent() {
+            return content;
+        }
+
+        @Override
+        public void setContent(List<CriteriaFailureStatDto> content) {
+            this.content = content;
+        }
     }
 
 }

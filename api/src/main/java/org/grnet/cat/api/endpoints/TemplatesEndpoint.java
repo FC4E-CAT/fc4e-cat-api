@@ -85,9 +85,7 @@ public class TemplatesEndpoint {
             required = true,
             example = "pid_graph:3E109BBA",
             schema = @Schema(type = SchemaType.STRING))
-                                        @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:")
-                                        //@CheckPublished(repository = MotivationRepository.class, message = "No action permitted for unpublished Motivation with the following id:", isPublishedPermitted = true)
-                                        String motivationId,
+                                        @PathParam("motivation-id") @Valid @NotFoundEntity(repository = MotivationRepository.class, message = "There is no Motivation with the following id:") String motivationId,
                                         @Parameter(
                                                 description = "The Actor to retrieve template.",
                                                 required = true,

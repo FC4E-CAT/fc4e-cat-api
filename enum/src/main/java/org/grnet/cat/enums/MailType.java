@@ -10,10 +10,10 @@ public enum MailType {
 
 
     ADMIN_ALERT_NEW_VALIDATION() {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("valUrl");
+            String urlString = (String) templateParams.get("valUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -21,6 +21,9 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -38,9 +41,9 @@ public enum MailType {
     },
 
     VALIDATED_ALERT_CHANGE_VALIDATION_STATUS {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
             URL url;
-            String urlString = templateParams.get("valUrl");
+            String urlString = (String) templateParams.get("valUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -50,12 +53,15 @@ public enum MailType {
             //String rejectionReason = templateParams.get("rejectionReason");
             var rejectionReason = "";
 
-            if ("REJECTED".equalsIgnoreCase(templateParams.get("status"))) {
+            if ("REJECTED".equalsIgnoreCase((String) templateParams.get("status"))) {
                 rejectionReason = "Reason for Rejection: " + (templateParams.get("rejectionReason") != null
                         ? templateParams.get("rejectionReason") : "N/A");
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -75,9 +81,9 @@ public enum MailType {
 
     },
     VALIDATED_ALERT_CREATE_VALIDATION {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
             URL url;
-            String urlString = templateParams.get("valUrl");
+            String urlString = (String) templateParams.get("valUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -85,6 +91,9 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("valId", templateParams.get("valId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -101,10 +110,10 @@ public enum MailType {
 
     },
     USER_ALERT_SHARED_ASSESSMENT {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("assessmentUrl");
+            String urlString = (String) templateParams.get("assessmentUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -112,6 +121,9 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("urlpath", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("assessmentUrl", templateParams.get("assessmentUrl"))
                     .data("assessmentName", templateParams.get("assessmentName"))
                     .data("assessmentId", templateParams.get("assessmentId"))
@@ -130,10 +142,10 @@ public enum MailType {
         }
         },
     ZENODO_COMPLETED_PUBLISH_PROCESS {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("depositUrl");
+            String urlString = (String) templateParams.get("depositUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -141,9 +153,11 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("depositUrl", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("depositId", templateParams.get("depositId"))
                     .data("assessmentName", templateParams.get("assessmentName"))
-
                     .data("assessmentId", templateParams.get("assessmentId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -158,10 +172,10 @@ public enum MailType {
         }
     },
     ZENODO_DRAFT_DEPOSIT {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("depositUrl");
+            String urlString = (String) templateParams.get("depositUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -169,9 +183,11 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("depositUrl", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("depositId", templateParams.get("depositId"))
                     .data("assessmentName", templateParams.get("assessmentName"))
-
                     .data("assessmentId", templateParams.get("assessmentId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -186,10 +202,10 @@ public enum MailType {
         }
     },
         ZENODO_PUBLISH_ASSESSMENT {
-            public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+            public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
                 URL url;
-                String urlString = templateParams.get("depositUrl");
+                String urlString = (String) templateParams.get("depositUrl");
                 try {
                     url = new URL(urlString);
                 } catch (MalformedURLException e) {
@@ -197,9 +213,11 @@ public enum MailType {
                 }
 
                 String body = emailTemplate.data("depositUrl", url.toString())
+                        .data("logoUrl", templateParams.get("logoUrl"))
+                        .data("title", templateParams.get("title"))
+                        .data("hidePartners", templateParams.get("hidePartners"))
                         .data("depositId", templateParams.get("depositId"))
                         .data("assessmentName", templateParams.get("assessmentName"))
-
                         .data("assessmentId", templateParams.get("assessmentId"))
                         .data("image", templateParams.get("image"))
                         .data("image1", templateParams.get("image1"))
@@ -214,10 +232,10 @@ public enum MailType {
             }
     },
     ZENODO_PUBLISH_DEPOSIT {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("depositUrl");
+            String urlString = (String) templateParams.get("depositUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -225,6 +243,9 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("depositUrl", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("depositId", templateParams.get("depositId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -239,12 +260,14 @@ public enum MailType {
         }
     },
     ZENODO_FAILED_PUBLISH_PROCESS {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
 
             String body = emailTemplate
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("assessmentName", templateParams.get("assessmentName"))
-
                     .data("assessmentId", templateParams.get("assessmentId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -259,10 +282,10 @@ public enum MailType {
         }
     },
     ZENODO_FAILED_PUBLISH_DEPOSIT {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("depositUrl");
+            String urlString = (String) templateParams.get("depositUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -270,6 +293,9 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("depositUrl", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("depositId", templateParams.get("depositId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -284,10 +310,10 @@ public enum MailType {
         }
     },
     ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB {
-        public MailTemplate execute(Template emailTemplate, HashMap<String, String> templateParams) {
+        public MailTemplate execute(Template emailTemplate, HashMap<String, Object> templateParams) {
 
             URL url;
-            String urlString = templateParams.get("depositUrl");
+            String urlString = (String) templateParams.get("depositUrl");
             try {
                 url = new URL(urlString);
             } catch (MalformedURLException e) {
@@ -295,6 +321,9 @@ public enum MailType {
             }
 
             String body = emailTemplate.data("depositUrl", url.toString())
+                    .data("logoUrl", templateParams.get("logoUrl"))
+                    .data("title", templateParams.get("title"))
+                    .data("hidePartners", templateParams.get("hidePartners"))
                     .data("depositId", templateParams.get("depositId"))
                     .data("image", templateParams.get("image"))
                     .data("image1", templateParams.get("image1"))
@@ -310,7 +339,7 @@ public enum MailType {
     };
 
 
-    public abstract MailTemplate execute(Template mailTemplate, HashMap<String, String> templateParams);
+    public abstract MailTemplate execute(Template mailTemplate, HashMap<String, Object> templateParams);
 
 
     public class MailTemplate {

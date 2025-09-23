@@ -37,5 +37,15 @@ public class ValidationStatisticsResponse {
 
     @JsonProperty("pending_validations")
     public Long  pendingValidationNum;
+
+    @Schema(
+            type = SchemaType.NUMBER,
+            implementation = Long.class,
+            description = "The number of rejected validations.",
+            example = "10"
+    )
+
+    @JsonProperty("rejected_validations")
+    public Long  rejectedValidationNum;
 }
 

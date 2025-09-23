@@ -3,6 +3,7 @@ package org.grnet.cat.services.zenodo;
 import io.quarkus.hibernate.validator.runtime.interceptor.MethodValidated;
 import io.quarkus.logging.Log;
 import io.quarkus.security.ForbiddenException;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -16,20 +17,20 @@ import org.grnet.cat.constraints.ValidZenodoAction;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.assessment.registry.UserJsonRegistryAssessmentResponse;
-import org.grnet.cat.entities.MotivationAssessment;
-import org.grnet.cat.entities.User;
-import org.grnet.cat.entities.ZenodoAssessmentInfo;
-import org.grnet.cat.entities.ZenodoAssessmentInfoId;
+import org.grnet.cat.dtos.setting.SettingResponseDto;
+import org.grnet.cat.entities.*;
 import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ShareableEntityType;
 import org.grnet.cat.enums.ZenodoState;
 import org.grnet.cat.mappers.AssessmentMapper;
 import org.grnet.cat.mappers.ZenodoAssessmentInfoMapper;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
+import org.grnet.cat.repositories.SettingRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.MailerService;
+import org.grnet.cat.services.SettingService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
 
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -55,11 +57,6 @@ public class ZenodoService {
     @RestClient
     ZenodoClient zenodoClient;
 
-
-    @ConfigProperty(name = "zenodo.api.key")
-    String API_KEY;
-
-
     @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
 
@@ -70,16 +67,33 @@ public class ZenodoService {
 
     @Inject
     ZenodoAssessmentInfoRepository zenodoAssessmentInfoRepository;
+
+    @Inject
+    SettingService settingService;
+
+    @Inject
+    SettingRepository settingRepository;
     private final ExecutorService executorService = Executors.newFixedThreadPool(2); // Adjust as needed
 
 
     public String getAccessToken() {
-        return "Bearer " + API_KEY;
+        String token = settingService.getSettingConfig("1", "zenodo.api.key")
+                // Look for this key anywhere in the JSON
+                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured."));
+
+        System.out.println("!!!!!!!!!!! Found key: zenodo.api.key => " + token);
+
+        return "Bearer " + token;
     }
 
     @Inject
     MailerService mailerService;
 
+
+    @PostConstruct
+    void init() {
+       getAccessToken();
+    }
 
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
@@ -102,10 +116,22 @@ public class ZenodoService {
                 ShareableEntityType.ASSESSMENT.getValue().concat(ENTITLEMENTS_DELIMITER).concat(assessment.getId())
         );
 
+        // Check parent to decide if a new version should be created
+        Optional<ZenodoAssessmentInfo> parentZenodoOpt = Optional.empty();
+        var parentId = assessment.getParentAssessmentId();
+
+        if (!assessment.getId().equals(parentId)) {
+            parentZenodoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(parentId);
+            if (parentZenodoOpt.isPresent() && !parentZenodoOpt.get().getIsPublished()) {
+                // if parent is unpublished, ignore it
+                parentZenodoOpt = Optional.empty();
+            }
+        }
+
+        Optional<ZenodoAssessmentInfo> finalParentZenodoOpt = parentZenodoOpt;
         CompletableFuture.runAsync(() -> {
             try {
-                // Call the method to run the steps asynchronously
-                runStepsInSequence(assessment, binaryContent, activeUser, sharedUserIds)
+                runStepsInSequence(assessment, binaryContent, activeUser, sharedUserIds, finalParentZenodoOpt)
                         .join(); // Ensures the process completes in the background
             } catch (Exception e) {
                 // Log the error but do not affect the user response
@@ -127,7 +153,7 @@ public class ZenodoService {
 
         if (assessmentOpt.isPresent() && !assessmentOpt.get().getIsPublished()) {
             try {
-             var   userIdentifier = utility.getUserUniqueIdentifier();
+                var userIdentifier = utility.getUserUniqueIdentifier();
 
             } catch (BadRequestException e) {
                 throw new BadRequestException("Please ensure you are logged in to CAT, in order to view assessment in draft status.");
@@ -149,6 +175,7 @@ public class ZenodoService {
 
         return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get());
     }
+
     @Transactional
     public ZenodoAssessmentInfoResponse getAdminAssessment(String assessmentId) {
 
@@ -169,7 +196,7 @@ public class ZenodoService {
         var zenodoAssessmentInfo = zenodoAssessmentInfoOpt.get();
         if (!zenodoAssessmentInfo.getIsPublished()) {
             try {
-               var userIdentifier = utility.getUserUniqueIdentifier();
+                var userIdentifier = utility.getUserUniqueIdentifier();
 
             } catch (BadRequestException e) {
 
@@ -192,6 +219,7 @@ public class ZenodoService {
         var response = zenodoClient.getDeposit(getAccessToken(), depositId);
         return ZenodoAssessmentInfoMapper.INSTANCE.entityToZenodoDepositResponse(response);
     }
+
     @Transactional
     public ZenodoDepositResponse getAdminDeposit(String depositId) {
 
@@ -236,10 +264,10 @@ public class ZenodoService {
                 stateRef.set(ZenodoState.DEPOSIT_PUBLISHED);
             }
         }
-
+        String accessToken = getAccessToken();
         CompletableFuture.runAsync(() -> {
                     if (!stateRef.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
-                        zenodoClient.publishDeposit(getAccessToken(), depositId);
+                        zenodoClient.publishDeposit(accessToken, depositId);
 
                     }
                 })
@@ -296,7 +324,7 @@ public class ZenodoService {
 
     }
 
-    private void uploadFile(MotivationAssessment assessment, byte[] binaryContent, String depositId) throws IOException {
+    private void uploadFile(String accessToken, MotivationAssessment assessment, byte[] binaryContent, String depositId) throws IOException {
         File tempFile = new File(assessment.getId());
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(binaryContent);
@@ -304,37 +332,61 @@ public class ZenodoService {
             throw new RuntimeException(e);
         }
         // Step 3: Upload file to Zenodo
-        upload(tempFile, String.valueOf(depositId));
+        upload(accessToken, tempFile, String.valueOf(depositId));
 
     }
 
-    public CompletableFuture<Void> runStepsInSequence(MotivationAssessment assessment, byte[] binaryContent, User activeUser, List<String> sharedUsersIds) {
+    public CompletableFuture<Void> runStepsInSequence(MotivationAssessment assessment, byte[] binaryContent, User activeUser, List<String> sharedUsersIds, Optional<ZenodoAssessmentInfo> parentZenodoOpt) {
         final AtomicReference<ZenodoState> state = new AtomicReference<>(ZenodoState.PROCESS_INIT);
         final AtomicReference<String> depositIdRef = new AtomicReference<>(null);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
-
+        String accessToken = getAccessToken();
+        System.out.println("*** The access token is : "+accessToken);
         return CompletableFuture
                 .supplyAsync(() -> {
                     // Step 1: Preparation of assessment for Zenodo
                     System.out.println("Step 1: Preparing assessment for Zenodo...");
                     var metadata = createMetadata(assessment, activeUser, sharedUsersIds);
-                    var response = createDeposit(metadata);
-                    var depositId = response.get("id");
-                    if (depositId == null) {
-                        throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
+                    Map<String, Object> response;
+
+                    if (parentZenodoOpt.isPresent() && parentZenodoOpt.get().getIsPublished()) {
+                        String parentDepositId = parentZenodoOpt.get().getId().getDepositId();
+                        System.out.println("Creating new version from parent deposit: " + parentDepositId);
+                        response = zenodoClient.createNewVersion(accessToken, parentDepositId);
+
+                        var links = (Map<String, Object>) response.get("links");
+                        String latestDraftUrl = (String) links.get("latest_draft");
+                        String extractedId = extractIdFromUrl(latestDraftUrl);
+
+                        if (extractedId == null) {
+                            throw new RuntimeException("Failed to extract draft deposit ID from Zenodo response.");
+                        }
+
+                        zenodoClient.updateDeposit(accessToken, extractedId, metadata); // full payload including "metadata" key
+
+                        depositIdRef.set(extractedId);
+                    } else {
+                        System.out.println("Creating new deposit from scratch");
+                        response = createDeposit(accessToken, metadata);
+
+                        var depositId = response.get("id");
+                        if (depositId == null) {
+                            throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
+                        }
+                        depositIdRef.set(String.valueOf(depositId));
                     }
-                    depositIdRef.set(String.valueOf(depositId));
-                    return depositId;
+
+                    return depositIdRef.get();
                 }, executorService)
                 .thenApply(depositId -> {
                     // Step 2: Upload to Zenodo
                     state.set(ZenodoState.DEPOSIT_CREATED);
                     try {
-                        uploadFile(assessment, binaryContent, depositIdRef.get());
+                        uploadFile(accessToken, assessment, binaryContent, depositIdRef.get());
                         return depositId;
                     } catch (IOException e) {
 
-                        zenodoClient.deleteDeposit(getAccessToken(), depositIdRef.get()); // Cleanup
+                        zenodoClient.deleteDeposit(accessToken, depositIdRef.get()); // Cleanup
                         state.set(ZenodoState.PROCESS_FAILED);
 
                         throw new RuntimeException("Error uploading file to Zenodo: " + e.getMessage());
@@ -351,7 +403,7 @@ public class ZenodoService {
                         return depositId;
                     } catch (Exception dbException) {
                         System.err.println("DB write failed, rolling back Zenodo deposit...");
-                        zenodoClient.deleteDeposit(getAccessToken(), depositIdRef.get()); // Cleanup
+                        zenodoClient.deleteDeposit(accessToken, depositIdRef.get()); // Cleanup
                         state.set(ZenodoState.PROCESS_FAILED);
                         if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
 
@@ -363,7 +415,9 @@ public class ZenodoService {
                 .thenApply(depositId -> {
                     // Step 4: Publish deposit only after DB write succeeds
                     System.out.println("Step 4: Publishing deposit...");
+                    System.out.println("Calling publishDeposit for depositId: " + depositIdRef.get());
                     publishDeposit(depositIdRef.get());
+
                     return depositId;
                 })
                 .thenAccept(depositId -> {
@@ -392,7 +446,7 @@ public class ZenodoService {
                     if (state.get() != ZenodoState.DEPOSIT_PUBLISHED && state.get() != ZenodoState.FILE_UPLOADED_TO_DEPOSIT) { // Only delete if not yet published, when process fails during create deposit, upload file
                         state.set(ZenodoState.PROCESS_FAILED);
                         if (depositIdRef.get() != null) {
-                            zenodoClient.deleteDeposit(getAccessToken(), depositIdRef.get());
+                            zenodoClient.deleteDeposit(accessToken, depositIdRef.get());
                         }
                         if (activeUser.getEmail() != null && !activeUser.getEmail().isEmpty()) {
 
@@ -451,7 +505,7 @@ public class ZenodoService {
     }
 
 
-    public void upload(File fileContent, String depositionId) throws IOException {
+    public void upload(String accessToken, File fileContent, String depositionId) throws IOException {
 
         String boundary = UUID.randomUUID().toString();
 
@@ -479,7 +533,7 @@ public class ZenodoService {
         System.arraycopy(endingBoundaryBytes, 0, requestBody, formData.length + fileBytes.length, endingBoundaryBytes.length);
 
         // Upload the file by calling the Zenodo API method
-        Map<String, Object> response = zenodoClient.uploadFile(getAccessToken(), depositionId, requestBody, "multipart/form-data; boundary=" + boundary);
+        Map<String, Object> response = zenodoClient.uploadFile(accessToken, depositionId, requestBody, "multipart/form-data; boundary=" + boundary);
         // Check the response and handle accordingly
         if (response.containsKey("id")) {
             Log.info("File uploaded successfully: " + response);
@@ -491,9 +545,9 @@ public class ZenodoService {
         fileContent.delete();
     }
 
-    public Map<String, Object> createDeposit(Map<String, Object> metadata) {
+    public Map<String, Object> createDeposit(String accessToken, Map<String, Object> metadata) {
 
-        Map<String, Object> deposit = zenodoClient.createDeposit(getAccessToken(), metadata);
+        Map<String, Object> deposit = zenodoClient.createDeposit(accessToken, metadata);
         return deposit;
     }
 
@@ -535,7 +589,9 @@ public class ZenodoService {
                 "title", title,
                 "upload_type", uploadType,
                 "description", description,
-                "creators", creators));
+                "creators", creators,
+                "publication_date", LocalDate.now().toString(),
+                "access_right", "open"));
         if (!contributors.isEmpty()) {
             metadata.put("contributors", contributors);
         }
@@ -563,4 +619,25 @@ public class ZenodoService {
                 + dbAssessmentToJson.assessmentDoc.organisation.name + "/"
                 + dbAssessmentToJson.assessmentDoc.actor.getName();
     }
+
+    private String extractIdFromUrl(String url) {
+        if (url == null) return null;
+        String[] parts = url.split("/");
+        return parts.length > 0 ? parts[parts.length - 1] : null;
+    }
+
+
+    @SuppressWarnings("unchecked") public boolean isZenodoFeatureEnabled() {
+        return settingRepository.findByIdOptional("1")
+                .filter(Setting::isEnabled)
+                .map(setting -> {
+                    var config = (Map<String, Object>) setting.getData().get("config");
+                    if (config != null && config.containsKey("zenodo.enabled")) {
+                        return Boolean.TRUE.equals(config.get("zenodo.enabled"));
+                    }
+                    return false;
+                })
+                .orElse(false);
+    }
+
 }

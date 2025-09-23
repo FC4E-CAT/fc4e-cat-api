@@ -54,10 +54,10 @@ public class KeycloakAdminRoleService implements RoleService {
      * @param roles  List of role names to be assigned to the user.
      */
     @Override
-    public void assignRolesToUser(String userId, List<String> roles) {
+    public void assignRolesToUser(String userId, List<String> roles,boolean forceSignOut) {
 
         roleRepository.doRolesExist(roles);
-        roleRepository.assignRoles(userId, roles);
+        roleRepository.assignRoles(userId, roles,forceSignOut);
     }
 
 
@@ -85,12 +85,14 @@ public class KeycloakAdminRoleService implements RoleService {
         var total_validations = StatisticsEnum.Validation.TOTAL.getStatistics(validationRepository);
         var accepted_count = StatisticsEnum.Validation.ACCEPTED.getStatistics(validationRepository);
         var pending_count = StatisticsEnum.Validation.PENDING.getStatistics(validationRepository);
+        var rejected_count = StatisticsEnum.Validation.REJECTED.getStatistics(validationRepository);
         var validationResponse= new ValidationStatisticsResponse();
         validationResponse.totalValidationNum=total_validations;
         validationResponse.acceptedValidationNum=accepted_count;
         validationResponse.pendingValidationNum=pending_count;
+        validationResponse.rejectedValidationNum=rejected_count;
 
-      //assessment statistics
+        //assessment statistics
         var total_assessments = StatisticsEnum.Assessment.TOTAL.getStatistics(assessmentRepository);
         var public_count = StatisticsEnum.Assessment.PUBLIC.getStatistics(assessmentRepository);
         var private_count = StatisticsEnum.Assessment.PRIVATE.getStatistics(assessmentRepository);

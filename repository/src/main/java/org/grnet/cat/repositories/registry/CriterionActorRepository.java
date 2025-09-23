@@ -1,7 +1,5 @@
 package org.grnet.cat.repositories.registry;
 
-import io.quarkus.hibernate.orm.panache.Panache;
-import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -10,11 +8,9 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.CriterionActorId;
 import org.grnet.cat.entities.registry.CriterionActorJunction;
-import org.grnet.cat.entities.registry.MotivationActorJunction;
 import org.grnet.cat.repositories.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class CriterionActorRepository implements Repository<CriterionActorJunction, CriterionActorId> {
@@ -88,6 +84,7 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
         return query.getResultList();
     }
 
+
 //    @Transactional
 //    public boolean existCriterionInStatus(String criterionId,boolean status) {
 //
@@ -139,5 +136,10 @@ public class CriterionActorRepository implements Repository<CriterionActorJuncti
 
     public void deleteByActorId(String motivationId, String actorId) {
         delete("FROM CriterionActorJunction c WHERE c.motivation.id =?1 AND c.id.actorId = ?2", motivationId, actorId);
+    }
+
+    public Optional<CriterionActorJunction> findByCriterionIdAndMotivationId(String motivationId, String criterionId) {
+        return find("FROM CriterionActorJunction c WHERE c.motivation.id = ?1 AND c.criterion.id = ?2", motivationId, criterionId)
+                .firstResultOptional();
     }
 }

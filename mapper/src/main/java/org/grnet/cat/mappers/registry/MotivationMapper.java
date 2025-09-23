@@ -2,11 +2,7 @@ package org.grnet.cat.mappers.registry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.registry.actor.PartialMotivationActorResponse;
-import org.grnet.cat.dtos.registry.codelist.RegistryActorResponse;
-import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
-import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
-import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
-import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
+import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.entities.registry.MotivationActorJunction;
@@ -61,6 +57,19 @@ public interface MotivationMapper {
     @Mapping(target = "actors", ignore = true)
     void updateMotivationFromDto(UpdateMotivationRequest request, @MappingTarget Motivation motivation);
 
+
+
+    @Named("versionMotivationmap")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "mtv", ignore = true)
+    @Mapping(target = "populatedBy", ignore = true)
+    @Mapping(target = "motivationType", ignore = true)
+    @Mapping(target = "lodMtvV", source = "versionOf")
+    @Mapping(target = "lastTouch", expression = "java(Timestamp.from(Instant.now()))")
+    @Mapping(target = "principles", ignore = true)
+    @Mapping(target = "actors", ignore = true)
+    Motivation versionMotivationToEntity(MotivationVersionRequest request);
+
     @Named("actors")
     default List<PartialMotivationActorResponse> actorsToDto(Set<MotivationActorJunction> junction) {
         return MotivationActorMapper.INSTANCE.partialMotivationActorToDtos(junction.stream().collect(Collectors.toList()));
@@ -81,6 +90,7 @@ public interface MotivationMapper {
     @Mapping(target = "id", expression = "java(motivation.getId())")
     @Mapping(target = "mtv", expression = "java(motivation.getMtv())")
     @Mapping(target = "label", expression = "java(motivation.getLabel())")
+    @Mapping(target = "lodActor", ignore = true)
     PartialMotivationResponse mapPartialMotivation(Motivation motivation);
 
     @IterableMapping(qualifiedByName = "mapPartialMotivation")

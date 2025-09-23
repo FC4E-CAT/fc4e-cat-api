@@ -11,9 +11,12 @@ import org.grnet.cat.dtos.registry.criterion.CriterionActorRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionRequest;
 import org.grnet.cat.dtos.registry.criterion.CriterionResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
-import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
+import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
+import org.grnet.cat.dtos.registry.metric.MetricVersionRequestDto;
+import org.grnet.cat.dtos.registry.metric.MotivationMetricUpdateRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationRequest;
 import org.grnet.cat.dtos.registry.motivation.MotivationResponse;
+import org.grnet.cat.dtos.registry.motivation.MotivationVersionRequest;
 import org.grnet.cat.dtos.registry.motivation.UpdateMotivationRequest;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
@@ -22,18 +25,13 @@ import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.params.shadow.com.univocity.parsers.conversions.Conversions.toUpperCase;
 
 @QuarkusTest
 @TestHTTPEndpoint(MotivationEndpoint.class)
@@ -672,6 +670,88 @@ public class MotivationEndpointTest extends KeycloakTest {
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
+    public void addCriterionWithAutoMetric() {
+
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = "mtv-automtr";
+        motivationRequest.label = "Auto Metric Motivation";
+        motivationRequest.description = "Motivation for testing auto-metric assignment.";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        var request = new CriterionRequest();
+        request.cri = "AUTO-CRI-001";
+        request.label = "Auto Criterion Label";
+        request.description = "This criterion will be used with automatic metric assignment.";
+        request.imperative = "pid_graph:BED209B9";
+        request.typeCriterion = "pid_graph:A2719B92";
+
+        var criterionResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .basePath("/v1/registry/criteria")
+                .body(request)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(CriterionResponse.class);
+
+        var motivationActor = new MotivationActorRequest();
+        motivationActor.actorId = "pid_graph:1A718108";
+        motivationActor.relation = "dcterms:isRequiredBy";
+        MotivationActorRequest[] array = new MotivationActorRequest[1];
+        array[0] = motivationActor;
+
+        given()
+                .auth()
+                .oauth2(adminToken)
+                .body(array)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        var criterionActor = new CriterionActorRequest();
+        criterionActor.criterionId = criterionResponse.id;
+        criterionActor.imperativeId = "pid_graph:BED209B9";
+        CriterionActorRequest[] array1 = new CriterionActorRequest[1];
+        array1[0] = criterionActor;
+
+        var response = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(array1)
+                .contentType(ContentType.JSON)
+                .post("/{id}/actors/{actor-id}/criteria/auto-metric", motivationResponse.id, "pid_graph:1A718108")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(InformativeResponse.class);
+
+        assertEquals(response.code, 200);
+    }
+
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
     public void updateCriterionImperativeNotFound() {
 
         var motivationRequest = new MotivationRequest();
@@ -947,7 +1027,7 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .assertThat()
                 .statusCode(200)
                 .extract()
-                .as(InformativeResponse.class);
+                .as(PrincipleResponseDto.class);
 
 
         var errorResponse = given()
@@ -962,20 +1042,17 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals("A principle with the identifier '" + principleRequestDto.pri + "' already exists.", errorResponse.message);
+        assertEquals("The value '" + principleRequestDto.pri + "' for field 'pri' is not unique.", errorResponse.message);
     }
-
 
     @Test
     @Execution(ExecutionMode.CONCURRENT)
-    public void createMetricDefinitionForMotivationAlreadyExist() {
-
-        //register("admin");
+    public void createNewMetricVersion() {
 
         var motivationRequest = new MotivationRequest();
         motivationRequest.mtv = ("mtv" + UUID.randomUUID()).toUpperCase();
-        motivationRequest.label = "testLabelMotivation";
-        motivationRequest.description = "testDecMotivation";
+        motivationRequest.label = "Test Motivation";
+        motivationRequest.description = "Test Motivation Description";
         motivationRequest.motivationTypeId = "pid_graph:8882700E";
 
         var motivationResponse = given()
@@ -990,45 +1067,95 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .extract()
                 .as(MotivationResponse.class);
 
-        var metricDefinitionRequest = new MotivationMetricExtendedRequest();
-        metricDefinitionRequest.MTR = ("MTR" + UUID.randomUUID()).toUpperCase();
-        metricDefinitionRequest.labelMetric = "Performance Metric";
-        metricDefinitionRequest.descrMetric = "This metric measures performance.";
-        metricDefinitionRequest.urlMetric = "http://example.com/metric";
-        metricDefinitionRequest.typeAlgorithmId = "pid_graph:2050775C";
-        metricDefinitionRequest.typeMetricId = "pid_graph:35966E2B";
-        metricDefinitionRequest.typeBenchmarkId = "pid_graph:0917EC0D";
-        metricDefinitionRequest.valueBenchmark = "3";
+        var metricVersionRequest = new MetricVersionRequestDto();
+        metricVersionRequest.labelMetric = "Performance Metric";
+        metricVersionRequest.descrMetric = "This metric measures performance.";
+        metricVersionRequest.urlMetric = "http://example.com/metric";
+        metricVersionRequest.typeAlgorithmId = "pid_graph:2050775C";
+        metricVersionRequest.typeMetricId = "pid_graph:35966E2B";
+        metricVersionRequest.typeBenchmarkId = "pid_graph:0917EC0D";
+        metricVersionRequest.valueBenchmark = "3";
 
-        var informativeResponse = given()
+        var newVersionResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(metricDefinitionRequest)
+                .oauth2(adminToken)
+                .body(metricVersionRequest)
                 .contentType(ContentType.JSON)
-                .post("/{id}/metric", motivationResponse.id)
+                .post("/{id}/metric/{metric-id}/version-metric", motivationResponse.id, "pid_graph:D8C4E63E")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(200, informativeResponse.code);
-        assertEquals("A metric and a Metric Definition successfully created and linked to the specified motivation.", informativeResponse.message);
+        assertEquals(200, newVersionResponse.code);
+    }
 
-        var errorResponse = given()
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createAndUpdateMetricForMotivation() {
+        // Step 1: Create Motivation
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = ("mtv" + UUID.randomUUID()).toUpperCase();
+        motivationRequest.label = "Test Motivation";
+        motivationRequest.description = "Test Motivation Description";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
                 .auth()
-                .oauth2(getAccessToken("admin"))
-                .body(metricDefinitionRequest)
+                .oauth2(adminToken)
+                .body(motivationRequest)
                 .contentType(ContentType.JSON)
-                .post("/{id}/metric", motivationResponse.id)
+                .post()
                 .then()
                 .assertThat()
-                .statusCode(409)
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        // Step 2: Create Metric for the Motivation
+        var createMetric = new MetricRequestDto();
+        createMetric.MTR = " ";
+        createMetric.labelMetric = "Performance Metric";
+        createMetric.descrMetric = "This metric measures performance.";
+        createMetric.urlMetric = "http://example.com/metric";
+        createMetric.typeAlgorithmId = "pid_graph:2050775C";
+        createMetric.typeMetricId = "pid_graph:35966E2B";
+        createMetric.typeBenchmarkId = "pid_graph:0917EC0D";
+        createMetric.valueBenchmark = "3";
+
+        var createMetricResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(createMetric)
+                .contentType(ContentType.JSON)
+                .post("/{id}/metric/", motivationResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MetricResponseDto.class);
+
+        // Step 3: Update Metric for the Motivation
+        var metricRequest = new MotivationMetricUpdateRequest();
+        metricRequest.typeAlgorithmId = "pid_graph:2050775C";
+        metricRequest.typeBenchmarkId = "pid_graph:0917EC0D";
+        metricRequest.valueBenchmark = "6";
+
+        var metricResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(metricRequest)
+                .contentType(ContentType.JSON)
+                .put("/{id}/metric/{metric-id}", motivationResponse.id, createMetricResponse.id)
+                .then()
+                .assertThat()
+                .statusCode(200)
                 .extract()
                 .as(InformativeResponse.class);
 
-        assertEquals(409, errorResponse.code);
-        assertEquals("A metric with the identifier '" + metricDefinitionRequest.MTR + "' already exists.", errorResponse.message);
+        assertEquals(200, metricResponse.code);
+        assertEquals(metricResponse.message, "Metric was successfully updated with identifier: " + createMetricResponse.id);
     }
 
 
@@ -1068,6 +1195,50 @@ public class MotivationEndpointTest extends KeycloakTest {
                 .then()
                 .assertThat()
                 .statusCode(200);
+    }
+
+    @Test
+    @Execution(ExecutionMode.CONCURRENT)
+    public void createNewMotivationVersion() {
+
+        var motivationRequest = new MotivationRequest();
+        motivationRequest.mtv = ("mtv" + UUID.randomUUID()).toUpperCase();
+        motivationRequest.label = "Test Motivation";
+        motivationRequest.description = "Test Motivation Description";
+        motivationRequest.motivationTypeId = "pid_graph:8882700E";
+
+        var motivationResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationRequest)
+                .contentType(ContentType.JSON)
+                .post()
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        var motivationVersionRequest = new MotivationVersionRequest();
+        motivationVersionRequest.label = "Test Motivation";
+        motivationVersionRequest.description = "Test Motivation Description";
+        motivationVersionRequest.motivationTypeId = "pid_graph:8882700E";
+        motivationVersionRequest.versionOf = motivationResponse.id;
+
+        var motivationVersionResponse = given()
+                .auth()
+                .oauth2(adminToken)
+                .body(motivationVersionRequest)
+                .contentType(ContentType.JSON)
+                .post("/version-motivation")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(MotivationResponse.class);
+
+        assertEquals(motivationResponse.mtv, motivationVersionResponse.mtv);
+        assertEquals(2, motivationVersionResponse.version);
     }
 
 

@@ -10,7 +10,6 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +23,9 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of assessments submitted by the specified user.
      *
-     * @param page   The index of the page to retrieve (starting from 0).
-     * @param size   The maximum number of assessments to include in a page.
-     * @param userID The ID of the user.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessments to include in a page.
+     * @param userID       The ID of the user.
      * @param shareableIds The IDs shared to the User.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
@@ -96,10 +95,10 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of public assessment objects by motivation and actor.
      *
-     * @param page    The index of the page to retrieve (starting from 0).
-     * @param size    The maximum number of assessment objects to include in a page.
-     * @param motivationId  The ID of the Motivation.
-     * @param actorId The Actor's id.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessment objects to include in a page.
+     * @param motivationId The ID of the Motivation.
+     * @param actorId      The Actor's id.
      * @return A list of string objects representing the public assessment objects in the requested page.
      */
     @SuppressWarnings("unchecked")
@@ -135,12 +134,12 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of published assessments categorized by type and actor, created by all users.
      *
-     * @param page        The index of the page to retrieve (starting from 0).
-     * @param size        The maximum number of assessments to include in a page.
-     * @param motivationId      The ID of the Assessment Type.
-     * @param actorId     The Actor's id.
-     * @param subjectName Subject name to search for.
-     * @param subjectType Subject Type to search for.
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessments to include in a page.
+     * @param motivationId The ID of the Assessment Type.
+     * @param actorId      The Actor's id.
+     * @param subjectName  Subject name to search for.
+     * @param subjectType  Subject Type to search for.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
     @SuppressWarnings("unchecked")
@@ -148,7 +147,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         var em = Panache.getEntityManager();
 
-        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
+        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published, a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
                 .setParameter("actorId", actorId)
                 .setParameter("published", true)
                 .setParameter("motivationId", motivationId);
@@ -160,7 +159,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         if (StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published , a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
@@ -177,7 +176,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         } else if (StringUtils.isNotEmpty(subjectName)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published :published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published , a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published =:published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
@@ -191,7 +190,7 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
 
         } else if (StringUtils.isNotEmpty(subjectType)) {
 
-            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND (a.published = :published AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published , a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId and m.lodMTV = :motivationId AND a.published = :published AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
@@ -201,6 +200,84 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
                     .setParameter("actorId", actorId)
                     .setParameter("published", true)
                     .setParameter("motivationId", motivationId)
+                    .setParameter("type", subjectType);
+        }
+
+        var list = (List<MotivationAssessment>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<MotivationAssessment>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    /**
+     * Retrieves a page of published assessments categorized by actor, created by all users.
+     *
+     * @param page        The index of the page to retrieve (starting from 0).
+     * @param size        The maximum number of assessments to include in a page.
+     * @param actorId     The Actor's id.
+     * @param subjectName Subject name to search for.
+     * @param subjectType Subject Type to search for.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    @SuppressWarnings("unchecked")
+    public PageQuery<MotivationAssessment> fetchPublishedAssessmentsByActorAndPage(int page, int size, String actorId, String subjectName, String subjectType) {
+
+        var em = Panache.getEntityManager();
+
+        var query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published, a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published ORDER BY a.created_on DESC", MotivationAssessment.class)
+                .setParameter("actorId", actorId)
+                .setParameter("published", true);
+
+        var countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published", Long.class)
+                .setParameter("actorId", actorId)
+                .setParameter("published", true);
+
+        if (StringUtils.isNotEmpty(subjectName) && StringUtils.isNotEmpty(subjectType)) {
+
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published, a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("published", true)
+                    .setParameter("name", subjectName)
+                    .setParameter("type", subjectType);
+
+            countQuery = em.createNativeQuery("SELECT count(a.id)  FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND assessment_doc->'subject'->>'name' = :name AND a.assessment_doc->'subject'->>'type' = :type", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("published", true)
+                    .setParameter("name", subjectName)
+                    .setParameter("type", subjectType);
+
+
+        } else if (StringUtils.isNotEmpty(subjectName)) {
+
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published, a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name ORDER BY a.created_on DESC", MotivationAssessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("published", true)
+                    .setParameter("name", subjectName);
+
+            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'name' = :name", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("published", true)
+                    .setParameter("name", subjectName);
+
+        } else if (StringUtils.isNotEmpty(subjectType)) {
+
+            query = em.createNativeQuery("SELECT a.id, a.assessment_doc, a.validation_id, a.created_on, a.updated_on, a.subject_id, a.updated_by, a.shared, a.motivation_id , a.published, a.parent_assessment_id FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'type' = :type ORDER BY a.created_on DESC", MotivationAssessment.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("published", true)
+                    .setParameter("type", subjectType);
+
+            countQuery = em.createNativeQuery("SELECT count(a.id) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id where v.registry_actor_id = :actorId AND a.published = :published AND a.assessment_doc->'subject'->>'type' = :type", Long.class)
+                    .setParameter("actorId", actorId)
+                    .setParameter("published", true)
                     .setParameter("type", subjectType);
         }
 
@@ -300,8 +377,8 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
     /**
      * Retrieves a page of assessments.
      *
-     * @param page   The index of the page to retrieve (starting from 0).
-     * @param size   The maximum number of assessments to include in a page.
+     * @param page The index of the page to retrieve (starting from 0).
+     * @param size The maximum number of assessments to include in a page.
      * @return A list of Assessment objects representing the assessments in the requested page.
      */
     public PageQuery<MotivationAssessment> fetchAllAssessmentsByPage(int page, int size, String search) {
@@ -379,8 +456,102 @@ public class MotivationAssessmentRepository implements Repository<MotivationAsse
         return count("from MotivationAssessment a where a.validation.user.id = ?1", userId);
     }
 
+    public List<MotivationAssessment> getAllVersions(String parentAssessmentId) {
+        return find("FROM MotivationAssessment ma WHERE ma.parentAssessmentId = ?1 ORDER BY ma.createdOn DESC", parentAssessmentId).list();
+    }
+
     @Transactional
     public long removeAll() {
         return deleteAll();
     }
+
+
+    /**
+     * Retrieves a page of assessment types existing in assessments for a  specified actor.
+     *
+     * @param page    The index of the page to retrieve (starting from 0).
+     * @param size    The maximum number of assessment types to include in a page.
+     * @param actorID The Actor id.
+     * @return A list of Assessment objects representing the assessments in the requested page.
+     */
+    public PageQuery<String> fetchAssessmentsTypesByActor(int page, int size, String actorID, boolean published) {
+
+
+        var query = Panache.getEntityManager().createNativeQuery(
+                        "SELECT DISTINCT (a.assessment_doc->>'assessment_type') " +
+                                "FROM MotivationAssessment a " +
+                                "WHERE a.assessment_doc->'actor'->>'id' = :actorId " +
+                                "AND a.published = :published"
+                )
+                .setParameter("actorId", actorID)
+                .setParameter("published", published);
+
+        var countQuery = Panache.getEntityManager().createNativeQuery(
+                        "SELECT COUNT(DISTINCT (a.assessment_doc->>'assessment_type')) " +
+                                "FROM MotivationAssessment a " +
+                                "WHERE a.assessment_doc->'actor'->>'id' = :actorId " +
+                                "AND a.published = :published"
+                )
+
+                 .setParameter("actorId", actorID)
+                .setParameter("published", published);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+
+    /**
+     * Retrieves a page of public assessment objects by actor.
+     *
+     * @param page         The index of the page to retrieve (starting from 0).
+     * @param size         The maximum number of assessment objects to include in a page.
+     * @param actorId      The Actor's id.
+     * @return A list of string objects representing the public assessment objects in the requested page.
+     */
+    @SuppressWarnings("unchecked")
+    public PageQuery<String> fetchPublishedAssessmentObjectsByActorAndPage(int page, int size, String actorId) {
+
+        var em = Panache.getEntityManager();
+
+        var query = em.createNativeQuery("SELECT DISTINCT (a.assessment_doc->>'subject') FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId  AND a.published = :published")
+                .setParameter("actorId", actorId)
+                .setParameter("published", true);
+
+        var countQuery = em.createNativeQuery("SELECT count(DISTINCT (a.assessment_doc->>'subject')) FROM MotivationAssessment a INNER JOIN Validation v ON a.validation_id = v.id INNER JOIN t_Motivation m ON a.motivation_id = m.lodMTV where v.registry_actor_id = :actorId  AND a.published = :published")
+                .setParameter("actorId", actorId)
+                .setParameter("published", true);
+
+        var list = (List<String>) query
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+
+        var pageable = new PageQueryImpl<String>();
+        pageable.list = list;
+        pageable.index = page;
+        pageable.size = size;
+        pageable.count = (Long) countQuery.getSingleResult();
+        pageable.page = Page.of(page, size);
+
+        return pageable;
+    }
+
+    public boolean existsByMotivationId(String motivationId) {
+        return find("motivation.id = ?1", motivationId)
+                .firstResultOptional()
+                .isPresent();
+    }
+
 }

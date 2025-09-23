@@ -22,6 +22,75 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 ---
+## 3.0.0 - 2025-09-23
+---
+
+### Added
+
+
+- [#480](https://github.com/FC4E-CAT/fc4e-cat-api/pull/480 CAT-1020 Add a new test called Auto-Check-String-Binary into database #480
+- [#481](https://github.com/FC4E-CAT/fc4e-cat-api/pull/481 CAT-1022 Adjust automated HTTPS test to handle updated response format
+- [#484](https://github.com/FC4E-CAT/fc4e-cat-api/pull/484 CAT-1025 Adjust SAML Metadata test to handle updated response format
+- [#486](https://github.com/FC4E-CAT/fc4e-cat-api/pull/486 CAT-1027 Introduce new test methods for AARC-G069
+- [#487](https://github.com/FC4E-CAT/fc4e-cat-api/pull/487 CAT-1029 Add endpoint to fetch all public assessments by a specific actor
+- [#526](https://github.com/FC4E-CAT/fc4e-cat-api/pull/526) CAT-1021 Add support for updating user information via access token
+- [#509](https://github.com/FC4E-CAT/fc4e-cat-api/pull/509) CAT-1024 Add all necessary tests for G056
+- [#477](https://github.com/FC4E-CAT/fc4e-cat-api/pull/477) CAT-861 Implement Automated Test AARC-G069 to Validate NACO Entitlements Claim.
+- [#476](https://github.com/FC4E-CAT/fc4e-cat-api/pull/476) CAT-860: Version Tests in Library
+- [#485](https://github.com/FC4E-CAT/fc4e-cat-api/pull/485) CAT-871 Version a Metric in Motivation and view metric versions on Library
+- [#489](https://github.com/FC4E-CAT/fc4e-cat-api/pull/489) CAT-878 Version Motivation
+- [#493](https://github.com/FC4E-CAT/fc4e-cat-api/pull/493) CAT-884 Add Fully-Automated-Validation test method and integrate AARC-G056 claim checks.
+- [#494](https://github.com/FC4E-CAT/fc4e-cat-api/pull/494) CAT-885: Statistics of the Combination of Types in a Metric
+- [#495](https://github.com/FC4E-CAT/fc4e-cat-api/pull/495) CAT-886 Implement Search Functionality for Testmethod
+- [#497](https://github.com/FC4E-CAT/fc4e-cat-api/pull/497) CAT-891 Publishing to Zenodo New Version
+- [#500](https://github.com/FC4E-CAT/fc4e-cat-api/pull/500) CAT-893 Versioning of Existing Assessment
+- [#501](https://github.com/FC4E-CAT/fc4e-cat-api/pull/501) CAT-895 Add "enabled" Column to TestMethod Table and Support Enable/Disable Functionality via API.
+- [#503](https://github.com/FC4E-CAT/fc4e-cat-api/pull/503) CAT-898 Validation Request - add list of AAI providers
+- [#507](https://github.com/FC4E-CAT/fc4e-cat-api/pull/507) CAT-903 Add "enabled" Column to Types Related to Metric Table and Support Enable/Disable Functionality via API
+- [#514](https://github.com/FC4E-CAT/fc4e-cat-api/pull/514) CAT-928: Create AssessmentType template
+- [#516](https://github.com/FC4E-CAT/fc4e-cat-api/pull/516) CAT-931 Update Metric Creation Request to Include Criterion Reference
+- [#518](https://github.com/FC4E-CAT/fc4e-cat-api/pull/518) CAT-940 Update NACO Integration to Handle New /list_entries Response Format
+- [#519](https://github.com/FC4E-CAT/fc4e-cat-api/pull/519) CAT-939: Configure Instance-Specific Logo for Email Templates in CAT
+- [#522](https://github.com/FC4E-CAT/fc4e-cat-api/pull/522) CAT-938 Public Assessments: Retrive all Motivations an Actor participates in assessments
+- [#523](https://github.com/FC4E-CAT/fc4e-cat-api/pull/523) CAT-937 API Call to Retrieve All Public Objects by Actor (No Motivation Restriction) 
+- [#524](https://github.com/FC4E-CAT/fc4e-cat-api/pull/524) CAT-957 Add support for updating user information via access token
+- [#525](https://github.com/FC4E-CAT/fc4e-cat-api/pull/525) CAT-956 Remove Character Length Validation for Organisation Query
+- [#528](https://github.com/FC4E-CAT/fc4e-cat-api/pull/528) CAT-963: Add info for Actor-Criterion Assignment in used_by_motivation
+- [#529](https://github.com/FC4E-CAT/fc4e-cat-api/pull/529) CAT-964: Create PUT Endpoint for Updating Metrics Inside Motivation
+- [#531](https://github.com/FC4E-CAT/fc4e-cat-api/pull/531) CAT-970 Create and Link Metric to Criterion When Assigned to Actor
+- [#538](https://github.com/FC4E-CAT/fc4e-cat-api/pull/538) Sort Principles and Criteria from Newest to Oldest in Assessment Type Template
+- [#540](https://github.com/FC4E-CAT/fc4e-cat-api/pull/540) CAT-1000: Create Settings Table and Override Zenodo Configuration
+- [#541](https://github.com/FC4E-CAT/fc4e-cat-api/pull/541) CAT-977: 2025-07-30 Default response to API requests is now version 2
+- [#545](https://github.com/FC4E-CAT/fc4e-cat-api/pull/545) CAT-1002 Settings / Enable disable AAI autocomplete values
+- [#546](https://github.com/FC4E-CAT/fc4e-cat-api/pull/546) CAT-1007: Avoid unecessary role checks while approving validation
+- [#547](https://github.com/FC4E-CAT/fc4e-cat-api/pull/547) CAT-1008: Encrypt/Decrypt Sensitive Setting Values and Add Info Column 
+
+### Fix
+- [#502](https://github.com/FC4E-CAT/fc4e-cat-api/pull/502) CAT-1026 Fix: Ensure test fields are correctly updated in Test update method
+- [#498](https://github.com/FC4E-CAT/fc4e-cat-api/pull/498) CAT-1028 Fix issue with query on public assessments
+- [#496](https://github.com/FC4E-CAT/fc4e-cat-api/pull/496) CAT-1030 Update AMR test
+- [#478](https://github.com/FC4E-CAT/fc4e-cat-api/pull/478 CAT-1023 Change aarc-069 test endpoint url
+- [#491](https://github.com/FC4E-CAT/fc4e-cat-api/pull/491 CAT-1031 fix version requests on metric and test
+- [#482](https://github.com/FC4E-CAT/fc4e-cat-api/pull/482) CAT-867: Update Auto-AAI-Check-Entitlements tests parameters
+- [#488](https://github.com/FC4E-CAT/fc4e-cat-api/pull/488) CAT-875: Merge Test and Test Definition Entities
+- [#499](https://github.com/FC4E-CAT/fc4e-cat-api/pull/499) CAT-894 ServiceConfigurationError during Async Zenodo Publishing
+- [#508](https://github.com/FC4E-CAT/fc4e-cat-api/pull/508) CAT-904 automated_group_test Not Persisted, Causing "Fully-Automated-Validation" Button to not appear on Edit
+- [#492](https://github.com/FC4E-CAT/fc4e-cat-api/pull/492) CAT-882 Merge Metric with Definition
+- [#511](https://github.com/FC4E-CAT/fc4e-cat-api/pull/511) CAT-837 Tests in assessment should appear in an ascending order
+- [#512](https://github.com/FC4E-CAT/fc4e-cat-api/pull/512) CAT-909 NACO list information
+- [#515](https://github.com/FC4E-CAT/fc4e-cat-api/pull/515) CAT-930 Add Original Motivation per Criterion and Retrieve Associated Principles
+- [#520](https://github.com/FC4E-CAT/fc4e-cat-api/pull/520) CAT-953 Fix NacoEntryResponse to map the response from NACO
+- [#527](https://github.com/FC4E-CAT/fc4e-cat-api/pull/527) CAT-962: Add db_id to All Relevant Entities in Assessment Type Template
+- [#530](https://github.com/FC4E-CAT/fc4e-cat-api/pull/530) CAT-966 CAT-967 map LSAAI provider response and update tests to match AARC-G056 requirements
+- [#532](https://github.com/FC4E-CAT/fc4e-cat-api/pull/532) CAT-971 Refine Messages for Principle Creation and Criteria Missing Principle Links
+- [#533](https://github.com/FC4E-CAT/fc4e-cat-api/pull/533) CAT-974 Add Usage-Based Sorting to Testmethod Pagination
+- [#534]()https://github.com/FC4E-CAT/fc4e-cat-api/pull/534 CAT-976 Change ROR path to /v1/organizations
+- [#535](https://github.com/FC4E-CAT/fc4e-cat-api/pull/535) CAT-888 Update view for Tests (friendly label Testmethod)
+- [#536](https://github.com/FC4E-CAT/fc4e-cat-api/pull/536) CAT-981 Change num_params of Binary-Evidence Testmethod from 2 to 1
+- [#537](https://github.com/FC4E-CAT/fc4e-cat-api/pull/537) CAT-982: Minor Fixes for Assessment Build
+- [#542](https://github.com/FC4E-CAT/fc4e-cat-api/pull/542) CAT-1005 Updating zenodo key on the fly in settings is not retrieved in service
+- [#544](https://github.com/FC4E-CAT/fc4e-cat-api/pull/544) CAT-1006:Admin actions should force signout user from CAT Service
+- [#552](https://github.com/FC4E-CAT/fc4e-cat-api/pull/552) CAT-1018 Prevent auto signout of admin when validated 
 
 ## 2.0.0 - 2025-03-31
 ---
@@ -30,9 +99,10 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#465](https://github.com/FC4E-CAT/fc4e-cat-api/pull/465) CAT-822 Assessment type view and fill put order in criteria.
 - [#467](https://github.com/FC4E-CAT/fc4e-cat-api/pull/467) CAT-832 Add 127.0.0.1 to Keycloak Public Client to Accept Requests.
 - [#468](https://github.com/FC4E-CAT/fc4e-cat-api/pull/468) CAT-827 CAT-829 CAT-828 Publish Assessment in Zenodo / Store zenodo info in database/ Notifications to creator.
-- [#469](https://github.com/FC4E-CAT/fc4e-cat-api/pull/469) CAT-834 Publish deposit to Zenodo
-- [#470](https://github.com/FC4E-CAT/fc4e-cat-api/pull/470) CAT-836 Get deposit info from Zenodo 
-- [#471](https://github.com/FC4E-CAT/fc4e-cat-api/pull/471) CAT-830 Configure zenodo feature in cat
+- [#469](https://github.com/FC4E-CAT/fc4e-cat-api/pull/469) CAT-834 Publish deposit to Zenodo.
+- [#470](https://github.com/FC4E-CAT/fc4e-cat-api/pull/470) CAT-836 Get deposit info from Zenodo.
+- [#471](https://github.com/FC4E-CAT/fc4e-cat-api/pull/471) CAT-830 Configure zenodo feature in cat.
+- [#477](https://github.com/FC4E-CAT/fc4e-cat-api/pull/477) Create a new endpoint to list available AAI provider identifiers.
 
 ### Fixed 
 - [#472](https://github.com/FC4E-CAT/fc4e-cat-api/pull/472) CAT-856 Fix keycloak CORS policy towards 127.0.0.1

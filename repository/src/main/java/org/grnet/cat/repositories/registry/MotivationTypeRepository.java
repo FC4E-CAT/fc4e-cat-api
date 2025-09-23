@@ -6,7 +6,6 @@ import org.grnet.cat.entities.Page;
 import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.registry.MotivationType;
-import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.repositories.Repository;
 
 @ApplicationScoped

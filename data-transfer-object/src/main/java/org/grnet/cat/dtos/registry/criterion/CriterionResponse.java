@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.motivation.PartialMotivationResponse;
+import org.grnet.cat.dtos.registry.principle.PrinciplePartialResponse;
 import org.grnet.cat.dtos.registry.template.MetricNode;
+import org.grnet.cat.repositories.registry.MotivationRepository;
 
 import java.util.List;
 
@@ -76,6 +79,17 @@ public class CriterionResponse {
     @JsonProperty("url")
     public String url;
 
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Id of the Motivation.",
+            example = "pid_graph:3E109BBA"
+    )
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("motivation_id")
+    public String lodMTV;
+
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
@@ -113,6 +127,15 @@ public class CriterionResponse {
     public List<PartialMotivationResponse> motivations;
 
 
+    @Schema(
+            type = SchemaType.ARRAY,
+            implementation = PrinciplePartialResponse.class,
+            description = "List of principles related to this criterion."
+    )
+    @JsonProperty("tagged_by_principles")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<PrinciplePartialResponse> taggedByPrinciple;
+
 
     @Schema(
             type = SchemaType.ARRAY,
@@ -126,6 +149,8 @@ public class CriterionResponse {
     public void setMotivations(List<PartialMotivationResponse> motivations) {
         this.motivations = motivations;
     }
+
+    public void setTaggedByPrinciple(List<PrinciplePartialResponse> taggedByPrinciple) {this.taggedByPrinciple = taggedByPrinciple;}
 
     public void setMetrics(List<MetricNode> metrics) { this.metrics = metrics;}
 }

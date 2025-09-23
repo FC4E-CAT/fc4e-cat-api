@@ -27,6 +27,7 @@ public interface CriteriaMapper {
     @Mapping(target = "typeCriterion", expression = "java(criterion.getTypeCriterion().getId())")
     @Mapping(target = "motivations", ignore = true)
     @Mapping(target = "metrics", ignore = true)
+    @Mapping(target = "taggedByPrinciple", ignore = true)
     CriterionResponse criteriaToDto(Criterion criterion);
 
     @Mapping(target = "cri", expression = "java(criteriaRequestDto.cri.toUpperCase())")
@@ -55,5 +56,6 @@ public interface CriteriaMapper {
     @Mapping(target = "principles", ignore = true)
     @Mapping(target = "metrics", ignore = true)
     @Mapping(target = "actors", ignore = true)
+    @Mapping(target = "lodMTV", ignore = true)
     void updateCriteria(CriterionUpdate request, @MappingTarget Criterion criterion);
 }

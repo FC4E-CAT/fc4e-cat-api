@@ -8,10 +8,11 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
 import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
 import org.grnet.cat.dtos.registry.metric.MetricResponseDto;
 import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
+import org.grnet.cat.dtos.registry.metric.MetricVersionRequestDto;
+import org.grnet.cat.dtos.registry.metric.TypeCombinationDto;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
@@ -21,15 +22,13 @@ import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
 
 import org.grnet.cat.repositories.registry.CriterionMetricRepository;
-import org.grnet.cat.repositories.registry.MetricDefinitionRepository;
+import org.grnet.cat.repositories.registry.CriterionRepository;
+import org.grnet.cat.repositories.registry.TypeBenchmarkRepository;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.repositories.registry.metric.TypeAlgorithmRepository;
 import org.grnet.cat.repositories.registry.metric.TypeMetricRepository;
 import org.jboss.logging.Logger;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -44,11 +43,14 @@ public class MetricService {
 
     @Inject
     TypeMetricRepository typeMetricRepository;
+
+    @Inject
+    TypeBenchmarkRepository typeBenchmarkRepository;
     @Inject
     CriterionMetricRepository criterionMetricRepository;
 
     @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
+    CriterionRepository criterionRepository;
 
     private static final Logger LOG = Logger.getLogger(MetricService.class);
 
@@ -58,12 +60,11 @@ public class MetricService {
      * @param id The unique ID of the Metric item.
      * @return The corresponding Metric DTO.
      */
-    public MetricDefinitionExtendedResponse getMetricById(String id) {
+    public MetricResponseDto getMetricById(String id) {
 
-        var junction = metricDefinitionRepository.fetchMetricDefinitionByMetricId(id);
-        var metric = junction.getMetric();
+        var metric = metricRepository.findById(id);
 
-        return metricResponseWithMotivations(metric, junction);
+        return metricResponseWithMotivations(metric);
     }
 
 
@@ -87,8 +88,12 @@ public class MetricService {
         metric.setPopulatedBy(userId);
         metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequestDto.typeAlgorithmId));
         metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequestDto.typeMetricId));
+        metric.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, metricRequestDto.typeBenchmarkId));
+        metric.setVersion(1);
 
         metricRepository.persist(metric);
+
+        metric.setLodMTRV(metric.getId());
 
         return MetricMapper.INSTANCE.metricToDto(metric);
     }
@@ -106,10 +111,6 @@ public class MetricService {
     public MetricResponseDto updateMetric(String id, String userId, MetricUpdateDto request) {
 
         var metric = metricRepository.findById(id);
-
-//        if(criterionMetricRepository.existMetricInStatus(id,Boolean.TRUE)){
-//            throw new ForbiddenException("No action permitted, metric exists in a published motivation");
-//        }
 
         if(StringUtils.isNotEmpty(request.MTR) && !metric.getMTR().equalsIgnoreCase(request.MTR)){
 
@@ -133,6 +134,12 @@ public class MetricService {
             metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId));
         }
 
+        if(!Objects.isNull(request.typeBenchmarkId)){
+
+            typeBenchmarkRepository.findById(request.typeBenchmarkId);
+            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId));
+        }
+
         return MetricMapper.INSTANCE.metricToDto(metric);
     }
 
@@ -148,91 +155,126 @@ public class MetricService {
             throw new ForbiddenException("No action permitted, metric exists in a published motivation");
         }
 
+        var metric = metricRepository.findById(id);
+
+        if (metric != null && metric.getVersion() == 1 && metricRepository.countVersion(metric.getId()) > 1) {
+            throw new ForbiddenException("Cannot delete version 1 of the metric as more versions exist");
+        }
+
         return metricRepository.deleteById(id);
     }
 
     /**
-     * Retrieves a page of Metric items.
-     *
-     * @param page The index of the page to retrieve (starting from 0).
-     * @param size The maximum number of Metric items to include in a page.
-     * @param uriInfo The Uri Info for pagination links.
-     * @return A PageResource containing the Metric items in the requested page.
-     */
-    public PageResource<MetricResponseDto> getMetriclistAll(int page, int size, UriInfo uriInfo) {
-
-        var metricPage = metricRepository.fetchMetricByPage(page, size);
-        var metricDtos = MetricMapper.INSTANCE.metricToDtos(metricPage.list());
-
-        return new PageResource<>(metricPage, metricDtos, uriInfo);
-    }
-
-    /**
-     * Retrieves a paginated list of Metric items with their associated definitions.
+     * Retrieves a paginated list of Metric items.
      *
      * @param page The index of the page to retrieve (starting from 0).
      * @param size The maximum number of Metric items to include in a page.
      * @param uriInfo The UriInfo object containing request URI details for generating pagination links.
-     * @return A PageResource containing the MetricDefinitionExtendedResponse items in the requested page.
+     * @return A PageResource containing the MetricResponseDto items in the requested page.
      */
-    public PageResource<MetricDefinitionExtendedResponse> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
+    public PageResource<MetricResponseDto> getMetricListAll(String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinitionPage = metricDefinitionRepository.fetchMetricAndDefinitionByPage(search, sort, order, page, size);
+        var metricPage = metricRepository.fetchMetricByPage(search, sort, order, page, size);
+        var metrics = metricPage.list();
 
-        var junctions = metricDefinitionPage.list();
-
-        if (junctions.isEmpty()) {
-            return new PageResource<>(metricDefinitionPage, List.of(), uriInfo);
+        if (metrics.isEmpty()) {
+            return new PageResource<>(metricPage, List.of(), uriInfo);
         }
 
-        var metricIds = junctions.stream()
-                .map(j -> j.getMetric().getId())
-                .distinct()
-                .collect(Collectors.toList());
+        var dtoList = metrics.stream()
+                .map(metric -> {
+                    var latestVersion = metric.getVersion();
+                    var versions = getMetricVersions(metric.getLodMTRV(), latestVersion);
 
-        var motivationsList = metricDefinitionRepository.getMotivationsForMetricIds(metricIds);
+                    var metricResponse = metricResponseWithMotivations(metric);
 
-        var motivationsMap = motivationsList.stream()
-                .collect(Collectors.groupingBy(
-                        result -> (String) result[0],
-                        Collectors.mapping(result -> (Motivation) result[1], Collectors.toList())
-                ));
+                    metricResponse.setVersions(versions);
 
-        var dtoList = junctions.stream()
-                .map(junction -> {
-                    var dto = metricResponseWithMotivations(junction.getMetric(), junction);
-
-                    var motivations = motivationsMap.getOrDefault(junction.getMetric().getId(), List.of());
-                    dto.setMotivations(motivations.stream()
-                            .map(MotivationMapper.INSTANCE::mapPartialMotivation)
-                            .collect(Collectors.toList()));
-                    return dto;
+                    return metricResponse;
                 })
                 .collect(Collectors.toList());
 
-        return new PageResource<>(metricDefinitionPage, dtoList, uriInfo);
+        return new PageResource<>(metricPage, dtoList, uriInfo);
+    }
+
+    public List<MetricResponseDto> getMetricVersions(String metricParent, Integer latestVersion) {
+
+        var metricVersions = metricRepository.fetchMetricAllVersions(metricParent);
+
+        var metricVersionsWithoutLatest = metricVersions.stream()
+                .filter(metric -> !metric.getVersion().equals(latestVersion)) // Filter out the latest version
+                .collect(Collectors.toList());
+
+        if (metricVersionsWithoutLatest.isEmpty()) {
+            return List.of();
+        }
+        var dtoList = metricVersionsWithoutLatest.stream()
+                .map(this::metricResponseWithMotivations)
+                .collect(Collectors.toList());
+
+        return dtoList;
+    }
+
+
+    @Transactional
+    public MetricResponseDto versionMetric(String id, String userId, MetricVersionRequestDto request) {
+
+        var parentId = metricRepository.findById(id).getLodMTRV();
+        var parentTestVersion = metricRepository.countVersion(parentId);
+
+        var childMetric = MetricMapper.INSTANCE.versionMetricToEntity(request);
+
+        childMetric.setMTR(metricRepository.findById(id).getMTR());
+        childMetric.setPopulatedBy(userId);
+        childMetric.setLodMTRV(metricRepository.findById(id).getLodMTRV());
+        childMetric.setPopulatedBy(userId);
+        childMetric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId));
+        childMetric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId));
+        childMetric.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId));
+
+        var newVersion = (int) parentTestVersion + 1 ;
+
+        childMetric.setVersion(newVersion);
+        metricRepository.persist(childMetric);
+
+        return MetricMapper.INSTANCE.metricToDto(childMetric);
     }
 
 
     /**
-     * This method takes a Metric entity, converts it to a MetricDefinitionResponseDto, retrieves and maps
+     * This method takes a Metric entity, converts it to a MetricResponseDto, retrieves and maps
      * any associated motivations, and then sets the motivations in the response.
      *
      * @param metric The Test entity to be converted and enhanced.
      * @return A PrincipleResponseDto with associated motivations.
      */
-    private MetricDefinitionExtendedResponse metricResponseWithMotivations(Metric metric, MetricDefinitionJunction junction) {
+    public MetricResponseDto metricResponseWithMotivations(Metric metric) {
 
-        var metricAndDefinitionToDto = MetricMapper.INSTANCE.metricAndDefinitionToDto(metric, junction);
+        var metricResponseToDto = MetricMapper.INSTANCE.metricToDto(metric);
 
-        var motivations = metricDefinitionRepository.getMotivationIdsByMetric(metric.getId());
+        var motivations = metricRepository.getMotivationIdsByMetric(metric.getId());
         var motivationResponses = motivations.stream()
                 .map(MotivationMapper.INSTANCE::mapPartialMotivation)
                 .collect(Collectors.toList());
 
-        metricAndDefinitionToDto.setMotivations(motivationResponses);
+        metricResponseToDto.setMotivations(motivationResponses);
 
-        return metricAndDefinitionToDto;
+        return metricResponseToDto;
     }
 
+    public List<TypeCombinationDto> getMetricTypeStatistics() {
+        List<Object[]> results = metricRepository.fetchMetricTypeAlgorithmCombinations();
+
+        return results.stream()
+                .map(result -> {
+                    var dto = new TypeCombinationDto();
+                    dto.setTypeMetric((String) result[0]);
+                    dto.setTypeAlgorithm((String) result[1]);
+                    dto.setTypeBenchmark((String) result[2]);
+                    dto.setUsageCount(((Number) result[3]).intValue());
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }

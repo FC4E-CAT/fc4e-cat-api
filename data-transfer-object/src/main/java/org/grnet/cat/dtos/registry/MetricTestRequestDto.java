@@ -10,7 +10,6 @@ import org.grnet.cat.constraints.NotFoundEntity;
 import org.grnet.cat.repositories.registry.RelationRepository;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
 import org.grnet.cat.repositories.registry.TestRepository;
-import org.grnet.cat.repositories.registry.TestDefinitionRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 
 public class MetricTestRequestDto {
@@ -38,18 +37,6 @@ public class MetricTestRequestDto {
     @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:")
     @JsonProperty("test_id")
     public String testId;
-
-    @Schema(
-            type = SchemaType.STRING,
-            implementation = String.class,
-            description = "The ID of the Test Definition associated with this Metric-Test relationship",
-            required = true,
-            example = "pid_graph:529154B3"
-    )
-    @NotEmpty(message = "test_definition_id may not be empty.")
-    @NotFoundEntity(repository = TestDefinitionRepository.class, message = "There is no Test Definition with the following id:")
-    @JsonProperty("test_definition_id")
-    public String testDefinitionId;
 
     @Schema(
             type = SchemaType.STRING,

@@ -12,12 +12,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.dtos.pagination.PageResource;
 import org.grnet.cat.dtos.registry.CriterionMetricResponseDto;
-import org.grnet.cat.dtos.registry.MetricDefinitionResponseDto;
 import org.grnet.cat.dtos.registry.MetricTestResponseDto;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.exceptions.InternalServerErrorException;
 import org.grnet.cat.mappers.registry.CriterionMetricMapper;
-import org.grnet.cat.mappers.registry.MetricDefinitionMapper;
 import org.grnet.cat.mappers.registry.MetricTestMapper;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.repositories.registry.*;
@@ -35,8 +33,7 @@ public class RelationsService {
     CriterionMetricRepository criterionMetricRepository;
     @Inject
     MetricTestRepository metricTestRepository;
-    @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
+
     @Inject
     MotivationRepository motivationRepository;
     @Inject
@@ -47,19 +44,16 @@ public class RelationsService {
         var principleCriterions = principleCriterionRepository.fetchPrincipleCriterionByMotivation(motivationId, page, size);
         var criterionMetrics    = criterionMetricRepository.fetchCriterionMetricByMotivation(motivationId, page, size);
         var metricTests         = metricTestRepository.fetchMetricTestByMotivation(motivationId, page, size);
-        var metricDefinitions   = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId, page, size);
 
         var principleCriterionsResponse = PrincipleCriterionMapper.INSTANCE.principleCriterionToResponseDtos(principleCriterions.list());
         var criterionMetricsResponse    = CriterionMetricMapper.INSTANCE.criterionMetricToResponseDtos(criterionMetrics.list());
         var metricTestResponse          = MetricTestMapper.INSTANCE.metricTestToDtos(metricTests.list());
-        var metricDefinitionResponse    = MetricDefinitionMapper.INSTANCE.metricDefinitionToResponseDtos(metricDefinitions.list());
 
         var responseDto = new RelationsResponse();
 
         responseDto.setPrincipleCriterions(new PageResource<>(principleCriterions, principleCriterionsResponse, uriInfo));
         responseDto.setCriterionMetrics(new PageResource<>(criterionMetrics, criterionMetricsResponse, uriInfo));
         responseDto.setMetricTests(new PageResource<>(metricTests, metricTestResponse, uriInfo));
-        responseDto.setMetricDefinitions(new PageResource<>(metricDefinitions, metricDefinitionResponse, uriInfo));
 
         return responseDto;
     }
@@ -80,6 +74,37 @@ public class RelationsService {
         }
     }
 
+
+    @Transactional
+    public void copyRelationsToVersionMotivation(String newMotivationId, String sourceMotivationId) {
+
+        try {
+            entityManager
+                    .createNativeQuery("CALL CopyRelationsToVersionMotivation(:newMotivationId, :sourceMotivationId)")
+                    .setParameter("newMotivationId", newMotivationId)
+                    .setParameter("sourceMotivationId", sourceMotivationId)
+                    .executeUpdate();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLException) {
+                throw new InternalServerErrorException(e.getCause().getMessage(), 500);
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteMotivationAndCleanup(String motivationId) {
+        try {
+            entityManager
+                    .createNativeQuery("CALL DeleteMotivationAndCleanup(:motivationId)")
+                    .setParameter("motivationId", motivationId)
+                    .executeUpdate();
+        } catch (PersistenceException e) {
+            if (e.getCause() instanceof SQLException) {
+                throw new InternalServerErrorException(e.getCause().getMessage(), 500);
+            }
+        }
+    }
+
     @Setter
     @Getter
     public static class RelationsResponse {
@@ -87,7 +112,6 @@ public class RelationsService {
         private PageResource<PrincipleCriterionResponseDto> principleCriterions;
         private PageResource<CriterionMetricResponseDto> criterionMetrics;
         private PageResource<MetricTestResponseDto> metricTests;
-        private PageResource<MetricDefinitionResponseDto> metricDefinitions;
 
     }
 }

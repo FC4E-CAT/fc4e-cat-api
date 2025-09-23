@@ -247,7 +247,7 @@
                     <!-- START MAIN CONTENT AREA -->
                     <tr>
                         <td class="wrapper">
-                            <p><img src="{image}"></p>
+                            <p><img src="{logoUrl}" alt="Logo" height="60px"></p>
                             <p>&nbsp;</p>
                             <p><h3>Dear {name},</h3></p>
                             <p> This is to inform you that an deposit with id:  <strong>{depositId}</strong>   has been published to Zenodo
@@ -270,7 +270,8 @@
                                 </tbody>
                             </table>
                             <br>
-                            <p>Thank you, <br/>The FAIRCORE4EOSC Compliance Assessment Toolkit - CAT Team.</p>
+                            <p>Thank you<br/>{title} Team.</p>
+                            {#if !hidePartners}
                             <p><h4>Partners</h4></p>
                             <p>
                                 <img src="{image2}" alt="GRNET" height="40px">
@@ -278,6 +279,7 @@
                                 <img src="{image4}" alt="gwdg" height="30px">
                                 <img src="{image3}" alt="DATACITE" height="30px">
                             </p>
+                            {/if}
                         </td>
                     </tr>
                     <!-- END MAIN CONTENT AREA -->
@@ -287,7 +289,7 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="color:#DCDCDC">
                         <tr>
                             <td class="content-block">
-                                <span class="apple-link">The FAIRCORE4EOSC Compliance Assessment Toolkit - CAT Team</span>
+                                <span class="apple-link">{title} Team</span>
                                 <br> Need more information? Contact us at <a href="mailto:{contactMail}">Info</a>.
                             </td>
                         </tr>

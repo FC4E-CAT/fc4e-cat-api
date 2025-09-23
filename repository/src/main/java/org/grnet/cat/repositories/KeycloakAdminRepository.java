@@ -9,12 +9,17 @@ import org.grnet.cat.entities.PageQuery;
 import org.grnet.cat.entities.PageQueryImpl;
 import org.grnet.cat.entities.Role;
 import org.grnet.cat.exceptions.EntityNotFoundException;
+import org.grnet.cat.repositories.utils.PaginationUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +34,8 @@ public class KeycloakAdminRepository implements RoleRepository {
     @ConfigProperty(name = "quarkus.oidc.client-id")
     String clientId;
 
+    @Inject
+    PaginationUtils paginationUtils;
     /**
      * Injection point for the Keycloak admin client
      */
@@ -76,7 +83,7 @@ public class KeycloakAdminRepository implements RoleRepository {
 
         var allRoles = fetchRoles();
 
-        var partition = partition(allRoles, size);
+        var partition = paginationUtils.partition(allRoles, size);
 
         var roles = partition.get(page) == null ? Collections.EMPTY_LIST : partition.get(page);
 
@@ -98,30 +105,72 @@ public class KeycloakAdminRepository implements RoleRepository {
      * @param roles  The roles to be assigned to the user.
      */
     @Override
-    public void assignRoles(String userId, List<String> roles) {
-
+    public void assignRoles(String userId, List<String> roles, boolean forceSignOut) {
         try {
-
             var realmResource = keycloak.realm(realm);
 
-            var clientRepresentation = realmResource.clients().findByClientId(clientId).stream().findFirst().get();
+            var clientRepresentation = realmResource.clients()
+                    .findByClientId(clientId)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Client not found: " + clientId));
 
             var clientResource = realmResource.clients().get(clientRepresentation.getId());
 
-            var usersResource = realmResource.users();
-
-            var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, userId)).stream().findFirst().get();
-
-            var userResource = usersResource.get(userRepresentation.getId());
-
-            // Get client level roles
-            var rolesRepresentations = roles
+            var userRepresentation = realmResource.users()
+                    .searchByAttributes(String.format("%s:%s", attribute, userId))
                     .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
+
+            var userResource = realmResource.users().get(userRepresentation.getId());
+
+            // get current roles
+            var existingRoles = userResource.roles()
+                    .clientLevel(clientRepresentation.getId())
+                    .listAll()
+                    .stream()
+                    .map(RoleRepresentation::getName)
+                    .collect(Collectors.toSet());
+
+            // filter only roles the user doesn’t already have
+            var newRoles = roles.stream()
+                    .filter(role -> !existingRoles.contains(role))
                     .map(role -> clientResource.roles().get(role).toRepresentation())
                     .collect(Collectors.toList());
 
-            // Assign client level role to user
-            userResource.roles().clientLevel(clientRepresentation.getId()).add(rolesRepresentations);
+            if (!newRoles.isEmpty()) {
+                userResource.roles()
+                        .clientLevel(clientRepresentation.getId())
+                        .add(newRoles);
+
+                if (forceSignOut) {
+                    userResource.logout();
+                }
+            }
+
+        } catch (Exception e) {
+            LOG.error("A communication error occurred while assigning roles to the user.", e);
+            throw new RuntimeException("A communication error occurred while assigning roles to the user.", e);
+        }
+    }
+
+    @Override
+    public Map<String, Optional<String>> getUserInformation(String userId) {
+
+        try {
+
+            var map = new HashMap<String, Optional<String>>();
+
+            var realmResource = keycloak.realm(realm);
+
+            var userRepresentation = realmResource.users().searchByAttributes(String.format("%s:%s", attribute, userId)).stream().findFirst().get();
+
+            map.put("email", Optional.ofNullable(userRepresentation.getEmail()));
+            map.put("name", Optional.ofNullable(userRepresentation.getFirstName()));
+            map.put("surname", Optional.ofNullable(userRepresentation.getLastName()));
+
+            return map;
 
         } catch (Exception e) {
 
@@ -131,7 +180,7 @@ public class KeycloakAdminRepository implements RoleRepository {
     }
 
     @Override
-    public void removeRoles(String userId, List<String> roles) {
+    public void removeRoles(String userId, List<String> roles, boolean forceSignOut) {
 
         try {
 
@@ -156,6 +205,9 @@ public class KeycloakAdminRepository implements RoleRepository {
             // Remove client level role from user
             userResource.roles().clientLevel(clientRepresentation.getId()).remove(rolesRepresentations);
 
+            if(forceSignOut){
+                userResource.logout();
+            }
         } catch (Exception e) {
 
             LOG.error("A communication error occurred while removing roles from the user.", e);

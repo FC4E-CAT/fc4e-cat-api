@@ -88,6 +88,13 @@ public class StatisticsEnum{
                 return validationRepository.find("from Validation val where val.status =?1 or val.status=?2 ", ValidationStatus.PENDING, ValidationStatus.REVIEW).stream().count();
 
             }
+        },
+        REJECTED {
+            @Override
+            public Long getStatistics(ValidationRepository validationRepository) {
+                return validationRepository.find("from Validation val where val.status =?1", ValidationStatus.REJECTED).stream().count();
+
+            }
         };
 
         public abstract Long getStatistics(ValidationRepository validationRepository);

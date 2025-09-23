@@ -60,7 +60,7 @@ public class TestEndpoint {
             description = "The corresponding Test item.",
             content = @Content(schema = @Schema(
                     type = SchemaType.OBJECT,
-                    implementation = TestAndTestDefinitionResponse.class))
+                    implementation = TestResponseDto.class))
     )
     @APIResponse(
             responseCode = "401",
@@ -100,7 +100,7 @@ public class TestEndpoint {
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
 
-        var response = testService.getTestAndTestDefinitionById(id);
+        var response = testService.getTestById(id);
 
         return Response.ok(response).build();
     }
@@ -146,12 +146,12 @@ public class TestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Registration
     public Response createTest(
-            @Valid @NotNull(message = "The request body is empty.") TestAndTestDefinitionRequest request, @Context UriInfo uriInfo) {
+            @Valid @NotNull(message = "The request body is empty.") TestRequestDto request, @Context UriInfo uriInfo) {
 
-        var test = testService.createTestAndTestDefinition(utility.getUserUniqueIdentifier(), request);
+        var test = testService.createTest(utility.getUserUniqueIdentifier(), request);
         var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
 
-        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.testResponse.id)).build()).entity(test).build();
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(test.id)).build()).entity(test).build();
     }
 
     @Tag(name = "Test")
@@ -203,7 +203,7 @@ public class TestEndpoint {
                     schema = @Schema(type = SchemaType.STRING))
             @PathParam("id")
             @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
-            @Valid TestAndTestDefinitionUpdateRequest testUpdateDto) {
+            @Valid TestUpdateDto testUpdateDto) {
 
         testService.updateTest(id, utility.getUserUniqueIdentifier(), testUpdateDto);
 
@@ -362,22 +362,147 @@ public class TestEndpoint {
 
         SortAndOrderValidator.validateSortAndOrder(sort, order, sortValues, orderValues);
 
-        var tests = testService.getTestAndTestDefinitionListAll(search, sort, order,page - 1, size, uriInfo);
+        var tests = testService.getTestListAll(search, sort, order,page - 1, size, uriInfo);
 
         return Response.ok().entity(tests).build();
     }
 
-    public static class PageableTestResponse extends PageResource<TestAndTestDefinitionResponse> {
 
-        private List<TestAndTestDefinitionResponse> content;
+    @Tag(name = "Test")
+    @Operation(
+            summary = "Create version Test",
+            description = "Creates a new version of Test item."
+    )
+    @APIResponse(
+            responseCode = "201",
+            description = "Test item versioned.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = TestResponseDto.class))
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("{id}/version")
+    public Response versionTest(
+            @Parameter(
+                    description = "The ID of the Test to version.",
+                    required = true,
+                    example = "pid_graph:9F1A6267",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id,
+            @Valid TestVersionRequestDto request, @Context UriInfo uriInfo ) {
+
+        var versionTest = testService.versionTest(id, utility.getUserUniqueIdentifier(), request);
+        var serverInfo = new CatServiceUriInfo(serverUrl.concat(uriInfo.getPath()));
+
+        return Response.created(serverInfo.getAbsolutePathBuilder().path(String.valueOf(versionTest.id)).build()).entity(versionTest).build();
+    }
+
+
+    @Tag(name = "Test")
+    @Operation(
+            summary = "Delete Test",
+            description = "Deletes a specific Test item by ID.")
+    @APIResponse(
+            responseCode = "200",
+            description = "Test item deleted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "401",
+            description = "User has not been authenticated.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "403",
+            description = "Not permitted.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "404",
+            description = "Entity Not Found.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error.",
+            content = @Content(schema = @Schema(
+                    type = SchemaType.OBJECT,
+                    implementation = InformativeResponse.class)))
+    @SecurityRequirement(name = "Authentication")
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Registration
+    @Path("{id}/version")
+    public Response deleteTestAllVersions(
+            @Parameter(
+                    description = "The ID of the Test to be deleted.",
+                    required = true,
+                    example = "pid_graph:3E109BBA",
+                    schema = @Schema(type = SchemaType.STRING))
+            @PathParam("id")
+            @Valid @NotFoundEntity(repository = TestRepository.class, message = "There is no Test with the following id:") String id) {
+
+        var deleted = testService.deleteTestAllVersions(id);
+
+        InformativeResponse informativeResponse = new InformativeResponse();
+
+        if (!deleted) {
+
+            informativeResponse.code = 500;
+            informativeResponse.message = "Test hasn't been deleted. An error occurred.";
+        } else {
+
+            informativeResponse.code = 200;
+            informativeResponse.message = "All versions of Test has been successfully deleted.";
+        }
+
+        return Response.ok().entity(informativeResponse).build();
+
+    }
+
+    public static class PageableTestResponse extends PageResource<TestResponseDto> {
+
+        private List<TestResponseDto> content;
 
         @Override
-        public List<TestAndTestDefinitionResponse> getContent() {
+        public List<TestResponseDto> getContent() {
             return content;
         }
 
         @Override
-        public void setContent(List<TestAndTestDefinitionResponse> content) {
+        public void setContent(List<TestResponseDto> content) {
             this.content = content;
         }
     }

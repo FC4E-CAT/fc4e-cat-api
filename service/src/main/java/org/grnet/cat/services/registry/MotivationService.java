@@ -3,6 +3,8 @@ package org.grnet.cat.services.registry;
 import io.quarkus.hibernate.orm.panache.Panache;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -10,16 +12,10 @@ import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.pagination.PageResource;
-import org.grnet.cat.dtos.registry.MetricDefinitionExtendedResponse;
-import org.grnet.cat.dtos.registry.MetricDefinitionRequest;
 import org.grnet.cat.dtos.registry.PrincipleCriterionResponseDto;
 import org.grnet.cat.dtos.registry.actor.MotivationActorRequest;
 import org.grnet.cat.dtos.registry.actor.MotivationActorResponse;
-import org.grnet.cat.dtos.registry.metric.DetailedMetricDto;
-import org.grnet.cat.dtos.registry.metric.MetricRequestDto;
-import org.grnet.cat.dtos.registry.metric.MetricUpdateDto;
-import org.grnet.cat.dtos.registry.metric.MotivationMetricExtendedRequest;
-import org.grnet.cat.dtos.registry.metric.MotivationMetricUpdateRequest;
+import org.grnet.cat.dtos.registry.metric.*;
 import org.grnet.cat.dtos.registry.motivation.*;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleExtendedRequestDto;
 import org.grnet.cat.dtos.registry.principle.MotivationPrincipleRequest;
@@ -27,26 +23,27 @@ import org.grnet.cat.dtos.registry.principle.PrincipleResponseDto;
 import org.grnet.cat.dtos.registry.principle.PrincipleUpdateDto;
 import org.grnet.cat.dtos.registry.template.MetricNode;
 import org.grnet.cat.dtos.registry.template.MetricTestNode;
+import org.grnet.cat.entities.MotivationAssessment;
 import org.grnet.cat.entities.registry.*;
 import org.grnet.cat.entities.registry.metric.Metric;
 import org.grnet.cat.entities.registry.metric.TypeAlgorithm;
 import org.grnet.cat.entities.registry.metric.TypeMetric;
 import org.grnet.cat.exceptions.UniqueConstraintViolationException;
-import org.grnet.cat.mappers.registry.*;
 import org.grnet.cat.mappers.registry.MotivationActorMapper;
 import org.grnet.cat.mappers.registry.MotivationMapper;
 import org.grnet.cat.mappers.registry.PrincipleCriterionMapper;
 import org.grnet.cat.mappers.registry.PrincipleMapper;
 import org.grnet.cat.mappers.registry.metric.MetricMapper;
+import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.registry.*;
 import org.grnet.cat.repositories.registry.metric.MetricRepository;
-import org.grnet.cat.services.registry.metric.MetricService;
 import org.grnet.cat.utils.TestParamsTransformer;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class MotivationService {
@@ -62,6 +59,9 @@ public class MotivationService {
 
     @Inject
     MotivationRepository motivationRepository;
+
+    @Inject
+    MotivationAssessmentRepository motivationAssessmentRepository;
 
     @Inject
     MotivationTypeRepository motivationTypeRepository;
@@ -82,16 +82,10 @@ public class MotivationService {
     MetricRepository metricRepository;
 
     @Inject
-    MetricDefinitionRepository metricDefinitionRepository;
-
-    @Inject
     MetricTestRepository metricTestRepository;
 
     @Inject
-    TestDefinitionRepository testDefinitionRepository;
-
-    @Inject
-    MetricService metricService;
+    CriterionRepository criterionRepository;
 
     /**
      * Creates a new Motivation.
@@ -108,11 +102,14 @@ public class MotivationService {
         motivation.setPopulatedBy(userId);
         motivation.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
         motivation.setPublished(Boolean.FALSE);
+        motivation.setVersion(1);
         motivationRepository.persist(motivation);
 
         if (request.basedOn != null && !request.basedOn.isEmpty()) {
             relationsService.copyRelationsToNewMotivation(motivation.getId(), request.basedOn);
         }
+
+        motivation.setLodMtvV(motivation.getId());
 
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
@@ -142,7 +139,7 @@ public class MotivationService {
                     actor.setLodMTV(motivationId);
                 }
 
-                motivation.addActor(Panache.getEntityManager().getReference(RegistryActor.class, req.actorId), Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()));
+                motivation.addActor(Panache.getEntityManager().getReference(RegistryActor.class, req.actorId), Panache.getEntityManager().getReference(Relation.class, req.relation), motivation.getId(), 1, userId, Timestamp.from(Instant.now()), req.automatedGroupTest);
                 resultMessages.add("Actor with id :: " + req.actorId + " successfully added to motivation.");
             } else {
                 resultMessages.add("Actor with id :: " + req.actorId + " already exists to motivation.");
@@ -251,8 +248,28 @@ public class MotivationService {
      */
     public PageResource<MotivationResponse> getMotivationsByPage(String actor, String search, String status, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var motivations = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
-        return new PageResource<>(motivations, MotivationMapper.INSTANCE.motivationsToDto(motivations.list()), uriInfo);
+        var motivationPage = motivationRepository.fetchMotivationsByPage(actor, search, status, sort, order, page, size);
+        var motivations = motivationPage.list();
+
+        if (motivations.isEmpty()) {
+            return new PageResource<>(motivationPage, MotivationMapper.INSTANCE.motivationsToDto(motivations), uriInfo);
+        }
+
+        var dtoList = motivations.stream()
+                .map(motivation -> {
+
+                    var latestVersion = motivation.getVersion();
+                    var versions = getMotivationListAllVersions(motivation.getId(), latestVersion);
+
+                    var motivationResponse = MotivationMapper.INSTANCE.motivationToDto(motivation);
+
+                    motivationResponse.setVersions(versions);
+
+                    return motivationResponse;
+                })
+                .collect(Collectors.toList());
+
+        return new PageResource<>(motivationPage, dtoList, uriInfo);
     }
 
     /**
@@ -279,6 +296,80 @@ public class MotivationService {
 
         return MotivationMapper.INSTANCE.motivationToDto(motivation);
     }
+
+
+    /**
+     * Creates a new version of a Motivation.
+     *
+     * @param request The Motivation to be created.
+     * @param userId  The user who requests to create the Motivation.
+     * @return The created Motivation.
+     */
+    @Transactional
+    public MotivationResponse versionMotivation(String userId, MotivationVersionRequest request) {
+
+        var parentId = motivationRepository.findById(request.versionOf).getLodMtvV();
+        var parentMotivationVersion = motivationRepository.countVersion(parentId);
+
+        var motivationChild = MotivationMapper.INSTANCE.versionMotivationToEntity(request);
+
+        motivationChild.setPopulatedBy(userId);
+        motivationChild.setMtv(motivationRepository.findById(request.versionOf).getMtv());
+        motivationChild.setMotivationType(Panache.getEntityManager().getReference(MotivationType.class, request.motivationTypeId));
+        motivationChild.setPublished(Boolean.FALSE);
+        motivationChild.setLodMtvV((motivationRepository.findById(request.versionOf).getLodMtvV()));
+
+        var newVersion = (int) parentMotivationVersion + 1 ;
+
+        motivationChild.setVersion(newVersion);
+
+        motivationRepository.persist(motivationChild);
+
+        if (request.versionOf != null && !request.versionOf.isEmpty()) {
+            relationsService.copyRelationsToVersionMotivation(motivationChild.getId(), request.versionOf);
+        }
+
+        return MotivationMapper.INSTANCE.motivationToDto(motivationChild);
+    }
+
+
+    public List<MotivationResponse> getMotivationListAllVersions(String id, Integer latestVersion) {
+
+        var motivationParent = motivationRepository.findById(id);
+        if (motivationParent == null) {
+            throw new EntityNotFoundException("Motivation with ID " + id + " not found.");
+        }
+        var lodMTR_V = motivationParent.getLodMtvV();
+
+        var motivationVersions = motivationRepository.fetchMotivationAllVersions(lodMTR_V);
+
+        var motivationVersionsWithoutLatest = motivationVersions.stream()
+                .filter(test -> !test.getVersion().equals(latestVersion)) // Filter out the latest version
+                .collect(Collectors.toList());
+
+        if (motivationVersionsWithoutLatest.isEmpty()) {
+            return List.of();
+        }
+
+        var dtoList = motivationVersionsWithoutLatest.stream()
+                .map(MotivationMapper.INSTANCE::motivationToDto)
+                .collect(Collectors.toList());
+
+        return dtoList;
+    }
+
+
+    @Transactional
+    public String deleteMotivation(String motivationId) {
+
+        if (motivationAssessmentRepository.existsByMotivationId(motivationId)) {
+            throw new ForbiddenException("No action permitted, motivation is used in an existing assessment.");
+        }
+
+        relationsService.deleteMotivationAndCleanup(motivationId);
+        return "Motivation " + motivationId + " and all unused elements were deleted successfully.";
+    }
+
 
     /**
      * Retrieves a page of the Actors of a Motivations.
@@ -482,162 +573,131 @@ public class MotivationService {
     }
 
     @Transactional
-    public InformativeResponse createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
+    public PrincipleResponseDto createPrincipleForMotivation(String id, MotivationPrincipleExtendedRequestDto request, String userID) {
 
-        var response = new InformativeResponse();
-
-        if (!principleRepository.notUnique("pri", request.principleRequestDto.pri.toUpperCase())) {
-
-            var principle = PrincipleMapper.INSTANCE.principleToEntity(request.principleRequestDto);
-
-            principle.setLodMTV(id);
-            principle.setPopulatedBy(userID);
-            principleRepository.persist(principle);
-
-            var motivationPrincipleJunction = new MotivationPrincipleJunction(
-                    Panache.getEntityManager().getReference(Motivation.class, id),
-                    Panache.getEntityManager().getReference(Principle.class, principle.getId()),
-                    request.annotationText,
-                    request.annotationUrl,
-                    Panache.getEntityManager().getReference(Relation.class, request.relation),
-                    id,
-                    1,
-                    userID,
-                    Timestamp.from(Instant.now())
-            );
-
-            motivationPrincipleRepository.persist(motivationPrincipleJunction);
-
-            response.code = 200;
-            response.message = "Principle successfully created and linked to the specified motivation.";
-        } else {
-            response.code = 409;
-            response.message = "A principle with the identifier '" + request.principleRequestDto.pri.toUpperCase() + "' already exists.";
+        if (principleRepository.notUnique("pri", request.principleRequestDto.pri.toUpperCase())) {
+            throw new UniqueConstraintViolationException("pri", request.principleRequestDto.pri.toUpperCase());
         }
 
-        return response;
+        var principle = PrincipleMapper.INSTANCE.principleToEntity(request.principleRequestDto);
+
+        principle.setLodMTV(id);
+        principle.setPopulatedBy(userID);
+        principleRepository.persist(principle);
+
+        var motivationPrincipleJunction = new MotivationPrincipleJunction(
+                Panache.getEntityManager().getReference(Motivation.class, id),
+                Panache.getEntityManager().getReference(Principle.class, principle.getId()),
+                request.annotationText,
+                request.annotationUrl,
+                Panache.getEntityManager().getReference(Relation.class, request.relation),
+                id,
+                1,
+                userID,
+                Timestamp.from(Instant.now())
+        );
+
+        motivationPrincipleRepository.persist(motivationPrincipleJunction);
+
+        return PrincipleMapper.INSTANCE.principleToDto(principle);
     }
 
     @Transactional
-    public InformativeResponse createMetricDefinitionForMotivation(String id, MotivationMetricExtendedRequest request, String userId) {
+    public MetricResponseDto createMetricForMotivation(String id, MetricRequestDto request, String userId) {
 
-        var response = new InformativeResponse();
+        if (metricRepository.notUnique("MTR", request.MTR.toUpperCase())) {
+            throw new UniqueConstraintViolationException("MTR", request.MTR.toUpperCase());
+        }
+        var metric = MetricMapper.INSTANCE.metricToEntity(request);
 
-        if (!metricRepository.notUnique("MTR", request.MTR.toUpperCase())) {
+        metric.setLodMTV(id);
+        metric.setPopulatedBy(userId);
+        metric.setVersion(1);
 
-            var metricRequest = new MetricRequestDto();
-            metricRequest.MTR = request.MTR;
-            metricRequest.urlMetric = request.urlMetric;
-            metricRequest.typeMetricId = request.typeMetricId;
-            metricRequest.typeAlgorithmId = request.typeAlgorithmId;
-            metricRequest.labelMetric = request.labelMetric;
-            metricRequest.descrMetric = request.descrMetric;
+        var typeAlgorithm = Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId);
+        var typeBenchmark = Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId);
+        var typeMetric = Panache.getEntityManager().getReference(TypeMetric.class, request.typeMetricId);
 
-            var metric = MetricMapper.INSTANCE.metricToEntity(metricRequest);
+        metric.setTypeAlgorithm(typeAlgorithm);
+        metric.setTypeBenchmark(typeBenchmark);
+        metric.setTypeMetric(typeMetric);
 
-            metric.setLodMTV(id);
-            metric.setPopulatedBy(userId);
-            metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
-            metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
-            metric.setPopulatedBy(userId);
-            metricRepository.persist(metric);
+        metric.setMTR("M" + metricRepository.getNextAvailableMtrNumber());
 
-            var metricDefinitionJunction = new MetricDefinitionJunction(
-                    Panache.getEntityManager().getReference(Motivation.class, id),
-                    Panache.getEntityManager().getReference(Metric.class, metric.getId()),
-                    Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId),
-                    request.valueBenchmark,
-                    id,
-                    1,
-                    (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
-                    userId,
-                    Timestamp.from(Instant.now())
-            );
-
-            metricDefinitionRepository.persist(metricDefinitionJunction);
-
-            response.code = 200;
-            response.message = "A metric and a Metric Definition successfully created and linked to the specified motivation.";
-        } else {
-            response.code = 409;
-            response.message = "A metric with the identifier '" + request.MTR.toUpperCase() + "' already exists.";
+        if (request.criterion_id != null) {
+            var criterion = criterionRepository.findById(request.criterion_id);
+                metric.setLabelMetric(criterion.getLabel() + (" Metric"));
+                metric.setDescrMetric("Metric created for \"" + motivationRepository.findById(id).getLabel() + "\" and used by \"" + criterion.getCri() + "\".");
         }
 
-        return response;
+        metricRepository.persist(metric);
+        metric.setLodMTRV(metric.getId());
+
+        return MetricMapper.INSTANCE.metricToDto(metric);
     }
 
     @Transactional
-    public InformativeResponse updateMetricDefinitionForMotivation(String id, String metricId, MotivationMetricUpdateRequest request, String userId) {
+    public InformativeResponse updateMetricForMotivation(String metricId, MotivationMetricUpdateRequest request) {
 
         var response = new InformativeResponse();
 
-        var updateMetric = new MetricUpdateDto();
+        var metric = metricRepository.findById(metricId);
+        var typeAlgorithm = Panache.getEntityManager().getReference(TypeAlgorithm.class, request.typeAlgorithmId);
+        var typeBenchmark = Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId);
 
-        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMetricId(metricId);
+        metric.setTypeAlgorithm(typeAlgorithm);
+        metric.setTypeBenchmark(typeBenchmark);
+        metric.setValueBenchmark(request.valueBenchmark);
 
-        updateMetric.MTR = request.MTR;
-        updateMetric.labelMetric = request.labelMetric;
-        updateMetric.descrMetric = request.descrMetric;
-        updateMetric.typeMetricId = request.typeMetricId;
-        updateMetric.urlMetric = request.urlMetric;
-        updateMetric.typeAlgorithmId = request.typeAlgorithmId;
+        MetricMapper.INSTANCE.updateMotivationMetricFromDto(request, metric);
 
-        metricService.updateMetric(metricId, userId, updateMetric);
-
-        if(StringUtils.isNotEmpty(request.typeBenchmarkId)){
-
-            metricDefinition.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, request.typeBenchmarkId));
-
-        }
-
-        if(StringUtils.isNotEmpty(request.valueBenchmark)){
-
-            metricDefinition.setValueBenchmark(request.valueBenchmark);
-        }
+        metricRepository.persist(metric);
 
         response.code = 200;
-        response.message = "A metric and a Metric Definition successfully updated.";
+        response.message = "Metric was successfully updated with identifier: " + metric.getId();
 
         return response;
     }
 
-
     @Transactional
-    public List<String> updateMetricDefinitionRelation(String motivationId, Set<MetricDefinitionRequest> request, String userId) {
+    public InformativeResponse createMetricVersionForMotivation(String motivationId, String metricId, MetricVersionRequestDto request, String userId) {
 
-        var resultMessages = new ArrayList<String>();
+        var response = new InformativeResponse();
 
-        removeMetricDefinitionRelationship(motivationId, request, resultMessages);
+        var metricParent = metricRepository.findById(metricId);
 
-        request.stream().iterator().forEachRemaining(req -> {
 
-            var junction = principleCriterionRepository.findByMotivationAndPrincipleAndCriterionAndVersion(motivationId, req.metricId, req.typeBenchmarkId, 1);
+        var metricRequest = new MetricVersionRequestDto();
+        metricRequest.urlMetric = request.urlMetric;
+        metricRequest.typeMetricId = request.typeMetricId;
+        metricRequest.typeAlgorithmId = request.typeAlgorithmId;
+        metricRequest.labelMetric = request.labelMetric;
+        metricRequest.descrMetric = request.descrMetric;
+        metricRequest.typeBenchmarkId = request.typeBenchmarkId;
+        metricRequest.valueBenchmark = request.valueBenchmark;
 
-            if (junction.isPresent()) {
+        var metric = MetricMapper.INSTANCE.versionMetricToEntity(metricRequest);
 
-                var existingJunction = junction.get();
-                existingJunction.setLastTouch(Timestamp.from(Instant.now()));
-                existingJunction.setPopulatedBy(userId);
-                resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully updated.");
-            } else {
+        metric.setLodMTV(motivationId);
+        metric.setPopulatedBy(userId);
+        metric.setMTR(metricParent.getMTR());
+        metric.setTypeAlgorithm(Panache.getEntityManager().getReference(TypeAlgorithm.class, metricRequest.typeAlgorithmId));
+        metric.setTypeMetric(Panache.getEntityManager().getReference(TypeMetric.class, metricRequest.typeMetricId));
+        metric.setTypeBenchmark(Panache.getEntityManager().getReference(TypeBenchmark.class, metricRequest.typeBenchmarkId));
+        metric.setPopulatedBy(userId);
+        metric.setLodMTRV(metricParent.getLodMTRV());
 
-                var metDef = new MetricDefinitionJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
-                        Panache.getEntityManager().getReference(Metric.class, req.metricId),
-                        Panache.getEntityManager().getReference(TypeBenchmark.class, req.typeBenchmarkId),
-                        req.valueBenchmark,
-                        motivationId,
-                        1,
-                        (Timestamp.from(Instant.now())).toLocalDateTime().toLocalDate(),
-                        userId,
-                        Timestamp.from(Instant.now())
-                );
+        var parentMetricVersion = metricRepository.countVersion(metricId);
+        metric.setVersion((int) (parentMetricVersion + 1));
 
-                metricDefinitionRepository.persist(metDef);
-                resultMessages.add("metric-definition with ids :: " + req.metricId + " - " + req.typeBenchmarkId + " successfully added to Motivation.");
-            }
-        });
-        return resultMessages;
+        metricRepository.persist(metric);
+
+        response.code = 200;
+        response.message = "A version of a metric successfully created with identifier: " + metric.getId();
+
+        return response;
     }
+
 
     public List<String> deletePrincipleFromMotivation(String motivationId, String principleId) {
         var resultMessages = new ArrayList<String>();
@@ -670,20 +730,12 @@ public class MotivationService {
         return resultMessages;
     }
 
-    public PageResource<MetricDefinitionExtendedResponse> getMetricDefinitionRelation(String motivationId, int page, int size, UriInfo uriInfo) {
+    public PageResource<MetricResponseDto> getMotivationMetricRelation(String motivationId, String search, String sort, String order, int page, int size, UriInfo uriInfo) {
 
-        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId, page, size);
+        var metricPage = metricRepository.fetchMetricByMotivation(motivationId, search, sort, order, page, size);
+        var metricDto = MetricMapper.INSTANCE.metricToDtos(metricPage.list());
 
-        var metricDefinitionResponse = MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponses(metricDefinition.list());
-
-        return new PageResource<>(metricDefinition, metricDefinitionResponse, uriInfo);
-    }
-
-    public MetricDefinitionExtendedResponse getMetricDefinitionRelation(String motivationId, String metricId) {
-
-        var metricDefinition = metricDefinitionRepository.fetchMetricDefinitionByMotivationAndMetricId(motivationId, metricId);
-
-        return MetricDefinitionMapper.INSTANCE.metricDefinitionToExtendedResponse(metricDefinition);
+        return new PageResource<>(metricPage, metricDto, uriInfo);
     }
 
     /**
@@ -698,30 +750,23 @@ public class MotivationService {
 
         var resultMessages = new ArrayList<String>();
         request.stream().iterator().forEachRemaining(req -> {
-            var testDefinitionOpt = testDefinitionRepository.fetchTestDefinitionByTest(req.testId);
-         if(!testDefinitionOpt.isEmpty()){
-                var testDefintion = testDefinitionOpt.get();
 
-                if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionOpt.get().getId(), 1)) {
+            if (!metricTestRepository.existsByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, 1)) {
 
-                    var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
-                            Panache.getEntityManager().getReference(Metric.class, metricId),
-                            Panache.getEntityManager().getReference(Test.class, req.testId),
-                            Panache.getEntityManager().getReference(TestDefinition.class, testDefintion.getId()),
-                            Panache.getEntityManager().getReference(Relation.class, req.relation),
-                            motivationId,
-                            1);
+                var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
+                        Panache.getEntityManager().getReference(Metric.class, metricId),
+                        Panache.getEntityManager().getReference(Test.class, req.testId),
+                        Panache.getEntityManager().getReference(Relation.class, req.relation),
+                        motivationId,
+                        1);
 
                     metricTest.setPopulatedBy(userId);
                     metricTest.setLastTouch(Timestamp.from(Instant.now()));
 
                     metricTestRepository.persist(metricTest);
                     resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully added to Motivation.");
-                } else {
-                    resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " already exists to Motivation.");
-                }
             } else {
-                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " can not be added because there does not exist any test-definition for the test.");
+                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " already exists to Motivation.");
             }
         });
 
@@ -771,18 +816,18 @@ public class MotivationService {
     }
 
     @Transactional
-    public void updateTestMetricRelation(String motivationId, String metricId, MetricTestRequest req, String testDefinitionId, String userId) {
+    public void updateTestMetricRelation(String motivationId, String metricId, MetricTestRequest req, String userId) {
 
         var metricTest = new MetricTestJunction(Panache.getEntityManager().getReference(Motivation.class, motivationId),
                 Panache.getEntityManager().getReference(Metric.class, metricId),
                 Panache.getEntityManager().getReference(Test.class, req.testId),
-                Panache.getEntityManager().getReference(TestDefinition.class, testDefinitionId),
                 Panache.getEntityManager().getReference(Relation.class, req.relation),
                 motivationId,
                 1);
 
         metricTest.setPopulatedBy(userId);
         metricTest.setLastTouch(Timestamp.from(Instant.now()));
+        // createdOn will be set automatically by @PrePersist in the entity
 
         metricTestRepository.persist(metricTest);
 
@@ -804,51 +849,22 @@ public class MotivationService {
 
         request.stream().iterator().forEachRemaining(req -> {
 
-            var testDefinitionOpt = testDefinitionRepository.fetchTestDefinitionByTest(req.testId);
+            var junction = metricTestRepository.findByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, 1);
 
-            if (testDefinitionOpt.get() != null) {
+            if (junction.isPresent()) {
 
-                var testDefinitionId = testDefinitionOpt.get().getId();
-                var junction = metricTestRepository.findByMotivationAndMetricAndTestAndVersion(motivationId, metricId, req.testId, testDefinitionId, 1);
+                var existingJunction = junction.get();
+                existingJunction.setLastTouch(Timestamp.from(Instant.now()));
+                existingJunction.setPopulatedBy(userId);
+                existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
 
-                if (junction.isPresent()) {
-
-                    var existingJunction = junction.get();
-                    existingJunction.setLastTouch(Timestamp.from(Instant.now()));
-                    existingJunction.setPopulatedBy(userId);
-                    existingJunction.setRelation(Panache.getEntityManager().getReference(Relation.class, req.relation));
-
-                    resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully updated.");
-                } else {
-                    updateTestMetricRelation(motivationId, metricId, req, testDefinitionId, userId);
-                    resultMessages.add("principle-criterion with ids :: " + metricId + " - " + req.testId + " successfully added to Motivation.");
-                }
+                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully updated.");
             } else {
-                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " can not be added because there does not exist any test-definition for the test.");
+                updateTestMetricRelation(motivationId, metricId, req, userId);
+                resultMessages.add("metric-test with ids :: " + metricId + " - " + req.testId + " successfully added to Motivation.");
             }
         });
         return resultMessages;
-    }
-
-    private void removeMetricDefinitionRelationship(String
-                                                            motivationId, Set<MetricDefinitionRequest> request, List<String> resultMessages) {
-
-        var mdList = metricDefinitionRepository.fetchMetricDefinitionByMotivation(motivationId);
-
-        mdList
-                .iterator()
-                .forEachRemaining(md -> {
-
-                    var temp = new MetricDefinitionRequest();
-                    temp.metricId = md.getId().getMetricId();
-                    temp.typeBenchmarkId = md.getId().getTypeBenchmarkId();
-
-                    if (!request.contains(temp)) {
-
-                        metricDefinitionRepository.delete(md);
-                        resultMessages.add("principle-criterion with ids :: " + temp.metricId + " - " + temp.typeBenchmarkId + " removed from Motivation.");
-                    }
-                });
     }
 
 
@@ -922,7 +938,7 @@ public class MotivationService {
 
         mtList.iterator().forEachRemaining(mt -> {
 
-            if (mt.getId() != null && mt.getId().getTestId() != null && mt.getId().getTestDefinitionId() != null) {
+            if (mt.getId() != null && mt.getId().getTestId() != null) {
                 var temp = new MetricTestRequest();
                 temp.testId = mt.getId().getTestId();
                 temp.relation = mt.getRelation().getId();
