@@ -1,16 +1,18 @@
 package org.grnet.cat.dtos.report;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import java.util.List;
+@Getter
 public class ReportDefinitionDto {
 
     @Schema(
             type = SchemaType.STRING,
             description = "The ID of the report",
-            example = "actor_assessment"
+            example = "1"
     )
     @JsonProperty("id")
     public Long id;
@@ -57,4 +59,69 @@ public class ReportDefinitionDto {
     )
     @JsonProperty("value_type")
     public String valueType;
+
+    @Schema(
+            type = SchemaType.ARRAY,
+            description = "Filters applied to the report",
+            implementation = FilterDefinitionDto.class
+    )
+    @JsonProperty("filters")
+    public List<FilterDefinitionDto> filters;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getRowDimension() {
+        return rowDimension;
+    }
+
+    public void setRowDimension(String rowDimension) {
+        this.rowDimension = rowDimension;
+    }
+
+    public String getColumnDimension() {
+        return columnDimension;
+    }
+
+    public void setColumnDimension(String columnDimension) {
+        this.columnDimension = columnDimension;
+    }
+
+    public String getValueType() {
+        return valueType;
+    }
+
+    public void setValueType(String valueType) {
+        this.valueType = valueType;
+    }
+
+    public List<FilterDefinitionDto> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(List<FilterDefinitionDto> filters) {
+        this.filters = filters;
+    }
+
 }

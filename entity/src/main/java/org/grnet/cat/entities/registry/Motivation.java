@@ -85,6 +85,14 @@ public class Motivation extends Registry {
         actorMotivation.getMotivation().actors.add(actorMotivation);
     }
 
+    public String getMtv() {
+        return mtv;
+    }
+
+    public void setMtv(String mtv) {
+        this.mtv = mtv;
+    }
+
     public String getId() {
         return id;
     }

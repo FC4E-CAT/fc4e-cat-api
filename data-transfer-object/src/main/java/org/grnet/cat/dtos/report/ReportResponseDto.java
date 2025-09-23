@@ -2,12 +2,14 @@ package org.grnet.cat.dtos.report;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
 public class ReportResponseDto {
 
     @Schema(
@@ -15,9 +17,9 @@ public class ReportResponseDto {
             description = "Name of the report",
             example = "Actor x Assessments"
     )
-    @JsonProperty("name")
+    @JsonProperty("label")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String name;
+    public String label;
 
     @Schema(
             type = SchemaType.STRING,
@@ -102,4 +104,92 @@ public class ReportResponseDto {
     )
     @JsonProperty("data")
     public List<List<String>> data;
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getRowsDimension() {
+        return rowsDimension;
+    }
+
+    public String getColumnsDimension() {
+        return columnsDimension;
+    }
+
+    public String getValueType() {
+        return valueType;
+    }
+
+    public ReportFilterDto getFilters() {
+        return filters;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public String getCreatedOn() {
+        return createdOn;
+    }
+
+    public List<String> getRows() {
+        return rows;
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public List<List<String>> getData() {
+        return data;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setRowsDimension(String rowsDimension) {
+        this.rowsDimension = rowsDimension;
+    }
+
+    public void setColumnsDimension(String columnsDimension) {
+        this.columnsDimension = columnsDimension;
+    }
+
+    public void setValueType(String valueType) {
+        this.valueType = valueType;
+    }
+
+    public void setFilters(ReportFilterDto filters) {
+        this.filters = filters;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public void setCreatedOn(String createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public void setRows(List<String> rows) {
+        this.rows = rows;
+    }
+
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
+    }
+
+    public void setData(List<List<String>> data) {
+        this.data = data;
+    }
 }

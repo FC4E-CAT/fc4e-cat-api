@@ -5,10 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import org.grnet.cat.converter.FilterDefinition;
 import org.grnet.cat.dtos.report.*;
+import org.grnet.cat.entities.ReportDefinition;
+import org.grnet.cat.entities.Validation;
+import org.grnet.cat.entities.registry.Motivation;
 import org.grnet.cat.mappers.ReportMapper;
 import org.grnet.cat.repositories.ReportRepository;
+import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.repositories.registry.MotivationActorRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
 
 import java.time.Instant;
@@ -25,6 +32,11 @@ public class ReportService {
 
     @Inject
     MotivationRepository motivationRepository;
+    @Inject
+    MotivationActorRepository motivationActorRepository;
+    @Inject
+    ValidationRepository validationRepository;
+
 
     /**
      * Returns all available report definitions from the database.
@@ -41,9 +53,9 @@ public class ReportService {
      * Returns all available report definitions from the database.
      */
     @Transactional
-    public ReportDefinitionDto getDefinitionById(String id) {
+    public ReportDefinitionDto getDefinitionById(Long id) {
 
-        var def = reportRepository.findById(Long.valueOf(id));
+        var def = reportRepository.findById(id);
 
         return ReportMapper.INSTANCE.entityToDto(def);
     }
@@ -51,21 +63,54 @@ public class ReportService {
     /**
      * Returns available filter options.
      */
-    public ReportFiltersListDto getAllFilters() {
+    public List<FilterWithValuesResponseDto> getAllFilters(Long reportId) {
 
-        var dto = new ReportFiltersListDto();
 
-        dto.motivations = motivationRepository.findAll().stream()
-                .map(m -> {
-                    var opt = new MotivationPartialDto();
-                    opt.id = m.getId();
-                    return opt;
-                })
-                .collect(Collectors.toList());
+        var reportDefinitionOpt = reportRepository.findDefinitionById(reportId);
 
-        dto.publicationStatus = List.of("published", "not_published", "all");
+        List<FilterDefinition> filters = reportDefinitionOpt.get().getFilters();
 
-        return dto;
+        List<FilterWithValuesResponseDto> dtos = new ArrayList<>();
+        for (FilterDefinition def : filters) {
+            FilterWithValuesResponseDto dto = new FilterWithValuesResponseDto();
+            var filterDefDto = ReportMapper.INSTANCE.filterToDto(def);
+            dto.setDefinition(filterDefDto);
+            if (def.getName().equals("motivation")) {
+                var values = motivationRepository.findAll().stream()
+                        .map(m -> {
+                            var opt = new FilterWithValuesResponseDto.PermittedValueDto(m.getId(),m.getMtv());
+                            return opt;
+                        })
+                        .collect(Collectors.toList());
+                dto.setValues(values);
+            } else if (def.getName().equalsIgnoreCase("publication_status")) {
+
+                var values = List.of(new FilterWithValuesResponseDto.PermittedValueDto("1", "published"),
+                        new FilterWithValuesResponseDto.PermittedValueDto("2", "unpublished"));
+                dto.setValues(values);
+            }else if(def.getName().equalsIgnoreCase("actor")){
+                var values = motivationActorRepository.findAll().stream()
+                        .map(m -> {
+                            var opt = new FilterWithValuesResponseDto.PermittedValueDto(m.getActor().getId(),m.getActor().getAct());
+                            return opt;
+                        })
+                        .collect(Collectors.toList());
+                dto.setValues(values);
+
+            }else if(def.getName().equalsIgnoreCase("organisation")){
+                var values = validationRepository.findAll().stream()
+                        .map(m -> {
+                            var opt = new FilterWithValuesResponseDto.PermittedValueDto(m.getOrganisationId(),m.getOrganisationName());
+                            return opt;
+                        })
+                        .collect(Collectors.toList());
+                dto.setValues(values);
+
+            }
+            dtos.add(dto);
+        }
+
+        return dtos;
     }
 
     /**
@@ -76,33 +121,66 @@ public class ReportService {
      * @return a populated ReportResponseDto
      */
     @Transactional
-    public ReportResponseDto run(Long id, ReportRequestDto request, String userId) {
+    public ReportResponseDto run(Long id, ReportFilterDto request, String userId) {
 
-        var def = reportRepository.findDefinitionById(id)
-                .map(ReportMapper.INSTANCE::entityToDto);
+        // 1. Load the report definition
+        var reportDefinition = reportRepository.findDefinitionById(id)
+                .orElseThrow(() -> new NotFoundException("Report definition not found for id " + id));
 
-        // String motivationId = null;
-        // String published = null;
-        if (request.filters != null) {
+        var def = ReportMapper.INSTANCE.entityToDto(reportDefinition);
 
-//            if (!request.filters.motivations.isEmpty()) {
-//                motivationId = request.filters.motivations;
-//            }
-            //  published = request.filters.publicationStatus;
+        // 2. Validate filters against definition
+        if (request != null && request.getFilters() != null) {
+            Map<String, List<String>> provided = request.getFilters();
+            List<FilterDefinition> expectedFilters = reportDefinition.getFilters();
+
+            for (FilterDefinition expected : expectedFilters) {
+                List<String> values = provided.get(expected.getName());
+
+                // required check
+                if (Boolean.TRUE.equals(expected.getRequired()) &&
+                        (values == null || values.isEmpty())) {
+                    throw new BadRequestException("Missing required filter: " + expected.getName());
+                }
+
+                // type check
+                if (values != null && !validateListType(values, expected.getType())) {
+                    throw new BadRequestException(
+                            "Filter '" + expected.getName() + "' must be of type " + expected.getType()
+                    );
+                }
+            }
         }
 
-        var raw = reportRepository.fetchReportData(request.filters.motivations, request.filters.publicationStatus, id);
+        // 3. Extract specific filters (if needed by repository)
+        List<String> motivations = request.getFilters().getOrDefault("motivations", List.of());
+        List<String> publicationStatus = request.getFilters().getOrDefault("publication_status", List.of());
 
+        // 4. Fetch raw data
+        var raw = reportRepository.fetchReportData(motivations, publicationStatus, id);
+
+        // 5. Build matrix
         var matrix = new LinkedHashMap<String, Map<String, String>>();
         var colSet = new LinkedHashSet<String>();
         buildMatrix(raw, matrix, colSet);
 
-        return buildResponse(def.get(), request.filters, userId, matrix, colSet);
+        // 6. Return response
+        return buildResponse(def, request, userId, matrix, colSet);
     }
 
-    /**
-     * Builds the report matrix (row×column → compliance value).
-     */
+    private boolean validateListType(List<String> values, String expectedType) {
+        switch (expectedType.toLowerCase()) {
+            case "string":
+                return true; // always valid
+            case "number":
+                return values.stream().allMatch(v -> v.matches("-?\\d+(\\.\\d+)?"));
+            case "boolean":
+                return values.stream().allMatch(v -> v.equalsIgnoreCase("true") || v.equalsIgnoreCase("false"));
+            default:
+                return false;
+        }
+    }
+
     private void buildMatrix(List<Object[]> raw,
                              Map<String, Map<String, String>> matrix,
                              Set<String> colSet) {
@@ -121,10 +199,29 @@ public class ReportService {
     }
 
     /**
+     * Validate filter types from request against expected definitions.
+     */
+    private boolean validateType(Object value, String expectedType) {
+        switch (expectedType.toLowerCase()) {
+            case "string":
+                return value instanceof String ||
+                        (value instanceof List && ((List<?>) value).stream().allMatch(v -> v instanceof String));
+            case "number":
+                return value instanceof Number ||
+                        (value instanceof List && ((List<?>) value).stream().allMatch(v -> v instanceof Number));
+            case "boolean":
+                return value instanceof Boolean ||
+                        (value instanceof List && ((List<?>) value).stream().allMatch(v -> v instanceof Boolean));
+            default:
+                return true; // unknown type → let it pass
+        }
+    }
+
+    /**
      * Builds the response DTO from a definition, userId, and table data.
      */
     private ReportResponseDto buildResponse(ReportDefinitionDto def,
-                                            ReportFilterDto filters,
+                                            ReportFilterDto request,
                                             String userId,
                                             LinkedHashMap<String, Map<String, String>> matrix,
                                             LinkedHashSet<String> colSet) {
@@ -132,7 +229,7 @@ public class ReportService {
         var table = matrixToDto(matrix, colSet);
 
         var response = new ReportResponseDto();
-        response.name = def.label;
+        response.label = def.label;
         response.description = def.description;
         response.rowsDimension = def.rowDimension;
         response.columnsDimension = def.columnDimension;
@@ -143,14 +240,10 @@ public class ReportService {
         response.createdBy = userId;
         response.createdOn = Instant.now().toString();
 
-        if (filters != null) {
+        // Attach filters back into response
+        if (request != null && request.getFilters() != null && !request.getFilters().isEmpty()) {
             var filterDto = new ReportFilterDto();
-            if (!filters.motivations.isEmpty()) {
-                filterDto.motivations = filters.motivations;
-            }
-            if (!filters.publicationStatus.isEmpty()) {
-                filterDto.publicationStatus = filters.publicationStatus;
-            }
+            filterDto.setFilters(new HashMap<>(request.getFilters())); // copy to avoid mutation
             response.filters = filterDto;
         }
 

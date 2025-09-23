@@ -8,6 +8,15 @@ import org.grnet.cat.constraints.ValidUrl;
 
 public class ReportRequestDto {
 
+//    @Schema(
+//            type = SchemaType.STRING,
+//            implementation = Long.class,
+//            description = "ID of the predefined report definition to run",
+//            example = "1"
+//    )
+//    @JsonProperty("reportDefinitionId")
+//    public String reportDefinitionId;
+
     @Schema(
             type = SchemaType.OBJECT,
             implementation = ReportFilterDto.class,
