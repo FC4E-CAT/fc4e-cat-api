@@ -9,11 +9,6 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.grnet.cat.converter.FilterDefinition;
 import org.grnet.cat.dtos.report.*;
-import org.grnet.cat.entities.ReportDefinition;
-import org.grnet.cat.entities.Validation;
-import org.grnet.cat.entities.registry.Motivation;
-import org.grnet.cat.entities.registry.RegistryActor;
-import org.grnet.cat.enums.PublicationStatus;
 import org.grnet.cat.mappers.ReportMapper;
 import org.grnet.cat.repositories.ReportRepository;
 import org.grnet.cat.repositories.ValidationRepository;
@@ -23,9 +18,6 @@ import org.grnet.cat.services.utils.FilterType;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -228,6 +220,40 @@ public class ReportService {
         return response;
     }
 
+    /**
+     * Converts a ReportResponseDto to CSV.
+     * First row is the header: <label>,<col1>,<col2>,...
+     */
+    public String exportToCsv(ReportResponseDto report) {
+        StringBuilder sb = new StringBuilder();
+
+        // Header: first cell = report label (no separate title row)
+        sb.append(escapeCsv(report.label != null ? report.label : ""));
+        for (String col : report.columns) {
+            sb.append(",").append(escapeCsv(col));
+        }
+        sb.append("\n");
+
+        // Data rows
+        for (int i = 0; i < report.rows.size(); i++) {
+            sb.append(escapeCsv(report.rows.get(i))); // row label in first column
+            for (String val : report.data.get(i)) {
+                sb.append(",").append(escapeCsv(val));
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        String escaped = value.replace("\"", "\"\"");
+        if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n")) {
+            return "\"" + escaped + "\"";
+        }
+        return escaped;
+    }
 
     /**
      * Builds the response DTO from definition, userId, and table data.
