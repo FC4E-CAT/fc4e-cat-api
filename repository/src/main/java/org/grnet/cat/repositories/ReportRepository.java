@@ -33,6 +33,7 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
                                           List<String> publicationStatus,
                                           List<String> actors,
                                           List<String> organisations,
+                                          List<String> subjects,
                                           Long reportDefinitionId) {
         var em = Panache.getEntityManager();
         var def = findById(reportDefinitionId);
@@ -94,7 +95,34 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
                 where.append(") ");
             }
 
-        } else {
+        } else if (reportDefinitionId == 3) {
+            // Subjects × Motivations/Actors
+            selectRow = "a.assessment_doc->'subject'->>'name'";
+            selectCol = "(a.assessment_doc->'assessment_type'->>'name') || ' / ' || (a.assessment_doc->'actor'->>'name')";
+
+            // Subject filter
+            if (!subjects.isEmpty()) {
+                where.append("AND (");
+                for (int i = 0; i < subjects.size(); i++) {
+                    String paramName = "subject" + i;
+                    if (i > 0) where.append(" OR ");
+                    where.append(" a.assessment_doc->'subject'->>'db_id' = :").append(paramName);
+                }
+                where.append(") ");
+            }
+
+            // Actor filter
+            if (!actors.isEmpty()) {
+                where.append("AND (");
+                for (int i = 0; i < actors.size(); i++) {
+                    String paramName = "actor" + i;
+                    if (i > 0) where.append(" OR ");
+                    where.append(" a.assessment_doc->'actor'->>'id' = :").append(paramName);
+                }
+                where.append(") ");
+            }
+        }
+    else {
             throw new IllegalArgumentException("Unsupported definition: " + def);
         }
 
@@ -129,6 +157,16 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
         if (reportDefinitionId == 2) {
             for (int i = 0; i < organisations.size(); i++) {
                 q.setParameter("org" + i, organisations.get(i));
+            }
+        }
+
+        // Bind subject
+        if (reportDefinitionId == 3) {
+            for (int i = 0; i < subjects.size(); i++) {
+                q.setParameter("subject" + i, subjects.get(i));
+            }
+            for (int i = 0; i < actors.size(); i++) {
+                q.setParameter("actor" + i, actors.get(i));
             }
         }
 

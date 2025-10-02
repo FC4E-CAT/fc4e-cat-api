@@ -1,9 +1,11 @@
 package org.grnet.cat.services.utils;
 
 import org.grnet.cat.dtos.report.FilterWithValuesResponseDto;
+import org.grnet.cat.entities.Subject;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.enums.PublicationStatus;
+import org.grnet.cat.repositories.SubjectRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.repositories.registry.MotivationActorRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
@@ -63,7 +65,23 @@ public enum FilterType {
                     .sorted(Comparator.comparing(FilterWithValuesResponseDto.PermittedValueDto::getLabel))
                     .collect(Collectors.toList());
         }
-    };
+    },
+    SUBJECT("subject") {
+        @Override
+        public List<FilterWithValuesResponseDto.PermittedValueDto> getValues(Repositories repos) {
+            return repos.subjectRepository.findAll().stream()
+                    .collect(Collectors.toMap(
+                            Subject::getId,
+                            Subject::getName,
+                            (first, duplicate) -> first
+                    ))
+                    .entrySet().stream()
+                    .map(e -> new FilterWithValuesResponseDto.PermittedValueDto(e.getKey().toString(), e.getValue()))
+                    .sorted(Comparator.comparing(FilterWithValuesResponseDto.PermittedValueDto::getLabel))
+                    .collect(Collectors.toList());
+        }
+    }
+    ;
 
     private final String name;
 
@@ -84,13 +102,16 @@ public enum FilterType {
         public final MotivationRepository motivationRepository;
         public final MotivationActorRepository motivationActorRepository;
         public final ValidationRepository validationRepository;
+        public final SubjectRepository subjectRepository;
 
         public Repositories(MotivationRepository motivationRepository,
                             MotivationActorRepository motivationActorRepository,
-                            ValidationRepository validationRepository) {
+                            ValidationRepository validationRepository,
+                            SubjectRepository subjectRepository) {
             this.motivationRepository = motivationRepository;
             this.motivationActorRepository = motivationActorRepository;
             this.validationRepository = validationRepository;
+            this.subjectRepository = subjectRepository;
         }
     }
 }

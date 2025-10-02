@@ -288,6 +288,27 @@ public class ReportsEndpoint {
                                                     "    ]\n" +
                                                     "  }\n" +
                                                     "}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "Subject × Motivation/Actor",
+                                            summary = "Example for report ID = 3",
+                                            value = "{\n" +
+                                                    "  \"filters\": {\n" +
+                                                    "    \"subject\": [\n" +
+                                                    "      \"1000\"\n" +
+                                                    "    ],\n" +
+                                                    "    \"actor\": [\n" +
+                                                    "      \"pid_graph:0E00C332\"\n" +
+                                                    "    ],\n" +
+                                                    "    \"motivation\": [\n" +
+                                                    "      \"pid_graph:3E109BBA\"\n" +
+                                                    "    ],\n" +
+                                                    "    \"publication_status\": [\n" +
+                                                    "      \"1\",\n" +
+                                                    "      \"2\"\n" +
+                                                    "    ]\n" +
+                                                    "  }\n" +
+                                                    "}"
                                     )
                             }
                     )
@@ -389,6 +410,24 @@ public class ReportsEndpoint {
                                                     "  \"data\": [\n" +
                                                     "    [\"PASS\", \"FAIL\"]\n" +
                                                     "  ]\n" +
+                                                    "}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "Subjects × Motivation/Actor",
+                                            summary = "Export report ID = 3 (Subjects × Motivation/Actor)",
+                                            value = "{\n" +
+                                                    "  \"label\": \"Subjects × Motivation/Actor\",\n" +
+                                                    "  \"description\": \"Shows the latest assessment compliance for each subject per motivation/actor\",\n" +
+                                                    "  \"rows_dimension\": \"subject\",\n" +
+                                                    "  \"columns_dimension\": \"motivation_actor\",\n" +
+                                                    "  \"value_type\": \"compliance\",\n" +
+                                                    "  \"created_by\": \"admin_voperson_id\",\n" +
+                                                    "  \"created_on\": \"2025-10-02T13:10:00.000Z\",\n" +
+                                                    "  \"rows\": [\"test-name\"],\n" +
+                                                    "  \"columns\": [\"EOSC PID Policy / PID Owner (Role)\", \"EOSC PID Policy / PID Manager (Role)\"],\n" +
+                                                    "  \"data\": [\n" +
+                                                    "    [\"PASS\", \"FAIL\"]\n" +
+                                                    "  ],\n" +
                                                     "}"
                                     )
                             }
