@@ -11,6 +11,7 @@ import org.grnet.cat.converter.FilterDefinition;
 import org.grnet.cat.dtos.report.*;
 import org.grnet.cat.mappers.ReportMapper;
 import org.grnet.cat.repositories.ReportRepository;
+import org.grnet.cat.repositories.SubjectRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.repositories.registry.MotivationActorRepository;
 import org.grnet.cat.repositories.registry.MotivationRepository;
@@ -34,6 +35,9 @@ public class ReportService {
     MotivationActorRepository motivationActorRepository;
     @Inject
     ValidationRepository validationRepository;
+
+    @Inject
+    SubjectRepository subjectRepository;
 
 
     /**
@@ -65,7 +69,7 @@ public class ReportService {
         var reportDefinitionOpt = reportRepository.findDefinitionById(reportId);
         var filters = reportDefinitionOpt.get().getFilters();
 
-        var repos = new FilterType.Repositories(motivationRepository, motivationActorRepository, validationRepository);
+        var repos = new FilterType.Repositories(motivationRepository, motivationActorRepository, validationRepository, subjectRepository);
 
         return filters.stream()
                 .map(def -> {
@@ -120,14 +124,15 @@ public class ReportService {
         }
 
         // 3. Extract specific filters (if needed by repository)
-        List<String> motivations = request.getFilters().getOrDefault("motivations", List.of());
+        List<String> motivations = request.getFilters().getOrDefault("motivation", List.of());
         List<String> publicationStatus = request.getFilters().getOrDefault("publication_status", List.of());
         List<String> actors = request.getFilters().getOrDefault("actor", List.of());
         List<String> organisations = request.getFilters().getOrDefault("organisation", List.of());
+        List<String> subjects = request.getFilters().getOrDefault("subject", List.of());
 
 
         // 4. Fetch raw data
-        var raw = reportRepository.fetchReportData(motivations, publicationStatus, actors, organisations, id);
+        var raw = reportRepository.fetchReportData(motivations, publicationStatus, actors, organisations, subjects, id);
 
         // 5. Build matrix
         var matrix = new LinkedHashMap<String, Map<String, String>>();
