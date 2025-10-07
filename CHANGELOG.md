@@ -22,6 +22,14 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 
 ## Unreleased
 ---
+
+### Added
+
+- [#558](https://github.com/FC4E-CAT/fc4e-cat-api/pull/558) CAT-1049: Add Zenodo Publication Info to Assesment
+
+### Fixed
+
+
 ## 3.0.0 - 2025-09-23
 ---
 

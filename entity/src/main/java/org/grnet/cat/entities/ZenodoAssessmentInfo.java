@@ -1,6 +1,5 @@
 package org.grnet.cat.entities;
 
-import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -41,6 +40,8 @@ public class ZenodoAssessmentInfo {
     @Column(name = "zenodo_state")
     private ZenodoState zenodoState;
 
+    @Column(name = "file_url")
+    public String fileUrl;
 
     public Boolean getPublished() {
         return isPublished;
