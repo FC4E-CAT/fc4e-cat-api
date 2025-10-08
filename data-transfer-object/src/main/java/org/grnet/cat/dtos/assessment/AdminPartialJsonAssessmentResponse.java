@@ -107,4 +107,37 @@ public class AdminPartialJsonAssessmentResponse extends AssessmentResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<AdminPartialJsonAssessmentResponse> adminVersions;
 
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicates whether the assessment has been published on Zenodo.",
+            example = "published"
+    )
+    @Setter
+    @JsonProperty("zenodo_published")
+    public Boolean zenodoPublished;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Zenodo deposit ID associated with this assessment, if published.",
+            example = "1234567"
+    )
+    @Setter
+    @JsonProperty("zenodo_deposit_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String zenodoDepositId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Zenodo file url associated with this assessment, if published.",
+            example = "https://sandbox.zenodo.org/api/records/185555/draft/files/69ef9a51-09c1-48f8-920f-580d58552e84/"
+    )
+    @Setter
+    @JsonProperty("zenodo_file_url")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String zenodoFileUrl;
+
 }

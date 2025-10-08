@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.grnet.cat.dtos.assessment.AdminPartialJsonAssessmentResponse;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
-import org.grnet.cat.dtos.assessment.UserPartialJsonAssessmentResponse;
 
 import java.util.List;
 
@@ -39,4 +37,38 @@ public class AdminJsonRegistryAssessmentResponse extends AssessmentResponse {
     @JsonProperty("versions")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<AdminJsonRegistryAssessmentResponse> adminVersions;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = Boolean.class,
+            description = "Indicates whether the assessment has been published on Zenodo.",
+            example = "published"
+    )
+    @Setter
+    @JsonProperty("zenodo_published")
+    public Boolean zenodoPublished;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Zenodo deposit ID associated with this assessment, if published.",
+            example = "1234567"
+    )
+    @Setter
+    @JsonProperty("zenodo_deposit_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String zenodoDepositId;
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "The Zenodo file url associated with this assessment, if published.",
+            example = "https://sandbox.zenodo.org/api/records/185555/draft/files/69ef9a51-09c1-48f8-920f-580d58552e84/"
+    )
+    @Setter
+    @JsonProperty("zenodo_file_url")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String zenodoFileUrl;
+
+
 }

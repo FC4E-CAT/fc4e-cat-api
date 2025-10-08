@@ -321,7 +321,7 @@ public class ZenodoService {
     }
 
     private void uploadFile(String accessToken, MotivationAssessment assessment, byte[] binaryContent, String depositId) throws IOException {
-        File tempFile = new File(assessment.getId());
+        File tempFile = new File(assessment.getId() + ".pdf");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(binaryContent);
         } catch (IOException e) {
@@ -329,13 +329,13 @@ public class ZenodoService {
         }
         // Step 3: Upload file to Zenodo
         upload(accessToken, tempFile, String.valueOf(depositId));
-
     }
 
     public CompletableFuture<Void> runStepsInSequence(MotivationAssessment assessment, byte[] binaryContent, User activeUser, List<String> sharedUsersIds, Optional<ZenodoAssessmentInfo> parentZenodoOpt) {
         final AtomicReference<ZenodoState> state = new AtomicReference<>(ZenodoState.PROCESS_INIT);
         final AtomicReference<String> depositIdRef = new AtomicReference<>(null);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
+        final AtomicReference<String> fileUrlRef = new AtomicReference<>(null);
         String accessToken = getAccessToken();
         System.out.println("*** The access token is : "+accessToken);
         return CompletableFuture
@@ -394,7 +394,7 @@ public class ZenodoService {
 
                     System.out.println("Step 3: Writing to DB before publishing...");
                     try {
-                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get());
+                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), fileUrlRef.get());
                         zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
                         return depositId;
                     } catch (Exception dbException) {
@@ -475,13 +475,48 @@ public class ZenodoService {
         zenodoAssessmentInfo.setPublishedAt(Timestamp.from(Instant.now()));
         zenodoAssessmentInfo.setIsPublished(Boolean.TRUE);
         zenodoAssessmentInfo.setZenodoState(ZenodoState.PROCESS_COMPLETED);
+        try {
+            // ✅ Get the latest Zenodo record info after publication
+            var response = zenodoClient.getDeposit(getAccessToken(), zenodoAssessmentInfo.getId().getDepositId());
+
+            Object filesObj = response.get("files");
+            if (filesObj instanceof List && !((List<?>) filesObj).isEmpty()) {
+                Object first = ((List<?>) filesObj).get(0);
+                if (first instanceof Map) {
+                    Object flinks = ((Map<?, ?>) first).get("links");
+                    if (flinks instanceof Map) {
+                        Map<?, ?> links = (Map<?, ?>) flinks;
+
+                        // Sandbox only returns "self", production adds "download"
+                        String fileUrl = null;
+                        if (links.containsKey("download")) {
+                            fileUrl = (String) links.get("download");
+                        } else if (links.containsKey("self")) {
+                            fileUrl = (String) links.get("self");
+                        }
+
+                        if (fileUrl != null) {
+                            zenodoAssessmentInfo.setFileUrl(fileUrl);
+                            Log.infof("Stored Zenodo file URL: %s", fileUrl);
+                        } else {
+                            Log.info("Zenodo record has no file links available yet.");
+                        }
+                    }
+                }
+            } else {
+                Log.info("Zenodo returned no files[] for published record " + zenodoAssessmentInfo.getId().getDepositId());
+            }
+
+        } catch (Exception e) {
+            Log.warn("Could not fetch file URL for deposit " + zenodoAssessmentInfo.getId().getDepositId(), e);
+        }
         zenodoAssessmentInfoRepository.persist(zenodoAssessmentInfo);
         return zenodoAssessmentInfo;
     }
 
 
     @Transactional
-    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state) {
+    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String fileUrl) {
 
         MotivationAssessment managedAssessment = motivationAssessmentRepository.findById(assessment.getId());
         if (managedAssessment != null) {
@@ -496,6 +531,7 @@ public class ZenodoService {
         zenodoAssessmentInfo.setUploadedAt(Timestamp.from(Instant.now()));
         zenodoAssessmentInfo.setId(new ZenodoAssessmentInfoId(assessment.getId(), String.valueOf(depositId)));
         zenodoAssessmentInfo.setZenodoState(state);
+        zenodoAssessmentInfo.setFileUrl(fileUrl);
         zenodoAssessmentInfoRepository.persist(zenodoAssessmentInfo);
         return zenodoAssessmentInfo;
     }

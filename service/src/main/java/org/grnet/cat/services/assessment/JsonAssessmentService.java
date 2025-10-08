@@ -36,6 +36,7 @@ import org.grnet.cat.mappers.UserMapper;
 import org.grnet.cat.repositories.MotivationAssessmentRepository;
 import org.grnet.cat.repositories.UserRepository;
 import org.grnet.cat.repositories.ValidationRepository;
+import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.SubjectService;
@@ -79,6 +80,9 @@ public class JsonAssessmentService {
 
     @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
+
+    @Inject
+    ZenodoAssessmentInfoRepository zenodoAssessmentInfoRepository;
 
     @Transactional
     @SneakyThrows
@@ -377,7 +381,20 @@ public class JsonAssessmentService {
             throw new RuntimeException("Failed to sort tests in assessmentDoc", e);
         }
 
-        return AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+        var response =  AssessmentMapper.INSTANCE.userRegistryAssessmentToJsonAssessment(assessment);
+
+        var zenodoInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(assessmentId);
+
+        if (zenodoInfoOpt.isPresent()) {
+            var zenodoInfo = zenodoInfoOpt.get();
+            response.setZenodoPublished(zenodoInfo.getIsPublished());
+            response.setZenodoDepositId(zenodoInfo.getId().getDepositId());
+            response.setZenodoFileUrl(zenodoInfo.getFileUrl());
+        } else {
+            response.published = false;
+        }
+
+        return response;
     }
 
     /**
@@ -486,7 +503,17 @@ public class JsonAssessmentService {
                             .collect(Collectors.toList());
 
                     dto.setUserVersions(prevVersions);
-                    return AssessmentMapper.INSTANCE.userRegistryAssessmentToPartialJsonAssessment(dto);
+                    var partialDto = AssessmentMapper.INSTANCE.userRegistryAssessmentToPartialJsonAssessment(dto);
+
+                    var zenodoInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(dto.id);
+                    if (zenodoInfoOpt.isPresent()) {
+                        var zenodoInfo = zenodoInfoOpt.get();
+                        partialDto.setZenodoPublished(zenodoInfo.getIsPublished());
+                        partialDto.setZenodoDepositId(zenodoInfo.getId().getDepositId());
+                        partialDto.setZenodoFileUrl(zenodoInfo.getFileUrl());
+                    }
+
+                    return partialDto;
                 })
                 .collect(Collectors.toList());
 
@@ -786,7 +813,19 @@ public class JsonAssessmentService {
                             .collect(Collectors.toList());
 
                     dto.setAdminVersions(prevVersions);
-                    return AssessmentMapper.INSTANCE.adminRegistryAssessmentToPartialJsonAssessment(dto);
+
+                    var partialDto = AssessmentMapper.INSTANCE.adminRegistryAssessmentToPartialJsonAssessment(dto);
+
+                    var zenodoInfoOpt = zenodoAssessmentInfoRepository.getAssessmentByAsessmentId(dto.id);
+                    if (zenodoInfoOpt.isPresent()) {
+                        var zenodoInfo = zenodoInfoOpt.get();
+                        partialDto.setZenodoPublished(zenodoInfo.getIsPublished());
+                        partialDto.setZenodoDepositId(zenodoInfo.getId().getDepositId());
+                        partialDto.setZenodoFileUrl(zenodoInfo.getFileUrl());
+                    }
+
+                    return partialDto;
+
                 })
                 .collect(Collectors.toList());
 
