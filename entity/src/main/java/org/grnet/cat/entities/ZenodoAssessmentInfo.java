@@ -43,6 +43,9 @@ public class ZenodoAssessmentInfo {
     @Column(name = "file_url")
     public String fileUrl;
 
+    @Column(name = "doi")
+    public String doi;
+
     public Boolean getPublished() {
         return isPublished;
     }

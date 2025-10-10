@@ -27,6 +27,7 @@ public interface ZenodoAssessmentInfoMapper {
     @Mapping(target = "uploadedAt", expression = "java(mapTimestampToString(entity.getUploadedAt()))")
     @Mapping(target = "isPublished", expression = "java(entity.getPublished())")
     @Mapping(target = "zenodoState", expression = "java(mapZenodoStateToString(entity.getZenodoState()))") // New mapping
+    @Mapping(target = "doi", expression = "java(entity.getDoi())") // New mapping
 
     ZenodoAssessmentInfoResponse zenodoAssessmentInfoToResponse(ZenodoAssessmentInfo entity);
 

@@ -336,8 +336,8 @@ public class ZenodoService {
         final AtomicReference<String> depositIdRef = new AtomicReference<>(null);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
         final AtomicReference<String> fileUrlRef = new AtomicReference<>(null);
+        final AtomicReference<String> doiRef = new AtomicReference<>(null);
         String accessToken = getAccessToken();
-        System.out.println("*** The access token is : "+accessToken);
         return CompletableFuture
                 .supplyAsync(() -> {
                     // Step 1: Preparation of assessment for Zenodo
@@ -370,6 +370,7 @@ public class ZenodoService {
                             throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
                         }
                         depositIdRef.set(String.valueOf(depositId));
+                        doiRef.set(extractDoiFromResponse(response));
                     }
 
                     return depositIdRef.get();
@@ -394,7 +395,7 @@ public class ZenodoService {
 
                     System.out.println("Step 3: Writing to DB before publishing...");
                     try {
-                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), fileUrlRef.get());
+                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), fileUrlRef.get(), doiRef.get());
                         zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
                         return depositId;
                     } catch (Exception dbException) {
@@ -516,7 +517,7 @@ public class ZenodoService {
 
 
     @Transactional
-    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String fileUrl) {
+    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String fileUrl,String doi) {
 
         MotivationAssessment managedAssessment = motivationAssessmentRepository.findById(assessment.getId());
         if (managedAssessment != null) {
@@ -532,6 +533,7 @@ public class ZenodoService {
         zenodoAssessmentInfo.setId(new ZenodoAssessmentInfoId(assessment.getId(), String.valueOf(depositId)));
         zenodoAssessmentInfo.setZenodoState(state);
         zenodoAssessmentInfo.setFileUrl(fileUrl);
+        zenodoAssessmentInfo.setDoi(doi);
         zenodoAssessmentInfoRepository.persist(zenodoAssessmentInfo);
         return zenodoAssessmentInfo;
     }
@@ -670,6 +672,25 @@ public class ZenodoService {
                     return false;
                 })
                 .orElse(false);
+    }
+    private String extractDoiFromResponse(Map<String, Object> response) {
+        if (response == null) return null;
+
+        Object metadata = response.get("metadata");
+        if (metadata instanceof Map) {
+            Object prereserveDoi = ((Map<?, ?>) metadata).get("prereserve_doi");
+            if (prereserveDoi instanceof Map) {
+
+                Object doi = ((Map<?, ?>) prereserveDoi).get("doi");
+
+                if (doi instanceof String && !((String) doi).isEmpty()) {
+
+                    return (String) doi;
+                }
+            }
+        }
+
+        return null;
     }
 
 }

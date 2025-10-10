@@ -61,4 +61,14 @@ public class ZenodoAssessmentInfoResponse {
     )
     @JsonProperty("zenodo_state")
     private String zenodoState; // New field to represent the state
+
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Doi number from Zenodo",
+            example = "10.5281/zenodo.347006"
+    )
+    @JsonProperty("doi")
+    private String doi; // New field to represent the doi
 }

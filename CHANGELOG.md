@@ -74,6 +74,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#547](https://github.com/FC4E-CAT/fc4e-cat-api/pull/547) CAT-1008: Encrypt/Decrypt Sensitive Setting Values and Add Info Column 
 - [#551](https://github.com/FC4E-CAT/fc4e-cat-api/pull/551) CAT-1017 Add Run Report Functionality
 - [#510](https://github.com/FC4E-CAT/fc4e-cat-api/pull/510) CAT-809 Should not be able to edit published assessment
+- [#559](https://github.com/FC4E-CAT/fc4e-cat-api/pull/559) CAT-1052 Add Zenodo DOI to dabatabase
 
 ### Fix
 - [#502](https://github.com/FC4E-CAT/fc4e-cat-api/pull/502) CAT-1026 Fix: Ensure test fields are correctly updated in Test update method
