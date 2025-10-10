@@ -40,8 +40,8 @@ public class ZenodoAssessmentInfo {
     @Column(name = "zenodo_state")
     private ZenodoState zenodoState;
 
-    @Column(name = "file_url")
-    public String fileUrl;
+    @Column(name = "deposit_url")
+    public String depositUrl;
 
     @Column(name = "doi")
     public String doi;

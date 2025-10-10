@@ -1,5 +1,4 @@
 package org.grnet.cat.mappers;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoCreatorDto;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
@@ -12,10 +11,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.sql.Timestamp;
-import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Mapper(imports = {Objects.class})

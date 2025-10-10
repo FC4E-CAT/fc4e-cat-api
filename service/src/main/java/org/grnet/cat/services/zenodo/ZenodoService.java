@@ -40,7 +40,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -73,7 +72,6 @@ public class ZenodoService {
 
     @Inject
     SettingRepository settingRepository;
-
     @Inject
     EnvironmentDetector environmentDetector;
 
@@ -89,6 +87,7 @@ public class ZenodoService {
     private ZenodoClient zenodoClient;
 
     private String zenodoBaseUrl;
+
 
     @PostConstruct
     void initClient() {
@@ -270,6 +269,7 @@ public class ZenodoService {
         final AtomicReference<String> doiRef = new AtomicReference<>(null);
         final AtomicReference<String> imageUrlRef = new AtomicReference<>(null);
         final AtomicReference<String> targetUrlRef = new AtomicReference<>(null);
+        final AtomicReference<String> depositUrlRef = new AtomicReference<>(null);
 
         var zenodoResponse = zenodoClient.getDeposit(getAccessToken(), depositId);
         if (zenodoResponse.containsKey("submitted")) {
@@ -290,8 +290,10 @@ public class ZenodoService {
                 })
                 .thenApplyAsync(v -> {
                     stateRef.set(ZenodoState.DEPOSIT_PUBLISHED);
+                    depositUrlRef.set(extractDepositUrlFromResponse(depositId, stateRef.get()));
+
                     //try {
-                    var zenodoAssessment = updateInDatabase(zenodoAssessmentInfoRef.get(), doiRef.get(), imageUrlRef.get(), targetUrlRef.get());
+                    var zenodoAssessment = updateInDatabase(zenodoAssessmentInfoRef.get(), doiRef.get(), imageUrlRef.get(), targetUrlRef.get(),depositUrlRef.get());
                     if (zenodoAssessment != null) {
                         zenodoAssessmentInfoRef.set(zenodoAssessment);
                     }
@@ -356,10 +358,11 @@ public class ZenodoService {
         final AtomicReference<ZenodoState> state = new AtomicReference<>(ZenodoState.PROCESS_INIT);
         final AtomicReference<String> depositIdRef = new AtomicReference<>(null);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
-        final AtomicReference<String> fileUrlRef = new AtomicReference<>(null);
         final AtomicReference<String> doiRef = new AtomicReference<>(null);
         final AtomicReference<String> imageUrlRef = new AtomicReference<>(null);
         final AtomicReference<String> targetUrlRef = new AtomicReference<>(null);
+        final AtomicReference<String> depositUrlRef = new AtomicReference<>(null);
+
         String accessToken = getAccessToken();
         return CompletableFuture
                 .supplyAsync(() -> {
@@ -387,14 +390,12 @@ public class ZenodoService {
                     } else {
                         System.out.println("Creating new deposit from scratch");
                         response = createDeposit(accessToken, metadata);
-
                         var depositId = response.get("id");
                         if (depositId == null) {
                             throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
                         }
                         depositIdRef.set(String.valueOf(depositId));
-
-                    }
+                     }
 
                     return depositIdRef.get();
                 }, executorService)
@@ -403,12 +404,13 @@ public class ZenodoService {
                     state.set(ZenodoState.DEPOSIT_CREATED);
                     try {
                         uploadFile(accessToken, assessment, binaryContent, depositIdRef.get());
+
                         return depositId;
+
                     } catch (IOException e) {
 
                         zenodoClient.deleteDeposit(accessToken, depositIdRef.get()); // Cleanup
                         state.set(ZenodoState.PROCESS_FAILED);
-
                         throw new RuntimeException("Error uploading file to Zenodo: " + e.getMessage());
                     }
                 })
@@ -417,9 +419,11 @@ public class ZenodoService {
                     state.set(ZenodoState.FILE_UPLOADED_TO_DEPOSIT);
 
                     System.out.println("Step 3: Writing to DB before publishing...");
+                   depositUrlRef.set(extractDepositUrlFromResponse(depositId,state.get()));
                     try {
-                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), fileUrlRef.get());
+                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), depositUrlRef.get());
                         zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
+
                         return depositId;
                     } catch (Exception dbException) {
                         System.err.println("DB write failed, rolling back Zenodo deposit...");
@@ -447,8 +451,9 @@ public class ZenodoService {
                 .thenAccept(depositId -> {
                     // Final step: Send notification if everything succeeded
                     state.set(ZenodoState.DEPOSIT_PUBLISHED);
+                    depositUrlRef.set(extractDepositUrlFromResponse(depositIdRef.get(), state.get()));
 
-                    var zenodoAssessmentInfo = updateInDatabase(zenodoAssessmentInfoRef.get(), doiRef.get(), imageUrlRef.get(), targetUrlRef.get());
+                    var zenodoAssessmentInfo = updateInDatabase(zenodoAssessmentInfoRef.get(), doiRef.get(), imageUrlRef.get(), targetUrlRef.get(),depositUrlRef.get());
                     zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
                     state.set(ZenodoState.PROCESS_COMPLETED);
                     if (state.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
@@ -493,7 +498,7 @@ public class ZenodoService {
 
 
     @Transactional
-    public ZenodoAssessmentInfo updateInDatabase(ZenodoAssessmentInfo zenodoAssessmentInfo, String doi, String imageURL, String targetURL) {
+    public ZenodoAssessmentInfo updateInDatabase(ZenodoAssessmentInfo zenodoAssessmentInfo, String doi, String imageURL, String targetURL,String depositUrl) {
         var managedAssessment = zenodoAssessmentInfoRepository.getAssessmentByDepositIdAndAssessmentId(zenodoAssessmentInfo.getId().getDepositId(), zenodoAssessmentInfo.getId().getAssessmentId());
         if (managedAssessment.isEmpty()) {
             return null;
@@ -505,48 +510,14 @@ public class ZenodoService {
         zenodoAssessmentInfo.setPublishedAt(Timestamp.from(Instant.now()));
         zenodoAssessmentInfo.setIsPublished(Boolean.TRUE);
         zenodoAssessmentInfo.setZenodoState(ZenodoState.PROCESS_COMPLETED);
-        try {
-            // ✅ Get the latest Zenodo record info after publication
-            var response = zenodoClient.getDeposit(getAccessToken(), zenodoAssessmentInfo.getId().getDepositId());
-
-            Object filesObj = response.get("files");
-            if (filesObj instanceof List && !((List<?>) filesObj).isEmpty()) {
-                Object first = ((List<?>) filesObj).get(0);
-                if (first instanceof Map) {
-                    Object flinks = ((Map<?, ?>) first).get("links");
-                    if (flinks instanceof Map) {
-                        Map<?, ?> links = (Map<?, ?>) flinks;
-
-                        // Sandbox only returns "self", production adds "download"
-                        String fileUrl = null;
-                        if (links.containsKey("download")) {
-                            fileUrl = (String) links.get("download");
-                        } else if (links.containsKey("self")) {
-                            fileUrl = (String) links.get("self");
-                        }
-
-                        if (fileUrl != null) {
-                            zenodoAssessmentInfo.setFileUrl(fileUrl);
-                            Log.infof("Stored Zenodo file URL: %s", fileUrl);
-                        } else {
-                            Log.info("Zenodo record has no file links available yet.");
-                        }
-                    }
-                }
-            } else {
-                Log.info("Zenodo returned no files[] for published record " + zenodoAssessmentInfo.getId().getDepositId());
-            }
-
-        } catch (Exception e) {
-            Log.warn("Could not fetch file URL for deposit " + zenodoAssessmentInfo.getId().getDepositId(), e);
-        }
+        zenodoAssessmentInfo.setDepositUrl(depositUrl);
         zenodoAssessmentInfoRepository.persist(zenodoAssessmentInfo);
         return zenodoAssessmentInfo;
     }
 
 
     @Transactional
-    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String fileUrl) {
+    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String depositUrl) {
 
         MotivationAssessment managedAssessment = motivationAssessmentRepository.findById(assessment.getId());
         if (managedAssessment != null) {
@@ -561,7 +532,7 @@ public class ZenodoService {
         zenodoAssessmentInfo.setUploadedAt(Timestamp.from(Instant.now()));
         zenodoAssessmentInfo.setId(new ZenodoAssessmentInfoId(assessment.getId(), String.valueOf(depositId)));
         zenodoAssessmentInfo.setZenodoState(state);
-        zenodoAssessmentInfo.setFileUrl(fileUrl);
+        zenodoAssessmentInfo.setDepositUrl(depositUrl);
         zenodoAssessmentInfoRepository.persist(zenodoAssessmentInfo);
         return zenodoAssessmentInfo;
     }
@@ -722,8 +693,7 @@ public class ZenodoService {
         if (linksObj instanceof Map) {
             Object badgeObj = ((Map<?, ?>) linksObj).get("badge");
             if (badgeObj instanceof String && !((String) badgeObj).isEmpty()) {
-                return  URLDecoder.decode((String) badgeObj, StandardCharsets.UTF_8);
-
+                return URLDecoder.decode((String) badgeObj, StandardCharsets.UTF_8);
             }
         }
 
@@ -740,7 +710,6 @@ public class ZenodoService {
         return null;
     }
 
-
     @Transactional
     public boolean testZenodoConnection(String token) {
         try {
@@ -753,4 +722,14 @@ public class ZenodoService {
         }
     }
 
+    private String extractDepositUrlFromResponse(String depositId, ZenodoState state) {
+
+        switch (state) {
+
+           case  DEPOSIT_PUBLISHED:
+                return this.zenodoBaseUrl + "/records/" + depositId;
+            default:
+                return   this.zenodoBaseUrl + "/uploads/" + depositId;
+        }
+    }
 }
