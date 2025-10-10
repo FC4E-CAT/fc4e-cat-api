@@ -1,5 +1,6 @@
 package org.grnet.cat.services;
 
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -12,6 +13,9 @@ import org.grnet.cat.dtos.setting.SettingUpdateDto;
 import org.grnet.cat.entities.Setting;
 import org.grnet.cat.mappers.SettingMapper;
 import org.grnet.cat.repositories.SettingRepository;
+import org.grnet.cat.services.env.EnvironmentDetector;
+import org.grnet.cat.services.zenodo.ZenodoClient;
+import org.grnet.cat.services.zenodo.ZenodoService;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -35,6 +39,11 @@ public class SettingService {
     @Inject
     SettingRepository settingRepository;
 
+    @Inject
+    ZenodoService zenodoService;
+
+    @Inject
+    EnvironmentDetector environmentDetector;
     /**
      * List of keys considered sensitive and should always be encrypted at rest.
      */
@@ -88,23 +97,76 @@ public class SettingService {
             }
         }
 
+        var labelObj = existingData.get("label");
+        var label = (labelObj instanceof String) ? (String) labelObj : null;
+
+        // Special logic for Zenodo setting
+        if ("Zenodo".equalsIgnoreCase(label) && Boolean.TRUE.equals(request.enabled)) {
+            String tokenFromRequest = null;
+            String zenodoBaseUrl = null;
+
+            // Extract token from request
+            var configObj = request.data.get("config");
+            if (configObj instanceof Map) {
+                var configMap = (Map<?, ?>) configObj;
+                var keyObj = configMap.get("zenodo.api.key");
+                if (keyObj instanceof String && StringUtils.isNotBlank((String) keyObj)) {
+                    tokenFromRequest = (String) keyObj;
+                }
+            }
+
+            // Retrieve existing URL from stored settings (if available)
+            var existingConfig = existingData.get("config");
+            if (existingConfig instanceof Map) {
+                var existingUrl = ((Map<?, ?>) existingConfig).get("zenodo.url");
+                if (existingUrl instanceof String && StringUtils.isNotBlank((String) existingUrl)) {
+                    zenodoBaseUrl = (String) existingUrl;
+                }
+            }
+
+            // If URL not found in settings, detect from environment and store it
+            if (zenodoBaseUrl == null) {
+                zenodoBaseUrl = environmentDetector.getZenodoBaseUrl();
+                existingData.computeIfAbsent("config", k -> new HashMap<String, Object>());
+                ((Map<String, Object>) existingData.get("config")).put("zenodo.url", zenodoBaseUrl);
+            }
+
+            // Require token
+            if (tokenFromRequest == null) {
+                throw new BadRequestException("Zenodo API key is required to enable Zenodo.");
+            }
+
+            // Test connection
+            boolean ok = zenodoService.testZenodoConnection(tokenFromRequest);
+            if (!ok) {
+                throw new BadRequestException("Failed to connect to Zenodo. Please verify your API key.");
+            }
+        }
+
         // Validate config keys
         validateAllowedConfigKeys(request.data, existingData);
-
 
         // Encrypt sensitive values
         encryptNestedSensitiveFields(request.data, "");
 
-        // Merge and inject derived keys
-        existingData.putAll(request.data);
+        // Merge config
+        if (request.data.containsKey("config") && existingData.containsKey("config")) {
+            Map<String, Object> existingConfig = (Map<String, Object>) existingData.get("config");
+            Map<String, Object> requestConfig = (Map<String, Object>) request.data.get("config");
 
-        var labelObj = existingData.get("label");
-        var label = (labelObj instanceof String) ? (String) labelObj : null;
+            for (Map.Entry<String, Object> entry : requestConfig.entrySet()) {
+                existingConfig.put(entry.getKey(), entry.getValue());
+            }
+
+            // Prevent overwriting the entire config map
+            request.data.remove("config");
+        }
 
         if (StringUtils.isNotBlank(label)) {
             injectDerivedConfigKeyForKnownCases(existingData, label, Boolean.TRUE.equals(request.enabled));
         }
 
+        // Persist changes
         setting.setData(existingData);
         setting.setUpdatedBy(userId);
         setting.setUpdatedOn(Timestamp.from(Instant.now()));
@@ -113,6 +175,7 @@ public class SettingService {
 
         return SettingMapper.INSTANCE.settingToDto(setting);
     }
+
 
     /**
      * Retrieves a single setting by ID, decrypting any sensitive values.
@@ -357,6 +420,7 @@ public class SettingService {
         if (reqConfigObj != null && existingConfigObj instanceof Map && reqConfigObj instanceof Map) {
             Map<String, Object> existingConfig = (Map<String, Object>) existingConfigObj;
             Map<String, Object> requestConfig = (Map<String, Object>) reqConfigObj;
+
 
             for (String key : requestConfig.keySet()) {
                 if (!existingConfig.containsKey(key)) {

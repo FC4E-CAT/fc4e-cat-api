@@ -390,6 +390,7 @@ public class JsonAssessmentService {
             response.setZenodoPublished(zenodoInfo.getIsPublished());
             response.setZenodoDepositId(zenodoInfo.getId().getDepositId());
             response.setZenodoFileUrl(zenodoInfo.getFileUrl());
+            response.setZenodoPublicationState(zenodoInfo.getZenodoState());
         } else {
             response.published = false;
         }
@@ -511,6 +512,8 @@ public class JsonAssessmentService {
                         partialDto.setZenodoPublished(zenodoInfo.getIsPublished());
                         partialDto.setZenodoDepositId(zenodoInfo.getId().getDepositId());
                         partialDto.setZenodoFileUrl(zenodoInfo.getFileUrl());
+                        partialDto.setZenodoPublicationState(zenodoInfo.getZenodoState());
+
                     }
 
                     return partialDto;
@@ -822,6 +825,7 @@ public class JsonAssessmentService {
                         partialDto.setZenodoPublished(zenodoInfo.getIsPublished());
                         partialDto.setZenodoDepositId(zenodoInfo.getId().getDepositId());
                         partialDto.setZenodoFileUrl(zenodoInfo.getFileUrl());
+                        partialDto.setZenodoPublicationState(zenodoInfo.getZenodoState());
                     }
 
                     return partialDto;

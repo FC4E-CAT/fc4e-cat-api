@@ -16,6 +16,7 @@ import org.grnet.cat.enums.MailType;
 import org.grnet.cat.enums.ValidationStatus;
 import org.grnet.cat.repositories.KeycloakAdminRepository;
 import org.grnet.cat.repositories.UserRepository;
+import org.grnet.cat.services.env.EnvironmentDetector;
 import org.jboss.logging.Logger;
 
 import java.util.*;
@@ -39,9 +40,6 @@ public class MailerService {
     UserRepository userRepository;
     @ConfigProperty(name = "api.ui.url")
     String uiBaseUrl;
-    @ConfigProperty(name = "quarkus.rest-client.\"org.grnet.cat.services.zenodo.ZenodoClient\".url")
-    String zenodoUrl;
-
     @ConfigProperty(name = "api.server.url")
     String serviceUrl;
 
@@ -87,6 +85,10 @@ public class MailerService {
 
     @Inject
     EmailBrandingConfig emailBrandingConfig;
+
+    @Inject
+    EnvironmentDetector environmentDetector;
+
     @Inject
     KeycloakAdminRepository keycloakAdminRepository;
     @ConfigProperty(name = "api.keycloak.user.id")
@@ -94,6 +96,7 @@ public class MailerService {
 
     @ConfigProperty(name = "api.name")
     String apiName;
+
     private static final Logger LOG = Logger.getLogger(MailerService.class);
 
     public List<String> retrieveAdminEmails() {
@@ -173,6 +176,8 @@ public class MailerService {
 
     public void sendMails(MotivationAssessment assessment,String depositId, String name,MailType type, List<String> mailAddrs) {
 
+        var zenodoBaseUrl = environmentDetector.getZenodoBaseUrl();
+
         HashMap<String, Object> templateParams = new HashMap<>();
         templateParams.put("contactMail", contactMail);
         templateParams.put("logoUrl", emailBrandingConfig.getLogoUrl().orElse(serviceUrl + "/v1/images/logo.png"))
@@ -187,7 +192,7 @@ public class MailerService {
 
         switch (type) {
             case ZENODO_DRAFT_DEPOSIT:
-                templateParams.put("depositUrl", zenodoUrl + "/uploads/" + depositId);
+                templateParams.put("depositUrl", zenodoBaseUrl + "/uploads/" + depositId);
                 templateParams.put("depositId", depositId);
 
                 templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
@@ -198,7 +203,7 @@ public class MailerService {
                 break;
 
             case ZENODO_COMPLETED_PUBLISH_PROCESS:
-                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositUrl", zenodoBaseUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);
 
                 templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
@@ -210,7 +215,7 @@ public class MailerService {
                 break;
 //
             case ZENODO_PUBLISH_ASSESSMENT:
-                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositUrl", zenodoBaseUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);
 
                 templateParams.put("assessmentName", extractAssessmentName(assessment.getAssessmentDoc()));
@@ -220,7 +225,7 @@ public class MailerService {
                 notifyUser(zenodoPublishAssessment, templateParams, mailAddrs, type);
                 break;
             case ZENODO_PUBLISH_DEPOSIT:
-                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositUrl", zenodoBaseUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);
 
                 LOG.info("Template parameters: " + templateParams);
@@ -234,14 +239,14 @@ public class MailerService {
                 notifyUser(zenodoFailedPublishProcess, templateParams, mailAddrs, type);
                 break;
             case ZENODO_FAILED_PUBLISH_DEPOSIT:
-                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositUrl", zenodoBaseUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);
 
                 LOG.info("Template parameters: " + templateParams);
                 notifyUser(zenodoFailedPublishDeposit, templateParams, mailAddrs, type);
                 break;
             case ZENODO_PUBLISH_DEPOSIT_DRAFT_IN_DB:
-                templateParams.put("depositUrl", zenodoUrl + "/records/" + depositId);
+                templateParams.put("depositUrl", zenodoBaseUrl + "/records/" + depositId);
                 templateParams.put("depositId", depositId);
 
                 LOG.info("Template parameters: " + templateParams);

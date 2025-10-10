@@ -30,6 +30,7 @@ import org.grnet.cat.repositories.ZenodoAssessmentInfoRepository;
 import org.grnet.cat.services.KeycloakAdminService;
 import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.SettingService;
+import org.grnet.cat.services.env.EnvironmentDetector;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
 import org.grnet.cat.utils.ZenodoConfig;
@@ -39,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -54,10 +56,6 @@ import static org.grnet.cat.services.KeycloakAdminService.ENTITLEMENTS_DELIMITER
 @ApplicationScoped
 @MethodValidated
 public class ZenodoService {
-
-    @Inject
-    @RestClient
-    ZenodoClient zenodoClient;
 
     @Inject
     MotivationAssessmentRepository motivationAssessmentRepository;
@@ -77,29 +75,35 @@ public class ZenodoService {
     SettingRepository settingRepository;
 
     @Inject
+    EnvironmentDetector environmentDetector;
+
+    @Inject
+    ZenodoClientFactory zenodoClientFactory;
+
+
+    @Inject
     ZenodoConfig zenodoConfig;
 
-    @ConfigProperty(name = "quarkus.rest-client.\"org.grnet.cat.services.zenodo.ZenodoClient\".url")
-    protected String zenodoBaseUrl;
     private final ExecutorService executorService = Executors.newFixedThreadPool(2); // Adjust as needed
 
+    private ZenodoClient zenodoClient;
+
+    private String zenodoBaseUrl;
+
+    @PostConstruct
+    void initClient() {
+        this.zenodoBaseUrl = environmentDetector.getZenodoBaseUrl();
+        System.out.println("[ZenodoService] Initializing Zenodo client with base URL: " + zenodoBaseUrl);
+        this.zenodoClient = zenodoClientFactory.create(zenodoBaseUrl);
+    }
 
     public String getAccessToken() {
-        String token = settingService.getSettingConfig("1", "zenodo.api.key")
-                // Look for this key anywhere in the JSON
-                .orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured."));
-
-        return "Bearer " + token;
+        var token = settingService.getSettingConfig("1", "zenodo.api.key");
+        return "Bearer " + token.orElseThrow(() -> new IllegalStateException("Zenodo API key is not configured."));
     }
 
     @Inject
     MailerService mailerService;
-
-
-    @PostConstruct
-    void init() {
-        getAccessToken();
-    }
 
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
     @Transactional
@@ -734,6 +738,19 @@ public class ZenodoService {
             return "https://handle.test.datacite.org/" + doi; // sandbox
         }
         return null;
+    }
+
+
+    @Transactional
+    public boolean testZenodoConnection(String token) {
+        try {
+            ZenodoClient client = zenodoClient;
+            client.listDeposits("Bearer " + token);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

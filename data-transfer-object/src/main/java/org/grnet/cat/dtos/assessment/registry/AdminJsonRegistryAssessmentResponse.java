@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.grnet.cat.dtos.assessment.AssessmentResponse;
+import org.grnet.cat.enums.ZenodoState;
 
 import java.util.List;
 
@@ -69,6 +70,16 @@ public class AdminJsonRegistryAssessmentResponse extends AssessmentResponse {
     @JsonProperty("zenodo_file_url")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String zenodoFileUrl;
+
+    @Schema(
+            type = SchemaType.BOOLEAN,
+            implementation = ZenodoState.class,
+            description = "Indicates the state of publication of the assessment on Zenodo.",
+            example = "IN PROGRESS"
+    )
+    @Setter
+    @JsonProperty("zenodo_publication_state")
+    public ZenodoState zenodoPublicationState;
 
 
 }
