@@ -46,6 +46,13 @@ public class ZenodoAssessmentInfo {
     @Column(name = "doi")
     public String doi;
 
+    @Column(name = "image_url")
+    public String imageURL;
+
+
+    @Column(name = "target_url")
+    public String targetURL;
+
     public Boolean getPublished() {
         return isPublished;
     }
