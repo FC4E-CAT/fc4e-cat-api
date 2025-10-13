@@ -11,6 +11,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.grnet.cat.constraints.ValidZenodoAction;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
@@ -31,10 +32,13 @@ import org.grnet.cat.services.MailerService;
 import org.grnet.cat.services.SettingService;
 import org.grnet.cat.services.interceptors.ShareableEntity;
 import org.grnet.cat.utils.Utility;
+import org.grnet.cat.utils.ZenodoConfig;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -71,6 +75,12 @@ public class ZenodoService {
 
     @Inject
     SettingRepository settingRepository;
+
+    @Inject
+    ZenodoConfig zenodoConfig;
+
+    @ConfigProperty(name = "quarkus.rest-client.\"org.grnet.cat.services.zenodo.ZenodoClient\".url")
+    protected String zenodoBaseUrl;
     private final ExecutorService executorService = Executors.newFixedThreadPool(2); // Adjust as needed
 
 
@@ -88,7 +98,7 @@ public class ZenodoService {
 
     @PostConstruct
     void init() {
-       getAccessToken();
+        getAccessToken();
     }
 
     @ShareableEntity(type = ShareableEntityType.ASSESSMENT, id = String.class)
@@ -169,7 +179,7 @@ public class ZenodoService {
 
         }
 
-        return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get());
+        return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get(), zenodoBaseUrl);
     }
 
     @Transactional
@@ -179,7 +189,7 @@ public class ZenodoService {
         if (assessmentOpt.isEmpty()) {
             throw new RuntimeException("Not found zenodo assessment information for assessment with ID: " + assessmentId + " to exist in CAT");
         }
-        return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get());
+        return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(assessmentOpt.get(), zenodoBaseUrl);
     }
 
     @Transactional
@@ -253,6 +263,9 @@ public class ZenodoService {
         var activeUser = userRepository.fetchUser(userId);
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(zenodoAssessmentInfo);
         final AtomicReference<ZenodoState> stateRef = new AtomicReference<>(ZenodoState.FILE_UPLOADED_TO_DEPOSIT);
+        final AtomicReference<String> doiRef = new AtomicReference<>(null);
+        final AtomicReference<String> imageUrlRef = new AtomicReference<>(null);
+        final AtomicReference<String> targetUrlRef = new AtomicReference<>(null);
 
         var zenodoResponse = zenodoClient.getDeposit(getAccessToken(), depositId);
         if (zenodoResponse.containsKey("submitted")) {
@@ -263,14 +276,18 @@ public class ZenodoService {
         String accessToken = getAccessToken();
         CompletableFuture.runAsync(() -> {
                     if (!stateRef.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
-                        zenodoClient.publishDeposit(accessToken, depositId);
+                        var response = zenodoClient.publishDeposit(accessToken, depositId);
+
+                        doiRef.set(extractDoiFromResponse(response));
+                        imageUrlRef.set(extractImageUrlFromResponse(response, doiRef.get()));
+                        targetUrlRef.set(extractTargetUrlFromResponse(doiRef.get()));
 
                     }
                 })
                 .thenApplyAsync(v -> {
                     stateRef.set(ZenodoState.DEPOSIT_PUBLISHED);
                     //try {
-                    var zenodoAssessment = updateInDatabase(zenodoAssessmentInfoRef.get());
+                    var zenodoAssessment = updateInDatabase(zenodoAssessmentInfoRef.get(), doiRef.get(), imageUrlRef.get(), targetUrlRef.get());
                     if (zenodoAssessment != null) {
                         zenodoAssessmentInfoRef.set(zenodoAssessment);
                     }
@@ -289,7 +306,7 @@ public class ZenodoService {
                             }
                         }
                 )
-                .thenApply(v -> ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(zenodoAssessmentInfoRef.get()))
+                .thenApply(v -> ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(zenodoAssessmentInfoRef.get(), zenodoBaseUrl))
                 .exceptionally(ex -> {
                     Log.error("Error publishing deposit to Zenodo", ex);
                     if (stateRef.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
@@ -315,7 +332,7 @@ public class ZenodoService {
                             );
                         }
                     }
-                    return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(zenodoAssessmentInfoRef.get());  // Avoid rethrowing if you want graceful failure handling
+                    return ZenodoAssessmentInfoMapper.INSTANCE.zenodoAssessmentInfoToResponse(zenodoAssessmentInfoRef.get(), zenodoBaseUrl);  // Avoid rethrowing if you want graceful failure handling
                 });
 
     }
@@ -337,6 +354,8 @@ public class ZenodoService {
         final AtomicReference<ZenodoAssessmentInfo> zenodoAssessmentInfoRef = new AtomicReference<>(null);
         final AtomicReference<String> fileUrlRef = new AtomicReference<>(null);
         final AtomicReference<String> doiRef = new AtomicReference<>(null);
+        final AtomicReference<String> imageUrlRef = new AtomicReference<>(null);
+        final AtomicReference<String> targetUrlRef = new AtomicReference<>(null);
         String accessToken = getAccessToken();
         return CompletableFuture
                 .supplyAsync(() -> {
@@ -370,7 +389,7 @@ public class ZenodoService {
                             throw new RuntimeException("Failed to create deposit in Zenodo for assessment ID: " + assessment.getId());
                         }
                         depositIdRef.set(String.valueOf(depositId));
-                        doiRef.set(extractDoiFromResponse(response));
+
                     }
 
                     return depositIdRef.get();
@@ -395,7 +414,7 @@ public class ZenodoService {
 
                     System.out.println("Step 3: Writing to DB before publishing...");
                     try {
-                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), fileUrlRef.get(), doiRef.get());
+                        var zenodoAssessmentInfo = createInDatabase(assessment, depositIdRef.get(), state.get(), fileUrlRef.get());
                         zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
                         return depositId;
                     } catch (Exception dbException) {
@@ -413,7 +432,11 @@ public class ZenodoService {
                     // Step 4: Publish deposit only after DB write succeeds
                     System.out.println("Step 4: Publishing deposit...");
                     System.out.println("Calling publishDeposit for depositId: " + depositIdRef.get());
-                    publishDeposit(depositIdRef.get());
+
+                    var response = publishDeposit(depositIdRef.get());
+                    doiRef.set(extractDoiFromResponse(response));
+                    imageUrlRef.set(extractImageUrlFromResponse(response, doiRef.get()));
+                    targetUrlRef.set(zenodoConfig.buildDoiUrl(doiRef.get()));
 
                     return depositId;
                 })
@@ -421,7 +444,7 @@ public class ZenodoService {
                     // Final step: Send notification if everything succeeded
                     state.set(ZenodoState.DEPOSIT_PUBLISHED);
 
-                    var zenodoAssessmentInfo = updateInDatabase(zenodoAssessmentInfoRef.get());
+                    var zenodoAssessmentInfo = updateInDatabase(zenodoAssessmentInfoRef.get(), doiRef.get(), imageUrlRef.get(), targetUrlRef.get());
                     zenodoAssessmentInfoRef.set(zenodoAssessmentInfo);
                     state.set(ZenodoState.PROCESS_COMPLETED);
                     if (state.get().equals(ZenodoState.DEPOSIT_PUBLISHED)) {
@@ -466,13 +489,15 @@ public class ZenodoService {
 
 
     @Transactional
-    public ZenodoAssessmentInfo updateInDatabase(ZenodoAssessmentInfo zenodoAssessmentInfo) {
+    public ZenodoAssessmentInfo updateInDatabase(ZenodoAssessmentInfo zenodoAssessmentInfo, String doi, String imageURL, String targetURL) {
         var managedAssessment = zenodoAssessmentInfoRepository.getAssessmentByDepositIdAndAssessmentId(zenodoAssessmentInfo.getId().getDepositId(), zenodoAssessmentInfo.getId().getAssessmentId());
         if (managedAssessment.isEmpty()) {
             return null;
         }
         zenodoAssessmentInfo = managedAssessment.get();
-
+        zenodoAssessmentInfo.setDoi(doi);
+        zenodoAssessmentInfo.setImageURL(imageURL);
+        zenodoAssessmentInfo.setTargetURL(targetURL);
         zenodoAssessmentInfo.setPublishedAt(Timestamp.from(Instant.now()));
         zenodoAssessmentInfo.setIsPublished(Boolean.TRUE);
         zenodoAssessmentInfo.setZenodoState(ZenodoState.PROCESS_COMPLETED);
@@ -517,7 +542,7 @@ public class ZenodoService {
 
 
     @Transactional
-    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String fileUrl,String doi) {
+    public ZenodoAssessmentInfo createInDatabase(MotivationAssessment assessment, String depositId, ZenodoState state, String fileUrl) {
 
         MotivationAssessment managedAssessment = motivationAssessmentRepository.findById(assessment.getId());
         if (managedAssessment != null) {
@@ -533,7 +558,6 @@ public class ZenodoService {
         zenodoAssessmentInfo.setId(new ZenodoAssessmentInfoId(assessment.getId(), String.valueOf(depositId)));
         zenodoAssessmentInfo.setZenodoState(state);
         zenodoAssessmentInfo.setFileUrl(fileUrl);
-        zenodoAssessmentInfo.setDoi(doi);
         zenodoAssessmentInfoRepository.persist(zenodoAssessmentInfo);
         return zenodoAssessmentInfo;
     }
@@ -661,7 +685,8 @@ public class ZenodoService {
     }
 
 
-    @SuppressWarnings("unchecked") public boolean isZenodoFeatureEnabled() {
+    @SuppressWarnings("unchecked")
+    public boolean isZenodoFeatureEnabled() {
         return settingRepository.findByIdOptional("1")
                 .filter(Setting::isEnabled)
                 .map(setting -> {
@@ -673,23 +698,41 @@ public class ZenodoService {
                 })
                 .orElse(false);
     }
+
     private String extractDoiFromResponse(Map<String, Object> response) {
         if (response == null) return null;
 
-        Object metadata = response.get("metadata");
-        if (metadata instanceof Map) {
-            Object prereserveDoi = ((Map<?, ?>) metadata).get("prereserve_doi");
-            if (prereserveDoi instanceof Map) {
+        Object doi = response.get("doi");
 
-                Object doi = ((Map<?, ?>) prereserveDoi).get("doi");
+        if (doi instanceof String && !((String) doi).isEmpty()) {
 
-                if (doi instanceof String && !((String) doi).isEmpty()) {
+            return (String) doi;
+        }
+        return null;
+    }
 
-                    return (String) doi;
-                }
+    private String extractImageUrlFromResponse(Map<String, Object> response, String doi) {
+        if (response == null) return null;
+
+        Object linksObj = response.get("links");
+        if (linksObj instanceof Map) {
+            Object badgeObj = ((Map<?, ?>) linksObj).get("badge");
+            if (badgeObj instanceof String && !((String) badgeObj).isEmpty()) {
+                return  URLDecoder.decode((String) badgeObj, StandardCharsets.UTF_8);
+
             }
         }
 
+        return null;
+    }
+
+    private String extractTargetUrlFromResponse(String doi) {
+
+        if (doi.startsWith("10.5281")) {
+            return "https://doi.org/" + doi; // production
+        } else if (doi.startsWith("10.5072")) {
+            return "https://handle.test.datacite.org/" + doi; // sandbox
+        }
         return null;
     }
 

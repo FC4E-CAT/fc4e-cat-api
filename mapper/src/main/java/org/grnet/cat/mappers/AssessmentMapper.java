@@ -169,4 +169,5 @@ public interface AssessmentMapper {
 
     UserJsonRegistryAssessmentResponse zenodoUserRegistryAssessmentToJsonAssessment(MotivationAssessment assessment,String  uniqueIdentifier);
 
+
 }

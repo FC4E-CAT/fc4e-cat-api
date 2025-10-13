@@ -1,10 +1,12 @@
 package org.grnet.cat.mappers;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.grnet.cat.dtos.assessment.ZenodoAssessmentInfoResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoCreatorDto;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoDepositResponse;
 import org.grnet.cat.dtos.assessment.zenodo.ZenodoFileInfoDto;
 import org.grnet.cat.entities.ZenodoAssessmentInfo;
 import org.grnet.cat.enums.ZenodoState;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -18,7 +20,6 @@ import java.util.stream.Collectors;
 
 @Mapper(imports = {Objects.class})
 public interface ZenodoAssessmentInfoMapper {
-
     ZenodoAssessmentInfoMapper INSTANCE = Mappers.getMapper(ZenodoAssessmentInfoMapper.class);
 
     @Mapping(source = "id.assessmentId", target = "assessmentId")
@@ -28,8 +29,10 @@ public interface ZenodoAssessmentInfoMapper {
     @Mapping(target = "isPublished", expression = "java(entity.getPublished())")
     @Mapping(target = "zenodoState", expression = "java(mapZenodoStateToString(entity.getZenodoState()))") // New mapping
     @Mapping(target = "doi", expression = "java(entity.getDoi())") // New mapping
+    @Mapping(target = "imageUrl", expression = "java(entity.getImageURL())")
+    @Mapping(target = "targetUrl", expression = "java(entity.getTargetURL())")
 
-    ZenodoAssessmentInfoResponse zenodoAssessmentInfoToResponse(ZenodoAssessmentInfo entity);
+    ZenodoAssessmentInfoResponse zenodoAssessmentInfoToResponse(ZenodoAssessmentInfo entity, @Context String basePath);
 
     default String mapTimestampToString(Timestamp timestamp) {
         return timestamp != null ? timestamp.toInstant().toString() : null;
@@ -50,6 +53,7 @@ public interface ZenodoAssessmentInfoMapper {
     @Mapping(target = "creators", expression = "java(mapCreators(response))")
     @Mapping(target = "contributors", expression = "java(mapContributors(response))")
     @Mapping(target = "files", expression = "java(mapFiles(response))")
+
     ZenodoDepositResponse entityToZenodoDepositResponse(Map<String, Object> response);
 
     default String mapDoi(Map<String, Object> response) {
@@ -153,5 +157,4 @@ public interface ZenodoAssessmentInfoMapper {
         }
         return null;
     }
-
 }

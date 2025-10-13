@@ -71,4 +71,24 @@ public class ZenodoAssessmentInfoResponse {
     )
     @JsonProperty("doi")
     private String doi; // New field to represent the doi
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Image URL",
+            example = "https://zenodo.org/badge/DOI/10.5281/zenodo.17303051.svg"
+    )
+    @JsonProperty("image_url")
+    private String imageUrl; // New field to represent the imageUrl
+
+
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Target URL",
+            example = "https://doi.org/10.5281/zenodo.17303051"
+    )
+    @JsonProperty("target_url")
+    private String targetUrl; // New field to represent the targetUrl
+
 }
