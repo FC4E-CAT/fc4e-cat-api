@@ -91,4 +91,13 @@ public class ZenodoAssessmentInfoResponse {
     @JsonProperty("target_url")
     private String targetUrl; // New field to represent the targetUrl
 
+    @Schema(
+            type = SchemaType.STRING,
+            implementation = String.class,
+            description = "Deposit URL",
+            example = "https://zenodo.org/records/185555"
+    )
+    @JsonProperty("deposit_url")
+    private String depositUrl; // New field to represent the depositUrl
+
 }

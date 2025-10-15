@@ -63,13 +63,14 @@ public class AdminJsonRegistryAssessmentResponse extends AssessmentResponse {
     @Schema(
             type = SchemaType.STRING,
             implementation = String.class,
-            description = "The Zenodo file url associated with this assessment, if published.",
-            example = "https://sandbox.zenodo.org/api/records/185555/draft/files/69ef9a51-09c1-48f8-920f-580d58552e84/"
+            description = "The Zenodo deposit url associated with this assessment, if published.",
+            example = "https://zenodo.org/records/185555"
     )
     @Setter
-    @JsonProperty("zenodo_file_url")
+    @JsonProperty("zenodo_deposit_url")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String zenodoFileUrl;
+
+    public String zenodoDepositUrl;
 
     @Schema(
             type = SchemaType.BOOLEAN,
@@ -80,6 +81,4 @@ public class AdminJsonRegistryAssessmentResponse extends AssessmentResponse {
     @Setter
     @JsonProperty("zenodo_publication_state")
     public ZenodoState zenodoPublicationState;
-
-
 }

@@ -97,7 +97,7 @@ public class ZenodoDepositResponse {
             example = " {\n" +
                     "      \"fileName\": \"81251b1d-035a-4b13-ac73-873e855cccbb\",\n" +
                     "      \"fileSize\": 218220,\n" +
-                    "      \"fileUrl\": \"https://sandbox.zenodo.org/api/records/185327/draft/files/81251b1d-035a-4b13-ac73-873e855cccbb/content\"\n" +
+                    "      \"fileUrl\": \"https:/zenodo.org/api/records/185327/draft/files/81251b1d-035a-4b13-ac73-873e855cccbb/content\"\n" +
                     "    }"
     )
     public List<ZenodoFileInfoDto> files;
