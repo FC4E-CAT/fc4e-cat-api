@@ -80,5 +80,5 @@ public class AdminJsonRegistryAssessmentResponse extends AssessmentResponse {
     )
     @Setter
     @JsonProperty("zenodo_publication_state")
-    public ZenodoState zenodoPublicationState;
+    public String zenodoPublicationState;
 }

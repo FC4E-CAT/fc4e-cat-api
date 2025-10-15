@@ -389,7 +389,7 @@ public class JsonAssessmentService {
             var zenodoInfo = zenodoInfoOpt.get();
             response.setZenodoPublished(zenodoInfo.getIsPublished());
             response.setZenodoDepositId(zenodoInfo.getId().getDepositId());
-            response.setZenodoPublicationState(zenodoInfo.getZenodoState());
+            response.setZenodoPublicationState(zenodoInfo.getZenodoState().getType());
            response.setZenodoDepositUrl(zenodoInfo.getDepositUrl());
         } else {
             response.published = false;
@@ -511,7 +511,7 @@ public class JsonAssessmentService {
                         var zenodoInfo = zenodoInfoOpt.get();
                         partialDto.setZenodoPublished(zenodoInfo.getIsPublished());
                         partialDto.setZenodoDepositId(zenodoInfo.getId().getDepositId());
-                        partialDto.setZenodoPublicationState(zenodoInfo.getZenodoState());
+                        partialDto.setZenodoPublicationState(zenodoInfo.getZenodoState().getType());
 
                     }
 
@@ -823,7 +823,7 @@ public class JsonAssessmentService {
                         var zenodoInfo = zenodoInfoOpt.get();
                         partialDto.setZenodoPublished(zenodoInfo.getIsPublished());
                         partialDto.setZenodoDepositId(zenodoInfo.getId().getDepositId());
-                        partialDto.setZenodoPublicationState(zenodoInfo.getZenodoState());
+                        partialDto.setZenodoPublicationState(zenodoInfo.getZenodoState().getType());
                         partialDto.setZenodoDepositUrl(zenodoInfo.getDepositUrl());
                     }
 
