@@ -26,6 +26,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 ### Added
 
 - [#558](https://github.com/FC4E-CAT/fc4e-cat-api/pull/558) CAT-1049: Add Zenodo Publication Info to Assesment
+- [#560](https://github.com/FC4E-CAT/fc4e-cat-api/pull/560) CAT-1053: Add Zenodo base URL helper and connection check on settings enable
 
 ### Fixed
 
