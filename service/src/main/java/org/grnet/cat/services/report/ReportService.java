@@ -69,7 +69,7 @@ public class ReportService {
         var reportDefinitionOpt = reportRepository.findDefinitionById(reportId);
         var filters = reportDefinitionOpt.get().getFilters();
 
-        var repos = new FilterType.Repositories(motivationRepository, motivationActorRepository, validationRepository, subjectRepository);
+        var repos = new FilterType.Repositories(motivationRepository, motivationActorRepository, validationRepository, subjectRepository, reportRepository);
 
         return filters.stream()
                 .map(def -> {

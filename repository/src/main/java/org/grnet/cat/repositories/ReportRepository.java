@@ -172,4 +172,48 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
 
         return (List<Object[]>) q.getResultList();
     }
+
+    /**
+     * Returns distinct motivation IDs from assessments.
+     */
+    public List<String> findDistinctMotivationIdsInAssessments() {
+        var em = Panache.getEntityManager();
+        String sql = "SELECT DISTINCT a.motivation_id " +
+                "FROM MotivationAssessment a " +
+                "WHERE a.motivation_id IS NOT NULL";
+        return em.createNativeQuery(sql).getResultList();
+    }
+
+    /**
+     * Returns distinct actor IDs from assessments.
+     */
+    public List<String> findDistinctActorIdsInAssessments() {
+        var em = Panache.getEntityManager();
+        String sql = "SELECT DISTINCT a.assessment_doc->'actor'->>'id' " +
+                "FROM MotivationAssessment a " +
+                "WHERE a.assessment_doc->'actor'->>'id' IS NOT NULL";
+        return em.createNativeQuery(sql).getResultList();
+    }
+
+    /**
+     * Returns distinct organisation IDs from assessments.
+     */
+    public List<String> findDistinctOrganisationIdsInAssessments() {
+        var em = Panache.getEntityManager();
+        String sql = "SELECT DISTINCT a.assessment_doc->'organisation'->>'id' " +
+                "FROM MotivationAssessment a " +
+                "WHERE a.assessment_doc->'organisation'->>'id' IS NOT NULL";
+        return em.createNativeQuery(sql).getResultList();
+    }
+
+    /**
+     * Returns distinct subject IDs from assessments.
+     */
+    public List<String> findDistinctSubjectIdsInAssessments() {
+        var em = Panache.getEntityManager();
+        String sql = "SELECT DISTINCT a.assessment_doc->'subject'->>'db_id' " +
+                "FROM MotivationAssessment a " +
+                "WHERE a.assessment_doc->'subject'->>'db_id' IS NOT NULL";
+        return em.createNativeQuery(sql).getResultList();
+    }
 }

@@ -5,6 +5,7 @@ import org.grnet.cat.entities.Subject;
 import org.grnet.cat.entities.Validation;
 import org.grnet.cat.entities.registry.RegistryActor;
 import org.grnet.cat.enums.PublicationStatus;
+import org.grnet.cat.repositories.ReportRepository;
 import org.grnet.cat.repositories.SubjectRepository;
 import org.grnet.cat.repositories.ValidationRepository;
 import org.grnet.cat.repositories.registry.MotivationActorRepository;
@@ -22,7 +23,9 @@ public enum FilterType {
     MOTIVATION("motivation") {
         @Override
         public List<FilterWithValuesResponseDto.PermittedValueDto> getValues(Repositories repos) {
+            var ids = repos.reportRepository.findDistinctMotivationIdsInAssessments();
             return repos.motivationRepository.findAll().stream()
+                    .filter(m -> ids.contains(m.getId()))
                     .map(m -> new FilterWithValuesResponseDto.PermittedValueDto(m.getId(), m.getLabel()))
                     .collect(Collectors.toList());
         }
@@ -38,8 +41,10 @@ public enum FilterType {
     ACTOR("actor") {
         @Override
         public List<FilterWithValuesResponseDto.PermittedValueDto> getValues(Repositories repos) {
+            var ids = repos.reportRepository.findDistinctActorIdsInAssessments();
             return repos.motivationActorRepository.findAll().stream()
                     .map(m -> m.getActor())
+                    .filter(actor -> ids.contains(actor.getId()))
                     .collect(Collectors.toMap(
                             RegistryActor::getId,
                             RegistryActor::getLabelActor,
@@ -51,10 +56,13 @@ public enum FilterType {
                     .collect(Collectors.toList());
         }
     },
+
     ORGANISATION("organisation") {
         @Override
         public List<FilterWithValuesResponseDto.PermittedValueDto> getValues(Repositories repos) {
+            var ids = repos.reportRepository.findDistinctOrganisationIdsInAssessments();
             return repos.validationRepository.findAll().stream()
+                    .filter(v -> ids.contains(v.getOrganisationId()))
                     .collect(Collectors.toMap(
                             Validation::getOrganisationId,
                             Validation::getOrganisationName,
@@ -66,17 +74,20 @@ public enum FilterType {
                     .collect(Collectors.toList());
         }
     },
+
     SUBJECT("subject") {
         @Override
         public List<FilterWithValuesResponseDto.PermittedValueDto> getValues(Repositories repos) {
+            var ids = repos.reportRepository.findDistinctSubjectIdsInAssessments();
             return repos.subjectRepository.findAll().stream()
+                    .filter(s -> ids.contains(s.getId().toString()))
                     .collect(Collectors.toMap(
-                            Subject::getId,
+                            s -> s.getId().toString(),
                             Subject::getName,
                             (first, duplicate) -> first
                     ))
                     .entrySet().stream()
-                    .map(e -> new FilterWithValuesResponseDto.PermittedValueDto(e.getKey().toString(), e.getValue()))
+                    .map(e -> new FilterWithValuesResponseDto.PermittedValueDto(e.getKey(), e.getValue()))
                     .sorted(Comparator.comparing(FilterWithValuesResponseDto.PermittedValueDto::getLabel))
                     .collect(Collectors.toList());
         }
@@ -103,15 +114,18 @@ public enum FilterType {
         public final MotivationActorRepository motivationActorRepository;
         public final ValidationRepository validationRepository;
         public final SubjectRepository subjectRepository;
+        public final ReportRepository reportRepository;
 
         public Repositories(MotivationRepository motivationRepository,
                             MotivationActorRepository motivationActorRepository,
                             ValidationRepository validationRepository,
-                            SubjectRepository subjectRepository) {
+                            SubjectRepository subjectRepository,
+                            ReportRepository reportRepository) {
             this.motivationRepository = motivationRepository;
             this.motivationActorRepository = motivationActorRepository;
             this.validationRepository = validationRepository;
             this.subjectRepository = subjectRepository;
+            this.reportRepository = reportRepository;
         }
     }
 }
