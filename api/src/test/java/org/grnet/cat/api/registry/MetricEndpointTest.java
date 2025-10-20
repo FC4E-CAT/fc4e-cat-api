@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class MetricEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getMetricForbidden() {
 
         var metricId = "pid_graph:D8C4E63E";
@@ -47,7 +47,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getMetricNotFound() {
 
         var metricId = "pid_graph:NON_EXISTENT";
@@ -68,7 +68,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createMetric() {
 
         var request = createUniqueMetricRequest();
@@ -83,7 +83,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetric() {
 
         var request = createUniqueMetricRequest();
@@ -111,7 +111,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteMetric() {
 
         var request = createUniqueMetricRequest();
@@ -138,7 +138,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createMetricWithExistingMTR() {
 
         var request = createUniqueMetricRequest();
@@ -173,7 +173,7 @@ public class MetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void listMetrics() {
 
         var metrics = given()

@@ -23,7 +23,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     ArccValidationService arccValidationService;
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testValidHttpsUrl() {
         var request = createValidHttpsRequest("https://google.com");
         var response = performCheckUrl(request, adminToken, 200, AutomatedTestResponse.class);
@@ -31,7 +31,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testInvalidHttpsUrl() {
         var request = createValidHttpsRequest("https://google1.com");
         var response = performCheckUrl(request, adminToken, 400, InformativeResponse.class);
@@ -40,7 +40,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testEmptyUrl() {
         var request = new AutomatedCheckRequest();
         var error = performCheckUrl(request, adminToken, 400, InformativeResponse.class);
@@ -48,7 +48,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testNoHttpsUrl() {
         var request = createValidHttpsRequest("http://google.com");
         var response = performCheckUrl(request, adminToken, 200, AutomatedTestResponse.class);
@@ -57,7 +57,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testUnauthenticatedUser() {
         var request = createValidHttpsRequest("https://google.com");
         var error = performCheckUrl(request, getAccessToken("evald"), 403, InformativeResponse.class);
@@ -65,7 +65,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testMd1aValid() {
         var request = createArccValidationRequest("https://meta.sram.surf.nl/metadata/proxy_sp.xml");
         var response = performValidation(request, adminToken, "MD-1a", 200);
@@ -74,7 +74,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testMd1b1Valid() {
         var request = createArccValidationRequest("https://meta.sram.surf.nl/metadata/proxy_sp.xml");
         var response = performValidation(request, adminToken, "MD-1a", 200);
@@ -83,7 +83,7 @@ public class AutomatedCheckEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testMd1b2Invalid_NoTelephoneNumber() {
         var request = createArccValidationRequest("https://meta.sram.surf.nl/metadata/proxy_sp.xml");
         var response = performValidation(request, adminToken, "MD-1b2", 200);

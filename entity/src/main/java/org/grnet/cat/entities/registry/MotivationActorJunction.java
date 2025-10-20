@@ -1,12 +1,14 @@
 package org.grnet.cat.entities.registry;
 
 
-import com.vladmihalcea.hibernate.type.json.JsonType;
+//import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -43,7 +45,7 @@ public class MotivationActorJunction extends Registry{
     @Column
     private Boolean  published;
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "automated_group_test", columnDefinition = "jsonb")
     private List<Map<String, Object>> automatedGroupTest = new ArrayList<>();
 

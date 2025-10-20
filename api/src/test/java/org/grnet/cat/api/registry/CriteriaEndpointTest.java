@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CriteriaEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createCriteria() {
 
         var request = createUniqueCriterionRequest();
@@ -38,7 +38,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createCriteriaWithInvalidImperative() {
 
         var request = new CriterionRequest();
@@ -60,7 +60,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createCriteriaWithNonUniqueCriteriaCode() {
 
         var request1 = createUniqueCriterionRequest();
@@ -79,7 +79,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getCriteria() {
 
         var request = createUniqueCriterionRequest();
@@ -95,7 +95,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateCriteria() {
 
         var request = createUniqueCriterionRequest();
@@ -111,7 +111,7 @@ public class CriteriaEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteCriteria() {
 
         var request = createUniqueCriterionRequest();

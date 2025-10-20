@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PrincipleEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createPrinciple() {
 
         var principle = createUniquePrincipleRequest();
@@ -35,7 +35,7 @@ public class PrincipleEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createPrincipleUnauthorized() {
 
         var principle = createUniquePrincipleRequest();
@@ -45,7 +45,7 @@ public class PrincipleEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updatePrinciple() {
 
         var principle = createUniquePrincipleRequest();
@@ -64,7 +64,7 @@ public class PrincipleEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deletePrinciple() {
 
         var principle = createUniquePrincipleRequest();
@@ -76,7 +76,7 @@ public class PrincipleEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deletePrincipleNotExists() {
 
         var error = given()
@@ -94,7 +94,7 @@ public class PrincipleEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getPrinciple() {
 
         var principle = createUniquePrincipleRequest();

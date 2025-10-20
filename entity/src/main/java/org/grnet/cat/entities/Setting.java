@@ -1,10 +1,12 @@
 package org.grnet.cat.entities;
 
-import com.vladmihalcea.hibernate.type.json.JsonType;
+//import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
 import java.sql.Timestamp;
 import java.util.Map;
@@ -19,7 +21,7 @@ public class Setting {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "setting_data", columnDefinition = "jsonb")
     public Map<String, Object> data;
 

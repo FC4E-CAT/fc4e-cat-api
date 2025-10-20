@@ -16,7 +16,7 @@
             <!-- REST Client with Jackson for JSON processing -->
             <dependency>
                 <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+                <artifactId>quarkus-rest-client-jackson</artifactId>
             </dependency>
 
         <dependency>
@@ -46,12 +46,13 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-mailer</artifactId>
-            <version>3.6.0</version>
+            <version>3.27.0</version>
+<!--            <version>3.6.0</version>-->
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.mailpit</groupId>
             <artifactId>quarkus-mailpit</artifactId>
-            <version>0.0.9</version>
+            <version>1.7.0</version>
         </dependency>
   </dependencies>
 

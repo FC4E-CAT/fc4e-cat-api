@@ -51,7 +51,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getAssessment() {
 
         var fetchedAssessment = fetchAssessment(validatedToken, assessment.id);
@@ -59,7 +59,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void accessAssessmentCreatedByOtherUser() {
         var errorResponse = fetchAssessmentNotValid(getAccessToken("bob"), assessment.id);
 
@@ -75,7 +75,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createComment() {
 
         var commentRequest = new CommentRequestDto();
@@ -86,7 +86,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createCommentNotAuthorized() {
 
         var commentRequest = new CommentRequestDto();
@@ -97,7 +97,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getComments() {
 
         var commentRequest = new CommentRequestDto();
@@ -110,7 +110,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateComment() {
 
         var commentRequest = new CommentRequestDto();
@@ -126,7 +126,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteComment() {
 
         var commentRequest = new CommentRequestDto();
@@ -139,7 +139,7 @@ public class AssessmentsEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteCommentNotPermitted() {
 
         var commentRequest = new CommentRequestDto();
