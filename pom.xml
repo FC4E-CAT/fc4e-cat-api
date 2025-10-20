@@ -24,18 +24,18 @@
 
   <properties>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
-    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.6.0</quarkus.platform.version>
+    <quarkus.platform.version>3.27.0</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0</surefire-plugin.version>
     <lombok.version>1.18.26</lombok.version>
     <jandex.version>1.2.3</jandex.version>
     <mapstruct.version>1.5.5.Final</mapstruct.version>
-    <apache.common3.version>3.12.0</apache.common3.version>
+    <apache.common3.version>3.18.0</apache.common3.version>
     <vavr.version>0.10.4</vavr.version>
     <pivovarit.version>1.5.1</pivovarit.version>
     <revision>3.0.0</revision>
@@ -44,11 +44,21 @@
   </properties>
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.jboss.resteasy</groupId>
-        <artifactId>resteasy-multipart-provider</artifactId>
-      </dependency>
-
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-multipart</artifactId>
+            <version>3.27.0</version> <!-- match your Quarkus platform version -->
+        </dependency>
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
@@ -151,16 +161,16 @@
       <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-mailer</artifactId>
-        <version>3.6.0</version>
+<!--        <version>3.6.0</version>-->
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.mailpit</groupId>
         <artifactId>quarkus-mailpit</artifactId>
-      <version>0.0.9</version>
+      <version>1.7.0</version>
       </dependency>
       <dependency>
         <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-resteasy-reactive-qute</artifactId>
+        <artifactId>quarkus-rest-qute</artifactId>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>

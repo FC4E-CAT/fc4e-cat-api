@@ -3,7 +3,6 @@ package org.grnet.cat.api;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import org.grnet.cat.api.KeycloakTest;
 import org.grnet.cat.api.endpoints.RolesEndpoint;
 import org.grnet.cat.dtos.InformativeResponse;
 import org.grnet.cat.dtos.RoleAssignmentRequest;

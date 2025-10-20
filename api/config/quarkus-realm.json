@@ -989,7 +989,7 @@
             "ownerManagedAccess": false,
             "displayName": "Automated Check Resource",
             "attributes": {},
-            "_id": "92j19ls10a-ded3-43de-99cc-24d6d8169653",
+            "_id": "c9bb5be8-vcd6-43de-bb6f-24d6d8169653",
             "uris": [
               "/v1/automated/*"
             ],

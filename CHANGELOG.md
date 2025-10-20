@@ -78,6 +78,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#559](https://github.com/FC4E-CAT/fc4e-cat-api/pull/559) CAT-1052 Add Zenodo DOI to dabatabase
 - [#561](https://github.com/FC4E-CAT/fc4e-cat-api/pull/561) CAT-1056 Add imageURL and targetURL
 - [#562](https://github.com/FC4E-CAT/fc4e-cat-api/pull/562) CAT-1055 Change file_url to deposit_url
+- [#565](https://github.com/FC4E-CAT/fc4e-cat-api/pull/565) CAT-1063 Quarkus upgrade to 3.27
 
 
 ### Fix
