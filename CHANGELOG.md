@@ -107,6 +107,7 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#544](https://github.com/FC4E-CAT/fc4e-cat-api/pull/544) CAT-1006:Admin actions should force signout user from CAT Service
 - [#552](https://github.com/FC4E-CAT/fc4e-cat-api/pull/552) CAT-1018 Prevent auto signout of admin when validated
 - [#563](https://github.com/FC4E-CAT/fc4e-cat-api/pull/563) Use pretty-print Zenodo publication state in responses
+- [#567](https://github.com/FC4E-CAT/fc4e-cat-api/pull/567) CAT-1065 API: Grant reporter role permissions to view an assessment
 
 
 ## 2.0.0 - 2025-03-31

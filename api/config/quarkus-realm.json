@@ -942,21 +942,20 @@
           {
             "name": "Reporter Resource",
             "ownerManagedAccess": false,
-            "displayName": "Reporter Resource",
+            "displayName": "",
             "attributes": {},
-            "_id": "b9cc5be8-fgd3-43de-bb6f-12d6d8169653",
+            "_id": "819d14f4-4460-407c-990f-e1c7056449e9",
             "uris": [
               "/v1/reports/*"
             ],
             "scopes": [
               {
+                "name": "cat.read"
+              },{
                 "name": "cat.create"
               },
               {
                 "name": "cat.update"
-              },
-              {
-                "name": "cat.read"
               }
             ],
             "icon_uri": ""
@@ -1022,22 +1021,6 @@
               {
                 "name": "cat.update"
               },
-              {
-                "name": "cat.read"
-              }
-            ],
-            "icon_uri": ""
-          },
-          {
-            "name": "Reporter View Motivation Assessment Resource",
-            "ownerManagedAccess": false,
-            "displayName": "Reporter View Motivation Assessment Resource",
-            "attributes": {},
-            "_id": "f3a0a76a-8f64-4f1d-9c37-9a77e71c5a6e",
-            "uris": [
-              "/v2/assessments/"
-            ],
-            "scopes": [
               {
                 "name": "cat.read"
               }
@@ -1310,9 +1293,8 @@
               "roles": "[{\"id\":\"backend-service/admin\",\"required\":false}]"
             }
           },
-
           {
-            "id": "jcaf30b2-68b2-2v71-9f3d-9162c6cdf5cb",
+            "id": "bdff30b2-68b2-4b78-9f3d-9162c6cdf5cb",
             "name": "Only Reporters",
             "description": "Only reporters can access",
             "type": "role",
@@ -1335,6 +1317,8 @@
               "applyPolicies": "[\"Any Validated Policy\",\"Only Administrators\"]"
             }
           },
+
+
           {
             "id": "233836ad-46b6-40fd-9423-305acaaeb8b7",
             "name": "Read Template By Motivation and Actor",
@@ -1363,18 +1347,6 @@
           },
 
           {
-            "id": "29329298-d55b-4066-b231-6a7c56ss8sg5",
-            "name": "Reporter Resource Permission",
-            "description": "",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"Reporter Resource\", \"Reporter View Motivation Assessment Resource\"]",
-              "applyPolicies": "[\"Only Reporters\"]"
-            }
-          },
-          {
             "id": "60188298-d55b-4066-b231-6a7c56ff7cc5",
             "name": "Administration Resource Permission",
             "description": "",
@@ -1382,8 +1354,20 @@
             "logic": "POSITIVE",
             "decisionStrategy": "AFFIRMATIVE",
             "config": {
-              "resources": "[\"Reporter Resource\", \"Reporter View Motivation Assessment Resource\",\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
+              "resources": "[\"Zenodo Resource\",\"Motivation Assessment Resource\",\"Assessment Resource\",\"Role Resource\",\"Subject Resource\",\"Administration Resource\",\"Template Resource\"]",
               "applyPolicies": "[\"Only Administrators\"]"
+            }
+          },
+          {
+            "id": "01288298-d55b-4066-b231-6a7c56ff7cc5",
+            "name": "Reporter Resource Permission",
+            "description": "",
+            "type": "resource",
+            "logic": "POSITIVE",
+            "decisionStrategy": "AFFIRMATIVE",
+            "config": {
+              "resources": "[\"Reporter Resource\"]",
+              "applyPolicies": "[\"Only Reporters\",\"Only Administrators\"]"
             }
           },
           {
