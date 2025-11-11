@@ -2,6 +2,9 @@ package org.grnet.cat.services.report;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -136,7 +139,7 @@ public class ReportService {
 
         // 5. Build matrix
         var matrix = new LinkedHashMap<String, Map<String, String>>();
-        var colSet = new LinkedHashSet<String>();
+        var colSet = new LinkedHashSet<Map<String,String>>();
         buildMatrix(raw, matrix, colSet);
 
         // 6. Return response
@@ -158,18 +161,27 @@ public class ReportService {
 
     private void buildMatrix(List<Object[]> raw,
                              Map<String, Map<String, String>> matrix,
-                             Set<String> colSet) {
+                             Set<Map<String,String>> colSet) {
         for (Object[] row : raw) {
             var rowLabel = safeLabel((String) row[0]);
             var colLabel = safeLabel((String) row[1]);
             var assessmentDoc = (String) row[2];
+            var compliance = extractCompliance(assessmentDoc);
+            var columnInfo = new JsonObject();
+            columnInfo.addProperty("name", colLabel);
+            var colMap=new HashMap<String,String>();
+            colMap.put("name",colLabel);
+            if(row.length>3){
+                var colId = safeLabel((String) row[3]);
+                columnInfo.addProperty("id", colId);
+                colMap.put("id",colId);
 
-            var value = extractCompliance(assessmentDoc);
-
+            }
+            colSet.add(colMap);
             matrix.computeIfAbsent(rowLabel, k -> new LinkedHashMap<>())
-                    .put(colLabel, value);
+                    .put(colLabel, compliance);
 
-            colSet.add(colLabel);
+
         }
     }
 
@@ -199,7 +211,7 @@ public class ReportService {
                                             ReportFilterDto request,
                                             String userId,
                                             LinkedHashMap<String, Map<String, String>> matrix,
-                                            LinkedHashSet<String> colSet) {
+                                            LinkedHashSet<Map<String,String>> colSet) {
 
         var table = matrixToDto(matrix, colSet);
 
@@ -234,9 +246,34 @@ public class ReportService {
 
         // Header: first cell = report label (no separate title row)
         sb.append(escapeCsv(report.label != null ? report.label : ""));
-        for (String col : report.columns) {
-            sb.append(",").append(escapeCsv(col));
+        String nameValue = null;
+        String idValue = null;
+
+        for (Map<String, String> col : report.columns) {
+            for (Map.Entry<String, String> entry : col.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            if ("name".equalsIgnoreCase(key)) {
+                nameValue = value;
+            } else if ("id".equalsIgnoreCase(key)) {
+                idValue = value;
+            } else {
+                sb.append(",").append(escapeCsv(value));
+            }
         }
+
+// After loop, handle name/id concatenation if they exist
+       var cellValue=new StringBuilder();
+        if (nameValue != null ) {
+            cellValue.append(nameValue);
+        }
+        if(idValue != null) {
+            cellValue.append("/").append(idValue);
+        }
+            sb.append(",").append(escapeCsv(cellValue.toString()));
+        }
+
         sb.append("\n");
 
         // Data rows
@@ -263,7 +300,7 @@ public class ReportService {
     /**
      * Builds the response DTO from definition, userId, and table data.
      */
-    ReportResponseDto matrixToDto(Map<String, Map<String, String>> matrix, Set<String> assessments) {
+    ReportResponseDto matrixToDto(Map<String, Map<String, String>> matrix, Set<Map<String, String>> assessments) {
         var result = new ReportResponseDto();
         result.rows = new ArrayList<>(matrix.keySet());
         result.columns = new ArrayList<>(assessments);
@@ -271,15 +308,17 @@ public class ReportService {
         List<List<String>> tableData = new ArrayList<>();
         for (String org : result.rows) {
             List<String> rowData = new ArrayList<>();
-            for (String assess : result.columns) {
+            for (Map<String, String> assess : result.columns) {
                 String val = "N/A";
-                if (matrix.containsKey(org) && matrix.get(org).containsKey(assess)) {
-                    val = matrix.get(org).get(assess);
+                if (assess.containsKey("name") && matrix.containsKey(org) && matrix.get(org).containsKey(assess.get("name"))) {
+                    val = matrix.get(org).get(assess.get("name"));
                 }
                 rowData.add(val);
             }
+
             tableData.add(rowData);
         }
+
         result.data = tableData;
         return result;
     }

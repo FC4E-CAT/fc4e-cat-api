@@ -108,8 +108,8 @@ According to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) , the `Unr
 - [#552](https://github.com/FC4E-CAT/fc4e-cat-api/pull/552) CAT-1018 Prevent auto signout of admin when validated
 - [#563](https://github.com/FC4E-CAT/fc4e-cat-api/pull/563) Use pretty-print Zenodo publication state in responses
 - [#567](https://github.com/FC4E-CAT/fc4e-cat-api/pull/567) CAT-1065 API: Grant reporter role permissions to view an assessment
+- [#568](https://github.com/FC4E-CAT/fc4e-cat-api/pull/568) CAT-1067 Return ids of assessments to report response
 - [#569](https://github.com/FC4E-CAT/fc4e-cat-api/pull/569) CAT-1068 Investigate 500 error when retrieving reports
-
 
 ## 2.0.0 - 2025-03-31
 ---

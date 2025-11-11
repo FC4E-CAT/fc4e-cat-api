@@ -39,7 +39,7 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
         var def = findById(reportDefinitionId);
 
         var where = new StringBuilder("WHERE 1=1 ");
-
+        var select =new StringBuilder();
         // Handle publicationStatus (IDs: 1 = published, 2 = unpublished)
         if (!publicationStatus.isEmpty()) {
             where.append("AND (");
@@ -62,13 +62,16 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
             where.append(") ");
         }
 
-        String selectRow;
-        String selectCol;
-
+        String selectRow="";
+        String selectCol="";
+        String selectId="";
         if (reportDefinitionId == 1) {
             // Actors × Assessments
             selectRow = "a.assessment_doc->'actor'->>'name'";
             selectCol = "a.assessment_doc->>'name'";
+            selectId = "a.assessment_doc->>'id'";
+            select.append(  "SELECT " + selectRow + " AS rowLabel, "
+                    + selectCol + " AS colLabel ");
 
             if (!actors.isEmpty()) {
                 where.append("AND (");
@@ -84,6 +87,9 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
             // Organisations × Assessments
             selectRow = "a.assessment_doc->'organisation'->>'name'";
             selectCol = "a.assessment_doc->>'name'";
+            selectId = "a.assessment_doc->>'id'";
+             select.append("SELECT " + selectRow + " AS rowLabel, "
+                     + selectCol + " AS colLabel ");
 
             if (!organisations.isEmpty()) {
                 where.append("AND (");
@@ -99,6 +105,9 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
             // Subjects × Motivations/Actors
             selectRow = "a.assessment_doc->'subject'->>'name'";
             selectCol = "(a.assessment_doc->'assessment_type'->>'name') || ' / ' || (a.assessment_doc->'actor'->>'name')";
+
+          select.append("SELECT " + selectRow + " AS rowLabel, "
+                    + selectCol + " AS colLabel ");
 
             // Subject filter
             if (!subjects.isEmpty()) {
@@ -126,14 +135,14 @@ public class ReportRepository implements Repository<ReportDefinition, Long> {
             throw new IllegalArgumentException("Unsupported definition: " + def);
         }
 
-        var sql = "SELECT " + selectRow + " AS rowLabel, "
-                + selectCol + " AS colLabel, "
-                + "a.assessment_doc AS assessmentDoc "
-                + "FROM MotivationAssessment a "
-                + where
-                + "ORDER BY 1, 2";
+        var sql = select.append(",").append("a.assessment_doc AS assessmentDoc ");
+             if(!selectId.isEmpty()) {
+                sql.append(",").append(selectId).append(" AS colId ");
+             }
+             sql.append( " FROM MotivationAssessment a ")
+                .append(where).append(" ORDER BY 1, 2");
 
-        var q = em.createNativeQuery(sql);
+        var q = em.createNativeQuery(sql.toString());
 
         // Bind publicationStatus using enum
         for (int i = 0; i < publicationStatus.size(); i++) {

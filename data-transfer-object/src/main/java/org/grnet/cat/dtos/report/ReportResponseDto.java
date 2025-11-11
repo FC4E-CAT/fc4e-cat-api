@@ -7,6 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
@@ -90,12 +91,13 @@ public class ReportResponseDto {
 
     @Schema(
             type = SchemaType.ARRAY,
-            implementation = String.class,
-            description = "List of column labels (e.g. assessments)",
-            example = "[\"Assessment-1\", \"Assessment-2\"]"
+            implementation = Map.class,
+            description = "Map of column keys to their labels",
+            example = "{\"name\":\"Assessment-1\", \"id\":\"c203-c367-555f-4672s\"}"
     )
     @JsonProperty("columns")
-    public List<String> columns;
+    public List<Map<String, String>> columns;
+
 
     @Schema(
             type = SchemaType.ARRAY,
@@ -141,8 +143,12 @@ public class ReportResponseDto {
         return rows;
     }
 
-    public List<String> getColumns() {
+    public List<Map<String, String>> getColumns() {
         return columns;
+    }
+
+    public void setColumns(List<Map<String, String>> columns) {
+        this.columns = columns;
     }
 
     public List<List<String>> getData() {
@@ -185,9 +191,6 @@ public class ReportResponseDto {
         this.rows = rows;
     }
 
-    public void setColumns(List<String> columns) {
-        this.columns = columns;
-    }
 
     public void setData(List<List<String>> data) {
         this.data = data;
