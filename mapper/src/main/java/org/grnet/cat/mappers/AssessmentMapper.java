@@ -46,8 +46,14 @@ public interface AssessmentMapper {
     @Mapping(target = "published", expression = "java(assessment.getPublished())")
     @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
     @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
-    @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
-    @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
+    @Mapping(
+            target = "compliance",
+            expression = "java((assessment.assessmentDoc != null && assessment.assessmentDoc.result != null) ? assessment.assessmentDoc.result.compliance : null)"
+    )
+    @Mapping(
+            target = "ranking",
+            expression = "java((assessment.assessmentDoc != null && assessment.assessmentDoc.result != null) ? assessment.assessmentDoc.result.ranking : null)"
+    )
     UserPartialJsonAssessmentResponse userRegistryAssessmentToPartialJsonAssessment(UserJsonRegistryAssessmentResponse assessment);
 
     @Named("adminMapRegistryWithExpression")
@@ -69,8 +75,15 @@ public interface AssessmentMapper {
     @Mapping(target = "published", expression = "java(assessment.getPublished())")
     @Mapping(target = "subjectName", expression = "java(assessment.assessmentDoc.subject.name)")
     @Mapping(target = "subjectType", expression = "java(assessment.assessmentDoc.subject.type)")
-    @Mapping(target = "compliance", expression = "java(assessment.assessmentDoc.result.compliance)")
-    @Mapping(target = "ranking", expression = "java(assessment.assessmentDoc.result.ranking)")
+    @Mapping(
+            target = "compliance",
+            expression = "java((assessment.assessmentDoc != null && assessment.assessmentDoc.result != null) ? assessment.assessmentDoc.result.compliance : null)"
+    )
+
+    @Mapping(
+            target = "ranking",
+            expression = "java((assessment.assessmentDoc != null && assessment.assessmentDoc.result != null) ? assessment.assessmentDoc.result.ranking : null)"
+    )
     @Mapping(target = "shared", expression = "java(assessment.shared)")
     @Mapping(target = "version", expression = "java(assessment.assessmentDoc.version)")
     AdminPartialJsonAssessmentResponse adminRegistryAssessmentToPartialJsonAssessment(AdminJsonRegistryAssessmentResponse assessment);
@@ -112,7 +125,6 @@ public interface AssessmentMapper {
         var utility = CDI.current().select(Utility.class).get();
 
         var currentUser = utility.getUserUniqueIdentifier();
-        System.out.println("share is current user : "+currentUser);
         var sameUser = currentUser.equals(userId); //user logged is same as user owning the assessment
         return assessment.getShared() && sameUser; //if the assessment is shared and the user is the owner, the assessment is shared by the user
     }
