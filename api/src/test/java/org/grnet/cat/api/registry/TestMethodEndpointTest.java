@@ -23,14 +23,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestMethodEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTestMethodNotPermitted() {
         var error = getTestMethodWithUnauthorized("pid_graph:03615660");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createTestMethod() {
         var request = createUniqueTestMethodRequest();
         var response = createTestMethod(request);
@@ -41,7 +41,7 @@ public class TestMethodEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTestMethod() {
         var request = createUniqueTestMethodRequest();
         var createdResponse = createTestMethod(request);
@@ -54,14 +54,14 @@ public class TestMethodEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTestMethodNotFound() {
         var error = getTestMethodNotFound("non_existent_id");
         assertEquals("There is no Test Method with the following id: non_existent_id", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateTestMethod() {
         var request = createUniqueTestMethodRequest();
         var createdResponse = createTestMethod(request);
@@ -84,7 +84,7 @@ public class TestMethodEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteTestMethod() {
         var request = createUniqueTestMethodRequest();
         var createdResponse = createTestMethod(request);

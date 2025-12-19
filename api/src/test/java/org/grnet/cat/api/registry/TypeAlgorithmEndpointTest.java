@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TypeAlgorithmEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeAlgorithmNotPermitted() {
         var error = getTypeAlgorithmUnauthorized("pid_graph:7A976659");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeAlgorithm() {
         var response = getTypeAlgorithm("pid_graph:7A976659");
         assertNotNull(response);
@@ -34,7 +34,7 @@ public class TypeAlgorithmEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeAlgorithmNotFound() {
         var error = getTypeAlgorithmError("notfound");
         assertEquals("There is no Type Algorithm with the following id: notfound", error.message);

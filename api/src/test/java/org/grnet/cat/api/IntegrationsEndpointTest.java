@@ -20,42 +20,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class IntegrationsEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void fetchAllIntegrationSources() {
         var response = fetchSources(aliceToken);
         assertEquals(3, response.length);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void fetchOrganisationBySourceAndId() {
         var response = fetchOrganisation(aliceToken, "ROR", "00tjv0s33");
         assertEquals(1, response.getTotalElements());
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void nonRegisterUserRequestsOrganisation() {
         var error = fetchOrganisationUnauthorized("evald", "ROR", "00tjv0s33");
         assertEquals("User has not been registered on CAT service. User registration is a prerequisite for accessing this API resource.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void fetchOrganisationBySourceAndIdWrongSource() {
         var response = fetchOrganisationInvalidSource(aliceToken, "rorA", "00tjv0s33");
         assertEquals(400, response.statusCode());
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void fetchOrganisationBySourceAndIdNotFound() {
         var response = fetchOrganisationInvalidSource(aliceToken, "ROR", "00tjv0s33A");
         assertEquals(404, response.statusCode());
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void fetchOrganisationByRE3DATA() {
         var response = fetchOrganisationInvalidSource(aliceToken, "RE3DATA", "00tjv0s33");
         assertEquals(501, response.statusCode());

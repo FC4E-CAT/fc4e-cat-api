@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TypeReproducibilityEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeReproducibilityNotPermitted() {
         var error = getTypeReproducibilityUnauthorized("pid_graph:1BA2356B");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeReproducibility() {
         var response = getTypeReproducibility("pid_graph:1BA2356B");
         assertNotNull(response);
@@ -34,7 +34,7 @@ public class TypeReproducibilityEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeReproducibilityNotFound() {
         var error = getTypeReproducibilityNotFound("notfound");
         assertEquals("There is no Type Reproducibility with the following id: notfound", error.message);

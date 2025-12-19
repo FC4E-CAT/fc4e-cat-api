@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SubjectsEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteSubject() {
         var request = createSubjectRequest("id", "name", "type");
         var createdResponse = createSubject(request, validatedToken);

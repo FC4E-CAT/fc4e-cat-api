@@ -20,35 +20,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UsersEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void unauthorizedUser() {
         var error = performRegisterRequest("invalidToken", 401);
         assertEquals(401, error.code);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void userAlreadyExistsInTheDatabase() {
         var error = performRegisterRequest(getAccessToken("alice"), 409);
         assertEquals("User already exists in the database.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void nonRegisterUserRequestsTheirUserProfile() {
         var error = performGetUserProfileRequest(getAccessToken("evald"), 403);
         assertEquals("User has not been registered on CAT service. User registration is a prerequisite for accessing this API resource.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataRequestBodyIsEmpty() {
         var error = (InformativeResponse) performUpdateUserProfileRequest(null, aliceToken, 400);
         assertEquals("The request body is empty.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataNameIsEmpty() {
         var update = createUpdateUserProfileDto(null, "foo", "foo@admin.grnet.gr", null);
         var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
@@ -56,7 +56,7 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataEmailIsEmpty() {
         var update = createUpdateUserProfileDto("foo", "foo", null, null);
         var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
@@ -64,7 +64,7 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataEmailIsNotValid() {
         var update = createUpdateUserProfileDto("foo", "foo", "foo.foo", null);
         var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
@@ -72,7 +72,7 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataSurnameIsEmpty() {
         var update = createUpdateUserProfileDto("foo", null, "foo@admin.grnet.gr", null);
         var error = (InformativeResponse) performUpdateUserProfileRequest(update, bobToken, 400);
@@ -80,7 +80,7 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataNotValidOrcid() {
         var update = createUpdateUserProfileDto("foo", "foo", "foo@admin.grnet.gr", "la-la-la-la");
         var error = (InformativeResponse) performUpdateUserProfileRequest(update, aliceToken, 400);
@@ -88,7 +88,7 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataWithoutOrcid() {
         var update = createUpdateUserProfileDto("foo", "foo", "foo@admin.grnet.gr", null);
         var response = (UserProfileDto) performUpdateUserProfileRequest(update, aliceToken, 200);
@@ -96,7 +96,7 @@ public class UsersEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateMetadataWithOrcid() {
         var update = createUpdateUserProfileDto("foo", "foo", "foo@admin.grnet.gr", "0000-0002-1825-0097");
         var response = (UserProfileDto) performUpdateUserProfileRequest(update, aliceToken, 200);

@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class MotivationEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getMotivationNotPermitted() {
 
         var error = given()
@@ -56,7 +56,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void motivationTypeIsNotFound() {
 
         var request = new MotivationRequest();
@@ -81,7 +81,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getMotivation() {
 
         var response = given()
@@ -130,7 +130,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 //    }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createMotivation() {
 
         var request = new MotivationRequest();
@@ -156,7 +156,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createMotivationAndCopyFromMotivation() {
 
         var request = new MotivationRequest();
@@ -185,7 +185,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createMotivationCopyNotFound() {
 
         var request = new MotivationRequest();
@@ -442,7 +442,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void addCriterionNoActor() {
 
         var motivationRequest = new MotivationRequest();
@@ -523,7 +523,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void addCriterionNoImperative() {
 
         var motivationRequest = new MotivationRequest();
@@ -606,7 +606,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void addCriterionNoMotivationActor() {
 
         var motivationRequest = new MotivationRequest();
@@ -669,7 +669,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void addCriterionWithAutoMetric() {
 
         var motivationRequest = new MotivationRequest();
@@ -751,7 +751,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateCriterionImperativeNotFound() {
 
         var motivationRequest = new MotivationRequest();
@@ -834,7 +834,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void addPrinciple() {
 
         var motivationRequest = new MotivationRequest();
@@ -880,7 +880,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void duplicatePrinciple() {
 
         var motivationRequest = new MotivationRequest();
@@ -938,7 +938,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void principleNotFound() {
 
         var motivationRequest = new MotivationRequest();
@@ -985,7 +985,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createPrincipleForMotivationAlreadyExist() {
 
         var motivation = new MotivationRequest();
@@ -1046,7 +1046,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createNewMetricVersion() {
 
         var motivationRequest = new MotivationRequest();
@@ -1092,7 +1092,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createAndUpdateMetricForMotivation() {
         // Step 1: Create Motivation
         var motivationRequest = new MotivationRequest();
@@ -1160,7 +1160,7 @@ public class MotivationEndpointTest extends KeycloakTest {
 
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void testPublish() {
 
         MotivationResponse motivationResponse = testCreateMotivation();
@@ -1198,7 +1198,7 @@ public class MotivationEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createNewMotivationVersion() {
 
         var motivationRequest = new MotivationRequest();

@@ -1,7 +1,7 @@
 package org.grnet.cat.entities;
 
 
-import com.vladmihalcea.hibernate.type.json.JsonType;
+//import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,8 +14,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.grnet.cat.entities.registry.Motivation;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ public class MotivationAssessment {
     @UuidGenerator
     private String id;
 
-    @Type(JsonType.class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @NotNull
     @Column(name = "assessment_doc", columnDefinition = "json")
     private String assessmentDoc;

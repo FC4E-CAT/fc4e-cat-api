@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class TestEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTestNotPermitted() {
         var error = given()
                 .auth()
@@ -44,7 +44,7 @@ public class TestEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void createTest() {
         var request = createUniqueTestRequest();
         var response = createTest(request);
@@ -56,7 +56,7 @@ public class TestEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTest() {
         var request = createUniqueTestRequest();
         var createdTest = createTest(request);
@@ -71,7 +71,7 @@ public class TestEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTestNotFound() {
         var error = given()
                 .auth()
@@ -89,7 +89,7 @@ public class TestEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void updateTest() {
         var request = createUniqueTestRequest();
         var createdTest = createTest(request);
@@ -112,7 +112,7 @@ public class TestEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void deleteTest() {
         var request = createUniqueTestRequest();
         var createdTest = createTest(request);

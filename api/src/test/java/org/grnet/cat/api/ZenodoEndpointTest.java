@@ -154,7 +154,7 @@
 //    }
 //
 //    @Test
-//    @Execution(ExecutionMode.CONCURRENT)
+//    //@Execution(ExecutionMode.CONCURRENT)
 //    public void testPublishZenodoAssessment_notPublished() throws IOException {
 //
 //        //zenodoAssessmentInfoRepository.removeAll();
@@ -179,7 +179,7 @@
 //    }
 //
 //    @Test
-//    @Execution(ExecutionMode.CONCURRENT)
+//    //@Execution(ExecutionMode.CONCURRENT)
 //    public void testPublishZenodoAssessment_ForbiddenAccess() throws IOException {
 //
 //        //zenodoAssessmentInfoRepository.removeAll();
@@ -204,7 +204,7 @@
 //    }
 //
 //    @Test
-//    @Execution(ExecutionMode.CONCURRENT)
+//    //@Execution(ExecutionMode.CONCURRENT)
 //    public void testPublishZenodoAssessment_notValidPDF() throws IOException {
 //        //zenodoAssessmentInfoRepository.removeAll();
 //
@@ -228,7 +228,7 @@
 //        assertEquals(expectedMessage, response.message);
 //    }
 ////    @Test
-////    @Execution(ExecutionMode.CONCURRENT)
+////    //@Execution(ExecutionMode.CONCURRENT)
 ////    public void testVersionPublishedZenodo() throws  IOException {
 ////        var originalAssessment = createRegistryPublicAssessment(validatedToken);
 ////

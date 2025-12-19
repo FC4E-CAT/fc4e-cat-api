@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TypeMetricEndpointTest extends KeycloakTest {
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeMetricNotPermitted() {
         var error = getTypeMetricUnauthorized("pid_graph:03615660");
         assertEquals("You do not have permission to access this resource.", error.message);
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeMetric() {
         var response = getTypeMetric("pid_graph:03615660");
         assertNotNull(response);
@@ -34,7 +34,7 @@ public class TypeMetricEndpointTest extends KeycloakTest {
     }
 
     @Test
-    @Execution(ExecutionMode.CONCURRENT)
+    //@Execution(ExecutionMode.CONCURRENT)
     public void getTypeMetricNotFound() {
         var error = getTypeMetricNotFound("notfound");
         assertEquals("There is no Type Metric with the following id: notfound", error.message);
