@@ -23,4 +23,9 @@ public class AssessmentPerActor{
     public void setActor_name(String actor_name) {
         this.actor_name = actor_name;
     }
+
+    public AssessmentPerActor(String actor_name, Long total) {
+        this.actor_name = actor_name;
+        this.total = total;
+    }
 }
